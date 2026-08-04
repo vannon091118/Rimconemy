@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Rimconemy.Foundation.Save;
 using Verse;
 
 namespace Rimconemy.InfectedAutomation.Story
@@ -16,7 +17,7 @@ namespace Rimconemy.InfectedAutomation.Story
     /// Specification: docs/H2-story-contract.md §5
     /// Gate G2: no duplicate event execution after save/load.
     /// </summary>
-    public sealed class StoryState : IExposable
+    public sealed class StoryState : IExposable, ISchemaMigratable
     {
         /// <summary>Current schema version for migration.</summary>
         public const int CurrentSchemaVersion = 1;
@@ -246,11 +247,8 @@ namespace Rimconemy.InfectedAutomation.Story
                 }
             }
 
-            // Schema migration
-            if (SchemaVersion < CurrentSchemaVersion)
-            {
-                MigrateSchema(SchemaVersion);
-            }
+            // Schema migration — self-guarding entry point
+            MigrateIfNeeded();
 
             // Clear transient scribe helpers
             _cooldownKeys = null;
@@ -259,15 +257,63 @@ namespace Rimconemy.InfectedAutomation.Story
             _idempotencyTicks = null;
         }
 
-        private void MigrateSchema(int fromVersion)
-        {
-            if (fromVersion < 1)
-            {
-                // Version 0 → 1: initial schema, nothing to migrate
-            }
+        // ── ISchemaMigratable contract ────────────────────────
 
-            SchemaVersion = CurrentSchemaVersion;
-            Log.Message($"[Rimconemy.InfectedAutomation] StoryState migrated from v{fromVersion} to v{CurrentSchemaVersion}.");
+        /// <summary>Owner-declared registry key. Stable, lowercase, package-prefixed.</summary>
+        public string ClassId => "rimconemy.infectedautomation.storyState";
+
+        /// <summary>
+        /// Explicit interface implementation: the type-level const
+        /// <see cref="CurrentSchemaVersion"/> stays accessible to tests
+        /// via <c>StoryState.CurrentSchemaVersion</c>; the interface
+        /// property satisfies cross-package readers.
+        /// </summary>
+        int ISchemaMigratable.CurrentSchemaVersion => CurrentSchemaVersion;
+
+        /// <summary>
+        /// Explicit interface implementation: the public field
+        /// <see cref="SchemaVersion"/> keeps the Scribe <c>ref</c> path
+        /// alive; the interface property gates cross-package reads.
+        /// </summary>
+        int ISchemaMigratable.SchemaVersion
+        {
+            get => SchemaVersion;
+            set => SchemaVersion = value;
+        }
+
+        private List<SchemaStep> _cachedSteps;
+        public IList<SchemaStep> Steps
+        {
+            get
+            {
+                if (_cachedSteps != null) return _cachedSteps;
+                _cachedSteps = new List<SchemaStep>
+                {
+                    // v0 → v1: metadata-only bump. No field transforms are
+                    // needed: PostLoadInit already rebuilt the dictionary /
+                    // hashset collections and the idempotency-key insertion
+                    // tracker from the parallel Scribe lists.
+                    new SchemaStep(0, 1,
+                        "Initial schema (metadata-only bump; collection rebuild is handled in PostLoadInit).",
+                        () => { /* no-op: RebuildAfterLoad already normalised collections */ }),
+                };
+                return _cachedSteps;
+            }
+        }
+
+        /// <summary>
+        /// First-class schema-migration domain entry point. Canonical
+        /// orchestration via <see cref="SchemaMigratableExtensions.RunMigration"/>:
+        /// self-register → walk → record. The previous private
+        /// <c>MigrateSchema(int)</c> backend is gone — its job is now
+        /// performed declaratively via the <see cref="Steps"/> list.
+        /// Owner-Constraint: Package 05 is SOLE-OWNER of
+        /// <see cref="StoryState"/>; no other package may migrate this
+        /// state. Idempotent.
+        /// </summary>
+        public void MigrateIfNeeded()
+        {
+            this.RunMigration();
         }
 
         /// <summary>Returns true if the event is currently on cooldown.</summary>

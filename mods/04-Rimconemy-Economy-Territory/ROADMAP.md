@@ -199,6 +199,7 @@ Die Frist ist exakt und sichtbar. Nach Ablauf:
 - Credits erzeugen, buchen, sperren und ausgeben.
 - jede Buchung mit Zeit, Quelle, Ziel, Betrag und Grund protokollieren.
 - negative Kontostände oder Rundungsfehler explizit verhindern.
+- **Phase-2.8 (2026-08-04):** `CreditsLedger` implementiert `ISchemaMigratable` (Foundation/Source/Save/) — Schema-Version via `Scribe_Values.Look(default=0)`, Migration via `this.RunMigration()`. `Tests/CreditsLedgerSchemaBumpTests` mit T1–T6-Assertions (v0→v1 Idempotenz).
 
 **Exit-Test:** Kauf, Einnahme, Rückbuchung und Verbindungssperre verändern Wallets korrekt und nachvollziehbar.
 

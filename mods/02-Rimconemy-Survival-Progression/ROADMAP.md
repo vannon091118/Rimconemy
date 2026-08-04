@@ -186,15 +186,17 @@ Prüfe explizit:
 
 **Exit-Test:** Full-DLC-Testsave läuft ohne Nullreferenzen, und jede DLC-Ausnahme ist im Adapter-/Kompatibilitätsbericht vermerkt.
 
-### Task 2.8 – Save-Migration
+### Task 2.8 – Save-Migration (Phase-2.8 geliefert)
 
-- Pawn-Datenpräfix und Save-Schema-Version festlegen,
-- neue XP-/Need-Felder mit Defaults migrieren,
-- inkompatible alte Zustände kontrolliert ablehnen,
-- keine alten Vanilla-Werte still umdeuten,
-- den verbindlichen Fall aus `../../docs/SAVE_CONTRACT.md` ausführen: Pawn ohne neue XP-/Need-Felder wird mit definierten Defaults migriert, ohne Game Over zu erfinden.
+**2026-08-04 — First-Class-Domain-Extraktion:**
+- `CharacterSetupState.MigrateIfNeeded()` als public, testbarer Schema-Bump-Eintrittspunkt (via `ISchemaMigratable`-Interface, `Foundation/Source/Save/`).
+- `Tests/CharacterSetupStateSchemaBumpTests.RunAll()` — 6 T1–T6-Assertions: v0→Current, Idempotenz, Records-Preservation, Null-Normalisierung, Applied-Flag, ScribeRoundTrip.
+- `ScribeRoundTripHelper.RoundTrip<T>(IExposable)` — echter Scribe-Save→Load-PostLoadInit-Cycle via MemoryStream in Foundation/Tests/.
+- `docs/falsification/survival__SaveMigration.md` (236 Z.) — standalone Falsifizierungsbericht mit 7-Sektion-Layout (Kontext, Vertrag/I1–I3, A–G, Reproduktion, Negativ-Test, Siehe auch).
+- MigrationRegistry zentralisiert Save/Load-Migration (Clear am Cycle-Start, keine Cross-Session-Leaks).
+- Schema-Scribe-Tag `"foundationSchemaVersion"` unberührt; `FoundationDashboard.cs`-Stale-Reference gefixt.
 
-**Exit-Test:** Standalone-Save vor/nach Update und Full-Profile-Save mit fehlendem optionalem Paket werden geprüft; Migration erzeugt `Migrated`, `FrozenWithWarning` oder `LoadRejectedWithReason`, niemals stilles Löschen.
+**Exit-Test:** `Tests/CharacterSetupStateSchemaBumpTests.RunAll()` produziert im Boot-Log `SchemaBump tests: 6 passed, 0 failed (expected=6)`. Standalone v0→v1 Save-Migration deterministisch abgedeckt; echter Runtime-Save-File-Roundtrip bleibt Live-Gate via `scripts/runtime_test.sh`.
 
 ## 6. Blindspots und Gegenmaßnahmen
 

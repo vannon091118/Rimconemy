@@ -241,5 +241,39 @@ namespace Rimconemy.SurvivalProgression.Needs
                     return m;
             return null;
         }
+
+        // ── Phase-2.7 (2026-08-04) ─────────────────────────────────────────────
+        // Sample-Amplifier-Forwarder: NeedMappingService liefert den Sample,
+        // NeedAmplifier berechnet den deterministischen Faktor. Forwarder
+        // hier, damit Konsumenten nur einen Service-Eintrittspunkt haben.
+        //
+        // Owner: Paket 02 ist Sole-Owner der Sample-Amplifier-Berechnung. Vanilla
+        // wird nicht gepatched; das Hook geht ueber das Begleit-Hediff
+        // Rimconemy_NeedAmplifier mit Severity-Offset (siehe
+        // mods/02-Rimconemy-Survival-Progression/Defs/Needs/).
+
+        /// <summary>
+        /// Sample-Amplifier-Faktor fuer ein Setting-Need an einem konkreten Pawn.
+        /// Liefert 1.0 (neutral) wenn das Pawn null ist oder das Setting nicht
+        /// gefunden wurde. Wertebereich [0.7, 1.4] fuer valide Samples.
+        /// </summary>
+        public static float AmplifierFactor(Pawn pawn, string settingDefName)
+        {
+            if (pawn == null || string.IsNullOrEmpty(settingDefName)) return 1.0f;
+            float sample = SampleByName(pawn, settingDefName);
+            return NeedAmplifier.AmplifierFactor(sample);
+        }
+
+        /// <summary>
+        /// Severity-Offset-Wert fuer das Begleit-Hediff Rimconemy_NeedAmplifier,
+        /// abgeleitet vom Sample. Liefert 0.0 wenn Pawn null oder Setting fehlt.
+        /// Wertebereich ungefaehr [-0.3, +0.4] fuer valide Samples in [0,1].
+        /// </summary>
+        public static float AmplifierSeverity(Pawn pawn, string settingDefName)
+        {
+            if (pawn == null || string.IsNullOrEmpty(settingDefName)) return 0f;
+            float sample = SampleByName(pawn, settingDefName);
+            return NeedAmplifier.SeverityOffset(sample);
+        }
     }
 }

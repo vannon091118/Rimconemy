@@ -5,6 +5,7 @@ using Rimconemy.Foundation.Events;
 using Rimconemy.Foundation.Models;
 using Rimconemy.Foundation.Profile;
 using Rimconemy.Foundation.Registry;
+using Rimconemy.Foundation.Save;
 using Verse;
 
 namespace Rimconemy.Foundation.Save
@@ -20,12 +21,63 @@ namespace Rimconemy.Foundation.Save
     /// Hook reason: GameComponent is the canonical RimWorld mechanism for
     /// per-save persistent data. ExposeData handles save/load.
     /// </summary>
-    public class FoundationSaveData : GameComponent
+    public class FoundationSaveData : GameComponent, ISchemaMigratable
     {
         public const int CurrentSchemaVersion = 1;
 
-        /// <summary>Schema version found in the save; 0 means new game or pre-Foundation data.</summary>
-        public int LoadedSchemaVersion { get; private set; }
+        // ── ISchemaMigratable contract ──────────────
+
+        /// <summary>Owner-declared registry key. Stable, lowercase, package-prefixed.</summary>
+        public string ClassId => "rimconemy.foundation.savedata";
+
+        /// <summary>
+        /// Explicit interface implementation: the type-level const
+        /// <see cref="CurrentSchemaVersion"/> stays accessible to tests
+        /// (e.g. <c>FoundationSaveData.CurrentSchemaVersion</c>); the
+        /// interface property satisfies cross-package readers.
+        /// </summary>
+        int ISchemaMigratable.CurrentSchemaVersion => CurrentSchemaVersion;
+
+        /// <summary>
+        /// Explicit interface implementation: the property
+        /// <see cref="SchemaVersion"/> replaced the old
+        /// <c>LoadedSchemaVersion</c> field. The Scribe tag
+        /// <c>"foundationSchemaVersion"</c> is unchanged — Scribe maps
+        /// ints by string label, not by C# property name, so existing
+        /// saves are read correctly.
+        /// </summary>
+        int ISchemaMigratable.SchemaVersion
+        {
+            get => SchemaVersion;
+            set => SchemaVersion = value;
+        }
+
+        private List<SchemaStep> _cachedSteps;
+        public IList<SchemaStep> Steps
+        {
+            get
+            {
+                if (_cachedSteps != null) return _cachedSteps;
+                _cachedSteps = new List<SchemaStep>
+                {
+                    // v0 → v1: initial Foundation schema — no data loss,
+                    // every field has a safe default. New saves start at
+                    // v1 directly via FinalizeInit().
+                    new SchemaStep(0, 1,
+                        "Initial Foundation schema applied (no data loss; all fields carry safe defaults).",
+                        () => { /* no-op: every field is already default-safe */ }),
+                };
+                return _cachedSteps;
+            }
+        }
+
+        /// <summary>
+        /// Schema version found in the save; 0 means new game or pre-Foundation data.
+        /// Renamed from <c>LoadedSchemaVersion</c> to align with
+        /// <see cref="ISchemaMigratable.SchemaVersion"/>; Scribe tag
+        /// <c>"foundationSchemaVersion"</c> keeps the persisted value intact.
+        /// </summary>
+        public int SchemaVersion { get; private set; }
 
         /// <summary>Whether a migration was applied during the last load.</summary>
         public bool WasMigrated { get; private set; }
@@ -65,7 +117,7 @@ namespace Rimconemy.Foundation.Save
 
         public FoundationSaveData(Game game)
         {
-            LoadedSchemaVersion = 0;
+            SchemaVersion = 0;
             WasMigrated = false;
             MigrationDetail = "";
             SavedProfileStatus = ProfileStatus.Standalone;
@@ -81,9 +133,9 @@ namespace Rimconemy.Foundation.Save
             base.ExposeData();
             _isLoadingSave = Scribe.mode == LoadSaveMode.LoadingVars;
 
-            int schemaVersion = LoadedSchemaVersion;
+            int schemaVersion = SchemaVersion;
             Scribe_Values.Look(ref schemaVersion, "foundationSchemaVersion", 0);
-            LoadedSchemaVersion = schemaVersion;
+            SchemaVersion = schemaVersion;
 
             // Refresh owned read-only status before saving; feature data is never written here.
             if (Scribe.mode == LoadSaveMode.Saving)
@@ -152,8 +204,16 @@ namespace Rimconemy.Foundation.Save
             // A LoadingVars pass always represents an existing save. A missing
             // foundationSchemaVersion is therefore the documented v0 migration case;
             // actual new-game initialization happens in FinalizeInit().
-            if (Scribe.mode == LoadSaveMode.LoadingVars && LoadedSchemaVersion < CurrentSchemaVersion)
-                MigrateFrom(LoadedSchemaVersion);
+            //
+            // Clear the migration registry at the start of each save-load cycle
+            // so the cross-package report only reflects this save. Stale
+            // entries from a previous game must not leak across sessions.
+            if (Scribe.mode == LoadSaveMode.LoadingVars)
+            {
+                MigrationRegistry.Clear();
+                if (SchemaVersion < CurrentSchemaVersion)
+                    MigrateIfNeeded();
+            }
 
             // After loading, allow ProfileDetector to re-run if needed
             if (Scribe.mode == LoadSaveMode.LoadingVars)
@@ -167,26 +227,38 @@ namespace Rimconemy.Foundation.Save
         }
 
         /// <summary>
-        /// Migrates save data from an older schema version.
+        /// First-class schema-migration domain entry point
+        /// (<see cref="ISchemaMigratable"/>, 2026-08-04). Foundation-specific
+        /// side-effects (WasMigrated, MigrationDetail, EventLog record) are
+        /// captured here so the registry/walker stay generic.
+        ///
+        /// Pipeline:
+        /// 1. Capture pre-walk SchemaVersion for the UI diagnostic fields.
+        /// 2. Delegate the canonical orchestration to
+        ///    <see cref="SchemaMigratableExtensions.RunMigration"/>: it
+        ///    registers + walks + records the unified log entry.
+        /// 3. Foundation-specific side-effects (WasMigrated,
+        ///    MigrationDetail, EventLog.Record) fire if a real schema bump
+        ///    occurred.
+        ///
+        /// The legacy private <c>MigrateFrom(int)</c> backend is gone.
         /// </summary>
-        private void MigrateFrom(int oldVersion)
+        public void MigrateIfNeeded()
         {
-            WasMigrated = true;
-            MigrationDetail = $"Migrated from schema v{oldVersion} to v{CurrentSchemaVersion}. ";
+            int oldVersion = SchemaVersion;
+            this.RunMigration();
 
-            if (oldVersion < 1)
+            int newVersion = SchemaVersion;
+            if (newVersion > oldVersion)
             {
-                // Future: migrate from v0 (no Foundation data) to v1
-                MigrationDetail += "Initial Foundation schema applied. No data loss.";
+                WasMigrated = true;
+                MigrationDetail = $"Migrated from schema v{oldVersion} to v{CurrentSchemaVersion}. " +
+                                  "Initial Foundation schema applied. No data loss.";
+
+                EventLog.Record("Save", "Migration", "rimconemy.foundation",
+                    $"Foundation schema migrated from v{oldVersion} to v{CurrentSchemaVersion}.",
+                    MigrationDetail);
             }
-
-            LoadedSchemaVersion = CurrentSchemaVersion;
-
-            EventLog.Record("Save", "Migration", "rimconemy.foundation",
-                $"Foundation schema migrated from v{oldVersion} to v{CurrentSchemaVersion}.",
-                MigrationDetail);
-
-            Log.Message($"[Rimconemy.Foundation] {MigrationDetail}");
         }
 
         public override void GameComponentTick()
@@ -217,9 +289,9 @@ namespace Rimconemy.Foundation.Save
             Tests.FoundationBuildingCapabilityTests.RunAll();
 
             // For new games, ExposeData hasn't run yet — set schema to current
-            if (LoadedSchemaVersion == 0)
+            if (SchemaVersion == 0)
             {
-                LoadedSchemaVersion = CurrentSchemaVersion;
+                SchemaVersion = CurrentSchemaVersion;
                 MigrationDetail = "New save; no migration needed.";
                 EventLog.Record("Save", "NewGame", "rimconemy.foundation",
                     "Foundation save data initialized.",
@@ -359,13 +431,13 @@ namespace Rimconemy.Foundation.Save
         /// </summary>
         public string GetDiagnosis()
         {
-            if (LoadedSchemaVersion == CurrentSchemaVersion && !WasMigrated)
+            if (SchemaVersion == CurrentSchemaVersion && !WasMigrated)
                 return "Save schema is current. No issues detected.";
 
             if (WasMigrated)
                 return MigrationDetail;
 
-            return $"Save schema v{LoadedSchemaVersion} (current: v{CurrentSchemaVersion}). Migration may be needed.";
+            return $"Save schema v{SchemaVersion} (current: v{CurrentSchemaVersion}). Migration may be needed.";
         }
     }
 }

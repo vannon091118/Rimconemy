@@ -18,4 +18,13 @@
   <Rimconemy.Scavenger.BlockReason.NoFuel>Kein Brennstoff geladen.</Rimconemy.Scavenger.BlockReason.NoFuel>
   <Rimconemy.Scavenger.BlockReason.NoWater>Kein destilliertes Wasser vorhanden.</Rimconemy.Scavenger.BlockReason.NoWater>
   <Rimconemy.Scavenger.BlockReason.NoPower>Kein Strom angeschlossen.</Rimconemy.Scavenger.BlockReason.NoPower>
+
+  <!-- Lagerfeuer & Stahlreste -->
+  <Rimconemy.Scavenger.Campfire>Schrottlagerfeuer</Rimconemy.Scavenger.Campfire>
+  <Rimconemy.Scavenger.Campfire.Desc>Verbrennt Stahlreste, um brauchbaren Stahl zurueckzugewinnen.</Rimconemy.Scavenger.Campfire.Desc>
+  <Rimconemy.Scavenger.SteelScraps>Stahlreste</Rimconemy.Scavenger.SteelScraps>
+  <Rimconemy.Scavenger.SteelScraps.Desc>Zerfledderte Stahlreste aus zusammengebrochenen Vorkollaps-Strukturen.</Rimconemy.Scavenger.SteelScraps.Desc>
+  <Rimconemy.Scavenger.BurnSteelScraps>Stahlreste verbrennen</Rimconemy.Scavenger.BurnSteelScraps>
+  <Rimconemy.Scavenger.BurnSteelScraps.Desc>Stahlreste im Feuer verbrennen, um brauchbaren Stahl zurueckzugewinnen.</Rimconemy.Scavenger.BurnSteelScraps.Desc>
+  <Rimconemy.Scavenger.WoodRemoved>Keine Holzwände — verwende geborgenen Bauschutt oder zurückgewonnenen Stahl.</Rimconemy.Scavenger.WoodRemoved>
 </LanguageData>

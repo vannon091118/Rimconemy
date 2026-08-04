@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure
+  Stable defName: Rimconemy_MachineParts
+  DLC condition: none
+  Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> Scavenger -> later packages
+  Vanilla anchor: ThingDef (basic resource, ParentName=ResourceBase).
+  1.6-Fixes: Graphic_Stacked -> Graphic_StackCount; mass authored.
+
+  Gameplay: Machine parts are salvaged from ruined machinery and mechanoid remains.
+  They are essential for advanced manufacturing (stainless steel, towers).
+  Sources: Ruin breakdown events, mechanoid disassembly, supply drops.
+-->
+<Defs>
+  <ThingDef ParentName="ResourceBase">
+    <defName>Rimconemy_MachineParts</defName>
+    <label>machine parts</label>
+    <description>Salvaged gears, actuators, and precision components from pre-collapse machinery and mechanoid chassis. Essential for advanced manufacturing — stainless steel, powered turrets, and automation systems.</description>
+    <graphicData>
+      <texPath>Things/Item/Resource/Component</texPath>
+      <graphicClass>Graphic_StackCount</graphicClass>
+      <drawSize>0.85</drawSize>
+      <color>(180,160,130)</color>
+    </graphicData>
+    <statBases>
+      <MaxHitPoints>100</MaxHitPoints>
+      <Mass>0.7</Mass>
+      <MarketValue>15.0</MarketValue>
+    </statBases>
+    <thingCategories>
+      <li>Rimconemy_Scraps</li>
+    </thingCategories>
+    <stackLimit>150</stackLimit>
+    <drawGUIOverlay>true</drawGUIOverlay>
+  </ThingDef>
+</Defs>

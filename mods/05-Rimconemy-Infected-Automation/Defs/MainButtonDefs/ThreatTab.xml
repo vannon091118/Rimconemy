@@ -6,7 +6,6 @@
     <description>Rimconemy threat pressure and pending infected events.</description>
     <tabWindowClass>Rimconemy.InfectedAutomation.UI.ThreatDashboard</tabWindowClass>
     <order>58</order>
-    <showInInterface>false</showInInterface>
   </MainButtonDef>
 </Defs>
 

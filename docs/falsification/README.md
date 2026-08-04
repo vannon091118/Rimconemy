@@ -1,4 +1,4 @@
-# Falsifizierungsberichte — Rimconemy 20-Berichte-Index
+# Falsifizierungsberichte — Rimconemy 22-Berichte-Index
 
 > **Owner:** Buffy (Agent) + User
 > **Stand:** 2026-08-04
@@ -19,50 +19,52 @@ mit jeder Patch-Stage zusammen aktualisiert.
 
 ## Berichts-Liste
 
-### Foundation (1)
+### Foundation (2)
 
 | # | Bericht | Datei | Code-Anker | Status |
 |---|---|---|---|---|
 | 1 | `Servicebus` | [`foundation__Servicebus.md`](foundation__Servicebus.md) | `mods/01-Rimconemy-Foundation/Source/Catalog/` | `COMPILED` |
+| 2 | `BootstrapLogDedup` | [`foundation__BootstrapLogDedup.md`](foundation__BootstrapLogDedup.md) | `mods/01-Rimconemy-Foundation/Source/Profile/ProfileDetector.cs` | `COMPILED` |
 
-### Survival &amp; Progression (4)
+### Survival &amp; Progression (5)
 
 | # | Bericht | Datei | Code-Anker | Status |
 |---|---|---|---|---|
-| 2 | `Needs` | [`survival__Needs.md`](survival__Needs.md) | `NeedMappingService` | `COMPILED` |
-| 3 | `WorkXp` | [`survival__WorkXp.md`](survival__WorkXp.md) | `BuildingProgressionAdapter` | `COMPILED` |
-| 4 | `Research` | [`survival__Research.md`](survival__Research.md) | `ProgressionGameComponent.ResearchCapabilities` | `COMPILED` |
-| 5 | `GameOver` | [`survival__GameOver.md`](survival__GameOver.md) | `GameOverDetector` | `COMPILED` |
+| 3 | `Needs` | [`survival__Needs.md`](survival__Needs.md) | `NeedMappingService` | `COMPILED` |
+| 4 | `WorkXp` | [`survival__WorkXp.md`](survival__WorkXp.md) | `BuildingProgressionAdapter` | `COMPILED` |
+| 5 | `Research` | [`survival__Research.md`](survival__Research.md) | `ProgressionGameComponent.ResearchCapabilities` | `COMPILED` |
+| 6 | `GameOver` | [`survival__GameOver.md`](survival__GameOver.md) | `GameOverDetector` | `COMPILED` |
+| 7 | `SaveMigration` | [`survival__SaveMigration.md`](survival__SaveMigration.md) | `CharacterSetupState.MigrateIfNeeded` (ISchemaMigratable) | `COMPILED` |
 
 ### Scavenger Infrastructure (5)
 
 | # | Bericht | Datei | Code-Anker | Status |
 |---|---|---|---|---|
-| 6 | `ConstructionDebris` | [`scavenger__ConstructionDebris.md`](scavenger__ConstructionDebris.md) | `BauschuttRemapService` | `LOADED` |
-| 7 | `FoodAndHemp` | [`scavenger__FoodAndHemp.md`](scavenger__FoodAndHemp.md) | `FoodHarvestCycleService` | `LOADED` |
-| 8 | `WaterPowerArrowTurret` | [`scavenger__WaterPowerArrowTurret.md`](scavenger__WaterPowerArrowTurret.md) | `FueledGeneratorService` + `ArrowTurretPowerGate` | `LOADED` |
-| 9 | `ExecutePhysicalTransfer` | [`scavenger__ExecutePhysicalTransfer.md`](scavenger__ExecutePhysicalTransfer.md) | `StorageQuery` + `CaravanStorageEnumerator` | `COMPILED` |
-| 10 | `ReservePhysicalTransfer` | [`scavenger__ReservePhysicalTransfer.md`](scavenger__ReservePhysicalTransfer.md) | `StorageScope.SpecificMap` | `COMPILED` |
+| 8 | `ConstructionDebris` | [`scavenger__ConstructionDebris.md`](scavenger__ConstructionDebris.md) | `BauschuttRemapService` | `LOADED` |
+| 9 | `FoodAndHemp` | [`scavenger__FoodAndHemp.md`](scavenger__FoodAndHemp.md) | `FoodHarvestCycleService` | `LOADED` |
+| 10 | `WaterPowerArrowTurret` | [`scavenger__WaterPowerArrowTurret.md`](scavenger__WaterPowerArrowTurret.md) | `FueledGeneratorService` + `ArrowTurretPowerGate` | `LOADED` |
+| 11 | `ExecutePhysicalTransfer` | [`scavenger__ExecutePhysicalTransfer.md`](scavenger__ExecutePhysicalTransfer.md) | `StorageQuery` + `CaravanStorageEnumerator` | `COMPILED` |
+| 12 | `ReservePhysicalTransfer` | [`scavenger__ReservePhysicalTransfer.md`](scavenger__ReservePhysicalTransfer.md) | `StorageScope.SpecificMap` | `COMPILED` |
 
 ### Economy (5)
 
 | # | Bericht | Datei | Code-Anker | Status |
 |---|---|---|---|---|
-| 11 | `WalletCredits` | [`economy__WalletCredits.md`](economy__WalletCredits.md) | `CreditsLedger` | `COMPILED` |
-| 12 | `Market` | [`economy__Market.md`](economy__Market.md) | `MarketService` | `COMPILED` |
-| 13 | `ReservePhysicalTransfer` | [`economy__ReservePhysicalTransfer.md`](economy__ReservePhysicalTransfer.md) | `OutpostProxyGraph` | `COMPILED` |
-| 14 | `OutpostProduction` | [`economy__OutpostProduction.md`](economy__OutpostProduction.md) | `OutpostProxyGraph` | `COMPILED` |
-| 15 | `TerritoryCountdown` | [`economy__TerritoryCountdown.md`](economy__TerritoryCountdown.md) | `OutpostProxyGraph.MaxReportIntervalTicks` | `COMPILED` |
+| 13 | `WalletCredits` | [`economy__WalletCredits.md`](economy__WalletCredits.md) | `CreditsLedger` | `COMPILED` |
+| 14 | `Market` | [`economy__Market.md`](economy__Market.md) | `MarketService` | `COMPILED` |
+| 15 | `ReservePhysicalTransfer` | [`economy__ReservePhysicalTransfer.md`](economy__ReservePhysicalTransfer.md) | `OutpostProxyGraph` | `COMPILED` |
+| 16 | `OutpostProduction` | [`economy__OutpostProduction.md`](economy__OutpostProduction.md) | `OutpostProxyGraph` | `COMPILED` |
+| 17 | `TerritoryCountdown` | [`economy__TerritoryCountdown.md`](economy__TerritoryCountdown.md) | `OutpostProxyGraph.MaxReportIntervalTicks` | `COMPILED` |
 
 ### Infected &amp; Automation (5)
 
 | # | Bericht | Datei | Code-Anker | Status |
 |---|---|---|---|---|
-| 16 | `ThreatPressure` | [`infected__ThreatPressure.md`](infected__ThreatPressure.md) | `ThreatAggregator` + `StoryDirector` | `COMPILED` |
-| 17 | `InfectedRaid` | [`infected__InfectedRaid.md`](infected__InfectedRaid.md) | `InfectedRaidSpawnService` + `InfectedRaidWorker` | `LOADED` |
-| 18 | `MechadroidJob` | [`infected__MechadroidJob.md`](infected__MechadroidJob.md) | `MechadroidJobRegistry` | `COMPILED` |
-| 19 | `ManualRaid` | [`infected__ManualRaid.md`](infected__ManualRaid.md) | `IncidentClassifier` | `COMPILED` |
-| 20 | `AutoResolve` | [`infected__AutoResolve.md`](infected__AutoResolve.md) | `WorldRaidCoordinator` + `ThreatAggregator` | `COMPILED` |
+| 18 | `ThreatPressure` | [`infected__ThreatPressure.md`](infected__ThreatPressure.md) | `ThreatAggregator` + `StoryDirector` | `COMPILED` |
+| 19 | `InfectedRaid` | [`infected__InfectedRaid.md`](infected__InfectedRaid.md) | `InfectedRaidSpawnService` + `InfectedRaidWorker` | `LOADED` |
+| 20 | `MechadroidJob` | [`infected__MechadroidJob.md`](infected__MechadroidJob.md) | `MechadroidJobRegistry` | `COMPILED` |
+| 21 | `ManualRaid` | [`infected__ManualRaid.md`](infected__ManualRaid.md) | `IncidentClassifier` | `COMPILED` |
+| 22 | `AutoResolve` | [`infected__AutoResolve.md`](infected__AutoResolve.md) | `WorldRaidCoordinator` + `ThreatAggregator` | `COMPILED` |
 
 ## Beleg-Strategie
 

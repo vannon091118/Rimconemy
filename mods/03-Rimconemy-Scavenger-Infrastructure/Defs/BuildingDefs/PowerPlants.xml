@@ -23,7 +23,7 @@
   <ThingDef ParentName="BuildingBase">
     <defName>Rimconemy_WoodCoalGenerator</defName>
     <label>wood-fuel generator</label>
-    <description>Burning wood or chemfuel produces modest continuous power. Without fuel, it goes offline.</description>
+    <description>Burning wood, chemfuel, or coal produces continuous power. Coal burns significantly longer and more efficiently than raw wood. Without fuel, it goes offline.</description>
     <graphicData>
       <texPath>Things/Building/Power/WoodFiredGenerator</texPath>
       <graphicClass>Graphic_Single</graphicClass>
@@ -42,10 +42,12 @@
           <thingDefs>
             <li>WoodLog</li>
             <li>Chemfuel</li>
+            <li>Rimconemy_Coal</li>
           </thingDefs>
         </fuelFilter>
         <fuelCapacity>120</fuelCapacity>
-        <fuelConsumptionRate>1.0</fuelConsumptionRate>
+        <!-- Coal burns at 0.67 (1.5x efficiency vs wood at 1.0) -->
+        <fuelConsumptionRate>0.67</fuelConsumptionRate>
       </li>
     </comps>
     <statBases>

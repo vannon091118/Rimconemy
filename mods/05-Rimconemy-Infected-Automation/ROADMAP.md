@@ -264,6 +264,7 @@ Besonders kritisch:
 - Raid-Auflösung deterministisch oder mit sichtbarem Seed.
 - Performance bei vielen Outposts/Mechadroids messen.
 - Save-/Load-, Kartenwechsel- und Crash-Recovery testen.
+- **Phase-2.8 (2026-08-04):** `StoryState` implementiert `ISchemaMigratable` (Foundation/Source/Save/) — Schema-Version via `Scribe_Values.Look`, Migration via `this.RunMigration()`. Private `MigrateSchema(int)` Backend gelöscht, Schritte deklarativ in `Steps`-Liste. `Tests/StoryStateSchemaBumpTests` mit T1–T6-Assertions (v0→v1 Idempotenz).
 
 ## 7. Blindspots und Gegenmaßnahmen
 

@@ -73,6 +73,10 @@ namespace Rimconemy.SurvivalProgression
             BuildingProgressionPersistenceRegressionTests.RunAll();
             // Phase-4.2 Character Setup Save-State: schema + upsert + Get round-trip.
             Tests.CharacterSetupStateRegressionTests.RunAll();
+            // Phase-2.8 (2026-08-04): Save/Load-SchemaBump v0 → v1 Beleg for Audit §B6.
+            Tests.CharacterSetupStateSchemaBumpTests.RunAll();
+            // Phase-2.7 (2026-08-04): Bedürfnis-Effekt — NeedAmplifier deterministic Hunger-Tick.
+            Tests.HungerAmplifierTests.RunAll();
             // Image-audit (2026-08-04): Bio-Remap + Skill-Budget hardening.
             // ForceAge18 / ForceResetAllSkills / EnforceHardBudgetCap invariants.
             Tests.BioRemapHardeningRegressionTests.RunAll();

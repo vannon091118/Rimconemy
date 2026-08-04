@@ -14,8 +14,8 @@ namespace Rimconemy.ScavengerInfrastructure.Storage
     /// survivor resources. Story Writer, UI and Economy read from this.
     /// No package may write physical resources through this interface.
     ///
-    /// Caching: the last snapshot is kept and reused if ContentHash
-    /// is unchanged and the snapshot is < 250 ticks old.
+    /// Caching: the last snapshot is kept and reused if the filter,
+    /// scope, and snapshot age match (< 250 ticks).
     ///
     /// Specification: docs/H4-storage-query-contract.md
     /// </summary>
@@ -25,6 +25,7 @@ namespace Rimconemy.ScavengerInfrastructure.Storage
 
         private static StorageSnapshot _cachedSnapshot;
         private static long _cachedTick;
+        private static string _cachedFilterKey;
 
         /// <summary>
         /// Reads the current storage state for the given scope and filter.
@@ -36,14 +37,17 @@ namespace Rimconemy.ScavengerInfrastructure.Storage
             long tick)
         {
             // Try cache first.
-            // Cache invalidates by tick-age (250 ticks) and scope change.
-            // Content-hash comparison removed: the previous implementation
-            // compared _cachedHash against _cachedSnapshot.ContentHash,
-            // which are always equal (both set from the same snapshot object).
-            // For MVP, tick-age + scope is sufficient.
+            // Cache invalidates by tick-age (250 ticks), scope change,
+            // or filter change. The filter is a first-class cache key
+            // because different callers (FuelService, FoodService,
+            // Dashboard) pass different ResourceFilter instances.
+            // Without filter-key comparison, a fuel-filtered caller
+            // would receive a food-filtered cached snapshot.
+            string filterKey = ComputeFilterKey(filter);
             if (_cachedSnapshot != null
                 && tick - _cachedTick < CacheMaxAgeTicks
-                && _cachedSnapshot.Scope == scope)
+                && _cachedSnapshot.Scope == scope
+                && _cachedFilterKey == filterKey)
             {
                 return _cachedSnapshot;
             }
@@ -53,6 +57,7 @@ namespace Rimconemy.ScavengerInfrastructure.Storage
             // Update cache
             _cachedSnapshot = snapshot;
             _cachedTick = tick;
+            _cachedFilterKey = filterKey;
 
             return snapshot;
         }
@@ -68,6 +73,7 @@ namespace Rimconemy.ScavengerInfrastructure.Storage
             var snapshot = BuildSnapshot(scope, filter, tick);
             _cachedSnapshot = snapshot;
             _cachedTick = tick;
+            _cachedFilterKey = ComputeFilterKey(filter);
             return snapshot;
         }
 
@@ -76,9 +82,62 @@ namespace Rimconemy.ScavengerInfrastructure.Storage
         {
             _cachedSnapshot = null;
             _cachedTick = 0;
+            _cachedFilterKey = null;
         }
 
         // ── internal ─────────────────────────────────────────
+
+        /// <summary>
+        /// Builds a deterministic, collision-resistant string key from
+        /// the filter so the cache can distinguish snapshots built with
+        /// different filters. Null filter → "*" (pass-all).
+        /// Format: "W:<ids>|B:<ids>|A:<avail>|C:<cats>|PI:<bool>|GI:<bool>|SZ:<bool>"
+        /// </summary>
+        private static string ComputeFilterKey(ResourceFilter? filter)
+        {
+            if (filter == null) return "*";
+
+            var f = filter.Value;
+            var sb = new System.Text.StringBuilder();
+
+            sb.Append("W:");
+            if (f.WhitelistResourceIds != null && f.WhitelistResourceIds.Count > 0)
+            {
+                var sorted = new List<string>(f.WhitelistResourceIds);
+                sorted.Sort(StringComparer.Ordinal);
+                sb.Append(string.Join(",", sorted));
+            }
+
+            sb.Append("|B:");
+            if (f.BlacklistResourceIds != null && f.BlacklistResourceIds.Count > 0)
+            {
+                var sorted = new List<string>(f.BlacklistResourceIds);
+                sorted.Sort(StringComparer.Ordinal);
+                sb.Append(string.Join(",", sorted));
+            }
+
+            sb.Append("|A:");
+            sb.Append((int)f.MinAvailability);
+
+            sb.Append("|C:");
+            if (f.WhitelistCategories != null && f.WhitelistCategories.Count > 0)
+            {
+                var sorted = new List<string>(f.WhitelistCategories);
+                sorted.Sort(StringComparer.Ordinal);
+                sb.Append(string.Join(",", sorted));
+            }
+
+            sb.Append("|PI:");
+            sb.Append(f.IncludePawnInventory ? "1" : "0");
+
+            sb.Append("|GI:");
+            sb.Append(f.IncludeGroundItems ? "1" : "0");
+
+            sb.Append("|SZ:");
+            sb.Append(f.IncludeStorageZones ? "1" : "0");
+
+            return sb.ToString();
+        }
 
         private static StorageSnapshot BuildSnapshot(
             StorageScope scope,

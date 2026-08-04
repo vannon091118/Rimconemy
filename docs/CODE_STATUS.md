@@ -42,9 +42,10 @@
 - `CharacterSetup` setzt Alter 18/18, bietet das kostenbewusste Skillbudget 30 für zwölf Skills und weist Traits über den Budget-Balance-Pfad zu.
 - `Page_ConfigureStartingPawnsBioPatch` und `SkillBudgetWindow` sind vorhanden.
 - Sandbox-Szenario und `ScenPart_StartInSandbox` sind als Def-/C#-Vertrag vorhanden.
-- Bootstrap führt Bio-Remap-, Scenario-, Need- und Building-XP-Regressionstests aus; der XP-Adapter dedupliziert validierte Output-Keys, ist aber noch nicht an einen Live-Bau-Job-Hook angeschlossen.
+- Bootstrap führt Bio-Remap-, Scenario-, Need-, Building-XP- und SchemaBump-Regressionstests aus; der XP-Adapter dedupliziert validierte Output-Keys, ist aber noch nicht an einen Live-Bau-Job-Hook angeschlossen.
+- `CharacterSetupState` implementiert `ISchemaMigratable` (Foundation/Source/Save/) als First-Class-Domain für Save/Load-Schema-Migration. `MigrationStepWalker` + `MigrationRegistry` + `SchemaMigratableExtensions` sind gemeinsame Foundation-Orchestration. Phase-2.8-Beleg via `Tests/CharacterSetupStateSchemaBumpTests.RunAll()` (T1–T6) + `docs/falsification/survival__SaveMigration.md` (standalone Falsifizierungsbericht, 236 Z.). `StoryState` (05) und `CreditsLedger` (04) nutzen dasselbe Interface.
 
-**Nicht belegt:** vollständiger Research-Graph, vollständige Job-/Output-XP-Integration, persistenter Character-Setup-State als eigener Vertrag und interaktiver Save/Load-Live-Test.
+**Nicht belegt:** vollständiger Research-Graph, vollständige Job-/Output-XP-Integration, echter Save/Load-Roundtrip via Runtime-Game-Save-File, interaktiver Live-Test.
 
 ### 03 — Scavenger Infrastructure
 
@@ -69,6 +70,7 @@
 - `Market` besitzt deterministische lokale Preisberechnung, Orders, parallele Scribe-Listen und `marketSnapshot`-Save-Envelope.
 - `Outpost` besitzt eine State Machine (`Planned`, `Active`, `Blocked`, `Disconnected`, `Ruined`) und absolute Tick-Werte.
 - Economy-Bootstrap führt CreditsLedger-, Market-Persistence- und Building-Input-Regressionstests aus; physische Building-Inputs bleiben von Credits getrennt, Transfer/Booking ist für Meilenstein B offen.
+- `CreditsLedger` implementiert `ISchemaMigratable` (Foundation/Source/Save/) — Schema-Version via `Scribe_Values.Look`, Migration via `this.RunMigration()`, `Tests/CreditsLedgerSchemaBumpTests` mit T1–T6-Assertions.
 
 **Nicht belegt:** atomare physische Waren-/Wallet-Transaktionen, echter WorldObject-/Proxy-Graph, vollständige Weltkartenlogistik und interaktiver Save/Load-Live-Test.
 
@@ -80,6 +82,7 @@
 - `StoryState` persistiert Cooldowns, Selection-Seed, Snapshot-Hash, Idempotency-Keys und deren Ticks; Save/Load-Rebuild ist implementiert.
 - `StoryDirector` evaluiert standardmäßig täglich, liest Storage bei vorhandener Capability und queued das definierte Incident über RimWorlds Storyteller.
 - `InfectedRaidWorker` ist weiterhin ein Letter-/Incident-Pfad; der vollständige Infizierten-Raid-Spawn ist nicht belegt.
+- `StoryState` implementiert `ISchemaMigratable` (Foundation/Source/Save/) — Schema-Version via `Scribe_Values.Look`, Migration via `this.RunMigration()`, `Tests/StoryStateSchemaBumpTests` mit T1–T6-Assertions.
 - `MechadroidUnit`, Threat-/Automation-Record-Typen und Ideology-ResourceFairness-Adapter sind vorhanden.
 - Bootstrap führt StorySelector-, StoryState- und Building-Threat-Regressionstests aus; der Threat-Adapter ist bounded/deterministisch und erzeugt in A weder Incident noch Raid.
 

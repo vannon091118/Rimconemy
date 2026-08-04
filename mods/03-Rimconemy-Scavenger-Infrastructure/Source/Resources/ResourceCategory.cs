@@ -5,21 +5,23 @@ namespace Rimconemy.ScavengerInfrastructure.Resources
 {
     /// <summary>
     /// Owner: Scavenger Infrastructure.
-    /// Three primary resource categories. Both defName-pair (Def) and
+    /// Resource categories. Both defName-pair (Def) and
     /// runtime-stack (Game) handling happen through vanilla pipelines.
-    /// SPIKE: API-POWER-01 / API-PLANT-01 (1.6 ThingDef categories unknown).
+    /// 2026-08-04: Added SteelScraps for campfire → steel loop.
     /// </summary>
     public static class ResourceCategory
     {
         public const string ConstructionDebris = "Rimconemy.ConstructionDebris";
         public const string Hemp = "Rimconemy.Hemp";
         public const string Water = "Rimconemy.Water";
+        public const string SteelScraps = "Rimconemy.SteelScraps";
 
         public static readonly List<string> All = new List<string>
         {
             ConstructionDebris,
             Hemp,
             Water,
+            SteelScraps,
         };
 
         [StaticConstructorOnStartup]
@@ -27,7 +29,7 @@ namespace Rimconemy.ScavengerInfrastructure.Resources
         {
             static Register()
             {
-                Log.Message("[Rimconemy.ScavengerInfrastructure] Resources stub list compiled (ConstructionDebris / Hemp / Water).");
+                Log.Message("[Rimconemy.ScavengerInfrastructure] Resources stub list compiled (ConstructionDebris / Hemp / Water / SteelScraps).");
             }
         }
     }

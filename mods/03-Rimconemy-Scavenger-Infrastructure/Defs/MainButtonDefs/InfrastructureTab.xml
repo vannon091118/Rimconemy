@@ -6,7 +6,6 @@
     <description>Rimconemy infrastructure status: power, fuel, farms and turrets.</description>
     <tabWindowClass>Rimconemy.ScavengerInfrastructure.UI.InfrastructureDashboard</tabWindowClass>
     <order>56</order>
-    <showInInterface>false</showInInterface>
   </MainButtonDef>
 </Defs>
 

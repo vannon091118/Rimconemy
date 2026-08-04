@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using RimWorld;
+using Rimconemy.Foundation.Save;
 using Rimconemy.SurvivalProgression.Character;
 using Verse;
 
@@ -26,7 +27,7 @@ namespace Rimconemy.SurvivalProgression.Character
     ///
     /// Specification: docs/H5-character-setup-formula.md + H6 spike notes.
     /// </summary>
-    public sealed class CharacterSetupState : GameComponent, IExposable
+    public sealed class CharacterSetupState : GameComponent, IExposable, ISchemaMigratable
     {
         public const int CurrentSchemaVersion = 1;
 
@@ -126,21 +127,78 @@ namespace Rimconemy.SurvivalProgression.Character
             Scribe_Values.Look(ref Applied, "charSetupApplied", false);
             Scribe_Collections.Look(ref Records, "charSetupRecords", LookMode.Deep);
 
-            // Schema-migration scaffold: if the saved SchemaVersion is
-            // older, run a no-op migration path so the field is consistent
-            // with current SchemaVersion after Save/Load.
+            // Phase-2.8 (2026-08-04): Schema-migration is delegated to
+            // <see cref="MigrateIfNeeded"/>, the public entry point that the
+            // regression test exercises. ExposeData still drives the
+            // PostLoadInit trigger.
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 if (Records == null) Records = new Dictionary<int, PawnSetupRecord>();
+                MigrateIfNeeded();
             }
+        }
 
-            if (Scribe.mode == LoadSaveMode.PostLoadInit && SchemaVersion < CurrentSchemaVersion)
+        // ── ISchemaMigratable contract ────────────────────────
+
+        /// <summary>Owner-declared registry key. Stable, lowercase, package-prefixed.</summary>
+        public string ClassId => "rimconemy.survivalprogression.characterSetup";
+
+        /// <summary>
+        /// Explicit interface implementation: the type-level const
+        /// <see cref="CurrentSchemaVersion"/> stays accessible for tests
+        /// via <c>CharacterSetupState.CurrentSchemaVersion</c>, while the
+        /// <see cref="ISchemaMigratable.CurrentSchemaVersion"/> property is
+        /// satisfied for cross-package readers.
+        /// </summary>
+        int ISchemaMigratable.CurrentSchemaVersion => CurrentSchemaVersion;
+
+        /// <summary>
+        /// Explicit interface implementation: the public field
+        /// <see cref="SchemaVersion"/> keeps Scribe <c>ref</c> access
+        /// alive, while the interface property gates cross-package reads.
+        /// </summary>
+        int ISchemaMigratable.SchemaVersion
+        {
+            get => SchemaVersion;
+            set => SchemaVersion = value;
+        }
+
+        private List<SchemaStep> _cachedSteps;
+        public IList<SchemaStep> Steps
+        {
+            get
             {
-                Log.Message(
-                    "[Rimconemy.SurvivalProgression] CharacterSetupState migration: " +
-                    $"v{SchemaVersion} -> v{CurrentSchemaVersion} (no-op upgrade)");
-                SchemaVersion = CurrentSchemaVersion;
+                if (_cachedSteps != null) return _cachedSteps;
+                _cachedSteps = new List<SchemaStep>
+                {
+                    // v0 → v1: ensure Records dictionary is non-null.
+                    // v0 saves had no Records field; the loader would leave
+                    // Records as null. v1 introduces the scorecard.
+                    new SchemaStep(0, 1,
+                        "Initialize Records dictionary if missing (initial CharacterSetupState scorecard).",
+                        () => { if (Records == null) Records = new Dictionary<int, PawnSetupRecord>(); }),
+                };
+                return _cachedSteps;
             }
+        }
+
+        /// <summary>
+        /// Phase-2.8 (2026-08-04) refactored to first-class schema-migration
+        /// domain (Foundation/Source/Save/ISchemaMigratable, 2026-08-04).
+        ///
+        /// Owner-Constraint: Package 02 is SOLE-OWNER of
+        /// <see cref="CharacterSetupState"/>; no other package may migrate
+        /// this state.
+        ///
+        /// Canonical orchestration lives in
+        /// <see cref="SchemaMigratableExtensions.RunMigration"/>: it
+        /// self-registers with the central registry, delegates the walk to
+        /// <see cref="MigrationStepWalker"/>, and records the bump if a
+        /// schema change occurred. Idempotent.
+        /// </summary>
+        public void MigrateIfNeeded()
+        {
+            this.RunMigration();
         }
     }
 

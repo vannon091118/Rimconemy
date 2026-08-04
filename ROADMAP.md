@@ -409,13 +409,13 @@ Arbeit stoppt vor der nächsten Phase, wenn:
 
 Ohne `SURVIVED`-Berichte mit A–G-Belegen gilt keine Übergabe:
 
-- Foundation (1): `Servicebus`
-- Survival (4): `Needs`, `WorkXp`, `Research`, `GameOver`
+- Foundation (2): `Servicebus`, `BootstrapLogDedup`
+- Survival (5): `Needs`, `WorkXp`, `Research`, `GameOver`, `SaveMigration`
 - Scavenger (5): `ConstructionDebris`, `FoodAndHemp`, `WaterPowerArrowTurret`, `ExecutePhysicalTransfer`, `ReservePhysicalTransfer`
 - Economy (5): `WalletCredits`, `Market`, `ReservePhysicalTransfer`, `OutpostProduction`, `TerritoryCountdown`
 - Infected (5): `ThreatPressure`, `InfectedRaid`, `MechadroidJob`, `ManualRaid`, `AutoResolve`
 
-**Status 2026-08-04:** 20 Bericht-Templates unter `docs/falsification/` angelegt (Indikator: `README.md` + 20 `*.md`-Dateien). Lifecycle-Schritte `A/B/C` aus dem Code ableitbar (`COMPILED`); `D/E/F/G` benötigen Live-Test.
+**Status 2026-08-04:** 24 Bericht-Dateien unter `docs/falsification/` (22 Domain-Berichte + `status-vs-code-audit-2026-08-04.md` + `README.md`). Lifecycle-Schritte `A/B/C` aus dem Code ableitbar (`COMPILED`); `D/E/F/G` benötigen Live-Test. `foundation__BootstrapLogDedup.md` (ProfileDetector-Dedup) und `survival__SaveMigration.md` (236 Z., 7-Sektion-Layout) sind die zwei neuesten Berichte; letzterer dokumentiert die Schema-Migration als First-Class-Domain via `ISchemaMigratable` (4 Migratoren, Walker, Registry, Extension).
 
 **Aktionsanleitung:** `./scripts/runtime_test.sh --require-scenario-tests` startet die Beleg-Sammlung. Logs in Block D, Save-Roundtrip in Block E, Cross-Read in Block F, Perf in Block G eintragen — Status wandert von `COMPILED` → `LOADED` → `OBSERVED` → `SURVIVED`.
 

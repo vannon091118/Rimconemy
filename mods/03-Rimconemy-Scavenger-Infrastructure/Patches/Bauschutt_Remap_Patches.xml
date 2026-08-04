@@ -2,9 +2,43 @@
 <!--
   Owner: Scavenger Infrastructure (Package 03)
   Task 3.2: Bauschutt Wall/Door Remap & Debris Recycling Patches.
+  Task 3.11: Remove Woody from Wall/Door stuffCategories.
   Target RimWorld 1.6.4566.
+
+  Design Decision (2026-08-04):
+  In the Rimconemy survival loop, wood is NOT a building material for walls/doors.
+  Walls require either:
+    - Stony (ConstructionDebris / Bauschutt) — scavenged rubble
+    - Metallic (Steel) — reclaimed from steel scraps via campfire
+  This forces the player into the scavenging loop: ruins → scraps → campfire → steel → walls.
 -->
 <Patch>
+  <!-- ═══════════════════════════════════════════════════════════════
+       PART 1: REMOVE WOODY FROM WALL/DOOR STUFF CATEGORIES
+       Rimconemy does not allow wood walls. Wood stays as fuel only.
+       ═══════════════════════════════════════════════════════════════ -->
+
+  <!-- Remove Woody from Wall if it exists in the list -->
+  <Operation Class="PatchOperationConditional">
+    <xpath>Defs/ThingDef[defName="Wall"]/stuffCategories/li[text()="Woody"]</xpath>
+    <match Class="PatchOperationRemove">
+      <xpath>Defs/ThingDef[defName="Wall"]/stuffCategories/li[text()="Woody"]</xpath>
+    </match>
+  </Operation>
+
+  <!-- Remove Woody from Door if it exists in the list -->
+  <Operation Class="PatchOperationConditional">
+    <xpath>Defs/ThingDef[defName="Door"]/stuffCategories/li[text()="Woody"]</xpath>
+    <match Class="PatchOperationRemove">
+      <xpath>Defs/ThingDef[defName="Door"]/stuffCategories/li[text()="Woody"]</xpath>
+    </match>
+  </Operation>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PART 2: ADD STONY TO WALL/DOOR (existing patches)
+       Walls/Doors accept Stony (Bauschutt/ConstructionDebris) material.
+       ═══════════════════════════════════════════════════════════════ -->
+
   <!-- Add Stony to an existing Wall category only when it is not already present. -->
   <Operation Class="PatchOperationConditional">
     <xpath>Defs/ThingDef[defName="Wall"]/stuffCategories[not(li[text()="Stony"])]</xpath>
@@ -22,7 +56,6 @@
       <value>
         <stuffCategories>
           <li>Stony</li>
-          <li>Woody</li>
           <li>Metallic</li>
         </stuffCategories>
       </value>
@@ -46,7 +79,6 @@
       <value>
         <stuffCategories>
           <li>Stony</li>
-          <li>Woody</li>
           <li>Metallic</li>
         </stuffCategories>
       </value>

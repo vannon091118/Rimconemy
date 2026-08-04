@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure
+  Stable defName: Rimconemy_BurnSteelScraps
+  DLC condition: none
+  Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> Scavenger -> later packages
+  Vanilla anchor: RecipeDef (smithing/burning).
+
+  Gameplay: Burns 3 steel scraps to produce 2 usable steel. The 33% material loss
+  represents the impurity of scavenged scraps. The campfire is the only building
+  that can perform this recipe.
+
+  1.6-Fixes: Empty researchPrerequisite tag removed (causes parse error in 1.6).
+-->
+<Defs>
+  <RecipeDef>
+    <defName>Rimconemy_BurnSteelScraps</defName>
+    <label>burn steel scraps</label>
+    <description>Burn down steel scraps in the fire to reclaim usable steel. Not all material survives the process — impurities burn away, yielding roughly two thirds.</description>
+    <jobString>Burning steel scraps</jobString>
+    <workerClass>WorkGiver_DoBill</workerClass>
+    <workAmount>400</workAmount>
+    <ingredients>
+      <li>
+        <filter>
+          <thingDefs>
+            <li>Rimconemy_SteelScraps</li>
+          </thingDefs>
+        </filter>
+        <count>3</count>
+      </li>
+    </ingredients>
+    <fixedIngredientFilter>
+      <thingDefs>
+        <li>Rimconemy_SteelScraps</li>
+      </thingDefs>
+    </fixedIngredientFilter>
+    <products>
+      <Steel>2</Steel>
+    </products>
+    <recipeUsers>
+      <li>Rimconemy_Campfire</li>
+    </recipeUsers>
+    <defaultIngredientCount>3</defaultIngredientCount>
+  </RecipeDef>
+</Defs>

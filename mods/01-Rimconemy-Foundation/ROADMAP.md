@@ -114,6 +114,7 @@ Nicht installierte Domänen liefern den Status `Unavailable`, nicht erfundene Nu
 - den verbindlichen Foundation-Fall aus `../../docs/SAVE_CONTRACT.md` testen: altes Profil ohne Capability-Snapshot wird als `Migrated` neu erkannt, ohne Feature-Daten zu erzeugen.
 - Laden bei nicht migrierbaren Daten kontrolliert ablehnen oder das betroffene System einfrieren.
 - Niemals persistente Feature-Daten still löschen.
+- **Phase-2.8 (2026-08-04):** `ISchemaMigratable`-Interface in `Source/Save/` als First-Class-Domain extrahiert — `SchemaStep`, `MigrationStepWalker` (Exception-propagierend, kein try/catch), `MigrationRegistry` (zentral, string-keyed, idempotent Register, Clear am Save-Start), `SchemaMigratableExtensions.RunMigration` (DRY). `FoundationSaveData` implementiert das Interface mit Foundation-spezifischen Side-Effects (`WasMigrated`, `MigrationDetail`, `EventLog.Record`). `ScribeRoundTripHelper` in `Tests/` ermöglicht echten Scribe-Save→Load-PostLoadInit-Cycle via MemoryStream.
 
 **Gate:** Testsave mit fehlendem Paket erzeugt eine klare Warnung und keine Phantomdaten.
 

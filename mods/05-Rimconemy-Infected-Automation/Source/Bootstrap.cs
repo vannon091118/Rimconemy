@@ -40,6 +40,7 @@ namespace Rimconemy.InfectedAutomation
             // Run self-tests at startup (determinism, idempotency, profiles, RNG)
             Tests.StorySelectorTests.RunAll();
             Tests.StoryStateRegressionTests.RunAll();
+            Tests.StoryStateSchemaBumpTests.RunAll();
             Tests.BuildingThreatRegressionTests.RunAll();
             Tests.MechadroidJobRegressionTests.RunAll();
             // P2/H3 §2 (Setting Rule CollectiveDefense): regression for ThoughtDef

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Rimconemy.Foundation.Save;
 using UnityEngine;
 using Verse;
 
@@ -27,12 +28,18 @@ namespace Rimconemy.EconomyTerritory.Wallet
     ///   - RecomputeBalance() now sums only the recorded (possibly partial)
     ///     ActualAmount so balance and history never diverge.
     /// </summary>
-    public sealed class CreditsLedger : IExposable
+    public sealed class CreditsLedger : IExposable, ISchemaMigratable
     {
+        /// <summary>Current schema version for migration.</summary>
+        public const int CurrentSchemaVersion = 1;
+
         public const string CurrencyId = "credits";
         public const string LogMarker = "v1";
         public const long MaxBalance = 1_000_000_000;
         public const int MaxHistoryRetained = 256;
+
+        /// <summary>SchemaVersion für Save/Load-Migration. Default 0 für Legacy-Saves.</summary>
+        public int SchemaVersion;
 
         public string WalletId;
         public string OwnerId;
@@ -65,6 +72,7 @@ namespace Rimconemy.EconomyTerritory.Wallet
 
         public CreditsLedger()
         {
+            SchemaVersion = CurrentSchemaVersion;
             _historyCompletenessKnown = true;
         }
 
@@ -73,6 +81,7 @@ namespace Rimconemy.EconomyTerritory.Wallet
 
         public void ExposeData()
         {
+            Scribe_Values.Look(ref SchemaVersion, "creditsLedgerSchema", 0);
             Scribe_Values.Look(ref WalletId, "walletId", "");
             Scribe_Values.Look(ref OwnerId, "ownerId", "");
             Scribe_Values.Look(ref Balance, "balance", 0L);
@@ -158,6 +167,70 @@ namespace Rimconemy.EconomyTerritory.Wallet
                 _idempotencyTxIds = new Dictionary<string, long>();
             if (_idempotencyInsertionOrder == null)
                 _idempotencyInsertionOrder = new List<string>();
+
+            // Phase-2.8-Pattern (2026-08-04): Schema-Migration
+            if (Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                MigrateIfNeeded();
+            }
+        }
+
+        // ── ISchemaMigratable contract ────────────────────────
+
+        /// <summary>Owner-declared registry key. Stable, lowercase, package-prefixed.</summary>
+        public string ClassId => "rimconemy.economyterritory.creditsLedger";
+
+        /// <summary>
+        /// Explicit interface implementation: the type-level const
+        /// <see cref="CurrentSchemaVersion"/> stays accessible to tests
+        /// via <c>CreditsLedger.CurrentSchemaVersion</c>; the interface
+        /// property satisfies cross-package readers.
+        /// </summary>
+        int ISchemaMigratable.CurrentSchemaVersion => CurrentSchemaVersion;
+
+        /// <summary>
+        /// Explicit interface implementation: the public field
+        /// <see cref="SchemaVersion"/> keeps the Scribe <c>ref</c> path
+        /// (called as <c>Scribe_Values.Look(ref SchemaVersion, ...)</c>)
+        /// alive; the interface property gates cross-package reads.
+        /// </summary>
+        int ISchemaMigratable.SchemaVersion
+        {
+            get => SchemaVersion;
+            set => SchemaVersion = value;
+        }
+
+        private List<SchemaStep> _cachedSteps;
+        public IList<SchemaStep> Steps
+        {
+            get
+            {
+                if (_cachedSteps != null) return _cachedSteps;
+                _cachedSteps = new List<SchemaStep>
+                {
+                    // v0 → v1: metadata-only bump. The idempotency-key
+                    // rebuild from legacy Transactions (without a
+                    // persisted idempotency-list) is handled in
+                    // ExposeData's PostLoadInit branch — that path is
+                    // orthogonal to schema version semantics.
+                    new SchemaStep(0, 1,
+                        "Initial schema (metadata-only bump; legacy idempotency-key rebuild is handled in PostLoadInit).",
+                        () => { /* no-op: legacy-key rebuild lives in ExposeData */ }),
+                };
+                return _cachedSteps;
+            }
+        }
+
+        /// <summary>
+        /// First-class schema-migration domain entry point. Canonical
+        /// orchestration via <see cref="SchemaMigratableExtensions.RunMigration"/>:
+        /// self-register → walk → record. Owner-Constraint: Package 04 is
+        /// SOLE-OWNER of <see cref="CreditsLedger"/>; no other package may
+        /// migrate this state. Idempotent.
+        /// </summary>
+        public void MigrateIfNeeded()
+        {
+            this.RunMigration();
         }
 
         /// <summary>

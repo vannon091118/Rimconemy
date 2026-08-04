@@ -20,6 +20,7 @@ namespace Rimconemy.EconomyTerritory.Building
                 "WoodLog",
                 "Chemfuel",
                 "Steel",
+                "Rimconemy_SteelScraps",
             };
 
         private static readonly HashSet<string> CreditInputs
@@ -37,6 +38,7 @@ namespace Rimconemy.EconomyTerritory.Building
                 { "Rimconemy_WaterTurbineGenerator", 40 },
                 { "Rimconemy_TurbineWaterPump", 20 },
                 { "Rimconemy_ArrowTurret_Power", 25 },
+                { "Rimconemy_Campfire", 10 },
             };
 
         public static bool IsPhysicalInput(string defName)

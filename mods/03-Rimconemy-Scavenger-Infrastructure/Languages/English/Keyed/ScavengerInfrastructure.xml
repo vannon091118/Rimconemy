@@ -18,4 +18,13 @@
   <Rimconemy.Scavenger.BlockReason.NoFuel>No fuel loaded.</Rimconemy.Scavenger.BlockReason.NoFuel>
   <Rimconemy.Scavenger.BlockReason.NoWater>No distilled water stored.</Rimconemy.Scavenger.BlockReason.NoWater>
   <Rimconemy.Scavenger.BlockReason.NoPower>No power routed.</Rimconemy.Scavenger.BlockReason.NoPower>
+
+  <!-- Campfire & Scraps -->
+  <Rimconemy.Scavenger.Campfire>scrap campfire</Rimconemy.Scavenger.Campfire>
+  <Rimconemy.Scavenger.Campfire.Desc>Burns steel scraps to reclaim usable steel.</Rimconemy.Scavenger.Campfire.Desc>
+  <Rimconemy.Scavenger.SteelScraps>steel scraps</Rimconemy.Scavenger.SteelScraps>
+  <Rimconemy.Scavenger.SteelScraps.Desc>Mangled remnants of pre-collapse steel structures.</Rimconemy.Scavenger.SteelScraps.Desc>
+  <Rimconemy.Scavenger.BurnSteelScraps>burn steel scraps</Rimconemy.Scavenger.BurnSteelScraps>
+  <Rimconemy.Scavenger.BurnSteelScraps.Desc>Burn down steel scraps in the fire to reclaim usable steel.</Rimconemy.Scavenger.BurnSteelScraps.Desc>
+  <Rimconemy.Scavenger.WoodRemoved>No wood walls — use scavenged debris or reclaimed steel.</Rimconemy.Scavenger.WoodRemoved>
 </LanguageData>

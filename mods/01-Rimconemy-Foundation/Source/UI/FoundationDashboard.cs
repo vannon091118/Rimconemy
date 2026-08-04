@@ -355,7 +355,7 @@ namespace Rimconemy.Foundation.UI
             if (saveData != null)
             {
                 Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
-                    $"{T("RimconemyFoundation.Save.Schema")}: v{saveData.LoadedSchemaVersion} " +
+                    $"{T("RimconemyFoundation.Save.Schema")}: v{saveData.SchemaVersion} " +
                     $"({T("RimconemyFoundation.Save.Current")}: v{FoundationSaveData.CurrentSchemaVersion})");
                 y += 20f;
 

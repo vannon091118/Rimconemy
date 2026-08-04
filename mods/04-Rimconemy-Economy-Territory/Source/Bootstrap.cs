@@ -29,6 +29,7 @@ namespace Rimconemy.EconomyTerritory
             var _nodes = Territory.TerritoryNode.LogMarker;
             Log.Message($"[Rimconemy.EconomyTerritory] Domain stubs ready: wallet={_walletId}, market={_marketCount}, outposts={_outposts}, territory={_nodes}");
             Tests.CreditsLedgerRegressionTests.RunAll();
+            Tests.CreditsLedgerSchemaBumpTests.RunAll();
             Tests.MarketPersistenceTests.RunAll();
             Tests.BuildingInputRegressionTests.RunAll();
             Tests.PhysicalTransferRegressionTests.RunAll();

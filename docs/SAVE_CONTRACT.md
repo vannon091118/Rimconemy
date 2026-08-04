@@ -20,15 +20,19 @@ Jede modifizierte oder erstellte Datenstruktur muss genau eine der drei definier
 
 ## 2. Schema-Versionierung per Paket
 
-Jedes Paket, das ein `GameComponent` oder `WorldObjectComp` besitzt, verwaltet eine eigene `CurrentSchemaVersion`:
+Alle Pakete mit persistierbaren Zuständen implementieren das `ISchemaMigratable`-Interface
+(`Foundation/Source/Save/ISchemaMigratable.cs`) als First-Class-Domain für Schema-Migration.
+Die zentrale `MigrationRegistry` (string-keyed, idempotent Register) + `MigrationStepWalker`
+(Exception-propagierend, kein try/catch) + `SchemaMigratableExtensions.RunMigration` (DRY)
+ersetzen die früheren Open-Coded-if/else-Cascades.
 
-| Paket | Host-Klasse | Schema-Feld | Current | Migration Trigger |
+| Paket | Host-Klasse | Implementiert `ISchemaMigratable` | Current | Migration Trigger |
 |---|---|---|---|---|
-| `01 Foundation` | `FoundationSaveData` | `foundationSchemaVersion` | `1` | `LoadedSchemaVersion < CurrentSchemaVersion` |
-| `02 Survival` | `ProgressionGameComponent` | `progressionSchemaVersion` | `1` | `SchemaVersion < CurrentSchemaVersion` |
-| `03 Scavenger` | `StorageSnapshot` (via State) | `storageSchemaVersion` | `1` | Sub-Envelope Check |
-| `04 Economy` | `CreditsLedger` | `ledgerSchemaVersion` | `1` | `_historyCompletenessKnown` Flag |
-| `05 Infected` | `StoryState` | `storyStateSchema` | `1` | `SchemaVersion < CurrentSchemaVersion` |
+| `01 Foundation` | `FoundationSaveData` | ✅ (custom `MigrateIfNeeded` mit Foundation-Side-Effects) | `1` | `Scribe.mode == LoadingVars && SchemaVersion < CurrentSchemaVersion` |
+| `02 Survival` | `CharacterSetupState` | ✅ (`this.RunMigration()`) | `1` | `ExposeData` PostLoadInit-Branch |
+| `03 Scavenger` | `StorageSnapshot` (via State) | ⬜ (noch nicht migriert) | `1` | Sub-Envelope Check |
+| `04 Economy` | `CreditsLedger` | ✅ (`this.RunMigration()`) | `1` | `ExposeData` PostLoadInit-Branch |
+| `05 Infected` | `StoryState` | ✅ (`this.RunMigration()`) | `1` | `ExposeData` PostLoadInit-Branch |
 
 ---
 

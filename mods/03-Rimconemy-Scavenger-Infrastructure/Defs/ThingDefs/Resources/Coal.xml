@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure
+  Stable defName: Rimconemy_Coal
+  DLC condition: none
+  Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> Scavenger -> later packages
+  Vanilla anchor: ThingDef (basic resource, ParentName=ResourceBase).
+  1.6-Fixes: Graphic_Stacked -> Graphic_StackCount; mass authored.
+
+  Gameplay: Coal is produced from wood and hemp at the campfire.
+  It burns hotter and longer than raw wood, making it superior generator fuel.
+-->
+<Defs>
+  <ThingDef ParentName="ResourceBase">
+    <defName>Rimconemy_Coal</defName>
+    <label>coal</label>
+    <description>Carbon-rich fuel produced by pyrolysing wood and hemp fibre in a campfire. Burns significantly hotter and longer than raw wood, making it the preferred fuel for generators.</description>
+    <graphicData>
+      <texPath>Things/Item/Resource/Steel</texPath>
+      <graphicClass>Graphic_StackCount</graphicClass>
+      <drawSize>0.9</drawSize>
+      <color>(40,40,40)</color>
+    </graphicData>
+    <statBases>
+      <MaxHitPoints>80</MaxHitPoints>
+      <Mass>0.5</Mass>
+      <MarketValue>6.0</MarketValue>
+      <Flammability>1.0</Flammability>
+    </statBases>
+    <thingCategories>
+      <li>Rimconemy_GeneratorInputs</li>
+    </thingCategories>
+    <stackLimit>200</stackLimit>
+    <drawGUIOverlay>true</drawGUIOverlay>
+  </ThingDef>
+</Defs>

@@ -74,8 +74,8 @@ Rimconemy ist in **5 unabhängige Pakete** aufgeteilt. Jedes Paket kann einzeln 
 <tr>
 <td><code>02</code></td>
 <td><strong>🛡️ Survival &amp; Progression</strong></td>
-<td>Bedürfnisse, Charakter-Setup, Arbeitserfahrung, Forschungspfad, Game-Over-Erkennung</td>
-<td>✅ BOOT · Gates offen</td>
+<td>Bedürfnisse, Charakter-Setup, Arbeitserfahrung, Forschungspfad, Save-Migration, Game-Over-Erkennung</td>
+<td>✅ BOOT · Save-Migration first-class</td>
 </tr>
 <tr>
 <td><code>03</code></td>
@@ -131,7 +131,9 @@ Das **Rimconemy Hub-Fenster** ersetzt die 5 separaten Bottom-Bar-Buttons durch *
 | Story-Director (Dev-Mode) | ✅ manueller Trigger via Dev-Button |
 | Ideologie-Regeln (H3) | ✅ CollectiveDefense + Transparency fertig |
 | Character-Setup-State | ✅ code-fertig |
-| Save/Load-Roundtrip | 🔄 offen |
+| ISchemaMigratable First-Class-Domain | ✅ 4 Migratoren + Walker + Registry |
+| Save/Load-Roundtrip (Logic-Tests) | ✅ T1–T6 in 3 Paketen |
+| Save/Load-Roundtrip (Runtime-Save-File) | 🔄 offen |
 | vollständige Gameplay-Loops | ⬜ in Arbeit |
 | Raid-Auflösung live | ⬜ in Arbeit |
 

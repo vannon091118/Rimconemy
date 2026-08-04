@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Owner: Scavenger Infrastructure
-  Stable defNames: Rimconemy_IndustrialCrops, Rimconemy_StapleCrops, Rimconemy_GeneratorInputs, Rimconemy_PowerProduction, Rimconemy_SecurityTurrets
+  Stable defNames: Rimconemy_IndustrialCrops, Rimconemy_StapleCrops, Rimconemy_GeneratorInputs, Rimconemy_PowerProduction, Rimconemy_SecurityTurrets, Rimconemy_Scraps
   Vanilla 1.6 parent: BuildingsSecurity (SecurityTurrets is not a Core ThingCategoryDef).
+  2026-08-04: Added Rimconemy_Scraps for steel scraps (burned in campfire → steel).
 -->
 <Defs>
   <ThingCategoryDef>
@@ -29,5 +30,15 @@
     <defName>Rimconemy_SecurityTurrets</defName>
     <label>Rimconemy security turrets</label>
     <parent>BuildingsSecurity</parent>
+  </ThingCategoryDef>
+  <ThingCategoryDef>
+    <defName>Rimconemy_Scraps</defName>
+    <label>Rimconemy scraps</label>
+    <parent>ResourcesRaw</parent>
+  </ThingCategoryDef>
+  <ThingCategoryDef>
+    <defName>Rimconemy_CraftingStations</defName>
+    <label>Rimconemy crafting stations</label>
+    <parent>Buildings</parent>
   </ThingCategoryDef>
 </Defs>

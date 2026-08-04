@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure
+  Stable defName: Rimconemy_MakeCoal
+  DLC condition: none
+  Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> Scavenger -> later packages
+  Vanilla anchor: RecipeDef (smithing/burning).
+
+  Gameplay: Pyrolyses 3 wood logs and 2 hemp leaves into 4 coal at the campfire.
+  This is the first step in the coal chain: wood + hemp -> coal -> better generator fuel.
+  Coal burns ~1.5x longer than raw wood in generators.
+-->
+<Defs>
+  <RecipeDef>
+    <defName>Rimconemy_MakeCoal</defName>
+    <label>make coal</label>
+    <description>Pyrolyse wood and hemp fibre in the campfire to produce coal. The controlled burn drives off volatiles and concentrates carbon, yielding a denser, hotter-burning fuel.</description>
+    <jobString>Making coal</jobString>
+    <workerClass>WorkGiver_DoBill</workerClass>
+    <workAmount>500</workAmount>
+    <ingredients>
+      <li>
+        <filter>
+          <thingDefs>
+            <li>WoodLog</li>
+          </thingDefs>
+        </filter>
+        <count>3</count>
+      </li>
+      <li>
+        <filter>
+          <thingDefs>
+            <li>Rimconemy_HempLeafy</li>
+          </thingDefs>
+        </filter>
+        <count>2</count>
+      </li>
+    </ingredients>
+    <fixedIngredientFilter>
+      <thingDefs>
+        <li>WoodLog</li>
+        <li>Rimconemy_HempLeafy</li>
+      </thingDefs>
+    </fixedIngredientFilter>
+    <products>
+      <Rimconemy_Coal>4</Rimconemy_Coal>
+    </products>
+    <recipeUsers>
+      <li>Rimconemy_Campfire</li>
+    </recipeUsers>
+    <defaultIngredientCount>3</defaultIngredientCount>
+  </RecipeDef>
+</Defs>
