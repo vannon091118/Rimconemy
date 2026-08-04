@@ -415,6 +415,10 @@ Ohne `SURVIVED`-Berichte mit A–G-Belegen gilt keine Übergabe:
 - Economy (5): `WalletCredits`, `Market`, `ReservePhysicalTransfer`, `OutpostProduction`, `TerritoryCountdown`
 - Infected (5): `ThreatPressure`, `InfectedRaid`, `MechadroidJob`, `ManualRaid`, `AutoResolve`
 
+**Status 2026-08-04:** 20 Bericht-Templates unter `docs/falsification/` angelegt (Indikator: `README.md` + 20 `*.md`-Dateien). Lifecycle-Schritte `A/B/C` aus dem Code ableitbar (`COMPILED`); `D/E/F/G` benötigen Live-Test.
+
+**Aktionsanleitung:** `./scripts/runtime_test.sh --require-scenario-tests` startet die Beleg-Sammlung. Logs in Block D, Save-Roundtrip in Block E, Cross-Read in Block F, Perf in Block G eintragen — Status wandert von `COMPILED` → `LOADED` → `OBSERVED` → `SURVIVED`.
+
 ### 8.3 Phase 1/2 — Story Writer + Setting-Ideologie (offen)
 
 - Runtime-Beleg: Spielstart-/Def-Load-/Save-Load-/Letter-Beleg für StoryDirector → StorySelector → StoryState.
