@@ -48,6 +48,8 @@ namespace Rimconemy.ScavengerInfrastructure
             Tests.ArrowTurretBlockTests.RunAll();
             // Phase-3.11 (2026-08-04): Campfire/Scraps loop + Woody removal.
             Tests.CampfireScrapsRegressionTests.RunAll();
+            // P0 Coal Chain (2026-08-04): MakeCoal, SalvageMachineParts, Generator 0.67, CraftingStations.
+            Tests.CoalChainRegressionTests.RunAll();
         }
     }
 }

@@ -312,6 +312,10 @@ runtime_gates() {
     'Outpost investment regression tests: [0-9]+ passed, 0 failed'
     'Building threat regression tests: [0-9]+ passed, 0 failed'
     'Mechadroid job regression tests: [0-9]+ passed, 0 failed'
+    'CampfireScraps regression tests: [0-9]+ passed, 0 failed'
+    'BauschuttRemapApply tests: [0-9]+ passed, 0 failed'
+    'ArrowTurretBlock tests: [0-9]+ passed, 0 failed'
+    'CoalChain regression tests: [0-9]+ passed, 0 failed'
   )
   local summary
   for summary in "${required_summaries[@]}"; do

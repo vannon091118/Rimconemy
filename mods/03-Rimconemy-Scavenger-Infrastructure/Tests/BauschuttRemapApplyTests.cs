@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rimconemy.ScavengerInfrastructure.Building;
@@ -15,7 +16,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
     /// Tests sind map-frei: sie füttern eine synthetische <see cref="BauschuttRemapApply.ApplyInput"/>
     /// in <see cref="BauschuttRemapApply.ApplyRemapCore"/> und verifizieren
     /// das <see cref="BauschuttRemapApply.ApplyResult"/> deterministisch.
-    /// Vanilla-Mutation (GenPlace.TryPlaceBlueprint) wird NICHT ausgeführt;
+    /// Vanilla-Mutation (GenConstruct.PlaceBlueprintForBuild) wird NICHT ausgeführt;
     /// die Tests verifizieren die Logik-Schicht + Placement-Count
     /// (über <see cref="BauschuttRemapApply.BlueprintPlacerOverride"/>).
     ///
@@ -95,7 +96,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 {
                     TargetMap = null,
                     BauschuttAvailable = 0,
-                    BauschuttStuffDefName = "Rimconemy_Bauschutt",
+                    BauschuttStuffDefName = "Rimconemy_ConstructionDebris",
                     BuilderFaction = null,
                 };
                 var result = BauschuttRemapApply.ApplyRemapCore(input);
@@ -117,7 +118,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 {
                     TargetMap = null,
                     BauschuttAvailable = 10,
-                    BauschuttStuffDefName = "Rimconemy_Bauschutt",
+                    BauschuttStuffDefName = "Rimconemy_ConstructionDebris",
                     BuilderFaction = null,
                 };
                 var result = BauschuttRemapApply.ApplyRemapCore(input);
@@ -139,7 +140,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 {
                     TargetMap = null,
                     BauschuttAvailable = 0,
-                    BauschuttStuffDefName = "Rimconemy_Bauschutt",
+                    BauschuttStuffDefName = "Rimconemy_ConstructionDebris",
                     BuilderFaction = null,
                 };
                 var result = BauschuttRemapApply.ApplyRemapCore(input);
@@ -160,7 +161,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 {
                     TargetMap = null,
                     BauschuttAvailable = -5,
-                    BauschuttStuffDefName = "Rimconemy_Bauschutt",
+                    BauschuttStuffDefName = "Rimconemy_ConstructionDebris",
                     BuilderFaction = null,
                 };
                 var result = BauschuttRemapApply.ApplyRemapCore(input);
@@ -201,8 +202,8 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
         //   - WallSlotPredicateOverride: immer true
         //   - WallDefResolver: Fake-WallDef (umgeht DefDatabase)
         //   - StuffDefResolver: Fake-Stuff-Def (umgeht DefDatabase)
-        //   - FactionOverride: konstante Faction (umgeht Faction.OfPlayer)
-        //   - BlueprintPlacerOverride: liefert nicht-null Blueprint-Stub
+        //   - FactionOverride: null-safe test owner (no active Game required)
+        //   - BlueprintPlacerOverride: meldet erfolgreiches Placement
         //   - PlaceAttempts: Counter-Reset und Verifikation
         public static bool TestTenBauschuttPlacedTenBlueprints()
         {
@@ -224,34 +225,14 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 BauschuttRemapApply.StuffDefResolver = (name) =>
                     new ThingDef { defName = name };
 
-                // Deterministische Faction (umgeht Faction.OfPlayer)
-                BauschuttRemapApply.FactionOverride = () => Faction.OfPlayer
-                    ?? new Faction { Name = "TEST_Faction" };
+                // The placement seam does not need a live faction. Keep the
+                // bootstrap test independent from Faction.OfPlayer/Game state.
+                BauschuttRemapApply.FactionOverride = () => null;
 
-                // Blueprint-Placer Override: liefert nicht-null Test-Stub.
-                // ACHTUNG: stubBlueprint ist ein TEST-ONLY Null-Stub — er wird
-                // NUR in Test-Code konstruiert, niemals in Production-Pfaden
-                // (BlueprintPlacerOverride defaultet immer auf GenPlace.TryPlaceBlueprint).
-                // Wenn die parameterlose Konstruktion scheitert, fällt T7 auf
-                // PlaceAttempts-assertion zurück, statt stillschweigend null
-                // zu produzieren.
-                Blueprint stubBlueprint = null;
-                bool stubOk = true;
-                try
-                {
-                    stubBlueprint = new Blueprint();
-                    stubBlueprint.def = new ThingDef { defName = "TEST_Bauschutt_Stub" };
-                }
-                catch (Exception stubEx)
-                {
-                    stubOk = false;
-                    Log.Warning(
-                        "[Rimconemy.ScavengerInfrastructure] T7 stub-build failed: " +
-                        stubEx.GetType().Name + ": " + stubEx.Message);
-                }
+                // Blueprint-Placer Override: meldet einen erfolgreichen
+                // Vanilla-Placement-Versuch, ohne ein abstraktes Blueprint zu instanziieren.
                 BauschuttRemapApply.BlueprintPlacerOverride =
-                    (def, cell, map, rot, fac, stuff) =>
-                        stubOk ? stubBlueprint : null;
+                    (def, cell, map, rot, fac, stuff) => true;
 
                 // Eingabe: Map=null durch Seams kompensiert, Bauschutt=10
                 var input = new BauschuttRemapApply.ApplyInput
@@ -267,13 +248,9 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 // Erwartung: 10 Attempt-Inkrements, 10 WallsPlaced, kein Block
                 int attempts = BauschuttRemapApply.PlaceAttempts;
 
-                // Wenn der Stub-Build scheitert, fallback auf PlaceAttempts-Counter
-                // (das beweist trotzdem dass die Pipeline korrekt durchlaufen wurde).
-                bool ok = (stubOk
-                    ? (attempts == 10
-                        && result.WallsPlaced == 10
-                        && result.BauschuttConsumed == 10)
-                    : (attempts == 10 && result.ReasonBlocked == null))
+                bool ok = attempts == 10
+                    && result.WallsPlaced == 10
+                    && result.BauschuttConsumed == 10
                     && result.ReasonBlocked == null
                     && result.PlacedAt != null
                     && result.PlacedAt.Count == 10;
@@ -284,8 +261,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                         "[Rimconemy.ScavengerInfrastructure] T7 detail: attempts=" + attempts +
                         ", WallsPlaced=" + result.WallsPlaced +
                         ", BauschuttConsumed=" + result.BauschuttConsumed +
-                        ", ReasonBlocked=" + (result.ReasonBlocked ?? "<null>") +
-                        ", stubOk=" + stubOk);
+                        ", ReasonBlocked=" + (result.ReasonBlocked ?? "<null>"));
                 }
 
                 return ok;

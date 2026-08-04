@@ -73,7 +73,7 @@ namespace Rimconemy.SurvivalProgression.Needs
         {
             if (float.IsNaN(sample) || float.IsInfinity(sample)) return 1.0f;
             float clamped = Mathf.Clamp01(sample);
-            if (clampled <= NeutralSample)
+            if (clamped <= NeutralSample)
             {
                 // sample in [0, 0.5] → multiplier in [1.0, 1.4]
                 float t = clamped / NeutralSample; // 0..1
@@ -82,7 +82,7 @@ namespace Rimconemy.SurvivalProgression.Needs
             else
             {
                 // sample in [0.5, 1.0] → multiplier in [0.7, 1.0]
-                float t = (clampled - NeutralSample) / (1.0f - NeutralSample); // 0..1
+                float t = (clamped - NeutralSample) / (1.0f - NeutralSample); // 0..1
                 return 1.0f + (MinToNeutralSpan * t); // 1.0 → 0.7
             }
         }

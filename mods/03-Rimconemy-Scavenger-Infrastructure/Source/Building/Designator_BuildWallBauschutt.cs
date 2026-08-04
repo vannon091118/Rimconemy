@@ -1,5 +1,3 @@
-using System;
-using System.Reflection;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -11,8 +9,8 @@ namespace Rimconemy.ScavengerInfrastructure.Building
     ///
     /// Owner: Scavenger Infrastructure (Package 03).
     ///
-    /// Hook-Pfad OHNE Harmony-Transpiler: vanilla-Basis <see cref="Designator_Build"/>
-    /// wird subklassifiziert. <c>ProcessInput</c> ruft <see cref="BauschuttRemapApply.ApplyRemap"/>
+    /// Hook-Pfad OHNE Harmony-Transpiler: eine unmittelbare <see cref="Designator"/>
+    /// ruft in <c>ProcessInput</c> direkt <see cref="BauschuttRemapApply.ApplyRemap"/>
     /// direkt auf. Das ist die kanonische vanilla-Integration: jeder Mod kann
     /// Designator-Subklassen registrieren ohne Patch-Operationen.
     ///
@@ -21,16 +19,16 @@ namespace Rimconemy.ScavengerInfrastructure.Building
     /// genutzt werden (rimconemy.economyterritory.wallet check). Aktuell wird
     /// kein Wallet-Zugriff gebraucht — ApplyRemap platziert nur Blueprints.
     ///
-    /// Vanilla-Healthy-Verification: Designator_Build ist nicht instanziierbar
-    /// ohne Map und prüft BuildPhase-State mit vanilla-eigener Logik.
+    /// Vanilla-Healthy-Verification: der Designator bleibt ein UI-Trigger;
+    /// die tatsächliche Blueprint-Construction bleibt ein Runtime-Gate.
     /// </summary>
     public class Designator_BuildWallBauschutt : Designator
     {
         public Designator_BuildWallBauschutt() : base()
         {
             this.defaultLabel = "Rimconemy · BuildWallBauschutt";
-            this.defaultDesc = "Platziert Wall-Blueprints aus Bauschutt-Bestand im Storage.";
-            this.icon = ContentFinder<Texture2D>.Get("Things/Building/Security/TurretMini_Base", false);
+            this.defaultDesc = "Platziert Wall-Blueprints anhand des gelesenen Bauschutt-Bestands. Der physische Verbrauch bleibt bis zum Storage-Write-Gate offen.";
+            this.icon = ContentFinder<Texture2D>.Get("Things/Building/Misc/Campfire_MenuIcon", false);
             this.hotKey = KeyBindingDefOf.Misc1; // Beispiel-Belegung
             this.soundSucceeded = SoundDefOf.Designate_ZoneAdd;
         }
@@ -52,12 +50,13 @@ namespace Rimconemy.ScavengerInfrastructure.Building
                 Messages.Message(
                     "Rimconemy Bauschutt-Remap blockiert: " + result.ReasonBlocked,
                     MessageTypeDefOf.RejectInput);
+                Find.DesignatorManager.Deselect();
                 return;
             }
 
             string placementSummary =
                 "Rimconemy build: " + result.WallsPlaced + " Wall-Blueprints platziert "
-                + "(Bauschutt consumed: " + result.BauschuttConsumed + ").";
+                + "(Bauschutt logisch zugeordnet: " + result.BauschuttConsumed + "; physischer Storage-Verbrauch: OPEN).";
             Messages.Message(placementSummary, MessageTypeDefOf.PositiveEvent);
 
             if (result.PlacementFailures != null && result.PlacementFailures.Count > 0)
@@ -67,6 +66,8 @@ namespace Rimconemy.ScavengerInfrastructure.Building
                     Log.Warning("[Rimconemy.ScavengerInfrastructure] Bauschutt-Remap placement issue: " + fail);
                 }
             }
+
+            Find.DesignatorManager.Deselect();
         }
 
         /// <summary>

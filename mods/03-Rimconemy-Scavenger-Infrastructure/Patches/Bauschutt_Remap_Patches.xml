@@ -14,7 +14,33 @@
 -->
 <Patch>
   <!-- ═══════════════════════════════════════════════════════════════
-       PART 1: REMOVE WOODY FROM WALL/DOOR STUFF CATEGORIES
+       PART 1: REGISTER THE IMMEDIATE BAUSCHUTT WALL DESIGNATOR
+       The node exists in Core 1.6; the conditional keeps this patch safe
+       if a compatible Core changes that shape.
+       ═══════════════════════════════════════════════════════════════ -->
+
+  <Operation Class="PatchOperationConditional">
+    <xpath>Defs/DesignationCategoryDef[defName="Structure"]/specialDesignatorClasses[not(li[text()="Rimconemy.ScavengerInfrastructure.Building.Designator_BuildWallBauschutt"])]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>Defs/DesignationCategoryDef[defName="Structure"]/specialDesignatorClasses</xpath>
+      <value><li>Rimconemy.ScavengerInfrastructure.Building.Designator_BuildWallBauschutt</li></value>
+    </match>
+  </Operation>
+
+  <Operation Class="PatchOperationConditional">
+    <xpath>Defs/DesignationCategoryDef[defName="Structure"][not(specialDesignatorClasses)]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>Defs/DesignationCategoryDef[defName="Structure"]</xpath>
+      <value>
+        <specialDesignatorClasses>
+          <li>Rimconemy.ScavengerInfrastructure.Building.Designator_BuildWallBauschutt</li>
+        </specialDesignatorClasses>
+      </value>
+    </match>
+  </Operation>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PART 2: REMOVE WOODY FROM WALL/DOOR STUFF CATEGORIES
        Rimconemy does not allow wood walls. Wood stays as fuel only.
        ═══════════════════════════════════════════════════════════════ -->
 
@@ -28,14 +54,14 @@
 
   <!-- Remove Woody from Door if it exists in the list -->
   <Operation Class="PatchOperationConditional">
-    <xpath>Defs/ThingDef[defName="Door"]/stuffCategories/li[text()="Woody"]</xpath>
+    <xpath>Defs/ThingDef[@Name="DoorBase"]/stuffCategories/li[text()="Woody"]</xpath>
     <match Class="PatchOperationRemove">
-      <xpath>Defs/ThingDef[defName="Door"]/stuffCategories/li[text()="Woody"]</xpath>
+      <xpath>Defs/ThingDef[@Name="DoorBase"]/stuffCategories/li[text()="Woody"]</xpath>
     </match>
   </Operation>
 
   <!-- ═══════════════════════════════════════════════════════════════
-       PART 2: ADD STONY TO WALL/DOOR (existing patches)
+       PART 3: ADD STONY TO WALL/DOOR (existing patches)
        Walls/Doors accept Stony (Bauschutt/ConstructionDebris) material.
        ═══════════════════════════════════════════════════════════════ -->
 
@@ -64,18 +90,18 @@
 
   <!-- Add Stony to an existing Door category only when it is not already present. -->
   <Operation Class="PatchOperationConditional">
-    <xpath>Defs/ThingDef[defName="Door"]/stuffCategories[not(li[text()="Stony"])]</xpath>
+    <xpath>Defs/ThingDef[@Name="DoorBase"]/stuffCategories[not(li[text()="Stony"])]</xpath>
     <match Class="PatchOperationAdd">
-      <xpath>Defs/ThingDef[defName="Door"]/stuffCategories</xpath>
+      <xpath>Defs/ThingDef[@Name="DoorBase"]/stuffCategories</xpath>
       <value><li>Stony</li></value>
     </match>
   </Operation>
 
   <!-- Create the Door category list only when the vanilla node is absent. -->
   <Operation Class="PatchOperationConditional">
-    <xpath>Defs/ThingDef[defName="Door"][not(stuffCategories)]</xpath>
+    <xpath>Defs/ThingDef[@Name="DoorBase"][not(stuffCategories)]</xpath>
     <match Class="PatchOperationAdd">
-      <xpath>Defs/ThingDef[defName="Door"]</xpath>
+      <xpath>Defs/ThingDef[@Name="DoorBase"]</xpath>
       <value>
         <stuffCategories>
           <li>Stony</li>
