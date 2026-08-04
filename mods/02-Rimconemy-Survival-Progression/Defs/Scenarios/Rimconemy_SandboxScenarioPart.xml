@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <ScenPartDef>
+    <defName>Rimconemy_StartInSandbox</defName>
+    <label>start in Rimconemy sandbox mode</label>
+    <category>Fixed</category>
+    <scenPartClass>Rimconemy.SurvivalProgression.Scenarios.ScenPart_StartInSandbox</scenPartClass>
+    <summaryPriority>1000</summaryPriority>
+  </ScenPartDef>
+</Defs>

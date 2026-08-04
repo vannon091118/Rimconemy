@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <IdeoPresetDef>
+    <defName>Rimconemy_Ideo_Collapse</defName>
+    <label>Kollaps-Gruppe</label>
+    <description>Eine Gruppe am Rande des Zusammenbruchs. Jeder kämpft für sich, Vertrauen ist knapp.</description>
+    <memes>
+      <li>Rimconemy_Survivalist</li>
+    </memes>
+  </IdeoPresetDef>
+</Defs>

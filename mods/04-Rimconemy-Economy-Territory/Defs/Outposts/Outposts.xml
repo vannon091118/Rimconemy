@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Economy & Territory
+  Stable defName: Rimconemy_OutpostWorldObject
+  Vanilla anchor: WorldObjectDef -> concrete WorldObject subclass
+  (Rimconemy.EconomyTerritory.Outposts.OutpostWorldObject definiert in
+  Source/Outposts/OutpostWorldObject.cs, da RimWorld.WorldObject in 1.6
+  abstrakt ist und ohne Subklasse nicht instanziiert werden kann).
+  1.6-Fixes:
+    - canBeFound Top-Level-Feld gestrichen (existiert in 1.6 nicht).
+    - worldObjectClass zeigt auf konkrete Rimconemy-Subklasse statt abstract RimWorld.WorldObject.
+-->
+<Defs>
+  <WorldObjectDef>
+    <defName>Rimconemy_OutpostWorldObject</defName>
+    <label>Rimconemy outpost</label>
+    <description>Anchored outpost planning record. Brutto/netto production is reflected only via the WalletLedger, not as part of Vanilla wealth.</description>
+    <worldObjectClass>Rimconemy.EconomyTerritory.Outposts.OutpostWorldObject</worldObjectClass>
+  </WorldObjectDef>
+</Defs>

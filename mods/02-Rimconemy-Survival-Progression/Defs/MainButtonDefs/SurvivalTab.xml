@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <MainButtonDef>
+    <defName>RimconemySurvivalProgression</defName>
+    <label>Survival</label>
+    <description>Live Food, Safety, Social, XP and Game Over state.</description>
+    <tabWindowClass>Rimconemy.SurvivalProgression.UI.SurvivalProgressionDashboard</tabWindowClass>
+    <order>56</order>
+    <defaultHotKey>Keypad8</defaultHotKey>
+  </MainButtonDef>
+</Defs>

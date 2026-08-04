@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <TraitDef>
+    <defName>Rimconemy_Trait_Unfocused</defName>
+    <label>unkonzentriert</label>
+    <description>Schwer bei der Sache zu bleiben. Leicht reduziertes Arbeitstempo.</description>
+    <degreeDatas>
+      <li>
+        <label>unkonzentriert</label>
+        <description>Arbeitstempo −10%.</description>
+        <degree>0</degree>
+        <statOffsets>
+          <WorkSpeedGlobal>-0.10</WorkSpeedGlobal>
+        </statOffsets>
+      </li>
+    </degreeDatas>
+    <commonality>0</commonality>
+  </TraitDef>
+</Defs>

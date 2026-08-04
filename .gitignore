@@ -1,0 +1,31 @@
+# Build artefacts
+**/obj/
+**/bin/
+Assemblies/
+.build*/
+.verify*/
+_final_build_check/
+*.dll
+*.deps.json
+*.pdb
+
+# Nested mod artifacts (deploy accident)
+mods/*/mods/
+mods/scripts/
+mods/__pycache__/
+*.pyc
+
+# Freebuff local state (NOT part of the mod)
+.freebuff/
+*.db
+*.db-wal
+*.db-shm
+
+# IDE
+.vs/
+.vscode/
+*.user
+
+# OS
+.DS_Store
+Thumbs.db

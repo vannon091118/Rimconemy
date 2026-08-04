@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Survival & Progression (Package 02).
+  Track 2-C / S-T3: Scenario that starts the save in Sandbox-Mode.
+  No automatic GameOver upon colony-wipe; player keeps playing until
+  they manually load or end the run.
+-->
+<Defs>
+  <ScenarioDef Name="Rimconemy_SandboxScenario" ParentName="ScenarioBase">
+    <defName>Rimconemy_SandboxScenario</defName>
+    <label>Rimconemy Sandbox</label>
+    <description>A Rimconemy survival run with sandbox policy: the colony never auto-ends on wipe. Use this scenario when you want to freely roam with no game-over pressure. Mod 02's progression system still runs; the only difference is the GameOver trigger.</description>
+    <scenario>
+      <summary>Rimconemy survival sandbox with the standard player faction and surface layer.</summary>
+      <playerFaction>
+        <def>PlayerFaction</def>
+        <factionDef>PlayerColony</factionDef>
+      </playerFaction>
+      <surfaceLayer>
+        <def>SurfaceLayerFixed</def>
+        <tag>Surface</tag>
+        <layer>Surface</layer>
+        <settingsDef>Surface</settingsDef>
+        <hide>true</hide>
+      </surfaceLayer>
+      <parts>
+        <li Class="Rimconemy.SurvivalProgression.Scenarios.ScenPart_StartInSandbox">
+          <def>Rimconemy_StartInSandbox</def>
+        </li>
+      </parts>
+    </scenario>
+  </ScenarioDef>
+</Defs>

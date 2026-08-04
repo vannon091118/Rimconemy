@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Infected & Automation
+  Language: English
+  Prefix convention: Rimconemy.Infected.*
+-->
+<LanguageData>
+  <Rimconemy.Infected.Title>Infected</Rimconemy.Infected.Title>
+  <Rimconemy.Infected.Threat.Title>Infected Threat</Rimconemy.Infected.Threat.Title>
+  <Rimconemy.Infected.Threat.Farm>Farm Activity</Rimconemy.Infected.Threat.Farm>
+  <Rimconemy.Infected.Threat.Population>Population Activity</Rimconemy.Infected.Threat.Population>
+  <Rimconemy.Infected.Threat.Production>Production Activity</Rimconemy.Infected.Threat.Production>
+  <Rimconemy.Infected.Threat.Power>Power Activity</Rimconemy.Infected.Threat.Power>
+  <Rimconemy.Infected.Threat.Defense>Defense</Rimconemy.Infected.Threat.Defense>
+  <Rimconemy.Infected.Threat.Regional>Regional</Rimconemy.Infected.Threat.Regional>
+  <Rimconemy.Infected.Threat.Trend>Trend: {0}</Rimconemy.Infected.Threat.Trend>
+  <Rimconemy.Infected.Raid.Target>Target Tile</Rimconemy.Infected.Raid.Target>
+  <Rimconemy.Infected.Raid.ETA>ETA: {0} Ticks</Rimconemy.Infected.Raid.ETA>
+  <Rimconemy.Infected.Raid.Resolved>Resolved (single outcome)</Rimconemy.Infected.Raid.Resolved>
+  <Rimconemy.Infected.Mechadroid.Idle>Idle</Rimconemy.Infected.Mechadroid.Idle>
+  <Rimconemy.Infected.Mechadroid.Working>Working</Rimconemy.Infected.Mechadroid.Working>
+  <Rimconemy.Infected.Mechadroid.Recharging>Recharging</Rimconemy.Infected.Mechadroid.Recharging>
+  <Rimconemy.Infected.Mechadroid.Damaged>Damaged</Rimconemy.Infected.Mechadroid.Damaged>
+  <Rimconemy.Infected.Mechadroid.Salvaged>Salvaged</Rimconemy.Infected.Mechadroid.Salvaged>
+  <Rimconemy.Infected.AutoResolve.Cost>Auto-resolve cost</Rimconemy.Infected.AutoResolve.Cost>
+  <Rimconemy.Infected.AutoResolve.Risk>Auto-resolve risk</Rimconemy.Infected.AutoResolve.Risk>
+</LanguageData>

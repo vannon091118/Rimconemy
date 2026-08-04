@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <TraitDef>
+    <defName>Rimconemy_Trait_Hardy</defName>
+    <label>abgehärtet</label>
+    <description>Hält mehr aus als andere. Erhöhte Schmerztoleranz.</description>
+    <degreeDatas>
+      <li>
+        <label>abgehärtet</label>
+        <description>Schmerzschwelle +15%.</description>
+        <degree>0</degree>
+        <statOffsets>
+          <PainShockThreshold>0.15</PainShockThreshold>
+        </statOffsets>
+      </li>
+    </degreeDatas>
+    <commonality>0</commonality>
+  </TraitDef>
+</Defs>

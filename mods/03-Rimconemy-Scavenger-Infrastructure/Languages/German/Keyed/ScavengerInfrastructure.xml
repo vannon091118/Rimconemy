@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure
+  Language: German
+  Prefix convention: Rimconemy.Scavenger.*
+-->
+<LanguageData>
+  <Rimconemy.Scavenger.Title>Beschaffung</Rimconemy.Scavenger.Title>
+  <Rimconemy.Scavenger.ConstructionDebris>Bauschutt</Rimconemy.Scavenger.ConstructionDebris>
+  <Rimconemy.Scavenger.Hemp>Hanfblatt</Rimconemy.Scavenger.Hemp>
+  <Rimconemy.Scavenger.Hemp.Note>Industriepflanze, niemals Speise</Rimconemy.Scavenger.Hemp.Note>
+  <Rimconemy.Scavenger.DistilledWater>destilliertes Wasser</Rimconemy.Scavenger.DistilledWater>
+  <Rimconemy.Scavenger.WoodCoalGenerator>Holz-Kohle-Generator</Rimconemy.Scavenger.WoodCoalGenerator>
+  <Rimconemy.Scavenger.WaterTurbineGenerator>Wasser-Turbinen-Generator</Rimconemy.Scavenger.WaterTurbineGenerator>
+  <Rimconemy.Scavenger.TurbineWaterPump>Turbinen-Wasserpumpe</Rimconemy.Scavenger.TurbineWaterPump>
+  <Rimconemy.Scavenger.ArrowTurret>Pfeilturm (Strom-abhängig)</Rimconemy.Scavenger.ArrowTurret>
+  <Rimconemy.Scavenger.Status.Blocked>Blockiert: Brennstoff oder Wasser fehlt</Rimconemy.Scavenger.Status.Blocked>
+  <Rimconemy.Scavenger.BlockReason.NoFuel>Kein Brennstoff geladen.</Rimconemy.Scavenger.BlockReason.NoFuel>
+  <Rimconemy.Scavenger.BlockReason.NoWater>Kein destilliertes Wasser vorhanden.</Rimconemy.Scavenger.BlockReason.NoWater>
+  <Rimconemy.Scavenger.BlockReason.NoPower>Kein Strom angeschlossen.</Rimconemy.Scavenger.BlockReason.NoPower>
+</LanguageData>

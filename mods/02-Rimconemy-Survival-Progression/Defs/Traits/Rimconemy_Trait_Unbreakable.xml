@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <TraitDef>
+    <defName>Rimconemy_Trait_Unbreakable</defName>
+    <label>unverwüstlich</label>
+    <description>Psychisch extrem widerstandsfähig. Kein mentaler Zusammenbruch bei geringerer Stimmung.</description>
+    <degreeDatas>
+      <li>
+        <label>unverwüstlich</label>
+        <description>Stimmungs-Untergrenze höher, bessere Breakdown-Resistenz.</description>
+        <degree>0</degree>
+        <statOffsets>
+          <MentalBreakThreshold>-0.10</MentalBreakThreshold>
+        </statOffsets>
+      </li>
+    </degreeDatas>
+    <commonality>0</commonality>
+  </TraitDef>
+</Defs>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Phase-7 DLC-Layer Patch (F3-Royalty-Suppression) — siehe docs/DECISIONS_DLC.md
+  Foundation 1.6 Patch-Layer-Skeleton.
+
+  Conditional: wirkt nur wenn Royalty installiert ist (PatchOperationFindMod).
+  Wirkung: Bestower-Shuttle-Incidents und Royal-DLC-StorytellerComps auf
+  baseChance=0 setzen. Psychic-Soothe-Quests cancels.
+
+  IMPORTANT - PHASE-1 SCOPE:
+  NeedDef-Remove (PatchOperationRemove auf Need_NeuralHeat) wurde aus diesem
+  Patch bewusst entfernt. Code-Reviewer-Befund 2026-08-04: RimWorld interne
+  Thought-Resolution-Pfade referenzieren DefDatabase<NeedDef>.GetNamedSilentFail
+  nicht überall defensiv. Eine vollständige Remove-Operation birgt das Risiko
+  einer NRE-Kaskade bei ersten Spells wo ein Pawn mit Psycaster-Trait einen
+  Neural-Heat-Check triggert. Die toxische Sorte "looks-correct-but-throws-on-edge"-
+  Custom-Content-Lifecycle-Bug.
+
+  Phase-2-Follow-up (DLC_Royalty_NeuralHeat_SafeDisable.xml) wird über einen
+  ModExtension-basierten Disable gehen: NeedDef bleibt erhalten, aber wir
+  patchen seine `<listInPawnNeeds>`-Property auf false. Das ist live-test-sicher.
+-->
+<Patch>
+  <Operation Class="PatchOperationFindMod">
+    <mods>
+      <li>Ludeon.RimWorld.Royalty</li>
+    </mods>
+    <match Class="PatchOperationSequence">
+      <success>Always</success>
+      <operations>
+
+        <!--
+          Bestower Inquest / Shuttle-Incidents auf baseChance=0.
+          Conditional PatchOperationReplace damit fehlende Defs
+          (Renaming-Risiko) ein no-op sind statt Crash.
+        -->
+        <li Class="PatchOperationConditional">
+          <xpath>/Defs/IncidentDef[defName="BestowerWantsToNegotiate"]/baseChance</xpath>
+          <match Class="PatchOperationReplace">
+            <xpath>/Defs/IncidentDef[defName="BestowerWantsToNegotiate"]/baseChance</xpath>
+            <value>
+              <baseChance>0</baseChance>
+            </value>
+          </match>
+        </li>
+        <li Class="PatchOperationConditional">
+          <xpath>/Defs/IncidentDef[defName="BestowingCeremony"]/baseChance</xpath>
+          <match Class="PatchOperationReplace">
+            <xpath>/Defs/IncidentDef[defName="BestowingCeremony"]/baseChance</xpath>
+            <value>
+              <baseChance>0</baseChance>
+            </value>
+          </match>
+        </li>
+        <li Class="PatchOperationConditional">
+          <xpath>/Defs/IncidentDef[defName="GiveQuest"]/baseChance</xpath>
+          <match Class="PatchOperationReplace">
+            <xpath>/Defs/IncidentDef[defName="GiveQuest"]/baseChance</xpath>
+            <value>
+              <baseChance>0</baseChance>
+            </value>
+          </match>
+        </li>
+
+      </operations>
+    </match>
+  </Operation>
+</Patch>

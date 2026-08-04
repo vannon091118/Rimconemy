@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure
+  Language: English
+  Prefix convention: Rimconemy.Scavenger.*
+-->
+<LanguageData>
+  <Rimconemy.Scavenger.Title>Scavenger</Rimconemy.Scavenger.Title>
+  <Rimconemy.Scavenger.ConstructionDebris>construction debris</Rimconemy.Scavenger.ConstructionDebris>
+  <Rimconemy.Scavenger.Hemp>hemp leaf</Rimconemy.Scavenger.Hemp>
+  <Rimconemy.Scavenger.Hemp.Note>non-food industrial crop</Rimconemy.Scavenger.Hemp.Note>
+  <Rimconemy.Scavenger.DistilledWater>distilled water</Rimconemy.Scavenger.DistilledWater>
+  <Rimconemy.Scavenger.WoodCoalGenerator>wood-coal generator</Rimconemy.Scavenger.WoodCoalGenerator>
+  <Rimconemy.Scavenger.WaterTurbineGenerator>water turbine generator</Rimconemy.Scavenger.WaterTurbineGenerator>
+  <Rimconemy.Scavenger.TurbineWaterPump>turbine water pump</Rimconemy.Scavenger.TurbineWaterPump>
+  <Rimconemy.Scavenger.ArrowTurret>arrow turret (powered)</Rimconemy.Scavenger.ArrowTurret>
+  <Rimconemy.Scavenger.Status.Blocked>Blocked: missing fuel or water</Rimconemy.Scavenger.Status.Blocked>
+  <Rimconemy.Scavenger.BlockReason.NoFuel>No fuel loaded.</Rimconemy.Scavenger.BlockReason.NoFuel>
+  <Rimconemy.Scavenger.BlockReason.NoWater>No distilled water stored.</Rimconemy.Scavenger.BlockReason.NoWater>
+  <Rimconemy.Scavenger.BlockReason.NoPower>No power routed.</Rimconemy.Scavenger.BlockReason.NoPower>
+</LanguageData>

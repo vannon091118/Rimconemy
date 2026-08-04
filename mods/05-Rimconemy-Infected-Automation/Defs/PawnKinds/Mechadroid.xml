@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Infected & Automation
+  Stable defName: Rimconemy_MechadroidLabourer
+  1.6-Fixes:
+    - defaultFactionType -> defaultFactionDef (1.6-Field).
+    - canBeColonist entfernt (in 1.6 nicht mehr existent, wird ueber die FactionOfRace geblockt).
+    - baseRecruitDifficulty entfernt (1.6 nutzt Pawn-Faction nicht mehr).
+    - initialResistanceRange + initialWillRange explizit, sonst ConfigError
+      "initial resistance range is undefined for humanlike pawn kind" / "initial will range ...".
+-->
+<Defs>
+  <PawnKindDef>
+    <defName>Rimconemy_MechadroidLabourer</defName>
+    <label>Mechadroid labourer</label>
+    <description>Rimconemy automation unit. Assigned to farm, generator or repair tasks; never takes player-colonist roster slots.</description>
+    <defaultFactionDef>Rimconemy_PlayerAutomationFaction</defaultFactionDef>
+    <race>Human</race>
+    <initialResistanceRange>0~0</initialResistanceRange>
+    <initialWillRange>0.5~0.7</initialWillRange>
+    <combatPower>0</combatPower>
+  </PawnKindDef>
+</Defs>

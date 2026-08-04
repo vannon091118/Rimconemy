@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure
+  Stable defName: Rimconemy_ConstructionDebris
+  DLC condition: none
+  Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> Scavenger -> later packages
+  Vanilla anchor: ThingDef (basic resource, ParentName=ResourceBase).
+  1.6-Fixes: Graphic_Stacked -> Graphic_StackCount; flammability als Top-Level-Feld gestrichen
+  (RimWorld leitet Verbrennbarkeit aus ThingCategory + Material ab, kein freies Feld).
+-->
+<Defs>
+  <ThingDef ParentName="ResourceBase">
+    <defName>Rimconemy_ConstructionDebris</defName>
+    <label>construction debris</label>
+    <description>Reclaimed wreck material from ruined buildings and burned structures. Used as a base ingredient for walls and doors.</description>
+    <graphicData>
+      <texPath>Things/Item/Resource/StoneBlocks</texPath>
+      <graphicClass>Graphic_StackCount</graphicClass>
+      <drawSize>0.9</drawSize>
+    </graphicData>
+    <statBases>
+      <MaxHitPoints>80</MaxHitPoints>
+      <Mass>0.6</Mass>
+      <MarketValue>2.5</MarketValue>
+    </statBases>
+    <thingCategories>
+      <li>ResourcesRaw</li>
+    </thingCategories>
+    <stuffProps>
+      <categories>
+        <li>Stony</li>
+      </categories>
+      <commonality>1.0</commonality>
+      <color>(130,125,120)</color>
+      <statFactors>
+        <MaxHitPoints>1.1</MaxHitPoints>
+        <Beauty>0.5</Beauty>
+        <WorkToBuild>1.2</WorkToBuild>
+      </statFactors>
+    </stuffProps>
+    <stackLimit>200</stackLimit>
+  </ThingDef>
+</Defs>

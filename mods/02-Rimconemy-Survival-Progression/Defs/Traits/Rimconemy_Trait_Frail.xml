@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <TraitDef>
+    <defName>Rimconemy_Trait_Frail</defName>
+    <label>gebrechlich</label>
+    <description>Körperlich anfällig. Erhöhte Verletzungsanfälligkeit.</description>
+    <degreeDatas>
+      <li>
+        <label>gebrechlich</label>
+        <description>Verletzungsanfälligkeit +20%.</description>
+        <degree>0</degree>
+        <statOffsets>
+          <IncomingDamageFactor>0.20</IncomingDamageFactor>
+        </statOffsets>
+      </li>
+    </degreeDatas>
+    <commonality>0</commonality>
+  </TraitDef>
+</Defs>

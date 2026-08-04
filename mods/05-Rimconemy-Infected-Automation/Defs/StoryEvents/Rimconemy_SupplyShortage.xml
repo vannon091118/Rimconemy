@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  INERT · Stand 2026-08-04 · Audit-Falsifizierung
+  Diese XML-Def wird von RimWorld geladen (kein TypeLoadException), aber
+  die StoryDirector-Auswahl nutzt ausschließlich den hartkodierten
+  StoryEventCatalog (12 Events in Source/Story/StoryEventCatalog.cs).
+  Solange StoryEventCatalog kanonisch ist, ist diese Datei reine
+  Dokumentation und wird vom Code nicht konsumiert.
+  Reconciliation-Pfad (Phase 3): Entweder StoryEventCatalog aus diesen
+  XMLs generieren ODER diese Dateien löschen.
+  Quelle: docs/H2-story-contract.md §2 Event 1.
+-->
+<!--
+  Rimconemy_SupplyShortage — Versorgungskrise
+  Owner: Infected & Automation (Story-/Threat-Domäne, H2 §2 Event 1)
+  Status: SCAFFOLD — RimWorld-ladbare Def; Auswahl-/Effekt-Engine PLANNED.
+  Quelle: docs/H2-story-contract.md §2 Event 1.
+-->
+<Defs>
+  <Rimconemy.InfectedAutomation.Story.StoryEventDef>
+    <defName>Rimconemy_SupplyShortage</defName>
+    <label>Versorgungskrise</label>
+    <description>Ein kritischer Lagerbestand unterschreitet das Minimum.</description>
+
+    <eventVersion>1</eventVersion>
+    <eventFamily>SupplyCrisis</eventFamily>
+    <escalationBand>1</escalationBand>
+    <escalationTarget>ThreatPressure</escalationTarget>
+    <escalationModifier>0.03</escalationModifier>
+
+    <prerequisites>
+      <li>StorageSnapshot.AnyResourceBelow(profile.ResourceScarcityMultiplier * minThreshold)</li>
+      <li>NOT ActiveEvent(SupplyCrisis)</li>
+      <li>GameTime &gt; lastSupplyEvent + profile.EventCooldownGlobal</li>
+    </prerequisites>
+
+    <exclusions>
+      <li>ActiveRecoveryEvent</li>
+      <li>profile.MaxActiveEvents erreicht</li>
+    </exclusions>
+
+    <weights>
+      <li>Rimconemy_Refuge=20</li>
+      <li>Rimconemy_Survival=50</li>
+      <li>Rimconemy_Collapse=80</li>
+    </weights>
+
+    <cooldownDays>
+      <li>Rimconemy_Refuge=5.0</li>
+      <li>Rimconemy_Survival=3.0</li>
+      <li>Rimconemy_Collapse=1.5</li>
+    </cooldownDays>
+
+    <textKey>Rimconemy_SupplyShortage_Letter</textKey>
+    <letterLabel>Vorräte schwinden</letterLabel>
+    <letterText>Der Bestand an {ResourceName} ist kritisch niedrig ({CurrentAmount}/{MinAmount}).</letterText>
+
+    <choices>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>RationResources</choiceId>
+        <label>Ressourcen rationieren</label>
+        <effects>
+          <li>StorageSnapshot.FreezeConsumption(resourceId, 2.0 Tage)</li>
+          <li>IdeologyTension += 0.05</li>
+          <li>MoodModifier: -3 für 2 Tage</li>
+        </effects>
+      </li>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>SeekExternalHelp</choiceId>
+        <label>Externe Hilfe suchen</label>
+        <effects>
+          <li>TriggerTradingOpportunity(resourceId)</li>
+          <li>IdeologyTension += 0.02</li>
+          <li>WalletCost: 50 Credits (falls Economy aktiv)</li>
+        </effects>
+      </li>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Ignore</choiceId>
+        <label>Ignorieren</label>
+        <effects>
+          <li>ThreatPressure += escalationModifier</li>
+          <li>PawnMoodModifier: -5 für 1 Tag</li>
+          <li>FollowUpEvent: Rimconemy_SupplyShortage_FollowUp nach 2 Tagen</li>
+        </effects>
+      </li>
+    </choices>
+
+    <followUpIds>
+      <li>Rimconemy_SupplyShortage_FollowUp</li>
+    </followUpIds>
+
+    <determinismKey>ProfileId + EventId + StorageSnapshot.Hash + GameTickDay</determinismKey>
+  </Rimconemy.InfectedAutomation.Story.StoryEventDef>
+</Defs>

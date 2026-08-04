@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Infected & Automation
+  Language: German
+  Prefix convention: Rimconemy.Infected.*
+-->
+<LanguageData>
+  <Rimconemy.Infected.Title>Infizierte</Rimconemy.Infected.Title>
+  <Rimconemy.Infected.Threat.Title>Infizierten-Druck</Rimconemy.Infected.Threat.Title>
+  <Rimconemy.Infected.Threat.Farm>Farm-Aktivität</Rimconemy.Infected.Threat.Farm>
+  <Rimconemy.Infected.Threat.Population>Population-Aktivität</Rimconemy.Infected.Threat.Population>
+  <Rimconemy.Infected.Threat.Produktion>Produktions-Aktivität</Rimconemy.Infected.Threat.Produktion>
+  <Rimconemy.Infected.Threat.Power>Strom-Aktivität</Rimconemy.Infected.Threat.Power>
+  <Rimconemy.Infected.Threat.Defense>Verteidigung</Rimconemy.Infected.Threat.Defense>
+  <Rimconemy.Infected.Threat.Regional>Regional</Rimconemy.Infected.Threat.Regional>
+  <Rimconemy.Infected.Threat.Trend>Trend: {0}</Rimconemy.Infected.Threat.Trend>
+  <Rimconemy.Infected.Raid.Target>Ziel-Tile</Rimconemy.Infected.Raid.Target>
+  <Rimconemy.Infected.Raid.ETA>ETA: {0} Ticks</Rimconemy.Infected.Raid.ETA>
+  <Rimconemy.Infected.Raid.Resolved>Aufgelöst (genau ein Ergebnis)</Rimconemy.Infected.Raid.Resolved>
+  <Rimconemy.Infected.Mechadroid.Idle>Leerlauf</Rimconemy.Infected.Mechadroid.Idle>
+  <Rimconemy.Infected.Mechadroid.Working>Arbeitet</Rimconemy.Infected.Mechadroid.Working>
+  <Rimconemy.Infected.Mechadroid.Recharging>Lädt</Rimconemy.Infected.Mechadroid.Recharging>
+  <Rimconemy.Infected.Mechadroid.Damaged>Beschädigt</Rimconemy.Infected.Mechadroid.Damaged>
+  <Rimconemy.Infected.Mechadroid.Salvaged>Verwertet</Rimconemy.Infected.Mechadroid.Salvaged>
+  <Rimconemy.Infected.AutoResolve.Cost>Kosten der automatischen Auflösung</Rimconemy.Infected.AutoResolve.Cost>
+  <Rimconemy.Infected.AutoResolve.Risk>Risiko der automatischen Auflösung</Rimconemy.Infected.AutoResolve.Risk>
+</LanguageData>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <MemeDef>
+    <defName>Rimconemy_Pragmatic</defName>
+    <label>Pragmatismus</label>
+    <description>Überleben rechtfertigt die Mittel. Entscheidungen werden nach Nützlichkeit getroffen.</description>
+    <category>Structure</category>
+    <impact>0</impact>
+    <generalRules>
+      <rulesStrings>
+        <li>memeLeaderNoun->Anführer</li>
+        <li>memeMoralist->Stratege</li>
+      </rulesStrings>
+    </generalRules>
+    <worshipRoomLabel>Versammlungsraum</worshipRoomLabel>
+    <descriptionMaker>
+      <patterns>
+        <li><def>AnimistDescription</def></li>
+      </patterns>
+    </descriptionMaker>
+  </MemeDef>
+</Defs>

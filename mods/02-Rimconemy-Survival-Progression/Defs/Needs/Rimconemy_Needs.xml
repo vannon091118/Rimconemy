@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Track 2-C / S-T1 — Rimconemy Setting NeedDefs (B/C-Hybrid).
+
+  Owner: Survival and Progression.
+  Owner-Map (INTERFACE_CONTRACT §9): SurvivalProgression.Needs owns
+  these three Setting tags. They are NOT attached to pawns (would
+  overlap with Need_Mood at runtime, breaking the API-NEED-01 contract).
+
+  These NeedDefs are documented Setting identities for UI, telemetry
+  and future cross-package reads. Sampling happens through
+  Rimconemy.SurvivalProgression.Needs.NeedMappingService which projects
+  Vanilla needs onto the Setting spectrum
+    Food      - NeedDefOf.Food
+    Safety    - Health.SummaryHealthPercent * 0.65 + Rest * 0.35
+    Social    - Need Recreation (1.6) or Joy (legacy fallback)
+  All projected to 0.0..1.0 (CurLevelPercentage scale).
+
+  needClass points to the concrete Need_SettingIdentity class because
+  RimWorld reflectively constructs configured Need classes while evaluating
+  pawn needs. The identity class is deliberately inert; projection still
+  happens only through NeedMappingService. Honors Spike guidance:
+    Q14: Vanilla owns Mood; we only project on the read side.
+-->
+<Defs>
+
+  <NeedDef>
+    <defName>Rimconemy_Need_Food</defName>
+    <needClass>Rimconemy.SurvivalProgression.Needs.Need_SettingIdentity</needClass>
+    <label>food (setting)</label>
+    <description>Sustenance map for the survival setting. Sourced from the pawn's vanilla Food need through NeedMappingService. Single source: NeedDefOf.Food. 1.0 = well fed, 0.0 = starving.</description>
+    <major>true</major>
+    <neverOnPrisoner>true</neverOnPrisoner>
+    <neverOnSlave>true</neverOnSlave>
+    <!-- Match Core's dormant Indoors pattern: no ordinary pawn satisfies any
+         causal source, so this identity is not added to pawn.needs. -->
+    <onlyIfCausedByIdeo>true</onlyIfCausedByIdeo>
+    <onlyIfCausedByHediff>true</onlyIfCausedByHediff>
+    <onlyIfCausedByTrait>true</onlyIfCausedByTrait>
+    <onlyIfCausedByGene>true</onlyIfCausedByGene>
+    <showOnNeedList>false</showOnNeedList>
+    <listPriority>0</listPriority>
+    <baseLevel>0.5</baseLevel>
+    <developmentalStageFilter>
+      <li>Adult</li>
+      <li>Child</li>
+    </developmentalStageFilter>
+  </NeedDef>
+
+  <NeedDef>
+    <defName>Rimconemy_Need_Safety</defName>
+    <needClass>Rimconemy.SurvivalProgression.Needs.Need_SettingIdentity</needClass>
+    <label>safety (setting)</label>
+    <description>Threat-and-rest map for the survival setting. NeedMappingService aggregates Health.SummaryHealthPercent * 0.65 + Rest * 0.35. 1.0 = healthy and well-rested, 0.0 = critically wounded and exhausted.</description>
+    <major>true</major>
+    <neverOnPrisoner>true</neverOnPrisoner>
+    <neverOnSlave>true</neverOnSlave>
+    <!-- Match Core's dormant Indoors pattern: no ordinary pawn satisfies any
+         causal source, so this identity is not added to pawn.needs. -->
+    <onlyIfCausedByIdeo>true</onlyIfCausedByIdeo>
+    <onlyIfCausedByHediff>true</onlyIfCausedByHediff>
+    <onlyIfCausedByTrait>true</onlyIfCausedByTrait>
+    <onlyIfCausedByGene>true</onlyIfCausedByGene>
+    <showOnNeedList>false</showOnNeedList>
+    <listPriority>0</listPriority>
+    <baseLevel>0.5</baseLevel>
+    <developmentalStageFilter>
+      <li>Adult</li>
+      <li>Child</li>
+    </developmentalStageFilter>
+  </NeedDef>
+
+  <NeedDef>
+    <defName>Rimconemy_Need_Social</defName>
+    <needClass>Rimconemy.SurvivalProgression.Needs.Need_SettingIdentity</needClass>
+    <label>social (setting)</label>
+    <description>Recreation map for the survival setting. NeedMappingService resolves vanilla Recreation def via DefDatabase (1.6) or Joy (legacy). 1.0 = recreationally fulfilled, 0.0 = bored.</description>
+    <major>true</major>
+    <neverOnPrisoner>true</neverOnPrisoner>
+    <neverOnSlave>true</neverOnSlave>
+    <!-- Match Core's dormant Indoors pattern: no ordinary pawn satisfies any
+         causal source, so this identity is not added to pawn.needs. -->
+    <onlyIfCausedByIdeo>true</onlyIfCausedByIdeo>
+    <onlyIfCausedByHediff>true</onlyIfCausedByHediff>
+    <onlyIfCausedByTrait>true</onlyIfCausedByTrait>
+    <onlyIfCausedByGene>true</onlyIfCausedByGene>
+    <showOnNeedList>false</showOnNeedList>
+    <listPriority>0</listPriority>
+    <baseLevel>0.5</baseLevel>
+    <developmentalStageFilter>
+      <li>Adult</li>
+    </developmentalStageFilter>
+  </NeedDef>
+
+</Defs>

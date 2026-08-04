@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  INERT · Stand 2026-08-04 · Audit-Falsifizierung
+  Diese XML-Def wird von RimWorld geladen (kein TypeLoadException), aber
+  die StoryDirector-Auswahl nutzt ausschließlich den hartkodierten
+  StoryEventCatalog (12 Events in Source/Story/StoryEventCatalog.cs).
+  Solange StoryEventCatalog kanonisch ist, ist diese Datei reine
+  Dokumentation und wird vom Code nicht konsumiert.
+  Reconciliation-Pfad (Phase 3): Entweder StoryEventCatalog aus diesen
+  XMLs generieren ODER diese Dateien löschen.
+  Quelle: docs/H2-story-contract.md §2 Event 2.
+-->
+<!--
+  Rimconemy_IdeologyConflict — Ideologischer Konflikt
+  Owner: Infected & Automation (Story-/Threat-Domäne, H2 §2 Event 2)
+  Status: SCAFFOLD — RimWorld-ladbare Def; Auswahl-/Effekt-Engine PLANNED.
+  Quelle: docs/H2-story-contract.md §2 Event 2.
+-->
+<Defs>
+  <Rimconemy.InfectedAutomation.Story.StoryEventDef>
+    <defName>Rimconemy_IdeologyConflict</defName>
+    <label>Ideologischer Konflikt</label>
+    <description>Eine Setting-Regel wurde verletzt oder die Spannung überschreitet die Profilgrenze.</description>
+
+    <eventVersion>1</eventVersion>
+    <eventFamily>IdeologyConflict</eventFamily>
+    <escalationBand>1</escalationBand>
+    <escalationTarget>IdeologyTension</escalationTarget>
+    <escalationModifier>0.04</escalationModifier>
+
+    <prerequisites>
+      <li>IdeologySnapshot.Tension &gt; profile.IdeologyTensionCap * 0.7</li>
+      <li>AtLeastOneActiveSettingRule()</li>
+      <li>NOT ActiveEvent(IdeologyConflict)</li>
+    </prerequisites>
+
+    <exclusions>
+      <li>NoActiveSettingRules</li>
+      <li>profile.MaxActiveEvents erreicht</li>
+    </exclusions>
+
+    <weights>
+      <li>Rimconemy_Refuge=15</li>
+      <li>Rimconemy_Survival=40</li>
+      <li>Rimconemy_Collapse=70</li>
+    </weights>
+
+    <cooldownDays>
+      <li>Rimconemy_Refuge=7.0</li>
+      <li>Rimconemy_Survival=4.0</li>
+      <li>Rimconemy_Collapse=2.0</li>
+    </cooldownDays>
+
+    <textKey>Rimconemy_IdeologyConflict_Letter</textKey>
+    <letterLabel>Glaubenskonflikt</letterLabel>
+    <letterText>{PawnName} stellt die Regel '{RuleId}' in Frage. Die Gruppe ist gespalten.</letterText>
+
+    <choices>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>EnforceRule</choiceId>
+        <label>Regel durchsetzen</label>
+        <effects>
+          <li>TargetPawn.MoodModifier: -8 für 3 Tage</li>
+          <li>GroupCohesion += 0.1</li>
+          <li>IdeologyTension -= 0.05</li>
+          <li>Thought: "Erzwungene Konformität" auf TargetPawn</li>
+        </effects>
+      </li>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Compromise</choiceId>
+        <label>Kompromiss suchen</label>
+        <effects>
+          <li>TargetPawn.MoodModifier: +3 für 2 Tage</li>
+          <li>GroupCohesion -= 0.05</li>
+          <li>IdeologyTension += 0.02</li>
+          <li>Thought: "Gehör gefunden" auf TargetPawn</li>
+        </effects>
+      </li>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Ignore</choiceId>
+        <label>Ignorieren</label>
+        <effects>
+          <li>IdeologyTension += escalationModifier</li>
+          <li>TargetPawn.MoodModifier: -3 für 5 Tage</li>
+          <li>FollowUpEvent: Rimconemy_IdeologyConflict_FollowUp nach 3 Tagen</li>
+        </effects>
+      </li>
+    </choices>
+
+    <followUpIds>
+      <li>Rimconemy_IdeologyConflict_FollowUp</li>
+    </followUpIds>
+
+    <determinismKey>ProfileId + EventId + IdeologySnapshot.Tension + PawnId + GameTickDay</determinismKey>
+  </Rimconemy.InfectedAutomation.Story.StoryEventDef>
+</Defs>

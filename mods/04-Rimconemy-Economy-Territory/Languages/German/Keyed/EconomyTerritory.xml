@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Economy & Territory
+  Language: German
+  Prefix convention: Rimconemy.Economy.*
+-->
+<LanguageData>
+  <Rimconemy.Economy.Title>Wallet</Rimconemy.Economy.Title>
+  <Rimconemy.Economy.Wallet.Currency>Credits</Rimconemy.Economy.Wallet.Currency>
+  <Rimconemy.Economy.Wallet.Unavailable>Wallet-Ledger ist nicht initialisiert. Bitte zuerst Spielstand laden oder starten.</Rimconemy.Economy.Wallet.Unavailable>
+
+  <!-- TradePanel -->
+  <Rimconemy.Economy.TradePanel.Title>Handelspanel</Rimconemy.Economy.TradePanel.Title>
+  <Rimconemy.Economy.TradePanel.Balance>Guthaben: {balance} Credits</Rimconemy.Economy.TradePanel.Balance>
+  <Rimconemy.Economy.TradePanel.Balance.Tooltip>Summe aller Credits im Wallet. Aktualisierung erfolgt durch WalletService-Transaktionen.</Rimconemy.Economy.TradePanel.Balance.Tooltip>
+  <Rimconemy.Economy.TradePanel.LastChange>Netto der letzten 16 Transaktionen: {change} Credits</Rimconemy.Economy.TradePanel.LastChange>
+  <Rimconemy.Economy.TradePanel.Button.SellFood>10 Nahrung verkaufen (Demo +25)</Rimconemy.Economy.TradePanel.Button.SellFood>
+  <Rimconemy.Economy.TradePanel.Button.BuyFood>Nahrung kaufen (Demo -15)</Rimconemy.Economy.TradePanel.Button.BuyFood>
+  <Rimconemy.Economy.TradePanel.LivePrice>Marktpreis für Nahrung: {price} Credits</Rimconemy.Economy.TradePanel.LivePrice>
+  <Rimconemy.Economy.TradePanel.LivePrice.NoMarket>Markt nicht verfügbar - nur Demo-Preise.</Rimconemy.Economy.TradePanel.LivePrice.NoMarket>
+  <Rimconemy.Economy.TradePanel.LivePrice.Tooltip>Deterministisches Gebot aus Market.Price("Meal"). Fällt auf "kein Markt" zurück, wenn Mod 04 keine Karte erreichen kann.</Rimconemy.Economy.TradePanel.LivePrice.Tooltip>
+  <Rimconemy.Economy.TradePanel.TxTooltip>Paket: {package} | Anfrage: {request} | Tick: {tick}</Rimconemy.Economy.TradePanel.TxTooltip>
+
+  <!-- Market -->
+  <Rimconemy.Economy.Market.Title>Markt</Rimconemy.Economy.Market.Title>
+  <Rimconemy.Economy.Market.Empty>Kein Marktkatalog geladen. Markt ist im Standalone-Profil ein Stub.</Rimconemy.Economy.Market.Empty>
+
+  <!-- Outposts -->
+  <Rimconemy.Economy.Outposts.Title>Außenposten</Rimconemy.Economy.Outposts.Title>
+  <Rimconemy.Economy.Outposts.Empty>Keine Außenposten erfasst. Outpost.state ist ein Planungs-Stub.</Rimconemy.Economy.Outposts.Empty>
+
+  <!-- Territory -->
+  <Rimconemy.Economy.Territory.Title>Gebiet</Rimconemy.Economy.Territory.Title>
+
+  <!-- Upgrades (E-T4 Platzhalter) -->
+  <Rimconemy.Economy.Upgrades.Title>Silber-Upgrades</Rimconemy.Economy.Upgrades.Title>
+</LanguageData>

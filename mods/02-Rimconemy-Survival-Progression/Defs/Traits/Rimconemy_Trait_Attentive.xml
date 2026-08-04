@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <TraitDef>
+    <defName>Rimconemy_Trait_Attentive</defName>
+    <label>aufmerksam</label>
+    <description>Beobachtet genau. Findet mehr beim Sammeln und im Bergbau.</description>
+    <degreeDatas>
+      <li>
+        <label>aufmerksam</label>
+        <description>Sammelertrag +10%, Bergbau-Geschwindigkeit +5%.</description>
+        <degree>0</degree>
+        <statOffsets>
+          <PlantHarvestYield>0.10</PlantHarvestYield>
+          <MiningSpeed>0.05</MiningSpeed>
+        </statOffsets>
+      </li>
+    </degreeDatas>
+    <commonality>0</commonality>
+  </TraitDef>
+</Defs>

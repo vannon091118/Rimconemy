@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <IdeoPresetDef>
+    <defName>Rimconemy_Ideo_Survival</defName>
+    <label>Überlebensgruppe</label>
+    <description>Eine pragmatische Gruppe, die tut was nötig ist. Gewalt gegen Infizierte ist akzeptiert.</description>
+    <memes>
+      <li>Rimconemy_Pragmatic</li>
+    </memes>
+  </IdeoPresetDef>
+</Defs>

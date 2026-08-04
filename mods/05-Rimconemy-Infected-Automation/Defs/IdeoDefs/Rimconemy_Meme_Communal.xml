@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <MemeDef>
+    <defName>Rimconemy_Communal</defName>
+    <label>Gemeinschaftsgeist</label>
+    <description>Die Gruppe hält zusammen. Ressourcen werden geteilt, Konflikte durch Dialog gelöst.</description>
+    <category>Structure</category>
+    <impact>0</impact>
+    <generalRules>
+      <rulesStrings>
+        <li>memeLeaderNoun->Sprecher</li>
+        <li>memeMoralist->Vermittler</li>
+      </rulesStrings>
+    </generalRules>
+    <worshipRoomLabel>Versammlungsraum</worshipRoomLabel>
+    <descriptionMaker>
+      <patterns>
+        <li><def>AnimistDescription</def></li>
+      </patterns>
+    </descriptionMaker>
+  </MemeDef>
+</Defs>

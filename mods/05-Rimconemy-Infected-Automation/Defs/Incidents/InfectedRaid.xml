@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Infected & Automation
+  Stable defName: Rimconemy_InfectedRaidIncident
+  1.6-Fixes:
+    - incidentClass -> workerClass (1.6-Fieldname).
+    - workerClass zeigt auf Rimconemy-Subklasse Rimconemy.InfectedAutomation.Incidents.InfectedRaidWorker
+      (statt der abstrakten RimWorld.IncidentWorker, die nicht instanziiert werden kann).
+    - incidentCategory -> category (1.6-Fieldname), zeigt auf vanilla IncidentCategoryDef "ThreatBig".
+    - targetTags=Map_PlayerHome (Core-1.6 IncidentTargetTagDef; Map allein existiert nicht).
+-->
+<Defs>
+  <IncidentDef>
+    <defName>Rimconemy_InfectedRaidIncident</defName>
+    <label>infected raid</label>
+    <description>A Rimconemy-specific raid driven by the ThreatAggregator. Vanilla wealth raids remain operational but are classified separately.</description>
+    <workerClass>Rimconemy.InfectedAutomation.Incidents.InfectedRaidWorker</workerClass>
+    <category>ThreatBig</category>
+    <targetTags>
+      <li>Map_PlayerHome</li>
+    </targetTags>
+    <baseChance>0.0</baseChance>
+  </IncidentDef>
+</Defs>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>Rimconemy Economy &amp; Territory</name>
+  <author>Rimconemy Team</author>
+  <packageId>rimconemy.economyterritory</packageId>
+  <supportedVersions>
+    <li>1.6</li>
+  </supportedVersions>
+  <modDependencies>
+    <li>
+      <packageId>brrainz.harmony</packageId>
+      <displayName>Harmony</displayName>
+      <downloadUrl>https://steamcommunity.com/workshop/filedetails/?id=2009463077</downloadUrl>
+    </li>
+  </modDependencies>
+  <loadAfter>
+    <li>rimconemy.foundation</li>
+    <li>rimconemy.survivalprogression</li>
+    <li>rimconemy.scavengerinfrastructure</li>
+  </loadAfter>
+  <description>Rimconemy Economy &amp; Territory ist allein ein spielbares Wirtschafts- und Weltkartensystem mit Credits-Wallets, regionalem Angebot und Nachfrage, Fraktionen, Outposts, Proxies, verbundenem Territorium und sichtbaren Weltkarten-Raids.</description>
+</ModMetaData>

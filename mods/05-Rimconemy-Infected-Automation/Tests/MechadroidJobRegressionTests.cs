@@ -1,0 +1,114 @@
+using System.Collections.Generic;
+using Rimconemy.InfectedAutomation.Mechadroids;
+using Verse;
+
+namespace Rimconemy.InfectedAutomation.Tests
+{
+    /// <summary>Red-first gates for the Milestone-B Mechadroid job contract.</summary>
+    public static class MechadroidJobRegressionTests
+    {
+        private static int _passed;
+        private static int _failed;
+
+        public static bool RunAll()
+        {
+            _passed = 0;
+            _failed = 0;
+
+            TestJobLifecycle();
+            TestDuplicateCompletionIsRejected();
+            TestBlockedJobHasVisibleReason();
+            TestDeterministicJobIdentity();
+
+            string summary = "[Rimconemy.InfectedAutomation] Mechadroid job regression tests: "
+                + _passed + " passed, " + _failed + " failed.";
+            if (_failed > 0)
+            {
+                Log.Error(summary);
+                return false;
+            }
+            Log.Message(summary);
+            return true;
+        }
+
+        private static void TestJobLifecycle()
+        {
+            var ledger = new MechadroidJobLedger();
+            var job = ledger.Enqueue(new MechadroidJobRequest
+            {
+                JobId = "job-lifecycle",
+                UnitId = "unit-1",
+                TargetId = "building-1",
+                IdempotencyKey = "jobs|job-lifecycle",
+                CurrentTick = 100L,
+            });
+            AssertEqual(MechadroidJobStatus.Queued, job.Status, "Jobs: enqueue creates Queued state");
+            AssertTrue(ledger.TryAssign(job.JobId, 120L), "Jobs: Queued -> Assigned");
+            AssertTrue(ledger.TryBlock(job.JobId, "missing fuel", 130L), "Jobs: Assigned -> Blocked");
+            AssertTrue(ledger.TryAssign(job.JobId, 140L), "Jobs: Blocked -> Assigned after retry");
+            AssertTrue(ledger.TryComplete(job.JobId, 150L), "Jobs: Assigned -> Completed");
+            AssertEqual(MechadroidJobStatus.Completed, ledger.Get(job.JobId).Status,
+                "Jobs: terminal status is Completed");
+        }
+
+        private static void TestDuplicateCompletionIsRejected()
+        {
+            var ledger = new MechadroidJobLedger();
+            ledger.Enqueue(new MechadroidJobRequest
+            {
+                JobId = "job-once",
+                UnitId = "unit-1",
+                TargetId = "building-1",
+                IdempotencyKey = "jobs|job-once",
+                CurrentTick = 100L,
+            });
+            ledger.TryAssign("job-once", 110L);
+            AssertTrue(ledger.TryComplete("job-once", 120L), "Jobs: first completion succeeds");
+            AssertFalse(ledger.TryComplete("job-once", 130L), "Jobs: duplicate completion rejected");
+            AssertEqual(120L, ledger.Get("job-once").LastActionTick,
+                "Jobs: duplicate completion does not rewrite action tick");
+        }
+
+        private static void TestBlockedJobHasVisibleReason()
+        {
+            var ledger = new MechadroidJobLedger();
+            ledger.Enqueue(new MechadroidJobRequest
+            {
+                JobId = "job-blocked",
+                UnitId = "unit-1",
+                TargetId = "building-1",
+                IdempotencyKey = "jobs|job-blocked",
+                CurrentTick = 100L,
+            });
+            AssertTrue(ledger.TryBlock("job-blocked", "capability unavailable", 110L),
+                "Jobs: queued job can be blocked");
+            AssertEqual("capability unavailable", ledger.Get("job-blocked").BlockReason,
+                "Jobs: blocked reason is persisted in record");
+        }
+
+        private static void TestDeterministicJobIdentity()
+        {
+            string first = MechadroidJobLedger.BuildStableJobId("unit-1", "building-1", "output-1");
+            string second = MechadroidJobLedger.BuildStableJobId("unit-1", "building-1", "output-1");
+            AssertEqual(first, second, "Jobs: stable identity is deterministic");
+        }
+
+        private static void AssertTrue(bool value, string label)
+        {
+            if (value) _passed++;
+            else { _failed++; Log.Error("[MechadroidJobRegression] " + label); }
+        }
+
+        private static void AssertFalse(bool value, string label) { AssertTrue(!value, label); }
+
+        private static void AssertEqual<T>(T expected, T actual, string label)
+        {
+            if (EqualityComparer<T>.Default.Equals(expected, actual)) _passed++;
+            else
+            {
+                _failed++;
+                Log.Error("[MechadroidJobRegression] " + label + ": expected " + expected + ", got " + actual);
+            }
+        }
+    }
+}

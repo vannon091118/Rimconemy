@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Phase-7 DLC-Layer Patch (F1-Anomaly-Entities-and-Void-Suppression)
+  siehe docs/DECISIONS_DLC.md.
+
+  Conditional: wirkt nur wenn Anomaly installiert ist.
+  Wirkung (Cat 2 Suppression):
+    1. Anomaly-Entity-Incidents: Noctol, Revenant, Devourer, Fleshbeast,
+       Metal-Horror alle baseChance=0 (kein SetPiece-Spawn aus der
+       Anomaly-StorytellerComp).
+    2. Void-Events: Darkness + PsychicSoothe + Void-Raids = baseChance=0.
+    3. Shamblers bleiben aktiv (Anomaly.Shamblers = true) — sie sind die
+       genetische Basis der Rimconomy-Infected in Mod 05.
+
+  Hurt: Wenn die Def-Namen je umbenannt werden, no-op wirksam.
+  Anomaly-Incident-DefNamen abhängig von Ludeon-RimWorld-Anomaly-Patch-Level.
+-->
+<Patch>
+  <Operation Class="PatchOperationFindMod">
+    <mods>
+      <li>Ludeon.RimWorld.Anomaly</li>
+    </mods>
+    <match Class="PatchOperationSequence">
+      <success>Always</success>
+      <operations>
+
+        <!--
+          Horror-Entity-Incidents auf 0. Diese generieren Vanilla-Anomaly-
+          Bedrohungen die unabhängig von einem Rimconomy-StoryDirector laufen.
+          Hurt: DefNamen sind Ludeon-DLC-spezifisch. Hier listen wir die
+          bekanntesten auf — fehlende Namen sind no-ops.
+        -->
+        <li Class="PatchOperationConditional">
+          <xpath>/Defs/IncidentDef[defName="Horror_MonsterSpawn"]/baseChance</xpath>
+          <match Class="PatchOperationReplace">
+            <xpath>/Defs/IncidentDef[defName="Horror_MonsterSpawn"]/baseChance</xpath>
+            <value>
+              <baseChance>0</baseChance>
+            </value>
+          </match>
+        </li>
+        <li Class="PatchOperationConditional">
+          <xpath>/Defs/IncidentDef[defName="Revenant"]/baseChance</xpath>
+          <match Class="PatchOperationReplace">
+            <xpath>/Defs/IncidentDef[defName="Revenant"]/baseChance</xpath>
+            <value>
+              <baseChance>0</baseChance>
+            </value>
+          </match>
+        </li>
+        <li Class="PatchOperationConditional">
+          <xpath>/Defs/IncidentDef[defName="Devourer"]/baseChance</xpath>
+          <match Class="PatchOperationReplace">
+            <xpath>/Defs/IncidentDef[defName="Devourer"]/baseChance</xpath>
+            <value>
+              <baseChance>0</baseChance>
+            </value>
+          </match>
+        </li>
+        <li Class="PatchOperationConditional">
+          <xpath>/Defs/IncidentDef[defName="Noctol"]/baseChance</xpath>
+          <match Class="PatchOperationReplace">
+            <xpath>/Defs/IncidentDef[defName="Noctol"]/baseChance</xpath>
+            <value>
+              <baseChance>0</baseChance>
+            </value>
+          </match>
+        </li>
+        <li Class="PatchOperationConditional">
+          <xpath>/Defs/IncidentDef[defName="PsychicSootheIncident"]/baseChance</xpath>
+          <match Class="PatchOperationReplace">
+            <xpath>/Defs/IncidentDef[defName="PsychicSootheIncident"]/baseChance</xpath>
+            <value>
+              <baseChance>0</baseChance>
+            </value>
+          </match>
+        </li>
+        <li Class="PatchOperationConditional">
+          <xpath>/Defs/IncidentDef[defName="DarknessIncident"]/baseChance</xpath>
+          <match Class="PatchOperationReplace">
+            <xpath>/Defs/IncidentDef[defName="DarknessIncident"]/baseChance</xpath>
+            <value>
+              <baseChance>0</baseChance>
+            </value>
+          </match>
+        </li>
+
+      </operations>
+    </match>
+  </Operation>
+</Patch>

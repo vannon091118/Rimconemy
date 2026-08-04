@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <IdeoPresetDef>
+    <defName>Rimconemy_Ideo_Refuge</defName>
+    <label>Zuflucht-Gemeinschaft</label>
+    <description>Eine Gemeinschaft von Überlebenden, die auf Zusammenarbeit und Ressourcenteilung setzt.</description>
+    <memes>
+      <li>Rimconemy_Communal</li>
+    </memes>
+  </IdeoPresetDef>
+</Defs>

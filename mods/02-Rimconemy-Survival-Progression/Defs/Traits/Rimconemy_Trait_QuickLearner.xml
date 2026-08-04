@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <TraitDef>
+    <defName>Rimconemy_Trait_QuickLearner</defName>
+    <label>schneller Lerner</label>
+    <description>Lernt außergewöhnlich schnell. Erhöhte XP-Rate.</description>
+    <degreeDatas>
+      <li>
+        <label>schneller Lerner</label>
+        <description>XP-Rate +20%.</description>
+        <degree>0</degree>
+        <statOffsets>
+          <GlobalLearningFactor>0.20</GlobalLearningFactor>
+        </statOffsets>
+      </li>
+    </degreeDatas>
+    <commonality>0</commonality>
+  </TraitDef>
+</Defs>

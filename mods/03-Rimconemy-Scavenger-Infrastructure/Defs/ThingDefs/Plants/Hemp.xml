@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure
+  Stable defNames: Rimconemy_Hemp, Rimconemy_QuickRicePlant
+  DLC condition: none
+  Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> Scavenger -> later packages
+  Vanilla anchor: ThingDef (ParentName=PlantBase) + sub-element <plant>.
+  P36 closure: paired plant defs for the existing harvest ThingDefs so the
+  farm -> harvest loop is sowable. Lifecycle/growth stays at vanilla defaults;
+  cosmetic growth-stage graphics reused from neighbouring vanilla crops until
+  Q16 ships dedicated art.
+-->
+<Defs>
+  <ThingDef ParentName="PlantBase">
+    <defName>Rimconemy_Hemp</defName>
+    <label>hemp</label>
+    <description>Industrial fibre crop. Leaf harvested as Rimconemy_HempLeafy; never food; trade-only.</description>
+    <thingClass>Plant</thingClass>
+    <statBases>
+      <Nutrition>0</Nutrition>
+    </statBases>
+    <graphicData>
+      <!-- Vanilla plant fallback; dedicated hemp art remains a later content task. -->
+      <texPath>Things/Plant/Agave</texPath>
+      <graphicClass>Graphic_Random</graphicClass>
+      <drawSize>1.0</drawSize>
+    </graphicData>
+    <ingestible>
+      <preferability>NeverForNutrition</preferability>
+    </ingestible>
+    <plant>
+      <harvestedThingDef>Rimconemy_HempLeafy</harvestedThingDef>
+      <harvestTag>Standard</harvestTag>
+      <sowTags>
+        <li>Ground</li>
+        <li>Hydroponic</li>
+      </sowTags>
+      <growDays>12</growDays>
+      <harvestWork>600</harvestWork>
+      <harvestYield>4</harvestYield>
+      <fertilityMin>0.55</fertilityMin>
+      <fertilitySensitivity>0.7</fertilitySensitivity>
+    </plant>
+  </ThingDef>
+  <ThingDef ParentName="PlantBase">
+    <defName>Rimconemy_QuickRicePlant</defName>
+    <label>quick rice</label>
+    <description>Fast-growing rice grain crop. Harvest leaf as Rimconemy_QuickRice; counts as food.</description>
+    <thingClass>Plant</thingClass>
+    <statBases>
+      <Nutrition>0.175</Nutrition>
+    </statBases>
+    <graphicData>
+      <!-- Vanilla rice fallback; dedicated quick-rice art remains a later content task. -->
+      <texPath>Things/Plant/RicePlant</texPath>
+      <graphicClass>Graphic_Random</graphicClass>
+      <drawSize>1.0</drawSize>
+    </graphicData>
+    <ingestible />
+    <plant>
+      <harvestedThingDef>Rimconemy_QuickRice</harvestedThingDef>
+      <harvestTag>Standard</harvestTag>
+      <sowTags>
+        <li>Ground</li>
+        <li>Hydroponic</li>
+      </sowTags>
+      <growDays>6</growDays>
+      <harvestWork>400</harvestWork>
+      <harvestYield>6</harvestYield>
+      <fertilityMin>0.45</fertilityMin>
+      <fertilitySensitivity>0.6</fertilitySensitivity>
+      <purpose>Food</purpose>
+      <humanFoodPlant>true</humanFoodPlant>
+    </plant>
+  </ThingDef>
+</Defs>

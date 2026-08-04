@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <TraitDef>
+    <defName>Rimconemy_Trait_Hesitant</defName>
+    <label>zögerlich</label>
+    <description>Zögert in kritischen Momenten. Kampf-Debuff, soziale Unsicherheit.</description>
+    <degreeDatas>
+      <li>
+        <label>zögerlich</label>
+        <description>Schützen-/Nahkampf-Genauigkeit −10%, Sozial −5%.</description>
+        <degree>0</degree>
+        <statOffsets>
+          <ShootingAccuracyPawn>-0.10</ShootingAccuracyPawn>
+          <MeleeHitChance>-0.10</MeleeHitChance>
+          <SocialImpact>-0.05</SocialImpact>
+        </statOffsets>
+      </li>
+    </degreeDatas>
+    <commonality>0</commonality>
+  </TraitDef>
+</Defs>

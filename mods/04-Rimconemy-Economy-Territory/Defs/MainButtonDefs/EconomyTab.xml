@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <MainButtonDef>
+    <defName>RimconemyEconomy</defName>
+    <label>Economy</label>
+    <description>Rimconemy economy hub: wallet, markets and outposts.</description>
+    <tabWindowClass>Rimconemy.EconomyTerritory.Wallet.EconomyHub</tabWindowClass>
+    <order>57</order>
+  </MainButtonDef>
+</Defs>

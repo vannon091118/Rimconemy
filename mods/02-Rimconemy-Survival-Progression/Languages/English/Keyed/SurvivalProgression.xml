@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Survival & Progression
+  Language: English
+  Prefix convention: Rimconemy.Survival.* (short, matches Rimconemy.Scavenger/Economy/Infected siblings).
+-->
+<LanguageData>
+  <Rimconemy.Survival.Title>Survival</Rimconemy.Survival.Title>
+  <Rimconemy.Survival.Profile.Standalone>Survival Standalone</Rimconemy.Survival.Profile.Standalone>
+  <Rimconemy.Survival.Needs.Food>Food</Rimconemy.Survival.Needs.Food>
+  <Rimconemy.Survival.Needs.Safety>Safety</Rimconemy.Survival.Needs.Safety>
+  <Rimconemy.Survival.Needs.Social>Social</Rimconemy.Survival.Needs.Social>
+
+  <!-- Setting Needdef descriptions (Track 2-C / S-T1) -->
+  <Rimconemy.Survival.NeedDef.Rimconemy_Need_Food>Survival-Food (projection of vanilla Food)</Rimconemy.Survival.NeedDef.Rimconemy_Need_Food>
+  <Rimconemy.Survival.NeedDef.Rimconemy_Need_Food.Description>Composite map of nutrition. 1.0 = well fed, 0.0 = starving. Sourced from vanilla Food.</Rimconemy.Survival.NeedDef.Rimconemy_Need_Food.Description>
+  <Rimconemy.Survival.NeedDef.Rimconemy_Need_Safety>Survival-Safety (projection of vanilla Health + Rest)</Rimconemy.Survival.NeedDef.Rimconemy_Need_Safety>
+  <Rimconemy.Survival.NeedDef.Rimconemy_Need_Safety.Description>Composite map of safety. 1.0 = healthy and rested, 0.0 = critically wounded. 65% vanilla Health + 35% vanilla Rest.</Rimconemy.Survival.NeedDef.Rimconemy_Need_Safety.Description>
+  <Rimconemy.Survival.NeedDef.Rimconemy_Need_Social>Survival-Social (projection of vanilla Recreation)</Rimconemy.Survival.NeedDef.Rimconemy_Need_Social>
+  <Rimconemy.Survival.NeedDef.Rimconemy_Need_Social.Description>Composite map of social well-being. 1.0 = recreationally fulfilled, 0.0 = bored. Sourced from vanilla Recreation (1.6) or Joy (legacy).</Rimconemy.Survival.NeedDef.Rimconemy_Need_Social.Description>
+  <Rimconemy.Survival.WorkXp.Domain.Building>Building XP</Rimconemy.Survival.WorkXp.Domain.Building>
+  <Rimconemy.Survival.WorkXp.Domain.Farming>Farming XP</Rimconemy.Survival.WorkXp.Domain.Farming>
+  <Rimconemy.Survival.WorkXp.Domain.Power>Power XP</Rimconemy.Survival.WorkXp.Domain.Power>
+  <Rimconemy.Survival.GameOver.Reason.LastPawn>All player-controlled colonists have died.</Rimconemy.Survival.GameOver.Reason.LastPawn>
+  <Rimconemy.Survival.Scenario.SingleSurvivor>Rimconemy Single Survivor</Rimconemy.Survival.Scenario.SingleSurvivor>
+
+  <!-- SkillBudget Window (Phase A-1, H5 §3) -->
+  <Rimconemy.UI.SkillBudget.Window.Title>Skill Budget</Rimconemy.UI.SkillBudget.Window.Title>
+  <Rimconemy.UI.SkillBudget.Budget.Label>Spent: {0} of {1} points</Rimconemy.UI.SkillBudget.Budget.Label>
+  <Rimconemy.UI.SkillBudget.Zone.Buffer>Buffer zone — no trait modifier</Rimconemy.UI.SkillBudget.Zone.Buffer>
+  <Rimconemy.UI.SkillBudget.Zone.Positive>Positive trait slot</Rimconemy.UI.SkillBudget.Zone.Positive>
+  <Rimconemy.UI.SkillBudget.Zone.Negative>Negative trait slots</Rimconemy.UI.SkillBudget.Zone.Negative>
+  <Rimconemy.UI.SkillBudget.Tooltip>Spend balance: {0} (centre: 25). Lower than -5 → negative traits. Higher than +3 → positive trait.</Rimconemy.UI.SkillBudget.Tooltip>
+  <Rimconemy.UI.SkillBudget.Button.Standard>Standard (reset)</Rimconemy.UI.SkillBudget.Button.Standard>
+  <Rimconemy.UI.SkillBudget.Button.Apply>Apply</Rimconemy.UI.SkillBudget.Button.Apply>
+  <Rimconemy.UI.SkillBudget.Warning.OverBudget>Over budget — reduce by one or more skills before applying.</Rimconemy.UI.SkillBudget.Warning.OverBudget>
+  <Rimconemy.UI.SkillBudget.Message.Applied>Skill budget applied. Good luck out there!</Rimconemy.UI.SkillBudget.Message.Applied>
+</LanguageData>

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure
+  Stable defNames:
+    Rimconemy_WoodCoalGenerator    - solid fuel (wood/chemfuel)
+    Rimconemy_WaterTurbineGenerator - liquid fuel only (distilled water)
+    Rimconemy_TurbineWaterPump      - power consumer
+    Rimconemy_ArrowTurret_Power     - powered arrow turret
+  1.6-Fixes:
+    - CompProperties_PowerPlant/basePowerGeneration -> CompProperties_Power with negative
+      basePowerConsumption; this is the verified 1.6 generator convention in the local Core defs.
+    - compClass CompPowerConsumer -> CompPowerTrader (1.6 hat keinen "Consumer", CompPowerTrader
+      ist die solide Klasse fuer sowohl Produktion als auch Verbrauch).
+    - CompProperties_Turret -> CompProperties_TurretGun (1.6 hat kein _Turret).
+    - tickerType=Normal an allen BuildingDef mit Refuelable (CompRefuelable verlangt Normaler Tickrate,
+      sonst ConfigError "Refuelable component set to consume fuel per tick, but parent tickertype
+      is Never instead of Normal").
+    - Texturepfade mit nicht vorhandenen Generatornamen werden auf bestaetigte Core-Pfade
+      (WoodFiredGenerator und LampSun) zurueckgefuehrt.
+    - PowerProduction / SecurityTurrets nicht vanilla -> Rimconemy_PowerProduction / Rimconemy_SecurityTurrets.
+-->
+<Defs>
+  <ThingDef ParentName="BuildingBase">
+    <defName>Rimconemy_WoodCoalGenerator</defName>
+    <label>wood-fuel generator</label>
+    <description>Burning wood or chemfuel produces modest continuous power. Without fuel, it goes offline.</description>
+    <graphicData>
+      <texPath>Things/Building/Power/WoodFiredGenerator</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawSize>1.5</drawSize>
+    </graphicData>
+    <tickerType>Normal</tickerType>
+    <minifiedDef>MinifiedThing</minifiedDef>
+    <comps>
+      <li Class="CompProperties_Power">
+        <compClass>CompPowerPlant</compClass>
+        <basePowerConsumption>-2400</basePowerConsumption>
+        <transmitsPower>true</transmitsPower>
+      </li>
+      <li Class="CompProperties_Refuelable">
+        <fuelFilter>
+          <thingDefs>
+            <li>WoodLog</li>
+            <li>Chemfuel</li>
+          </thingDefs>
+        </fuelFilter>
+        <fuelCapacity>120</fuelCapacity>
+        <fuelConsumptionRate>1.0</fuelConsumptionRate>
+      </li>
+    </comps>
+    <statBases>
+      <MaxHitPoints>200</MaxHitPoints>
+      <WorkToBuild>1800</WorkToBuild>
+      <MarketValue>650</MarketValue>
+      <Mass>8</Mass>
+    </statBases>
+    <thingCategories>
+      <li>Rimconemy_PowerProduction</li>
+    </thingCategories>
+  </ThingDef>
+
+  <ThingDef ParentName="BuildingBase">
+    <defName>Rimconemy_WaterTurbineGenerator</defName>
+    <label>water turbine generator</label>
+    <description>Burns distilled water in a closed steam cycle to produce mid-tier power. No water supply -> offline.</description>
+    <graphicData>
+      <texPath>Things/Building/Production/LampSun</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawSize>1.5</drawSize>
+    </graphicData>
+    <tickerType>Normal</tickerType>
+    <minifiedDef>MinifiedThing</minifiedDef>
+    <comps>
+      <li Class="CompProperties_Power">
+        <compClass>CompPowerPlant</compClass>
+        <basePowerConsumption>-3200</basePowerConsumption>
+        <transmitsPower>true</transmitsPower>
+      </li>
+      <li Class="CompProperties_Refuelable">
+        <fuelFilter>
+          <thingDefs>
+            <li>Rimconemy_DistilledWater</li>
+          </thingDefs>
+        </fuelFilter>
+        <fuelCapacity>60</fuelCapacity>
+        <fuelConsumptionRate>0.5</fuelConsumptionRate>
+      </li>
+    </comps>
+    <statBases>
+      <MaxHitPoints>220</MaxHitPoints>
+      <WorkToBuild>2200</WorkToBuild>
+      <MarketValue>850</MarketValue>
+      <Mass>8</Mass>
+    </statBases>
+    <thingCategories>
+      <li>Rimconemy_PowerProduction</li>
+    </thingCategories>
+  </ThingDef>
+
+  <ThingDef ParentName="BuildingBase">
+    <defName>Rimconemy_TurbineWaterPump</defName>
+    <label>turbine water pump</label>
+    <description>Pumps distilled water from flat rivers into storage. Required for fuel pre-processing.</description>
+    <graphicData>
+      <texPath>Things/Building/Production/LampSun</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawSize>1.5</drawSize>
+    </graphicData>
+    <tickerType>Normal</tickerType>
+    <minifiedDef>MinifiedThing</minifiedDef>
+    <comps>
+      <li Class="CompProperties_Power">
+        <compClass>CompPowerTrader</compClass>
+        <basePowerConsumption>200</basePowerConsumption>
+      </li>
+    </comps>
+    <statBases>
+      <MaxHitPoints>150</MaxHitPoints>
+      <WorkToBuild>900</WorkToBuild>
+      <MarketValue>400</MarketValue>
+      <Mass>8</Mass>
+    </statBases>
+    <thingCategories>
+      <li>Rimconemy_PowerProduction</li>
+    </thingCategories>
+  </ThingDef>
+
+  <ThingDef ParentName="BuildingBase">
+    <defName>Rimconemy_ArrowTurret_Power</defName>
+    <label>arrow turret (powered)</label>
+    <description>Defensive turret that fires steel arrows. Requires power; falls back to Blocked when offline.</description>
+    <thingClass>Building_TurretGun</thingClass>
+    <drawerType>MapMeshAndRealTime</drawerType>
+    <altitudeLayer>Building</altitudeLayer>
+    <passability>PassThroughOnly</passability>
+    <size>(1,1)</size>
+    <minifiedDef>MinifiedThing</minifiedDef>
+    <graphicData>
+      <!-- Vanilla turret/gun fallback for the scaffold; dedicated arrow projectile/gun remains Q16 work -->
+      <texPath>Things/Building/Security/TurretMini_Base</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawSize>1.1</drawSize>
+    </graphicData>
+    <building>
+      <turretGunDef>Gun_MiniTurret</turretGunDef>
+      <turretBurstCooldownTime>4.0</turretBurstCooldownTime>
+      <turretTopDrawSize>1.0</turretTopDrawSize>
+    </building>
+    <tickerType>Normal</tickerType>
+    <comps>
+      <li Class="CompProperties_Power">
+        <compClass>CompPowerTrader</compClass>
+        <basePowerConsumption>50</basePowerConsumption>
+      </li>
+    </comps>
+    <statBases>
+      <MaxHitPoints>180</MaxHitPoints>
+      <WorkToBuild>800</WorkToBuild>
+      <MarketValue>600</MarketValue>
+      <Mass>8</Mass>
+    </statBases>
+    <thingCategories>
+      <li>Rimconemy_SecurityTurrets</li>
+    </thingCategories>
+  </ThingDef>
+</Defs>

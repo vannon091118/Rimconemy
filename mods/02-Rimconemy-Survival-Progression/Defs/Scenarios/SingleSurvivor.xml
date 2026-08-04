@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Survival & Progression
+  Stable defName: Rimconemy_SingleSurvivor
+  DLC condition: none
+  Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> later packages
+  Vanilla anchor: ScenarioDef.scenario with nested playerFaction, surfaceLayer and parts.
+  SPIKE: API-RESEARCH-01 / API-GAMEOVER-01.
+-->
+<Defs>
+  <ScenarioDef Name="Rimconemy_SingleSurvivor" ParentName="ScenarioBase">
+    <defName>Rimconemy_SingleSurvivor</defName>
+    <label>Rimconemy Single Survivor</label>
+    <description>One controllable colonist, Vanilla storyteller, no scripted chronicles. Game-over triggers only via Rimconemy's GameOver detector, never via vanilla wealth-zero panic.</description>
+    <scenario>
+      <summary>One Rimconemy survivor with the Vanilla storyteller and arrival pipeline.</summary>
+      <playerFaction>
+        <def>PlayerFaction</def>
+        <factionDef>PlayerColony</factionDef>
+      </playerFaction>
+      <surfaceLayer>
+        <def>SurfaceLayerFixed</def>
+        <tag>Surface</tag>
+        <layer>Surface</layer>
+        <settingsDef>Surface</settingsDef>
+        <hide>true</hide>
+      </surfaceLayer>
+      <parts>
+        <li Class="ScenPart_ConfigPage_ConfigureStartingPawns">
+          <def>ConfigPage_ConfigureStartingPawns</def>
+          <pawnCount>1</pawnCount>
+          <pawnChoiceCount>8</pawnChoiceCount>
+        </li>
+        <li Class="ScenPart_PlayerPawnsArriveMethod">
+          <def>PlayerPawnsArriveMethod</def>
+          <method>DropPods</method>
+          <visible>false</visible>
+        </li>
+      </parts>
+    </scenario>
+  </ScenarioDef>
+</Defs>

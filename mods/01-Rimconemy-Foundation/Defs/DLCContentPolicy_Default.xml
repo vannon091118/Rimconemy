@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Phase-7 DLC-Content-Policy-Layer Phase-2 — Default Override XML
+  Foundation, 2026-08-04.
+
+  Diese Datei dokumentiert das Override-Schema für DLCContentPolicy.
+  Aktuell enablet sie dieselben Werte die in Foundation/Source/DLC/DLCContentPolicy.cs
+  hartkodiert sind — das ist absichtlich idempotent: der Override zeigt keine Verhaltensänderung,
+  ist aber Vorlage für ContentPack- oder Player-Overrides.
+
+  ## Format
+
+  - Pro Eintrag ein <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry"> innerhalb von <policies>
+    (Full-Qualified-Class-Name für Scribe-Robustheit gegen Scribe-Hash-Kollisionen)
+  - PolicyPath: "SubClass.Field" Format (z.B. "Anomaly.Shamblers")
+  - Value: bool-Wert (true/false) — CAPITAL V weil C#-Property `public bool Value`
+
+  ## Verfügbare Felder (Stand 2026-08-04)
+
+  Royalty:    HonorSystem, Bestower, Psycasts, QuestsAndShuttles
+  Ideology:   ThoughtSystem, PlayerFounder, RitualUi, PlayerEdit, PreceptUi
+  Anomaly:    Shamblers, Ghouls, Entities, VoidEvents, HoldBuildings
+  Odyssey:    GravShip, Fishing, TravelEvents
+  Biotech:    Mechanitor, Children, Pollution, Toxifier, MechGestator
+
+  ## Override-Semantik
+
+  - Mehrere DLCContentPolicyDef-Defs erlaubt. Last-Writer-Wins pro Field.
+  - Tippfehler im PolicyPath führt zu Log.Warning + skip (kein Crash).
+  - Wenn keine Override-Def geladen ist, bleiben hartkodierte Phase-1-Werte aktiv.
+-->
+<Defs>
+  <Rimconemy.Foundation.DLC.DLCContentPolicyDef>
+    <defName>Rimconemy_DLCContentPolicy_Default</defName>
+    <policies>
+      <!-- Royalty: alle suppressed -->
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Royalty.HonorSystem</PolicyPath>
+        <Value>false</Value>
+      </li>
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Royalty.Bestower</PolicyPath>
+        <Value>false</Value>
+      </li>
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Royalty.Psycasts</PolicyPath>
+        <Value>false</Value>
+      </li>
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Royalty.QuestsAndShuttles</PolicyPath>
+        <Value>false</Value>
+      </li>
+
+      <!-- Ideology: ThoughtSystem an, Rest suppressed -->
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Ideology.ThoughtSystem</PolicyPath>
+        <Value>true</Value>
+      </li>
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Ideology.PlayerFounder</PolicyPath>
+        <Value>false</Value>
+      </li>
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Ideology.RitualUi</PolicyPath>
+        <Value>false</Value>
+      </li>
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Ideology.PlayerEdit</PolicyPath>
+        <Value>false</Value>
+      </li>
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Ideology.PreceptUi</PolicyPath>
+        <Value>false</Value>
+      </li>
+
+      <!-- Anomaly: Shamblers an (genetische Basis), Rest suppressed -->
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Anomaly.Shamblers</PolicyPath>
+        <Value>true</Value>
+      </li>
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Anomaly.Ghouls</PolicyPath>
+        <Value>false</Value>
+      </li>
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Anomaly.Entities</PolicyPath>
+        <Value>false</Value>
+      </li>
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Anomaly.VoidEvents</PolicyPath>
+        <Value>false</Value>
+      </li>
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Anomaly.HoldBuildings</PolicyPath>
+        <Value>false</Value>
+      </li>
+
+      <!-- Odyssey: GravShip an (Territory-Engine), Rest suppressed -->
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Odyssey.GravShip</PolicyPath>
+        <Value>true</Value>
+      </li>
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Odyssey.Fishing</PolicyPath>
+        <Value>false</Value>
+      </li>
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Odyssey.TravelEvents</PolicyPath>
+        <Value>false</Value>
+      </li>
+
+      <!-- Biotech: alle suppressed (Mod 05 hat eigene Mechadroids) -->
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Biotech.Mechanitor</PolicyPath>
+        <Value>false</Value>
+      </li>
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Biotech.Children</PolicyPath>
+        <Value>false</Value>
+      </li>
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Biotech.Pollution</PolicyPath>
+        <Value>false</Value>
+      </li>
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Biotech.Toxifier</PolicyPath>
+        <Value>false</Value>
+      </li>
+      <li Class="Rimconemy.Foundation.DLC.DLCPolicyEntry">
+        <PolicyPath>Biotech.MechGestator</PolicyPath>
+        <Value>false</Value>
+      </li>
+    </policies>
+  </Rimconemy.Foundation.DLC.DLCContentPolicyDef>
+</Defs>

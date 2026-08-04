@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure
+  Stable defNames: Rimconemy_HempLeafy, Rimconemy_QuickRice
+  1.6-Fixes:
+    - Harvest products inherit ResourceBase, not PlantBase; the sowable plants live in
+      Defs/ThingDefs/Plants/Hemp.xml and point back here via harvestedThingDef.
+    - Graphic_Stacked -> Graphic_StackCount (StackCount ist die 1.6-Stack-Item-Klasse).
+    - HempLeafy: drawGUIOverlay=true explizit; es gibt keinen ingestible-Block,
+      damit das Produkt nicht als Nahrung behandelt wird.
+    - QuickRice: harvest product inherits PlantFoodRawBase for vanilla Nutrition/
+      ingestible behaviour; foodType=Seed and drawGUIOverlay=true are explicit.
+-->
+<Defs>
+  <ThingDef ParentName="ResourceBase">
+    <defName>Rimconemy_HempLeafy</defName>
+    <label>hemp leaf</label>
+    <description>A fibrous plant harvested from hemp fields. Always non-food and trade-only.</description>
+    <graphicData>
+      <texPath>Things/Item/Resource/StoneBlocks</texPath>
+      <graphicClass>Graphic_StackCount</graphicClass>
+      <drawSize>0.85</drawSize>
+    </graphicData>
+    <statBases>
+      <MaxHitPoints>60</MaxHitPoints>
+      <Mass>0.05</Mass>
+      <MarketValue>4.0</MarketValue>
+    </statBases>
+    <thingCategories>
+      <li>Rimconemy_IndustrialCrops</li>
+    </thingCategories>
+    <comps>
+      <li Class="CompProperties_Forbiddable" />
+    </comps>
+    <drawGUIOverlay>true</drawGUIOverlay>
+    <stackLimit>200</stackLimit>
+  </ThingDef>
+  <ThingDef ParentName="PlantFoodRawBase">
+    <defName>Rimconemy_QuickRice</defName>
+    <label>rice grain (raw)</label>
+    <description>Fast-growing crop that doubles as emergency food supply and serves as Rimconemy starting food.</description>
+    <graphicData>
+      <texPath>Things/Item/Resource/StoneBlocks</texPath>
+      <graphicClass>Graphic_StackCount</graphicClass>
+      <drawSize>0.85</drawSize>
+    </graphicData>
+    <statBases>
+      <MarketValue>3.0</MarketValue>
+    </statBases>
+    <ingestible>
+      <foodType>Seed</foodType>
+    </ingestible>
+    <thingCategories>
+      <li>FoodRaw</li>
+      <li>Rimconemy_StapleCrops</li>
+    </thingCategories>
+    <drawGUIOverlay>true</drawGUIOverlay>
+    <stackLimit>300</stackLimit>
+  </ThingDef>
+</Defs>

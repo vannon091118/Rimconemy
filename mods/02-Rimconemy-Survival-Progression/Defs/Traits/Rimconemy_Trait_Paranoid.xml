@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <TraitDef>
+    <defName>Rimconemy_Trait_Paranoid</defName>
+    <label>paranoid</label>
+    <description>Misstrauisch gegenüber Fremden. Sozial-Interaktionen sind schwieriger.</description>
+    <degreeDatas>
+      <li>
+        <label>paranoid</label>
+        <description>Sozial −15%, Stimmungs-Debuff bei unbekannten Pawns.</description>
+        <degree>0</degree>
+        <statOffsets>
+          <SocialImpact>-0.15</SocialImpact>
+          <NegotiationAbility>-0.15</NegotiationAbility>
+        </statOffsets>
+      </li>
+    </degreeDatas>
+    <commonality>0</commonality>
+  </TraitDef>
+</Defs>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+  <RimconemyFoundation.Title>Rimconemy Foundation</RimconemyFoundation.Title>
+  <RimconemyFoundation.Profile.Label>Profil</RimconemyFoundation.Profile.Label>
+  <RimconemyFoundation.Profile.Standalone>Standalone (nur Foundation)</RimconemyFoundation.Profile.Standalone>
+  <RimconemyFoundation.Profile.Partial>Teilprofil</RimconemyFoundation.Profile.Partial>
+  <RimconemyFoundation.Profile.Full>Full Overhaul</RimconemyFoundation.Profile.Full>
+  <RimconemyFoundation.Profile.Unknown>Unbekannt</RimconemyFoundation.Profile.Unknown>
+  <RimconemyFoundation.Profile.Packages>Pakete</RimconemyFoundation.Profile.Packages>
+  <RimconemyFoundation.Profile.Loaded>geladen</RimconemyFoundation.Profile.Loaded>
+  <RimconemyFoundation.Profile.Missing>fehlend</RimconemyFoundation.Profile.Missing>
+  <RimconemyFoundation.Profile.IntegrationUnavailable>Integration nicht verfügbar: Foundation bleibt im Diagnose-Standalone-/Teilprofil, bis alle erforderlichen Pakete und DLCs vorhanden sind.</RimconemyFoundation.Profile.IntegrationUnavailable>
+  <RimconemyFoundation.Dlc.Title>DLC-Status</RimconemyFoundation.Dlc.Title>
+  <RimconemyFoundation.Packages.Title>Rimconemy-Pakete</RimconemyFoundation.Packages.Title>
+  <RimconemyFoundation.Packages.ActiveFull>Aktiv (Full-kompatibel)</RimconemyFoundation.Packages.ActiveFull>
+  <RimconemyFoundation.Packages.ActiveStandalone>Aktiv (nur Standalone)</RimconemyFoundation.Packages.ActiveStandalone>
+  <RimconemyFoundation.Status.Active>Aktiv</RimconemyFoundation.Status.Active>
+  <RimconemyFoundation.Status.NotInstalled>Nicht installiert</RimconemyFoundation.Status.NotInstalled>
+  <RimconemyFoundation.Status.Initialized>Initialisiert</RimconemyFoundation.Status.Initialized>
+  <RimconemyFoundation.Status.NotInitialized>Nicht initialisiert</RimconemyFoundation.Status.NotInitialized>
+  <RimconemyFoundation.Save.Title>Save-Status</RimconemyFoundation.Save.Title>
+  <RimconemyFoundation.Save.Schema>Schema</RimconemyFoundation.Save.Schema>
+  <RimconemyFoundation.Save.Current>aktuell</RimconemyFoundation.Save.Current>
+  <RimconemyFoundation.Save.MigrationApplied>Migration angewendet</RimconemyFoundation.Save.MigrationApplied>
+  <RimconemyFoundation.Save.NoMigration>Keine Migration erforderlich.</RimconemyFoundation.Save.NoMigration>
+  <RimconemyFoundation.Save.NotLoaded>Save nicht geladen (Hauptmenü).</RimconemyFoundation.Save.NotLoaded>
+  <RimconemyFoundation.Events.Title>Ereignislog</RimconemyFoundation.Events.Title>
+  <RimconemyFoundation.Events.Entries>Einträge</RimconemyFoundation.Events.Entries>
+  <RimconemyFoundation.Events.Empty>Noch keine Ereignisse aufgezeichnet.</RimconemyFoundation.Events.Empty>
+  <RimconemyFoundation.Events.More>Weitere Ereignisse</RimconemyFoundation.Events.More>
+  <RimconemyFoundation.Inventory.Title>Def-Inventur geladen</RimconemyFoundation.Inventory.Title>
+  <RimconemyFoundation.Inventory.TotalOwners>Eigentümer</RimconemyFoundation.Inventory.TotalOwners>
+  <RimconemyFoundation.Inventory.TotalDefs>Einträge</RimconemyFoundation.Inventory.TotalDefs>
+  <RimconemyFoundation.Inventory.Empty>Noch keine Defs für einen Rimconemy-Eigentümer erfasst.</RimconemyFoundation.Inventory.Empty>
+  <RimconemyFoundation.Inventory.NotLoaded>Inventur noch nicht erfasst (diesen Tab nach dem Ladevorgang öffnen).</RimconemyFoundation.Inventory.NotLoaded>
+  <RimconemyFoundation.VanillaInventory.Title>Vanilla-+-DLC-Snapshot</RimconemyFoundation.VanillaInventory.Title>
+  <RimconemyFoundation.VanillaInventory.Summary>{0} Vanilla-ThingDefs ({1} davon Stuff) aus {2} Nicht-Rimconemy-Eigentümern.</RimconemyFoundation.VanillaInventory.Summary>
+  <RimconemyFoundation.VanillaInventory.Empty>Noch keine Vanilla-ThingDefs erfasst.</RimconemyFoundation.VanillaInventory.Empty>
+  <RimconemyFoundation.VanillaInventory.NotLoaded>Vanilla-Snapshot noch nicht erfasst (diesen Tab nach dem Ladevorgang öffnen).</RimconemyFoundation.VanillaInventory.NotLoaded>
+  <RimconemyFoundation.VanillaInventory.MissingPower>Livewelt-Zustand (Strom, Inventare, Forschungsfortschritt) bleibt hier außen vor — siehe P25 + UI_REASON.</RimconemyFoundation.VanillaInventory.MissingPower>
+  <RimconemyTheme.Section.Default>Abschnitt</RimconemyTheme.Section.Default>
+  <RimconemyTheme.EmptyState.NoData>Keine Daten verfügbar.</RimconemyTheme.EmptyState.NoData>
+  <RimconemyUi.Badge.Success>OK</RimconemyUi.Badge.Success>
+  <RimconemyUi.Badge.Warn>Warnung</RimconemyUi.Badge.Warn>
+  <RimconemyUi.Badge.Error>Fehler</RimconemyUi.Badge.Error>
+  <RimconemyUi.Badge.Info>Info</RimconemyUi.Badge.Info>
+  <RimconemyUi.Badge.Muted>—</RimconemyUi.Badge.Muted>
+  <RimconemyUi.Tooltip.CloseWindow>Fenster schließen</RimconemyUi.Tooltip.CloseWindow>
+  <RimconemySettings.GlobalTheme.Title>UI-Theme-Override</RimconemySettings.GlobalTheme.Title>
+  <RimconemySettings.GlobalTheme.Help>Wendet RimThemes-Overlays an, wenn aktiv und unterstützt (opt-in).</RimconemySettings.GlobalTheme.Help>
+  <!-- CategoryHeader und StuffHeader wurden beim P30-Reduktionsschritt entfernt
+       (per Kategorie Bucketing wurde aufgeschoben, weil ThingCategory in 1.6
+       ueber die lokale Assembly-CSharp.dll weder label noch defName offenlegt). -->
+</LanguageData>

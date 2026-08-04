@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>Rimconemy.EconomyTerritory</AssemblyName>
+    <RootNamespace>Rimconemy.EconomyTerritory</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath Condition="'$(IsolatedOutputPath)' == ''">Assemblies/</OutputPath>
+    <OutputPath Condition="'$(IsolatedOutputPath)' != ''">$(IsolatedOutputPath)</OutputPath>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <DebugType>none</DebugType>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <GenerateDepsFile>false</GenerateDepsFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Phase 0-A: cross-package binary reference (load-order still controlled by About.xml loadAfter="rimconemy.foundation"). -->
+    <Reference Include="Rimconemy.Foundation">
+      <HintPath>../01-Rimconemy-Foundation/Assemblies/Rimconemy.Foundation.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(RimWorldManagedPath)/Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(RimWorldManagedPath)/UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(RimWorldManagedPath)/UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(RimWorldManagedPath)/UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(HarmonyAssembliesPath)/0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="ValidateReferencePaths" BeforeTargets="ResolveReferences">
+    <Error Condition="'$(RimWorldManagedPath)' == ''" Text="RimWorldManagedPath is required. Pass -p:RimWorldManagedPath=.../RimWorldLinux_Data/Managed" />
+    <Error Condition="!Exists('$(RimWorldManagedPath)/Assembly-CSharp.dll')" Text="Assembly-CSharp.dll not found under $(RimWorldManagedPath)" />
+    <Error Condition="'$(HarmonyAssembliesPath)' == ''" Text="HarmonyAssembliesPath is required. Pass -p:HarmonyAssembliesPath=.../Harmony/Current/Assemblies" />
+    <Error Condition="!Exists('$(HarmonyAssembliesPath)/0Harmony.dll')" Text="0Harmony.dll not found under $(HarmonyAssembliesPath)" />
+  </Target>
+</Project>

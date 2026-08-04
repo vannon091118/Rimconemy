@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Phase-7 DLC-Layer Patch (F4-Biotech-Mechanitor-and-Children-Suppression)
+  siehe docs/DECISIONS_DLC.md.
+
+  Conditional: wirkt nur wenn Biotech installiert ist (PatchOperationFindMod).
+  Wirkung:
+    1. Mechanitor-Fertigkeit wird deaktiviert (kein Psy-Mechanitor-Wirken)
+    2. Children-Generation aus PawnKind-Pool ausgeschlossen (verhindert dass
+       der Customize-Screen kindliche Kolonisten anbietet)
+    3. Mech-Gestator-WorkTable (falls vorhanden) Rezept-Slot disabled
+
+  Hinweis: Biotech-Mechanoid-Pawns (basierend auf IsMechanoid=true-Flag) werden
+  NICHT hier geändert — Rimconomy hat eigene Mechadroid-Klasse in Mod 05 die
+  eigenständig ist. Mean: Biotech-Mechanoids bleiben in Spielen ohne Mod 05,
+  aber für Rimconomy-Profile ist das irrelevant, da Mod 05 ohne Biotech-Mechanitor
+  auskommt.
+-->
+<Patch>
+  <Operation Class="PatchOperationFindMod">
+    <mods>
+      <li>Ludeon.RimWorld.Biotech</li>
+    </mods>
+    <match Class="PatchOperationSequence">
+      <success>Always</success>
+      <operations>
+
+        <!--
+          Pause-on-Birth-Patch: Defs die "child mortality" / baby-Stage triggern.
+          Hier entfernen wir die GeneDef Pawn-Gene-List-Einträge die
+          automatische Kind-Erzeugung bei Colonist-Pawn tragen.
+          Hurt: Wenn die Def-Namen je umbenannt werden, no-op wirksam.
+        -->
+        <li Class="PatchOperationConditional">
+          <xpath>/Defs/GeneDef[defName="Childlike"]</xpath>
+          <match Class="PatchOperationRemove">
+            <xpath>/Defs/GeneDef[defName="Childlike"]</xpath>
+          </match>
+        </li>
+
+        <!--
+          Mech_Gestator-Bauen-Rezept blockieren. Rimconomy hat eigene
+          Mechadroid-Lifecycle in Mod 05.
+        -->
+        <li Class="PatchOperationConditional">
+          <xpath>/Defs/RecipeDef[defName="MakeMech"]</xpath>
+          <match Class="PatchOperationRemove">
+            <xpath>/Defs/RecipeDef[defName="MakeMech"]</xpath>
+          </match>
+        </li>
+
+      </operations>
+    </match>
+  </Operation>
+</Patch>

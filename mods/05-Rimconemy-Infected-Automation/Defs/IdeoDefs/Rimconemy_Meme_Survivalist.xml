@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <MemeDef>
+    <defName>Rimconemy_Survivalist</defName>
+    <label>Überlebensdrang</label>
+    <description>Jeder kämpft für sich. Vertrauen ist knapp, Stärke entscheidet.</description>
+    <category>Structure</category>
+    <impact>0</impact>
+    <generalRules>
+      <rulesStrings>
+        <li>memeLeaderNoun->Kommandant</li>
+        <li>memeMoralist->Überlebender</li>
+      </rulesStrings>
+    </generalRules>
+    <worshipRoomLabel>Versammlungsraum</worshipRoomLabel>
+    <descriptionMaker>
+      <patterns>
+        <li><def>AnimistDescription</def></li>
+      </patterns>
+    </descriptionMaker>
+  </MemeDef>
+</Defs>

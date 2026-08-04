@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  INERT · Stand 2026-08-04 · Audit-Falsifizierung
+  Diese Datei wird von RimWorld geladen (kein Lade-Fehler), wirkt aber NICHT:
+   - <storytellerComps> ist leer → keine StorytellerComp-Komponenten.
+   - <portraitLarge>/<portraitTiny> verweisen auf Texture-Pfade, die
+     NICHT vorhanden sind → das StorytellerSymbol wird mit Fallback
+     gezeichnet, aber der Storyteller feuert nichts selbst.
+   - Die Phase-1-Realität benutzt die Vanilla-Storyteller und mappt
+     StoryDirector über StoryDirector.ResolveProfileFromDifficulty()
+     auf SettingProfile (Refuge/Survival/Collapse).
+  Escaping-Pfad (Phase 5+): Comps ergänzen UND Portraits liefern.
+  Bis dahin: Datei existiert für Def-Load-Konsistenz, nicht für Wirkung.
+  Siehe INTERFACE_CONTRACT.md §3.
+-->
+<Defs>
+
+  <!-- ================================================================
+       Rimconemy Story Writer — eigener Storyteller (INERT)
+       ================================================================
+
+       Erscheint im Storyteller-Auswahl-Screen als eigenständige Option.
+       Der Spieler wählt "Rimconemy" + Schwierigkeitsgrad.
+       Die Schwierigkeit mapped auf SettingProfile (Refuge/Survival/Collapse).
+
+       Phase 1 (jetzt):    Vanilla-Storyteller-Komponenten laufen parallel.
+                           Rimconemy-Events feuern via StoryDirector zusaetzlich.
+       Phase 5+ (spaeter): Volle Kontrolle — StoryDirector wird alleiniger
+                           Event-Provider, Vanilla-Raids werden deaktiviert.
+       ================================================================ -->
+
+  <StorytellerDef ParentName="BaseStoryteller">
+    <defName>Rimconemy</defName>
+    <label>Rimconemy</label>
+    <description>Der Rimconemy Story Writer. Ressourcenknappheit, Ideologie-Konflikte und
+die infizierte Bedrohung bestimmen den Rhythmus der Kolonie.
+Die gewaehlte Schwierigkeit legt fest, ob ihr Zuflucht (Refuge),
+Ueberleben (Survival) oder Kollaps (Collapse) erlebt.</description>
+
+    <portraitLarge>UI/HeroArt/Storytellers/RimconemyLarge</portraitLarge>
+    <portraitTiny>UI/HeroArt/Storytellers/RimconemyTiny</portraitTiny>
+
+    <listOrder>50</listOrder>
+  </StorytellerDef>
+
+</Defs>

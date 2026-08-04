@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  INERT · Stand 2026-08-04 · Audit-Falsifizierung
+  Vorlage für neue Story-Event-XMLs. Markiert als INERT, weil die
+  StoryDirector-Auswahl aktuell den hartkodierten StoryEventCatalog
+  (Source/Story/StoryEventCatalog.cs) konsumiert. Eine echte Story-XML
+  wird per Phase-3-Reconciliation entweder aus diesem Schema generiert
+  (Katalog aus XML) ODER dieses Schema wird gelöscht und StoryEventCatalog
+  bleibt einzige Quelle.
+-->
+<!--
+  TEMPLATE — Neues Story-Event anlegen
+  ======================================
+  SO GEHT'S:
+  1. Diese Datei kopieren und umbenennen, z.B. "Rimconemy_Discovery_Ruin.xml".
+     WICHTIG: Dateiname beginnt mit "Rimconemy_" (Ownership-Regel).
+  2. defName anpassen (muss eindeutig sein und mit "Rimconemy_" beginnen).
+  3. Alle Felder befüllen; die Platzhalter XXXXX sind PFLICHT.
+  4. RimWorld starten -> Def-Load prüfen (Player.log / Mods-Fehler).
+     Noch KEINE Auswahl-Engine: Events sind bis Phase 1 nur deklarative Defs.
+
+  FELD-REFERENZ (siehe auch Defs/StoryEvents/README.md):
+  - eventVersion    : Schema-Version, bei Felder-Änderung erhöhen
+  - eventFamily     : eine der 8 Familien aus H2 §3
+                      (SupplyCrisis, IdeologyConflict, ExternalThreat,
+                       Discovery, TechOpportunity, MoralChoice,
+                       RestRecovery, TurnPoint)
+  - escalationBand  : 1..3, muss <= Profil.MaxEscalationBand sein
+  - escalationTarget: "ThreatPressure" oder "IdeologyTension"
+  - escalationModifier: Wert, der bei "Ignorieren" addiert wird
+  - prerequisites   : deklarative Bedingungen (AND-verknüpft)
+  - exclusions      : deklarative Ausschlüsse (jeder davon verhindert das Event)
+  - weights         : Gewicht pro Profil als `List<string>` im Format `ProfileId=Value`
+  - cooldownDays    : Cooldown pro Profil als `List<string>` im Format `ProfileId=Value`, in Tagen (1 Tag = 60.000 Ticks)
+  - textKey         : Localisation-Key (Languages/*/Keyed/)
+  - letterLabel/-Text: Letter-UI; Platzhalter {X} werden von der Engine gefüllt
+  - choices         : Entscheidungsoptionen (ChoiceId, Label, Effects[])
+  - followUpIds     : Folge-Event-IDs (werden später per StoryState geplant)
+  - determinismKey  : kanonischer Schlüssel-Template für reproduzierbare Auswahl
+-->
+<Defs>
+  <!-- Abstract=True: Vorlage wird geparst, aber NICHT als aktives Event in
+       die DefDatabase aufgenommen. Beim Kopieren Abstract-Attribut entfernen. -->
+  <Rimconemy.InfectedAutomation.Story.StoryEventDef Abstract="True">
+    <defName>Rimconemy_XXXXX</defName>
+    <label>XXXXX</label>
+    <description>XXXXX</description>
+
+    <eventVersion>1</eventVersion>
+    <eventFamily>Discovery</eventFamily>
+    <escalationBand>1</escalationBand>
+    <escalationTarget>ThreatPressure</escalationTarget>
+    <escalationModifier>0.0</escalationModifier>
+
+    <prerequisites>
+      <li>XXXXX</li>
+    </prerequisites>
+
+    <exclusions>
+      <li>XXXXX</li>
+    </exclusions>
+
+    <weights>
+      <li>Rimconemy_Refuge=10</li>
+      <li>Rimconemy_Survival=10</li>
+      <li>Rimconemy_Collapse=10</li>
+    </weights>
+
+    <cooldownDays>
+      <li>Rimconemy_Refuge=5.0</li>
+      <li>Rimconemy_Survival=4.0</li>
+      <li>Rimconemy_Collapse=3.0</li>
+    </cooldownDays>
+
+    <textKey>Rimconemy_XXXXX_Letter</textKey>
+    <letterLabel>XXXXX</letterLabel>
+    <letterText>XXXXX</letterText>
+
+    <choices>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Accept</choiceId>
+        <label>XXXXX</label>
+        <effects>
+          <li>XXXXX</li>
+        </effects>
+      </li>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Reject</choiceId>
+        <label>XXXXX</label>
+        <effects>
+          <li>XXXXX</li>
+        </effects>
+      </li>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Ignore</choiceId>
+        <label>Ignorieren</label>
+        <effects>
+          <li>ThreatPressure += escalationModifier</li>
+        </effects>
+      </li>
+    </choices>
+
+    <followUpIds>
+      <!-- <li>Rimconemy_XXXXX_FollowUp</li> -->
+    </followUpIds>
+
+    <determinismKey>ProfileId + EventId + GameTickDay</determinismKey>
+  </Rimconemy.InfectedAutomation.Story.StoryEventDef>
+</Defs>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Survival & Progression
+  Language: German
+  Prefix convention: Rimconemy.Survival.*
+-->
+<LanguageData>
+  <Rimconemy.Survival.Title>Überleben</Rimconemy.Survival.Title>
+  <Rimconemy.Survival.Profile.Standalone>Überleben eigenständig</Rimconemy.Survival.Profile.Standalone>
+  <Rimconemy.Survival.Needs.Food>Nahrung</Rimconemy.Survival.Needs.Food>
+  <Rimconemy.Survival.Needs.Safety>Sicherheit</Rimconemy.Survival.Needs.Safety>
+  <Rimconemy.Survival.Needs.Social>Soziales</Rimconemy.Survival.Needs.Social>
+
+  <!-- Setting-Needdef-Beschreibungen (Track 2-C / S-T1) -->
+  <Rimconemy.Survival.NeedDef.Rimconemy_Need_Food>Überleben-Nahrung (Projektion der Vanilla-Nahrung)</Rimconemy.Survival.NeedDef.Rimconemy_Need_Food>
+  <Rimconemy.Survival.NeedDef.Rimconemy_Need_Food.Description>Zusammengesetzte Karte der Ernährung. 1.0 = satt, 0.0 = hungernd. Quelle: Vanilla-Nahrung.</Rimconemy.Survival.NeedDef.Rimconemy_Need_Food.Description>
+  <Rimconemy.Survival.NeedDef.Rimconemy_Need_Safety>Überleben-Sicherheit (Projektion aus Gesundheit + Ruhe)</Rimconemy.Survival.NeedDef.Rimconemy_Need_Safety>
+  <Rimconemy.Survival.NeedDef.Rimconemy_Need_Safety.Description>Zusammengesetzte Karte der Sicherheit. 1.0 = gesund und ausgeruht, 0.0 = schwer verwundet. 65% Vanilla-Gesundheit + 35% Vanilla-Ruhe.</Rimconemy.Survival.NeedDef.Rimconemy_Need_Safety.Description>
+  <Rimconemy.Survival.NeedDef.Rimconemy_Need_Social>Überleben-Soziales (Projektion der Vanilla-Erholung)</Rimconemy.Survival.NeedDef.Rimconemy_Need_Social>
+  <Rimconemy.Survival.NeedDef.Rimconemy_Need_Social.Description>Soziales Wohlbefinden. 1.0 = erholt, 0.0 = gelangweilt. Quelle: Vanilla-Erholung (1.6) oder Freude (Legacy).</Rimconemy.Survival.NeedDef.Rimconemy_Need_Social.Description>
+  <Rimconemy.Survival.WorkXp.Domain.Building>Bau-Erfahrung</Rimconemy.Survival.WorkXp.Domain.Building>
+  <Rimconemy.Survival.WorkXp.Domain.Farming>Farm-Erfahrung</Rimconemy.Survival.WorkXp.Domain.Farming>
+  <Rimconemy.Survival.WorkXp.Domain.Power>Strom-Erfahrung</Rimconemy.Survival.WorkXp.Domain.Power>
+  <Rimconemy.Survival.GameOver.Reason.LastPawn>Alle direkt kontrollierbaren Spielerbewohner sind tot.</Rimconemy.Survival.GameOver.Reason.LastPawn>
+  <Rimconemy.Survival.Scenario.SingleSurvivor>Rimconemy Einzelüberlebender</Rimconemy.Survival.Scenario.SingleSurvivor>
+
+  <!-- SkillBudget Window (Phase A-1, H5 §3) -->
+  <Rimconemy.UI.SkillBudget.Window.Title>Skillbudget</Rimconemy.UI.SkillBudget.Window.Title>
+  <Rimconemy.UI.SkillBudget.Budget.Label>Ausgegeben: {0} von {1} Punkten</Rimconemy.UI.SkillBudget.Budget.Label>
+  <Rimconemy.UI.SkillBudget.Zone.Buffer>Pufferzone — keine Trait-Auswirkung</Rimconemy.UI.SkillBudget.Zone.Buffer>
+  <Rimconemy.UI.SkillBudget.Zone.Positive>Positiver Trait-Slot</Rimconemy.UI.SkillBudget.Zone.Positive>
+  <Rimconemy.UI.SkillBudget.Zone.Negative>Negative Trait-Slots</Rimconemy.UI.SkillBudget.Zone.Negative>
+  <Rimconemy.UI.SkillBudget.Tooltip>Bilanz: {0} (Zentrum: 25). Unter -5 → negative Traits. Über +3 → positiver Trait.</Rimconemy.UI.SkillBudget.Tooltip>
+  <Rimconemy.UI.SkillBudget.Button.Standard>Standard (zurücksetzen)</Rimconemy.UI.SkillBudget.Button.Standard>
+  <Rimconemy.UI.SkillBudget.Button.Apply>Übernehmen</Rimconemy.UI.SkillBudget.Button.Apply>
+  <Rimconemy.UI.SkillBudget.Warning.OverBudget>Budget überschritten — vor dem Übernehmen mindestens 1 Skill reduzieren.</Rimconemy.UI.SkillBudget.Warning.OverBudget>
+  <Rimconemy.UI.SkillBudget.Message.Applied>Skillbudget übernommen. Viel Glück da draußen!</Rimconemy.UI.SkillBudget.Message.Applied>
+</LanguageData>

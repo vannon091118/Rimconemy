@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <!--
+    Owner: Foundation
+    Stable defName: RimconemyFoundation
+    DLC condition: none; Foundation is Core-compatible and must remain visible without optional DLCs.
+    Load-order assumption: Core/DLCs -> Harmony -> Foundation; optional feature packages may register after Foundation.
+    Vanilla anchor: MainButtonDef -> MainTabWindow.
+  -->
+  <MainButtonDef>
+    <defName>RimconemyFoundation</defName>
+    <label>Rimconemy</label>
+    <description>Foundation dashboard – profile, DLCs, packages, events, save diagnosis.</description>
+    <tabWindowClass>Rimconemy.Foundation.UI.FoundationDashboard</tabWindowClass>
+    <order>55</order>
+    <defaultHotKey>Keypad7</defaultHotKey>
+  </MainButtonDef>
+</Defs>

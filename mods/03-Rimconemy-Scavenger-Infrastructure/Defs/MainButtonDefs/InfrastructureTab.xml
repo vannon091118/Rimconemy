@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <MainButtonDef>
+    <defName>RimconemyInfrastructure</defName>
+    <label>Infrastructure</label>
+    <description>Rimconemy infrastructure status: power, fuel, farms and turrets.</description>
+    <tabWindowClass>Rimconemy.ScavengerInfrastructure.UI.InfrastructureDashboard</tabWindowClass>
+    <order>56</order>
+  </MainButtonDef>
+</Defs>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Economy & Territory
+  Language: English
+  Prefix convention: Rimconemy.Economy.*
+-->
+<LanguageData>
+  <Rimconemy.Economy.Title>Wallet</Rimconemy.Economy.Title>
+  <Rimconemy.Economy.Wallet.Currency>credits</Rimconemy.Economy.Wallet.Currency>
+  <Rimconemy.Economy.Wallet.Unavailable>Wallet ledger is not initialised. Load or start a save first.</Rimconemy.Economy.Wallet.Unavailable>
+
+  <!-- TradePanel -->
+  <Rimconemy.Economy.TradePanel.Title>Trade Panel</Rimconemy.Economy.TradePanel.Title>
+  <Rimconemy.Economy.TradePanel.Balance>Wallet balance: {balance} credits</Rimconemy.Economy.TradePanel.Balance>
+  <Rimconemy.Economy.TradePanel.Balance.Tooltip>Total credits in your wallet. Updates whenever a transaction is applied via WalletService.</Rimconemy.Economy.TradePanel.Balance.Tooltip>
+  <Rimconemy.Economy.TradePanel.LastChange>Last 16 transactions net: {change} credits</Rimconemy.Economy.TradePanel.LastChange>
+  <Rimconemy.Economy.TradePanel.Button.SellFood>Sell 10 Food (demo +25)</Rimconemy.Economy.TradePanel.Button.SellFood>
+  <Rimconemy.Economy.TradePanel.Button.BuyFood>Buy Food (demo -15)</Rimconemy.Economy.TradePanel.Button.BuyFood>
+  <Rimconemy.Economy.TradePanel.LivePrice>Market price for Food: {price} credits</Rimconemy.Economy.TradePanel.LivePrice>
+  <Rimconemy.Economy.TradePanel.LivePrice.NoMarket>Market unavailable - showing demo prices only.</Rimconemy.Economy.TradePanel.LivePrice.NoMarket>
+  <Rimconemy.Economy.TradePanel.LivePrice.Tooltip>Deterministic quote from Market.Price("Meal"). Falls back to no-market when Mod 04 cannot reach the storage map.</Rimconemy.Economy.TradePanel.LivePrice.Tooltip>
+  <Rimconemy.Economy.TradePanel.TxTooltip>Package: {package} | Request: {request} | Tick: {tick}</Rimconemy.Economy.TradePanel.TxTooltip>
+
+  <!-- Market -->
+  <Rimconemy.Economy.Market.Title>Market</Rimconemy.Economy.Market.Title>
+  <Rimconemy.Economy.Market.Empty>No market catalogue yet. Markets are stubs in the standalone profile.</Rimconemy.Economy.Market.Empty>
+
+  <!-- Outposts -->
+  <Rimconemy.Economy.Outposts.Title>Outposts</Rimconemy.Economy.Outposts.Title>
+  <Rimconemy.Economy.Outposts.Empty>No outposts registered. Outpost.state is a planning stub.</Rimconemy.Economy.Outposts.Empty>
+
+  <!-- Territory -->
+  <Rimconemy.Economy.Territory.Title>Territory</Rimconemy.Economy.Territory.Title>
+
+  <!-- Upgrades (E-T4 placeholder) -->
+  <Rimconemy.Economy.Upgrades.Title>Silver Upgrades</Rimconemy.Economy.Upgrades.Title>
+</LanguageData>

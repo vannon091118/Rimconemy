@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Infected & Automation
+  Stable defName: Rimconemy_PlayerAutomationFaction
+  1.6-Fixes:
+    - factionType=HiddenAlly gestrichen (1.6 FactionDef hat keinen factionType-Top-Level-Feld).
+    - humanlikeFaction=false explizit (sonst Pflicht-Backstory-Kategorien und Resistance/Will-Range
+      auf allen PawnKinds).
+    - raidLootValueFromPointsCurve als Minimal-SimpleCurve(0, 0) ergaenzt (1.6 ConfigError
+      "raidLootValueFromPointsCurve must be defined").
+    - hidden + techLevel beibehalten.
+-->
+<Defs>
+  <FactionDef>
+    <defName>Rimconemy_PlayerAutomationFaction</defName>
+    <label>Rimconemy automation</label>
+    <description>Player-controlled automation. Never spawns colonist biographies. Mechadroids here are not Mechanoids.</description>
+    <hidden>true</hidden>
+    <techLevel>Spacer</techLevel>
+    <humanlikeFaction>false</humanlikeFaction>
+    <raidLootValueFromPointsCurve>
+      <points>
+        <li>(0, 0)</li>
+        <li>(5000, 0)</li>
+      </points>
+    </raidLootValueFromPointsCurve>
+  </FactionDef>
+</Defs>

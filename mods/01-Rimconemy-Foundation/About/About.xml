@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>Rimconemy Foundation</name>
+  <author>Rimconemy Team</author>
+  <packageId>rimconemy.foundation</packageId>
+  <supportedVersions>
+    <li>1.6</li>
+  </supportedVersions>
+  <modDependencies>
+    <li>
+      <packageId>brrainz.harmony</packageId>
+      <displayName>Harmony</displayName>
+      <downloadUrl>https://steamcommunity.com/workshop/filedetails/?id=2009463077</downloadUrl>
+    </li>
+    <!--
+      Phase 7 DLC Content-Policy Architektur (2026-08-04, locked).
+      Siehe docs/DECISIONS.md §15–§20 (F1-F5-Begründungen, konsolidiert aus DECISIONS_DLC.md).
+
+      Anomaly (Hard-Require, F1):
+        Shamblers sind die genetische Basis der Rimconemy-Infected PawnKinds.
+        Ohne Anomaly: kein Infected-PawnKind-Parent, kein StoryDirector-Spawn.
+        Hard-Require ist ehrlicher als Fallback mit doppelter Code-Pflege.
+
+      Odyssey (Hard-Require, F2):
+        Gravship ist der Territory-Engine. Ohne Odyssey: kein
+        Territory-System das Rimconomy-Spielstil trägt. Fallback wäre
+        Wartungsfall ohne Nutzen.
+
+      Royalty (Keine Require):
+        Royalty ist Suppress-Installed (F3). Pakete ohne Royalty-Eigner
+        sehen kein Royalty-Content, Pakete mit Royalty kriegen es
+        weggepatched. modDependencies wäre kontraproduktiv.
+
+      Biotech (Keine Require):
+        Biotech ist Mostly-Suppress (F4). Mechanitor + Children aus.
+        Rimconomy hat eigene Mechadroids, also keine Biotech-Mechanoid-
+        Bandbreite nötig.
+
+      Ideology (Keine Require):
+        Ideology-Layer (ThoughtDef / PreceptDef / ThoughtWorker) bleibt
+        aktiv. UX wird suppressed (F5). Ideology-Assigner weist eine
+        Fixed-Ideo zu. Spieler ohne Ideology DLC bekommen keine
+        Ideology-bedingten Mood-Effekte — bewusst akzeptiert.
+    -->
+    <li>
+      <packageId>Ludeon.RimWorld.Anomaly</packageId>
+      <displayName>Anomaly</displayName>
+      <downloadUrl>https://rimworldgame.com/dlc/anomaly/</downloadUrl>
+    </li>
+    <li>
+      <packageId>Ludeon.RimWorld.Odyssey</packageId>
+      <displayName>Odyssey</displayName>
+      <downloadUrl>https://rimworldgame.com/dlc/odyssey/</downloadUrl>
+    </li>
+  </modDependencies>
+  <description>Rimconemy Foundation liefert ein eigenständig nutzbares Vanilla-Dashboard, Diagnose-, Eventlog- und Save-Status-Funktionen. Es stellt gemeinsame Integrationsverträge für die optionalen Rimconemy-Gameplay-Pakete bereit. Erfordert Anomaly und Odyssey (Hard-Require für Rimconomy-Infected und Gravship-Territory).</description>
+</ModMetaData>

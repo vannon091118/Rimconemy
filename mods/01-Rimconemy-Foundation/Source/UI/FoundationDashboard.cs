@@ -1,0 +1,543 @@
+using System.Collections.Generic;
+using Rimconemy.Foundation.Catalog;
+using Rimconemy.Foundation.Events;
+using Rimconemy.Foundation.Models;
+using Rimconemy.Foundation.Profile;
+using Rimconemy.Foundation.Registry;
+using Rimconemy.Foundation.Save;
+using RimWorld;
+using UnityEngine;
+using Verse;
+
+namespace Rimconemy.Foundation.UI
+{
+    /// <summary>
+    /// Owner: Foundation
+    /// Main dashboard tab window showing profile, DLCs, packages,
+    /// event log, and save diagnosis.
+    ///
+    /// Hook reason: RimconemyMainTabWindow provides the standard RimWorld bottom-tab
+    /// integration. All data comes from read-only snapshots, never from
+    /// mutable engine objects directly.
+    /// </summary>
+    public class FoundationDashboard : RimconemyMainTabWindow
+    {
+        private Vector2 _scrollPosition;
+        private const float SectionSpacing = RimconemyTheme.SectionSpacing;
+        private const float IndentSize = RimconemyTheme.IndentSize;
+        private bool _profileExpanded = true;
+        private bool _dlcExpanded = true;
+        private bool _packagesExpanded = true;
+        private bool _saveExpanded = true;
+        private bool _inventoryExpanded = false;
+        private bool _vanillaExpanded = false;
+        private bool _eventsExpanded = true;
+
+        private static string T(string key)
+        {
+            return key.Translate();
+        }
+
+        public override void DoWindowContents(Rect inRect)
+        {
+            var viewRect = new Rect(inRect.x, inRect.y, inRect.width, inRect.height - 30f);
+            float width = viewRect.width - 20f;
+
+            // Calculate total content height dynamically from sections
+            float contentHeight = CalcHeaderHeight();
+            contentHeight += SectionSpacing;
+            contentHeight += CalcProfileHeight();
+            contentHeight += SectionSpacing;
+            contentHeight += CalcDlcHeight();
+            contentHeight += SectionSpacing;
+            contentHeight += CalcPackageHeight();
+            contentHeight += SectionSpacing;
+            contentHeight += CalcSaveHeight();
+            contentHeight += SectionSpacing;
+            contentHeight += CalcInventoryHeight();
+            contentHeight += SectionSpacing;
+            contentHeight += CalcVanillaSectionHeight();
+            contentHeight += SectionSpacing;
+            contentHeight += CalcEventHeight();
+            contentHeight += 20f; // bottom padding
+
+            Widgets.BeginScrollView(viewRect, ref _scrollPosition, new Rect(0f, 0f, width, contentHeight));
+
+            float y = 0f;
+            y = DrawHeader(0f, y, width);
+            y += SectionSpacing;
+            y = DrawProfileSection(0f, y, width);
+            y += SectionSpacing;
+            y = DrawDlcSection(0f, y, width);
+            y += SectionSpacing;
+            y = DrawPackageSection(0f, y, width);
+            y += SectionSpacing;
+            y = DrawSaveSection(0f, y, width);
+            y += SectionSpacing;
+            y = DrawInventorySection(0f, y, width);
+            y += SectionSpacing;
+            y = DrawVanillaSection(0f, y, width);
+            y += SectionSpacing;
+            y = DrawEventSection(0f, y, width);
+
+            Widgets.EndScrollView();
+            RimconemyUi.ResetTextFontAndColor();
+        }
+
+        private float DrawProfileSection(float x, float y, float width)
+        {
+            if (DrawCollapsibleHeader(new Rect(x, y, width, 30f), T("RimconemyFoundation.Title"), _profileExpanded))
+                _profileExpanded = !_profileExpanded;
+            if (!_profileExpanded)
+                return y + 30f;
+            y += 32f;
+
+            Text.Font = GameFont.Small;
+
+            var profile = ProfileDetector.CurrentProfile;
+            string profileText = profile switch
+            {
+                ProfileStatus.Standalone => T("RimconemyFoundation.Profile.Standalone"),
+                ProfileStatus.Partial => T("RimconemyFoundation.Profile.Partial"),
+                ProfileStatus.FullOverhaul => T("RimconemyFoundation.Profile.Full"),
+                _ => T("RimconemyFoundation.Profile.Unknown")
+            };
+
+            Color profileColor = profile switch
+            {
+                ProfileStatus.Standalone => RimconemyTheme.Muted,
+                ProfileStatus.Partial => RimconemyTheme.Warn,
+                ProfileStatus.FullOverhaul => RimconemyTheme.Success,
+                _ => Color.white
+            };
+
+            GUI.color = profileColor;
+            Widgets.Label(new Rect(x, y, width, 22f),
+                $"{T("RimconemyFoundation.Profile.Label")}: {profileText}");
+            GUI.color = Color.white;
+            y += 22f;
+
+            Widgets.Label(new Rect(x, y, width, 22f),
+                $"{T("RimconemyFoundation.Profile.Packages")}: {PackageRegistry.RegisteredCount} " +
+                $"{T("RimconemyFoundation.Profile.Loaded")}, " +
+                $"{ProfileDetector.MissingPackageIds.Count} {T("RimconemyFoundation.Profile.Missing")}");
+            y += 22f;
+
+            if (profile != ProfileStatus.FullOverhaul)
+            {
+                GUI.color = RimconemyTheme.Warn;
+                Widgets.Label(new Rect(x, y, width, 40f),
+                    T("RimconemyFoundation.Profile.IntegrationUnavailable"));
+                GUI.color = Color.white;
+                y += 42f;
+            }
+
+            return y;
+        }
+
+        private float DrawDlcSection(float x, float y, float width)
+        {
+            if (DrawCollapsibleHeader(new Rect(x, y, width, 28f), T("RimconemyFoundation.Dlc.Title"), _dlcExpanded))
+                _dlcExpanded = !_dlcExpanded;
+            if (!_dlcExpanded)
+                return y + 28f;
+            y += 30f;
+
+            Text.Font = GameFont.Small;
+
+            foreach (var dlc in ProfileDetector.DlcStatuses)
+            {
+                GUI.color = dlc.IsLoaded ? RimconemyTheme.Success : RimconemyTheme.Error;
+                Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
+                    $"{dlc.DlcName}: {(dlc.IsLoaded ? T("RimconemyFoundation.Status.Active") : T("RimconemyFoundation.Status.NotInstalled"))}");
+                y += 20f;
+            }
+            GUI.color = Color.white;
+
+            return y;
+        }
+
+        private float DrawPackageSection(float x, float y, float width)
+        {
+            if (DrawCollapsibleHeader(new Rect(x, y, width, 28f), T("RimconemyFoundation.Packages.Title"), _packagesExpanded))
+                _packagesExpanded = !_packagesExpanded;
+            if (!_packagesExpanded)
+                return y + 28f;
+            y += 30f;
+
+            Text.Font = GameFont.Small;
+
+            var expectedIds = new[]
+            {
+                "rimconemy.foundation",
+                "rimconemy.survivalprogression",
+                "rimconemy.scavengerinfrastructure",
+                "rimconemy.economyterritory",
+                "rimconemy.infectedautomation",
+            };
+
+            foreach (var id in expectedIds)
+            {
+                bool loaded = PackageRegistry.IsRegistered(id);
+                var descriptor = PackageRegistry.GetDescriptor(id);
+
+                GUI.color = loaded ? RimconemyTheme.Success : RimconemyTheme.Muted;
+                string version = loaded && descriptor != null
+                    ? $"v{descriptor.PackageVersion}"
+                    : "";
+                string status = loaded
+                    ? (descriptor != null && descriptor.ProfileCompatibility == ProfileCompatibility.StandaloneAndFull
+                        ? T("RimconemyFoundation.Packages.ActiveFull")
+                        : T("RimconemyFoundation.Packages.ActiveStandalone"))
+                    : T("RimconemyFoundation.Status.NotInstalled");
+
+                Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
+                    $"{id}  {version}  [{status}]");
+                y += 20f;
+            }
+            GUI.color = Color.white;
+
+            return y;
+        }
+
+        private float DrawSaveSection(float x, float y, float width)
+        {
+            if (DrawCollapsibleHeader(new Rect(x, y, width, 28f), T("RimconemyFoundation.Save.Title"), _saveExpanded))
+                _saveExpanded = !_saveExpanded;
+            if (!_saveExpanded)
+                return y + 28f;
+            y += 30f;
+
+            Text.Font = GameFont.Small;
+
+            var saveData = Current.Game?.GetComponent<FoundationSaveData>();
+            if (saveData != null)
+            {
+                Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
+                    $"{T("RimconemyFoundation.Save.Schema")}: v{saveData.LoadedSchemaVersion} " +
+                    $"({T("RimconemyFoundation.Save.Current")}: v{FoundationSaveData.CurrentSchemaVersion})");
+                y += 20f;
+
+                if (saveData.WasMigrated)
+                {
+                    GUI.color = RimconemyTheme.Warn;
+                    Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 40f),
+                        $"{T("RimconemyFoundation.Save.MigrationApplied")}: {saveData.MigrationDetail}");
+                    GUI.color = Color.white;
+                    y += 42f;
+                }
+                else
+                {
+                    Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
+                        T("RimconemyFoundation.Save.NoMigration"));
+                    y += 20f;
+                }
+            }
+            else
+            {
+                GUI.color = RimconemyTheme.Muted;
+                Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
+                    T("RimconemyFoundation.Save.NotLoaded"));
+                GUI.color = Color.white;
+                y += 20f;
+            }
+
+            return y;
+        }
+
+        // SPIKE: DefInventory section reads only stable Verse.* / Assembly-CSharp surface
+        // through FoundationDefInventory; no reflection.
+        private float DrawInventorySection(float x, float y, float width)
+        {
+            if (DrawCollapsibleHeader(new Rect(x, y, width, 28f), T("RimconemyFoundation.Inventory.Title"), _inventoryExpanded))
+                _inventoryExpanded = !_inventoryExpanded;
+            if (!_inventoryExpanded)
+                return y + 28f;
+            y += 30f;
+
+            Text.Font = GameFont.Small;
+
+            // Lazy one-shot capture. Safe to call repeatedly.
+            FoundationDefInventory.EnsureCaptured();
+
+            var titleMap = FoundationDefInventory.OwnerTitles;
+            var counts = FoundationDefInventory.OwnerDefCounts;
+            int totalOwners = FoundationDefInventory.OwnerCount;
+            int totalDefs = FoundationDefInventory.TotalDefCount;
+
+            if (!FoundationDefInventory.IsPopulated)
+            {
+                GUI.color = RimconemyTheme.Muted;
+                Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
+                    T("RimconemyFoundation.Inventory.NotLoaded"));
+                GUI.color = Color.white;
+                y += 22f;
+                return y;
+            }
+
+            Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
+                $"{totalOwners} {T("RimconemyFoundation.Inventory.TotalOwners")}, " +
+                $"{totalDefs} {T("RimconemyFoundation.Inventory.TotalDefs")}");
+            y += 22f;
+
+            if (totalOwners == 0)
+            {
+                GUI.color = RimconemyTheme.Muted;
+                Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
+                    T("RimconemyFoundation.Inventory.Empty"));
+                GUI.color = Color.white;
+                y += 22f;
+                return y;
+            }
+
+            // Pre-sort owners by ordinal package id so the listing is stable
+            // across runs and reduces user confusion during regressions.
+            var sortedOwners = new List<string>(counts.Keys);
+            sortedOwners.Sort(System.StringComparer.Ordinal);
+
+            foreach (var owner in sortedOwners)
+            {
+                string ownerDisplay = owner;
+                if (titleMap != null && titleMap.TryGetValue(owner, out var t) && !string.IsNullOrEmpty(t))
+                    ownerDisplay = $"{owner} ({t})";
+
+                var perType = counts[owner];
+                int sum = 0;
+                foreach (var c in perType) sum += c.Value;
+
+                GUI.color = sum > 0 ? RimconemyTheme.Success : RimconemyTheme.Muted;
+                Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
+                    $"{ownerDisplay}: {sum} defs");
+                GUI.color = Color.white;
+                y += 22f;
+
+                // Per-def-type breakdown, indented further, sorted by type label
+                var sortedTypes = new List<string>(perType.Keys);
+                sortedTypes.Sort(System.StringComparer.Ordinal);
+                foreach (var typeLabel in sortedTypes)
+                {
+                    int c = perType[typeLabel];
+                    if (c <= 0) continue;
+                    Widgets.Label(new Rect(x + IndentSize * 2f, y, width - IndentSize * 2f, 18f),
+                        $"  {typeLabel}: {c}");
+                    y += 18f;
+                }
+            }
+
+            return y;
+        }
+
+        // SPIKE: VanillaInventory section reads only stable Verse.* / Assembly-CSharp
+        // surface through FoundationVanillaInventory; no reflection.
+        // P30 partial closure of P25 (API-RESOURCE-01): provides the static
+        // Def-surface chat with totals only (category bucketing deferred).
+        // Live world state (power, inventories, research progress) stays
+        // out of scope here on purpose.
+        private float DrawVanillaSection(float x, float y, float width)
+        {
+            if (DrawCollapsibleHeader(new Rect(x, y, width, 28f), T("RimconemyFoundation.VanillaInventory.Title"), _vanillaExpanded))
+                _vanillaExpanded = !_vanillaExpanded;
+            if (!_vanillaExpanded)
+                return y + 28f;
+            y += 30f;
+
+            Text.Font = GameFont.Small;
+
+            // Lazy one-shot capture, parallel to DefInventory.
+            FoundationVanillaInventory.EnsureCaptured();
+
+            if (!FoundationVanillaInventory.IsPopulated)
+            {
+                GUI.color = RimconemyTheme.Muted;
+                Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
+                    T("RimconemyFoundation.VanillaInventory.NotLoaded"));
+                GUI.color = Color.white;
+                y += 22f;
+                return y;
+            }
+
+            int totalThings = FoundationVanillaInventory.TotalVanillaThingDefs;
+            int totalStuff = FoundationVanillaInventory.TotalStuffDefs;
+            int nonRimconemyOwners = FoundationVanillaInventory.TotalTrackedDlcIds;
+
+            Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 38f),
+                string.Format(T("RimconemyFoundation.VanillaInventory.Summary"),
+                    totalThings, totalStuff, nonRimconemyOwners));
+            y += 40f;
+
+            if (totalThings == 0)
+            {
+                GUI.color = RimconemyTheme.Muted;
+                Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
+                    T("RimconemyFoundation.VanillaInventory.Empty"));
+                GUI.color = Color.white;
+                y += 22f;
+                return y;
+            }
+
+            GUI.color = RimconemyTheme.Warn;
+            Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 36f),
+                T("RimconemyFoundation.VanillaInventory.MissingPower"));
+            GUI.color = Color.white;
+            y += 38f;
+
+            return y;
+        }
+
+        private float DrawEventSection(float x, float y, float width)
+        {
+            string eventTitle = $"{T("RimconemyFoundation.Events.Title")} ({EventLog.StoredCount} {T("RimconemyFoundation.Events.Entries")})";
+            if (DrawCollapsibleHeader(new Rect(x, y, width, 28f), eventTitle, _eventsExpanded))
+                _eventsExpanded = !_eventsExpanded;
+            if (!_eventsExpanded)
+                return y + 28f;
+            y += 30f;
+
+            Text.Font = GameFont.Small;
+
+            if (EventLog.StoredCount == 0)
+            {
+                Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
+                    T("RimconemyFoundation.Events.Empty"));
+                y += 20f;
+            }
+            else
+            {
+                // Show up to 20 most recent events without nested scrolling
+                int shown = 0;
+                const int maxShown = 20;
+                foreach (var evt in EventLog.RecentEvents)
+                {
+                    if (shown >= maxShown) break;
+
+                    GUI.color = evt.Category switch
+                    {
+                        "Save" => RimconemyTheme.Warn,
+                        "Error" => RimconemyTheme.Error,
+                        "Diagnostic" => RimconemyTheme.Info,
+                        _ => Color.white
+                    };
+
+                    StatusLevel eventLevel = evt.Category == "Error" ? StatusLevel.Error
+                        : evt.Category == "Save" ? StatusLevel.Warn
+                        : evt.Category == "Diagnostic" ? StatusLevel.Info : StatusLevel.Muted;
+                    RimconemyUi.DrawStatusBadge(new Rect(x + IndentSize, y, width - IndentSize, 20f),
+                        "[" + evt.Category + "] " + evt.EventType + ": " + evt.Message, eventLevel);
+                    y += 22f;
+                    shown++;
+                }
+
+                if (EventLog.StoredCount > maxShown)
+                {
+                    GUI.color = RimconemyTheme.Muted;
+                    Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
+                        $"{T("RimconemyFoundation.Events.More")}: {EventLog.StoredCount - maxShown}");
+                    GUI.color = Color.white;
+                    y += 22f;
+                }
+            }
+
+            return y;
+        }
+
+        private float DrawHeader(float x, float y, float width)
+        {
+            Text.Font = GameFont.Medium;
+            Widgets.Label(new Rect(x, y, width * 0.58f, 28f), "RIMCONEMY · KOLONIE");
+            Text.Font = GameFont.Small;
+            var profile = ProfileDetector.CurrentProfile;
+            StatusLevel level = profile == ProfileStatus.FullOverhaul ? StatusLevel.Success
+                : profile == ProfileStatus.Partial ? StatusLevel.Warn : StatusLevel.Info;
+            RimconemyUi.DrawStatusBadge(new Rect(x + width * 0.60f, y, width * 0.40f, 24f),
+                (profile == ProfileStatus.FullOverhaul ? "OK " : "! ") + profile, level);
+            y += 34f;
+
+            int loadedDlc = 0;
+            foreach (var dlc in ProfileDetector.DlcStatuses)
+                if (dlc.IsLoaded) loadedDlc++;
+            int defCount = FoundationDefInventory.IsPopulated ? FoundationDefInventory.TotalDefCount : 0;
+            float cardWidth = (width - 3f * RimconemyTheme.Margin) / 4f;
+            RimconemyUi.DrawStatCard(new Rect(x, y, cardWidth, 62f), "#", "Pakete", PackageRegistry.RegisteredCount + "/5", -1f, level);
+            RimconemyUi.DrawStatCard(new Rect(x + cardWidth + RimconemyTheme.Margin, y, cardWidth, 62f), "D", "DLCs", loadedDlc + "/" + ProfileDetector.DlcStatuses.Count, -1f, loadedDlc > 0 ? StatusLevel.Success : StatusLevel.Warn);
+            RimconemyUi.DrawStatCard(new Rect(x + (cardWidth + RimconemyTheme.Margin) * 2f, y, cardWidth, 62f), "S", "Schema", "v" + FoundationSaveData.CurrentSchemaVersion, -1f, StatusLevel.Info);
+            RimconemyUi.DrawStatCard(new Rect(x + (cardWidth + RimconemyTheme.Margin) * 3f, y, cardWidth, 62f), "⊙", "Defs", defCount.ToString(), -1f, defCount > 0 ? StatusLevel.Success : StatusLevel.Warn);
+            return y + 74f;
+        }
+
+        private static bool DrawCollapsibleHeader(Rect rect, string title, bool expanded)
+        {
+            bool clicked = false;
+            string prefix = expanded ? "▼  " : "▶  ";
+            RimconemyUi.DrawHighlightedInteractable(rect, () => clicked = true, title);
+            Text.Font = GameFont.Medium;
+            GUI.color = RimconemyTheme.HeaderInk;
+            Widgets.Label(rect, prefix + title);
+            GUI.color = Color.white;
+            return clicked;
+        }
+
+        // Height calculators matching the Draw* methods
+        private float CalcHeaderHeight() => 34f + 74f;
+        private float CalcProfileHeight()
+        {
+            if (!_profileExpanded) return 30f;
+            float height = 32f + 22f + 22f;
+            if (ProfileDetector.CurrentProfile != ProfileStatus.FullOverhaul)
+                height += 42f;
+            return height;
+        }
+        private float CalcDlcHeight() => _dlcExpanded ? 30f + 5 * 20f : 28f;
+        private float CalcPackageHeight() => _packagesExpanded ? 30f + 5 * 20f : 28f;
+        private float CalcSaveHeight()
+        {
+            var saveData = Current.Game?.GetComponent<FoundationSaveData>();
+            if (!_saveExpanded) return 28f;
+            float baseHeight = 30f + 20f;
+            if (saveData != null && saveData.WasMigrated)
+                baseHeight += 42f;
+            return baseHeight;
+        }
+        private float CalcVanillaSectionHeight()
+        {
+            FoundationVanillaInventory.EnsureCaptured();
+            if (!_vanillaExpanded) return 28f;
+            if (!FoundationVanillaInventory.IsPopulated) return 30f + 22f;
+            return 30f + 40f + 22f + 38f;
+        }
+        private float CalcInventoryHeight()
+        {
+            if (!_inventoryExpanded) return 28f;
+            // Lazy capture-trigger so height matches what will be drawn.
+            FoundationDefInventory.EnsureCaptured();
+            if (!FoundationDefInventory.IsPopulated) return 30f + 22f;
+            if (FoundationDefInventory.OwnerCount == 0) return 30f + 22f + 22f;
+
+            var counts = FoundationDefInventory.OwnerDefCounts;
+            float height = 30f + 22f; // title + summary line
+            var sortedOwners = new List<string>(counts.Keys);
+            sortedOwners.Sort(System.StringComparer.Ordinal);
+            foreach (var owner in sortedOwners)
+            {
+                height += 22f; // owner row
+                var perType = counts[owner];
+                var sortedTypes = new List<string>(perType.Keys);
+                sortedTypes.Sort(System.StringComparer.Ordinal);
+                foreach (var typeLabel in sortedTypes)
+                {
+                    int c = perType[typeLabel];
+                    if (c > 0) height += 18f;
+                }
+            }
+            return height;
+        }
+        private float CalcEventHeight()
+        {
+            if (!_eventsExpanded) return 28f;
+            if (EventLog.StoredCount == 0) return 30f + 20f;
+            int shown = System.Math.Min(EventLog.StoredCount, 20);
+            float h = 30f + shown * 22f;
+            if (EventLog.StoredCount > 20) h += 22f;
+            return h;
+        }
+    }
+}

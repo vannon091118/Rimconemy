@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>Rimconemy Infected &amp; Automation</name>
+  <author>Rimconemy Team</author>
+  <packageId>rimconemy.infectedautomation</packageId>
+  <supportedVersions>
+    <li>1.6</li>
+  </supportedVersions>
+  <modDependencies>
+    <li>
+      <packageId>brrainz.harmony</packageId>
+      <displayName>Harmony</displayName>
+      <downloadUrl>https://steamcommunity.com/workshop/filedetails/?id=2009463077</downloadUrl>
+    </li>
+  </modDependencies>
+  <loadAfter>
+    <li>rimconemy.foundation</li>
+    <li>rimconemy.survivalprogression</li>
+    <li>rimconemy.scavengerinfrastructure</li>
+    <li>rimconemy.economyterritory</li>
+  </loadAfter>
+  <description>Rimconemy Infected &amp; Automation ist allein eine spielbare Infizierten-Survival- und Automationskampagne mit eigenem Storyteller, Bedrohungsdruck, Mechadroids, Silber-Upgrades und sichtbaren Raidentscheidungen.</description>
+</ModMetaData>

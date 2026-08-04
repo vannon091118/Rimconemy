@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  INERT · Stand 2026-08-04 · Audit-Falsifizierung
+  Diese XML-Def wird von RimWorld geladen (kein TypeLoadException), aber
+  die StoryDirector-Auswahl nutzt ausschließlich den hartkodierten
+  StoryEventCatalog (12 Events in Source/Story/StoryEventCatalog.cs).
+  Solange StoryEventCatalog kanonisch ist, ist diese Datei reine
+  Dokumentation und wird vom Code nicht konsumiert.
+  Reconciliation-Pfad (Phase 3): Entweder StoryEventCatalog aus diesen
+  XMLs generieren ODER diese Dateien löschen.
+  Quelle: docs/H2-story-contract.md §2 Event 3.
+-->
+<!--
+  Rimconemy_ExternalThreat — Äußere Bedrohung
+  Owner: Infected & Automation (Story-/Threat-Domäne, H2 §2 Event 3)
+  Status: SCAFFOLD — RimWorld-ladbare Def; Auswahl-/Effekt-Engine PLANNED.
+  Quelle: docs/H2-story-contract.md §2 Event 3.
+-->
+<Defs>
+  <Rimconemy.InfectedAutomation.Story.StoryEventDef>
+    <defName>Rimconemy_ExternalThreat</defName>
+    <label>Äußere Bedrohung</label>
+    <description>Eine Bedrohung von außen nähert sich der Siedlung.</description>
+
+    <eventVersion>1</eventVersion>
+    <eventFamily>ExternalThreat</eventFamily>
+    <escalationBand>2</escalationBand>
+    <escalationTarget>ThreatPressure</escalationTarget>
+    <escalationModifier>0.06</escalationModifier>
+
+    <prerequisites>
+      <li>ThreatPressure &gt; profile.MinThreatLevel + 0.1</li>
+      <li>NOT ActiveVanillaRaid</li>
+      <li>NOT ActiveEvent(ExternalThreat)</li>
+    </prerequisites>
+
+    <exclusions>
+      <li>ActiveRaidOrThreatEvent</li>
+      <li>profile.MaxActiveEvents erreicht</li>
+    </exclusions>
+
+    <weights>
+      <li>Rimconemy_Refuge=15</li>
+      <li>Rimconemy_Survival=45</li>
+      <li>Rimconemy_Collapse=90</li>
+    </weights>
+
+    <cooldownDays>
+      <li>Rimconemy_Refuge=6.0</li>
+      <li>Rimconemy_Survival=3.0</li>
+      <li>Rimconemy_Collapse=1.0</li>
+    </cooldownDays>
+
+    <textKey>Rimconemy_ExternalThreat_Letter</textKey>
+    <letterLabel>Bedrohung gesichtet</letterLabel>
+    <letterText>Ein {ThreatType} nähert sich von {Direction}. Geschätzte Stärke: {Strength}.</letterText>
+
+    <choices>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>PrepareDefense</choiceId>
+        <label>Verteidigung vorbereiten</label>
+        <effects>
+          <li>DefenseBonus: +0.25 für 1 Tag</li>
+          <li>PawnMobilization: Alle Pawns zu Verteidigungspositionen</li>
+          <li>ResourceCost: 10% der Munition/Vorräte</li>
+        </effects>
+      </li>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Evacuate</choiceId>
+        <label>Evakuieren</label>
+        <effects>
+          <li>EvacuateCivilians()</li>
+          <li>StorageSnapshot.MarkSomeUnavailable(0.3)</li>
+          <li>IdeologyTension += 0.08</li>
+          <li>MoodModifier: -5 für 2 Tage</li>
+        </effects>
+      </li>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Ignore</choiceId>
+        <label>Ignorieren</label>
+        <effects>
+          <li>ThreatPressure += escalationModifier</li>
+          <li>DefenseMalus: -0.25 für 1 Tag</li>
+          <li>FollowUpEvent: Rimconemy_ExternalThreat_Attack nach 0.5 Tagen</li>
+        </effects>
+      </li>
+    </choices>
+
+    <followUpIds>
+      <li>Rimconemy_ExternalThreat_Attack</li>
+    </followUpIds>
+
+    <determinismKey>ProfileId + EventId + ThreatPressure + GameTickDay</determinismKey>
+  </Rimconemy.InfectedAutomation.Story.StoryEventDef>
+</Defs>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <!-- H7: Schwer negativ — Exhausted -->
+  <TraitDef>
+    <defName>Rimconemy_Trait_Exhausted</defName>
+    <label>erschöpft</label>
+    <description>Dauerhaft erschöpft. Arbeitstempo dauerhaft reduziert, Bewegung verlangsamt.</description>
+    <degreeDatas>
+      <li>
+        <label>erschöpft</label>
+        <description>Arbeitstempo −20%, Bewegung −10%.</description>
+        <degree>0</degree>
+        <statOffsets>
+          <WorkSpeedGlobal>-0.20</WorkSpeedGlobal>
+          <MoveSpeed>-0.10</MoveSpeed>
+        </statOffsets>
+      </li>
+    </degreeDatas>
+    <commonality>0</commonality>
+  </TraitDef>
+</Defs>

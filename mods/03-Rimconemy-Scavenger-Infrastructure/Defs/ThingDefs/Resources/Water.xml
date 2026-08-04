@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure
+  Stable defName: Rimconemy_DistilledWater
+  1.6-Fixes:
+    - Graphic_Stacked -> Graphic_StackCount.
+    - statBases.Mass=0.4 ergaenzt (1.6 verlangt eine authored-Mass, sonst
+      ConfigError "is haulable but does not have an authored mass value").
+-->
+<Defs>
+  <ThingDef ParentName="ResourceBase">
+    <defName>Rimconemy_DistilledWater</defName>
+    <label>distilled water</label>
+    <description>Water sourced from the carchment system purifier. Stored and consumed by generator turbines.</description>
+    <graphicData>
+      <texPath>Things/Item/Resource/StoneBlocks</texPath>
+      <graphicClass>Graphic_StackCount</graphicClass>
+      <drawSize>0.9</drawSize>
+    </graphicData>
+    <statBases>
+      <MaxHitPoints>60</MaxHitPoints>
+      <Mass>0.4</Mass>
+      <MarketValue>1.5</MarketValue>
+    </statBases>
+    <thingCategories>
+      <li>Rimconemy_GeneratorInputs</li>
+    </thingCategories>
+    <comps>
+      <li Class="CompProperties_Forbiddable" />
+    </comps>
+    <stackLimit>500</stackLimit>
+  </ThingDef>
+</Defs>
