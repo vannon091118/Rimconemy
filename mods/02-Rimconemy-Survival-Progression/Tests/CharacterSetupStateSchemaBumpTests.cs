@@ -184,8 +184,8 @@ namespace Rimconemy.SurvivalProgression.Tests
         // ScribeRoundTripHelper treibt Scribe.mode + Scribe.saver +
         // Scribe.loader via Reflection, speichert das Objekt in einen
         // MemoryStream und lädt es zurück. PostLoadInit triggert dann
-        // MigrateIfNeeded. Fallback auf direkten MigrateIfNeeded-Aufruf
-        // wenn der Helper nicht verfügbar ist (RimWorld-Version-Drift).
+        // MigrateIfNeeded. Ein nicht funktionierender Helper lässt T6
+        // bewusst fehlschlagen; kein Logic-only-Fallback.
         public static bool TestScribeRoundTripBumpsSchema()
         {
             try
@@ -216,19 +216,13 @@ namespace Rimconemy.SurvivalProgression.Tests
                         && state.Records[42].SkillDefNames[0] == "Shooting";
                 }
 
-                // Fallback: ScribeRoundTripHelper scheiterte (z.B.
-                // RimWorld-Version-Drift). Direkter MigrateIfNeeded-Aufruf.
-                Log.Message(
-                    "[Rimconemy.SurvivalProgression] SchemaBump T6: " +
-                    "ScribeRoundTripHelper not available, falling back to " +
-                    "direct MigrateIfNeeded.");
-                state.MigrateIfNeeded();
-                return state.SchemaVersion == CharacterSetupState.CurrentSchemaVersion
-                    && state.Records != null && state.Records.Count == 1;
+                // A failed stream helper is a failed T6; do not downgrade
+                // this file-cycle assertion to a logic-only migration test.
+                return false;
             }
             catch (Exception ex)
             {
-                Log.Warning("[Rimconemy.SurvivalProgression] SchemaBump T6 fallback: " +
+                Log.Warning("[Rimconemy.SurvivalProgression] SchemaBump T6 stream failure: " +
                     ex.GetType().Name + ": " + ex.Message);
                 return false;
             }

@@ -32,6 +32,7 @@
       <li>Rimconemy_BurnSteelScraps</li>
       <li>Rimconemy_MakeCoal</li>
       <li>Rimconemy_SalvageMachineParts</li>
+      <li>Rimconemy_MakeStainlessSteel</li>
     </recipes>
     <comps>
       <li Class="CompProperties_Glower">

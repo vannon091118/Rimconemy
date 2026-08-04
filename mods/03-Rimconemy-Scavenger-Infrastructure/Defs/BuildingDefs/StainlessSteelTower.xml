@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure
+  Stable defName: Rimconemy_StainlessSteelTower
+  DLC condition: none
+  Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> Scavenger -> later packages
+  Vanilla anchor: ThingDef (Building_TurretGun).
+  1.6-Fixes:
+    - CompProperties_Turret -> CompProperties_TurretGun
+    - CompProperties_Power with CompPowerTrader for power consumption
+    - tickerType=Normal for active turret
+
+  Gameplay: Advanced defensive tower built from stainless steel. Requires power
+  to operate. Fires high-velocity projectiles with superior range and accuracy
+  compared to the basic arrow turret. The first "end product" of the stainless
+  steel chain.
+-->
+<Defs>
+  <ThingDef ParentName="BuildingBase">
+    <defName>Rimconemy_StainlessSteelTower</defName>
+    <label>stainless steel tower</label>
+    <description>A precision-engineered defensive tower built from stainless steel. Requires continuous power to operate its targeting systems and electromagnetic accelerators. Superior range, accuracy, and fire rate compared to primitive arrow turrets.</description>
+    <thingClass>Building_TurretGun</thingClass>
+    <drawerType>MapMeshAndRealTime</drawerType>
+    <altitudeLayer>Building</altitudeLayer>
+    <passability>PassThroughOnly</passability>
+    <size>(2,2)</size>
+    <minifiedDef>MinifiedThing</minifiedDef>
+    <graphicData>
+      <texPath>Things/Building/Security/TurretMini_Base</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawSize>2.0</drawSize>
+    </graphicData>
+    <building>
+      <turretGunDef>Gun_MiniTurret</turretGunDef>
+      <turretBurstCooldownTime>2.5</turretBurstCooldownTime>
+      <turretTopDrawSize>1.5</turretTopDrawSize>
+    </building>
+    <tickerType>Normal</tickerType>
+    <comps>
+      <li Class="CompProperties_Power">
+        <compClass>CompPowerTrader</compClass>
+        <basePowerConsumption>150</basePowerConsumption>
+      </li>
+    </comps>
+    <statBases>
+      <MaxHitPoints>300</MaxHitPoints>
+      <WorkToBuild>3000</WorkToBuild>
+      <MarketValue>2500</MarketValue>
+      <Mass>50</Mass>
+    </statBases>
+    <costList>
+      <Rimconemy_StainlessSteel>30</Rimconemy_StainlessSteel>
+      <Rimconemy_MachineParts>4</Rimconemy_MachineParts>
+      <Steel>20</Steel>
+    </costList>
+    <thingCategories>
+      <li>Rimconemy_SecurityTurrets</li>
+    </thingCategories>
+  </ThingDef>
+</Defs>

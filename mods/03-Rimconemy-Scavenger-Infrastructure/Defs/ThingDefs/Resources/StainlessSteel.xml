@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure
+  Stable defName: Rimconemy_StainlessSteel
+  DLC condition: none
+  Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> Scavenger -> later packages
+  Vanilla anchor: ThingDef (basic resource, ParentName=ResourceBase).
+  1.6-Fixes: Graphic_Stacked -> Graphic_StackCount; mass authored.
+
+  Gameplay: Stainless steel is an advanced alloy produced from steel and machine parts.
+  It is stronger and more corrosion-resistant than regular steel, used for
+  high-tier construction and powered turrets.
+-->
+<Defs>
+  <ThingDef ParentName="ResourceBase">
+    <defName>Rimconemy_StainlessSteel</defName>
+    <label>stainless steel</label>
+    <description>A high-grade alloy of steel and precision machine components. Significantly stronger and more corrosion-resistant than standard steel. Required for advanced defensive structures and automation systems.</description>
+    <graphicData>
+      <texPath>Things/Item/Resource/Steel</texPath>
+      <graphicClass>Graphic_StackCount</graphicClass>
+      <drawSize>0.9</drawSize>
+      <color>(200,200,220)</color>
+    </graphicData>
+    <statBases>
+      <MaxHitPoints>120</MaxHitPoints>
+      <Mass>0.6</Mass>
+      <MarketValue>18.0</MarketValue>
+    </statBases>
+    <thingCategories>
+      <li>Rimconemy_Scraps</li>
+    </thingCategories>
+    <stackLimit>150</stackLimit>
+    <drawGUIOverlay>true</drawGUIOverlay>
+    <stuffProps>
+      <categories>
+        <li>Metallic</li>
+      </categories>
+      <commonality>0.5</commonality>
+      <color>(200,200,220)</color>
+      <statFactors>
+        <MaxHitPoints>1.5</MaxHitPoints>
+        <WorkToBuild>1.2</WorkToBuild>
+        <Beauty>0.3</Beauty>
+      </statFactors>
+    </stuffProps>
+  </ThingDef>
+</Defs>
