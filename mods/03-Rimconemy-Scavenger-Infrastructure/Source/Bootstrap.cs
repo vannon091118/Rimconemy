@@ -28,7 +28,7 @@ namespace Rimconemy.ScavengerInfrastructure
 
             // Force subsystems to run their static ctors / register lines.
             int resCount = Rimconemy.ScavengerInfrastructure.Resources.ResourceCategory.All.Count;
-            string powerMarker = Rimconemy.ScavengerInfrastructure.Power.PowerChainStub.LogMarker;
+            string powerMarker = Rimconemy.ScavengerInfrastructure.Power.PowerChainService.LogMarker;
             string plantsMarker = Rimconemy.ScavengerInfrastructure.Plants.PlantHelper.LogMarker;
             Log.Message(
                 $"[Rimconemy.ScavengerInfrastructure] Domain stubs ready: " +

@@ -24,7 +24,7 @@ namespace Rimconemy.EconomyTerritory
             Log.Message("[Rimconemy.EconomyTerritory] WalletLedger is Game-/World-side, not ThingDef. Routes count absolute ticks, not local counters.");
 
             var _walletId = Wallet.CreditsLedger.LogMarker;
-            var _marketCount = Market.MarketStub.LogMarker;
+            var _marketCount = Market.Market.LogMarker;
             var _outposts = Outposts.OutpostStub.LogMarker;
             var _nodes = Territory.TerritoryNode.LogMarker;
             Log.Message($"[Rimconemy.EconomyTerritory] Domain stubs ready: wallet={_walletId}, market={_marketCount}, outposts={_outposts}, territory={_nodes}");

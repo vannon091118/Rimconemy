@@ -7,7 +7,10 @@ namespace Rimconemy.ScavengerInfrastructure.Power
 {
     /// <summary>
     /// Owner: Scavenger and Infrastructure (Package 03).
-    /// Replacement for the historical <c>PowerChainStub</c>.
+    /// Live implementation of the power-chain aggregation layer. Owns the
+    /// canonical Const-FuelClass lookup and resolves all defs via
+    /// <see cref="DefDatabase{ThingDef}"/>. Replaces the historical
+    /// <c>PowerChainStub</c> alias (removed 2026-08-05).
     ///
     /// Reads Setting-spezifische Power-Komponenten aus dem Live-Spiel:
     ///   - Solid-Fuel-Generator  (Wood / Coal / Chemfuel)

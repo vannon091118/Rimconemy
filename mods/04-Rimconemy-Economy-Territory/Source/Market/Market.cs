@@ -385,25 +385,4 @@ namespace Rimconemy.EconomyTerritory.Market
         }
     }
 
-    /// <summary>
-    /// Backward-compatibility stub for callers still referring to the
-    /// historical <c>MarketStub</c>. E-T3 forwarded to the new
-    /// <see cref="Market"/> + <see cref="MarketService"/> APIs.
-    /// </summary>
-    public static class MarketStub
-    {
-        public const string LogMarker = "v1";
-        public static readonly List<string> TrackOrderIds = new List<string>();
-
-        [StaticConstructorOnStartup]
-        private static class Register
-        {
-            static Register()
-            {
-                Log.Message(
-                    "[Rimconemy.EconomyTerritory] Market stub deprecated; " +
-                    "use Market + MarketService for live deterministic prices.");
-            }
-        }
-    }
 }
