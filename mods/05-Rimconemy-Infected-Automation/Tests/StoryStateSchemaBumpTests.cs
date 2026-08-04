@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Rimconemy.Foundation.Tests;
 using Rimconemy.InfectedAutomation.Story;
 using Verse;
@@ -179,10 +178,9 @@ namespace Rimconemy.InfectedAutomation.Tests
                         && state.LastEventId == "Evt_Test";
                 }
 
-                Log.Message("[Rimconemy.InfectedAutomation] StoryStateSchemaBump T6: ScribeRoundTripHelper unavailable, fallback to direct MigrateIfNeeded.");
-                state.MigrateIfNeeded();
-                return state.SchemaVersion == StoryState.CurrentSchemaVersion
-                    && state.ProfileId == "TestProfile";
+                // A failed stream helper is a failed T6; do not downgrade
+                // this file-cycle assertion to a logic-only migration test.
+                return false;
             }
             catch { return false; }
         }

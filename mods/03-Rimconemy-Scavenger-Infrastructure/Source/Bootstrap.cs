@@ -50,6 +50,8 @@ namespace Rimconemy.ScavengerInfrastructure
             Tests.CampfireScrapsRegressionTests.RunAll();
             // P0 Coal Chain (2026-08-04): MakeCoal, SalvageMachineParts, Generator 0.67, CraftingStations.
             Tests.CoalChainRegressionTests.RunAll();
+            // P1 StainlessSteel Chain (2026-08-04): MakeStainlessSteel, StainlessSteelTower, Campfire 4th recipe.
+            Tests.StainlessSteelChainRegressionTests.RunAll();
         }
     }
 }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Rimconemy.EconomyTerritory.Wallet;
 using Rimconemy.Foundation.Tests;
 using Verse;
@@ -165,10 +164,9 @@ namespace Rimconemy.EconomyTerritory.Tests
                         && ledger.Balance == 100L;
                 }
 
-                Log.Message("[Rimconemy.EconomyTerritory] CreditsLedgerSchemaBump T6: ScribeRoundTripHelper not available, falling back to direct MigrateIfNeeded.");
-                ledger.MigrateIfNeeded();
-                return ledger.SchemaVersion == CreditsLedger.CurrentSchemaVersion
-                    && ledger.WalletId == "roundtrip-test-wallet";
+                // A failed stream helper is a failed T6; do not downgrade
+                // this file-cycle assertion to a logic-only migration test.
+                return false;
             }
             catch { return false; }
         }

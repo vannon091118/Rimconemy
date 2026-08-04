@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure
+  Stable defName: Rimconemy_MakeStainlessSteel
+  DLC condition: none
+  Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> Scavenger -> later packages
+  Vanilla anchor: RecipeDef (smelting/alloying).
+
+  Gameplay: Alloys 2 steel and 1 machine parts into 2 stainless steel at the campfire.
+  This is the first step in the stainless steel chain: steel + machine parts -> stainless steel.
+  The campfire is intentionally primitive; a proper smelting forge (P2) will be more efficient.
+-->
+<Defs>
+  <RecipeDef>
+    <defName>Rimconemy_MakeStainlessSteel</defName>
+    <label>make stainless steel</label>
+    <description>Alloy steel with salvaged machine parts to produce stainless steel. The precision components provide chromium and nickel content for corrosion resistance. Primitive campfire process has significant material loss.</description>
+    <jobString>Alloying stainless steel</jobString>
+    <workAmount>800</workAmount>
+    <ingredients>
+      <li>
+        <filter>
+          <thingDefs>
+            <li>Steel</li>
+          </thingDefs>
+        </filter>
+        <count>2</count>
+      </li>
+      <li>
+        <filter>
+          <thingDefs>
+            <li>Rimconemy_MachineParts</li>
+          </thingDefs>
+        </filter>
+        <count>1</count>
+      </li>
+    </ingredients>
+    <fixedIngredientFilter>
+      <thingDefs>
+        <li>Steel</li>
+        <li>Rimconemy_MachineParts</li>
+      </thingDefs>
+    </fixedIngredientFilter>
+    <products>
+      <Rimconemy_StainlessSteel>2</Rimconemy_StainlessSteel>
+    </products>
+    <recipeUsers>
+      <li>Rimconemy_Campfire</li>
+    </recipeUsers>
+  </RecipeDef>
+</Defs>
