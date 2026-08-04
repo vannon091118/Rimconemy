@@ -1,5 +1,6 @@
 # H6 — Pawn-Generator-API Spike (Phase 4)
 
+> **SSOT-Hinweis:** Detail-Topic dieser Datei ist im Orient-Index [ARCHITECTURE.md §6](ARCHITECTURE.md). Topic-Landkarte: [INDEX.md §1](INDEX.md).
 > **Owner:** Survival & Progression (Package 02)
 > **Status:** UNVERIFIED (Spike läuft) — 2026-08-04
 > **Kanonische Doku:** [H1-api-def-gate.md](H1-api-def-gate.md), [H5-character-setup-formula.md](H5-character-setup-formula.md)

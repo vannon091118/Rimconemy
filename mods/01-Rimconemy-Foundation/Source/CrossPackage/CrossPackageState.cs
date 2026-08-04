@@ -155,5 +155,119 @@ namespace Rimconemy.Foundation.CrossPackage
             reason = args[0] as string;
             return (bool)result;
         }
+
+        // F-01 (2026-08-04 Audit-Bündel B): Late-bound Wallet balance read.
+        // Mod 05 (InfectedAutomation) used to compile-reference Mod 04
+        // (EconomyTerritory) for WalletService.GetOrCreateLedger().Balance.
+        // INTERFACE_CONTRACT §9.1 forbids non-adjacent compile refs; Mod 05
+        // should consume wallet state via the same late-bound reflection
+        // pattern that Mod 02 uses for Mod 05. The reflection retrieves
+        // `Rimconemy.EconomyTerritory.Wallet.WalletService.GetOrCreateLedger()
+        //   .Balance` from the loaded Mod 04 assembly.
+        private const string Mod04AssemblyName = "Rimconemy.EconomyTerritory";
+        private const string Mod04WalletServiceTypeName = "Rimconemy.EconomyTerritory.Wallet.WalletService";
+        private const string Mod04GetOrCreateLedgerMethodName = "GetOrCreateLedger";
+        private const string Mod04BalanceMemberName = "Balance";
+
+        /// <summary>
+        /// Late-bound read of the player's wallet balance from Mod 04.
+        /// Returns <c>true</c> when Mod 04 is loaded, capability
+        /// <c>rimconemy.economyterritory.wallet</c> is registered, the
+        /// static <c>GetOrCreateLedger</c> call succeeds and the ledger
+        /// exposes a <c>Balance</c> member. Returns <c>false</c> on every
+        /// miss; in that case the caller treats the balance as 0.
+        ///
+        /// Defensive shape:
+        ///  - The capability gate fires first (no reflection on cold start).
+        ///  - All reflection exceptions are caught narrowly (ReflectionTypeLoadException,
+        ///    TargetInvocationException, generic Exception as last resort).
+        ///  - When the static <c>GetOrCreateLedger</c> returns a non-null ledger
+        ///    without a numeric <c>Balance</c>, we log a warning and return 0
+        ///    rather than throw — the caller renders "0" in placeholders, which
+        ///    is the correct fallback.
+        /// </summary>
+        public static bool TryReadWalletBalance(out long balance)
+        {
+            balance = 0L;
+
+            if (!CapabilityAudit.HasCapabilityOrWarn(
+                    packageId: "rimconemy.economyterritory",
+                    capabilityId: "rimconemy.economyterritory.wallet",
+                    minVersion: 1,
+                    readerContext: "WalletBalance-Read"))
+            {
+                return false;
+            }
+
+            try
+            {
+                var walletServiceType = ResolveType(Mod04AssemblyName, Mod04WalletServiceTypeName);
+                if (walletServiceType == null) return false;
+
+                var getLedger = walletServiceType.GetMethod(
+                    Mod04GetOrCreateLedgerMethodName,
+                    BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
+                if (getLedger == null)
+                {
+                    Log.Warning("[Rimconemy.Foundation.CrossPackageState] TryReadWalletBalance: " +
+                        "WalletService.GetOrCreateLedger not found on " + walletServiceType.FullName);
+                    return false;
+                }
+
+                object ledger;
+                try
+                {
+                    ledger = getLedger.Invoke(null, null);
+                }
+                catch (TargetInvocationException tie)
+                {
+                    Log.Warning("[Rimconemy.Foundation.CrossPackageState] TryReadWalletBalance " +
+                        "GetOrCreateLedger threw: " +
+                        (tie.InnerException?.GetType().Name ?? "?") + ": " +
+                        (tie.InnerException?.Message ?? tie.Message));
+                    return false;
+                }
+                if (ledger == null) return false;
+
+                // Ledger.Balance — try property first, then field (matches the
+                // CRITICAL FIX pattern from TryReadStoryGameOverPending).
+                object balanceValue = null;
+                var balanceProp = ledger.GetType().GetProperty(
+                    Mod04BalanceMemberName,
+                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                if (balanceProp != null)
+                {
+                    balanceValue = balanceProp.GetValue(ledger);
+                }
+                else
+                {
+                    var balanceField = ledger.GetType().GetField(
+                        Mod04BalanceMemberName,
+                        BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (balanceField != null)
+                        balanceValue = balanceField.GetValue(ledger);
+                }
+                if (balanceValue == null) return false;
+
+                try
+                {
+                    balance = System.Convert.ToInt64(balanceValue);
+                    return true;
+                }
+                catch (FormatException) { return false; }
+                catch (InvalidCastException) { return false; }
+                catch (OverflowException) { return false; }
+            }
+            catch (ReflectionTypeLoadException rtle)
+            {
+                Log.Warning("[Rimconemy.Foundation.CrossPackageState] TryReadWalletBalance type load failed: " + rtle.Message);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("[Rimconemy.Foundation.CrossPackageState] TryReadWalletBalance reflection failed: " + ex.GetType().Name + ": " + ex.Message);
+                return false;
+            }
+        }
     }
 }

@@ -9,6 +9,7 @@ namespace Rimconemy.Foundation.Tests
 {
     /// <summary>
     /// Owner: Foundation (Paket 01).
+    /// Audit-Bündel B / F-11 (2026-08-04) — Honest-Banner-Audit, fixed.
     ///
     /// Reflection-basierter Audit über alle bekannten Pakete-Dashboards,
     /// dass sie ein ehrliches <see cref="RimconemyUi.DrawFeatureStatus"/>-
@@ -17,34 +18,40 @@ namespace Rimconemy.Foundation.Tests
     /// jedes User-sichtbare Dashboard MUSS erklären, ob sein Inhalt
     /// tatsächlich mutiert oder nur liest.
     ///
-    /// Test-Achsen:
-    ///   1. Klassen-Liste wird zur Compile-Zeit gepflegt; jeder Eintrag
-    ///      MUSS von <see cref="RimconemyWindow"/> oder
-    ///      <see cref="RimconemyMainTabWindow"/> ableiten.
-    ///   2. Per Reflection: in <c>DoWindowContents</c> muss ein Aufruf
-    ///      zu <c>RimconemyUi.DrawFeatureStatus</c> existieren (mindestens 1×)
-    ///      — wir scannen den IL-Body nach dem zugehörigen MetadataToken und
-    ///      liefern einen defensiven IL2CPP-Fallback, der ohne IL-Bytes
-    ///      die Existenz der Methode als Compile-Beweis akzeptiert.
+    /// Test-Achsen (3, alle jetzt strict-conditional — keine Maskerade-PASS):
+    ///   1. T1: Jede in der Liste enthaltene Dashboard-Klasse MUSS eine
+    ///      <c>DoWindowContents(Rect)</c>-Methode besitzen und im IL-Body
+    ///      mindestens einen Aufruf zu <c>RimconemyUi.DrawFeatureStatus</c>
+    ///      enthalten. Pass: ALL. Fail: ANY.
+    ///   2. T2: Jede Klasse MUSS von <see cref="RimconemyWindow"/> oder
+    ///      <see cref="RimconemyMainTabWindow"/> ableiten. Pass: ALL. Fail: ANY.
+    ///   3. T3: Die Audit-Liste selbst MUSS ein Mindestmaß abdecken. Pass
+    ///      bei >= 6 Einträgen, damit der Test überhaupt sinnvoll aussage-
+    ///      fähig ist. (Rein statischer Längen-Check, der verhindert, dass
+    ///      das Audit durch Leeren der Liste trivial-grün wird.)
     ///
     /// WAS DIESER TEST NICHT PRÜFT: er beweist nicht, dass das Banner
     /// inhaltlich korrekt ist (READ-ONLY vs. echt mutierend). Das ist eine
     /// Code-Reviewer-/Audit-Aufgabe, nicht ein statischer Test. Audit-Belege
     /// liegen in <c>docs/falsification/status-vs-code-audit-2026-08-04.md</c>.
     ///
-    /// Design-Notiz: Eine ursprüngliche Heuristik <c>HasHonestyMarker</c>
-    /// wurde entfernt, weil sie nur den Klassen-Namen-Endsuffix prüfte —
-    /// das war Maskerade (logisches Test-PASS ohne inhaltliche Prüfung).
-    /// Marker-Verifikation ist explizit eine Audit-Aufgabe.
+    /// F-11-Fix-Historie (Audit 2026-08-04):
+    ///   - Vorher: T1/`passed++` lief auch dann, wenn 0 Banner gefunden
+    ///     wurden (Klausel <c>dashboardsWithBanner &gt; 0 || validTypesCount ==
+    ///     0</c>). T2 lief unbedingt (<c>passed++</c> ohne Kondition). T3
+    ///     war zirkulär (Liste prüfte nur ihre eigene Mindestlänge).
+    ///   - Nachher: jede Achse muss aktiv bestanden werden. Wenn die Liste
+    ///     leer ist ODER Klassen fehlen ODER Banner-Calls fehlen ODER keine
+    ///     Vererbung vorhanden ist, meldet der Test <c>failed &gt; 0</c>.
     /// </summary>
     public static class FoundationHonestBannerAudit
     {
         public const int ExpectedPassCount = 3;
 
         // Bewusst hartkodiert: dieser Test feuert nur, wenn jemand die Liste
-        // erweitert. Vergessene Dashboards würden den Audit-Score NICHT
-        // verschlechtern (der Test prüft nur aufgeführte Klassen), aber
-        // die Liste ist Indikator für Vollständigkeit.
+        // erweitert. Vergessene Dashboards würden den Audit-Score nicht
+        // verschlechtern (der Test prüft nur aufgeführte Klassen), aber die
+        // Liste ist Indikator für Vollständigkeit.
         private static readonly string[] AuditedDashboardTypeNames =
         {
             "Rimconemy.SurvivalProgression.UI.SurvivalProgressionDashboard",
@@ -54,6 +61,10 @@ namespace Rimconemy.Foundation.Tests
             "Rimconemy.InfectedAutomation.UI.ThreatDashboard",
             "Rimconemy.InfectedAutomation.UI.SettingRulesInspector",
         };
+
+        private static int _passed;
+        private static int _failed;
+        private static readonly List<string> _failures = new List<string>();
 
         private static Type FindType(string name)
         {
@@ -65,56 +76,156 @@ namespace Rimconemy.Foundation.Tests
             return null;
         }
 
-
-        public static void RunAll()
+        public static bool RunAll()
         {
-            int passed = 0;
+            _passed = 0;
+            _failed = 0;
+            _failures.Clear();
             try
             {
-                // T1: Jede angegebene Klasse muss eine DoWindowContents-Methode
-                //     haben, die DrawFeatureStatus aufruft.
-                int dashboardsWithBanner = 0;
-                int validTypesCount = 0;
-                foreach (var name in AuditedDashboardTypeNames)
-                {
-                    var type = FindType(name);
-                    if (type == null) continue;
-                    validTypesCount++;
-                    if (HasDrawFeatureStatusCall(type))
-                        dashboardsWithBanner++;
-                }
-                if (dashboardsWithBanner > 0 || validTypesCount == 0)
-                {
-                    passed++;
-                    Log.Message("[Rimconemy.Foundation] Honest-Banner-Audit passed.");
-                }
+                // F-11: Jede Achse muss aktiv bestanden werden. Keine
+                // Sonder-Klauseln wie "leere Liste ist ok".
+                RunT1_DoWindowContentsCallsDrawFeatureStatus();
+                RunT2_DashboardsInheritUiToolkit();
+                RunT3_AuditedListIsNonTrivial();
 
-                // T2: Klassen müssen tatsächlich von RimconemyWindow oder
-                //     RimconemyMainTabWindow ableiten (Konsistenz der Tooling-Anker).
-                int dashboardsInheritingToolkit = 0;
-                foreach (var name in AuditedDashboardTypeNames)
+                string summary = "[Rimconemy.Foundation] Honest-Banner-Audit tests: "
+                    + _passed + "/" + ExpectedPassCount + " passed, "
+                    + _failed + " failed.";
+                if (_failed > 0)
                 {
-                    var type = FindType(name);
-                    if (type != null && InheritsToolkit(type))
-                        dashboardsInheritingToolkit++;
+                    foreach (var f in _failures)
+                        Log.Error("[Rimconemy.Foundation] Honest-Banner-Audit FAIL: " + f);
+                    Log.Error(summary);
+                    return false;
                 }
-                passed++;
-
-                // T3: Reports existieren mit korrekter Anzahl.
-                if (AuditedDashboardTypeNames.Length >= 6)
-                    passed++;
-
-                Log.Message(
-                    "[Rimconemy.Foundation] Honest-Banner-Audit tests: "
-                    + passed + "/" + ExpectedPassCount + " passed.");
+                Log.Message(summary);
+                return true;
             }
             catch (Exception ex)
             {
-                Log.Warning(
-                    "[Rimconemy.Foundation] FoundationHonestBannerAudit.RunAll crashed: "
+                Log.Error("[Rimconemy.Foundation] FoundationHonestBannerAudit.RunAll crashed: "
                     + ex.GetType().Name + ": " + ex.Message);
+                return false;
             }
         }
+
+        // ── Test-Achsen ──
+
+        /// <summary>
+        /// T1: Pro Dashboard-Klasse muss DoWindowContents(Rect) existieren
+        /// UND im IL-Body einen <c>RimconemyUi.DrawFeatureStatus</c>-Aufruf
+        /// enthalten. IL2CPP/SLIM-Builds reduzieren den Test auf den
+        /// Existenz-Beweis und melden das Defizit laut.
+        /// Pass: jede gelistete Klasse besteht. Fail: irgend eine Klasse
+        /// verliert den Banner-Call ODER fehlt komplett.
+        /// </summary>
+        private static void RunT1_DoWindowContentsCallsDrawFeatureStatus()
+        {
+            int validTypesCount = 0;
+            int dashboardsWithBanner = 0;
+            foreach (var name in AuditedDashboardTypeNames)
+            {
+                var type = FindType(name);
+                if (type == null)
+                {
+                    _failed++;
+                    _failures.Add("T1: dashboard class missing at runtime: " + name);
+                    continue;
+                }
+                validTypesCount++;
+                if (HasDrawFeatureStatusCall(type))
+                {
+                    dashboardsWithBanner++;
+                }
+                else
+                {
+                    _failed++;
+                    _failures.Add("T1: dashboard " + name + " missing DrawFeatureStatus(IL2CPP fallback noted)");
+                }
+            }
+            // Mandatory condition: ALL listed classes must carry the banner.
+            // (Previously this pass could award a success with 0 banners via
+            // the cold-start escape; that loophole is closed in F-11.)
+            if (dashboardsWithBanner == AuditedDashboardTypeNames.Length
+                && validTypesCount == AuditedDashboardTypeNames.Length)
+            {
+                _passed++;
+            }
+            else
+            {
+                _failed++;
+                _failures.Add("T1: total " + dashboardsWithBanner + "/"
+                    + AuditedDashboardTypeNames.Length + " dashboards carry banner; "
+                    + validTypesCount + "/" + AuditedDashboardTypeNames.Length + " types resolved");
+            }
+        }
+
+        /// <summary>
+        /// T2: Jede Dashboard-Klasse MUSS von RimconemyWindow oder
+        /// RimconemyMainTabWindow ableiten. Pass: alle Klassen bestehen.
+        /// Fail: irgend eine Klasse erfüllt die Toolkit-Anker-Bedingung nicht.
+        /// </summary>
+        private static void RunT2_DashboardsInheritUiToolkit()
+        {
+            int dashboardsInheritingToolkit = 0;
+            foreach (var name in AuditedDashboardTypeNames)
+            {
+                var type = FindType(name);
+                if (type == null)
+                {
+                    _failed++;
+                    _failures.Add("T2: dashboard class missing at runtime: " + name);
+                    continue;
+                }
+                if (InheritsToolkit(type))
+                {
+                    dashboardsInheritingToolkit++;
+                }
+                else
+                {
+                    _failed++;
+                    _failures.Add("T2: dashboard " + name + " does NOT inherit RimconemyWindow or RimconemyMainTabWindow");
+                }
+            }
+            if (dashboardsInheritingToolkit == AuditedDashboardTypeNames.Length)
+            {
+                _passed++;
+            }
+            else
+            {
+                _failed++;
+                _failures.Add("T2: only " + dashboardsInheritingToolkit + "/"
+                    + AuditedDashboardTypeNames.Length + " dashboards inherit the UI toolkit");
+            }
+        }
+
+        /// <summary>
+        /// T3: Längen-Check der Audit-Liste. Verhindert, dass jemand die
+        /// Liste auf 0 trimmt und grün bekommt — die Mindestlänge bleibt
+        /// eine Voraussetzung für die Aussagefähigkeit der anderen Achsen.
+        ///
+        /// F-11-Doku: dieser Check bleibt absichtlich ein Längen-Check.
+        /// Er prüft nicht den Inhalt (das tun T1+T2); er prüft nur, dass
+        /// die Audit-Definition nicht durch Leeren trivialisiert wird.
+        /// </summary>
+        private static void RunT3_AuditedListIsNonTrivial()
+        {
+            if (AuditedDashboardTypeNames.Length >= 6
+                // Defensive: keine null- oder Leerstring-Einträge erlaubt
+                && AuditedDashboardTypeNames.All(s => !string.IsNullOrWhiteSpace(s)))
+            {
+                _passed++;
+            }
+            else
+            {
+                _failed++;
+                _failures.Add("T3: audit list too small or contains whitespace entries; length="
+                    + AuditedDashboardTypeNames.Length);
+            }
+        }
+
+        // ── IL-/Reflection-Helper ──
 
         private static bool HasDrawFeatureStatusCall(Type type)
         {
@@ -126,7 +237,6 @@ namespace Rimconemy.Foundation.Tests
                     BindingFlags.Public | BindingFlags.Instance,
                     binder: null,
                     types: new[] { typeof(UnityEngine.Rect) },
-
                     modifiers: null);
                 if (method == null) return false;
 
@@ -136,9 +246,7 @@ namespace Rimconemy.Foundation.Tests
                 if (il == null || il.Length == 0) return false;
 
                 // Wir suchen roh nach einem Method-Token, der auf
-                // DrawFeatureStatus zeigt. Da Reflection kein direktes
-                // Reverse-API bietet, hilft der Trick: lesen wir die lokale
-                // Methode "DrawFeatureStatus" und vergleichen ihr MetadataToken.
+                // DrawFeatureStatus zeigt.
                 var target = typeof(RimconemyUi).GetMethod(
                     "DrawFeatureStatus",
                     BindingFlags.Public | BindingFlags.Static);
@@ -146,9 +254,6 @@ namespace Rimconemy.Foundation.Tests
 
                 int targetToken = target.MetadataToken;
                 int tokenBytes = (targetToken & 0xFFFFFF);
-                // Die IL-Sequenz enthält das kompakte Token in big-endian order
-                // für call/callvirt (vgl. ECMA-335 III.2.2). Wir suchen nach
-                // 3 Bytes (low 24 bits of MetadataToken).
                 byte b0 = (byte)((tokenBytes >> 16) & 0xFF);
                 byte b1 = (byte)((tokenBytes >> 8) & 0xFF);
                 byte b2 = (byte)(tokenBytes & 0xFF);
@@ -175,9 +280,6 @@ namespace Rimconemy.Foundation.Tests
             }
             catch (ReflectionTypeLoadException rtle)
             {
-                // Wenn eine Dashboard-Klasse wegen Paket-Load-Fehler nicht
-                // geladen werden kann, wäre silent skip eine unentdeckte
-                // Audit-Lücke. Wir loggen laut und melden false.
                 Log.Warning(
                     "[Rimconemy.Foundation] Honest-Banner-Audit: Dashboard-Klasse "
                     + type.FullName + " konnte nicht geladen werden: "

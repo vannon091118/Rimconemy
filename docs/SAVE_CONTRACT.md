@@ -1,5 +1,6 @@
 # SAVE_CONTRACT.md — Rimconemy Save & Migration Specification
 
+> **SSOT-Owner für:** `ISchemaMigratable`-Vertrag, Schema-Bump-Pattern, Save/Load-Lifecycle, Foundation-Save-Bridge, IExposable-Adapter, Schema-Version. Wer ein Topic aus [docs/INDEX.md §1](INDEX.md) hier behandelt, hält eine SSOT-Verletzung fest.
 > **Stand:** 2026-08-04  
 > **Owner:** Foundation (01) & Story/Threat (05) & Economy (04) & Progression (02) & Scavenger (03)  
 > **Zielplattform:** RimWorld 1.6.4566 (Unity/Mono Scribe XML)  

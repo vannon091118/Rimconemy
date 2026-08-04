@@ -2,7 +2,7 @@
 
 > **Capability:** `rimconemy.economyterritory` v1 · **Owner:** Economy · **Stand:** 2026-08-04
 > **Status:** `COMPILED`
-> **Code-Anker:** `Source/Transfers/ReserveTransferCoordinator.cs` · **Test:** `Tests/ReserveTransferRegressionTests.cs`
+> **Code-Anker:** `Source/Transfers/ReserveTransferCoordinator.cs` · **Test:** `Tests/PhysicalTransferRegressionTests.cs`
 > **ROADMAP-Referenz:** §8.2 · **Owner-Checklist:** siehe `docs/falsification/README.md`
 
 ## A — Def-Liste (XML-Defs)
@@ -14,12 +14,12 @@
 Quelle: `Source/Economy/Source/Transfers/ReserveTransferCoordinator.cs`
 
 - Kompiliert: ✅
-- Bootstrap-Klasse: `Economy.Bootstrap.RunAll` ruft `Tests/ReserveTransferRegressionTests.cs` auf
+- Bootstrap-Klasse: `Economy.Bootstrap.RunAll` ruft `Tests/PhysicalTransferRegressionTests.cs` auf
 - Patch-Klassen: `mods/economy/Source/Economy/*.cs`
 
 ## C — Selbsttest (RunAll)
 
-`Tests.ReservePhysicalTransferRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
+`Tests.PhysicalTransferRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
 
 ## D — Runtime-Boot (User Live-Test erforderlich)
 

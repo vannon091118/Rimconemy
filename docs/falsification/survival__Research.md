@@ -1,8 +1,8 @@
 # Falsifizierungsbericht: `Survival/Research`
 
 > **Capability:** `rimconemy.survivalprogression` v1 · **Owner:** Survival · **Stand:** 2026-08-04
-> **Status:** `COMPILED`
-> **Code-Anker:** `Source/Progression/ProgressionGameComponent.cs (ResearchCapabilities)` · **Test:** `Tests/ResearchReductionRegressionTests.cs`
+> **Status:** `COMPILED` — Legacy-/Kompatibilitäts-Read-Model, nicht der neue organische Freischaltpfad
+> **Code-Anker:** `Source/Progression/ProgressionGameComponent.cs (ResearchCapabilities)` · **Test:** `Tests/BuildingProgressionPersistenceRegressionTests.cs`
 > **ROADMAP-Referenz:** §8.2 · **Owner-Checklist:** siehe `docs/falsification/README.md`
 
 ## A — Def-Liste (XML-Defs)
@@ -14,12 +14,14 @@
 Quelle: `Source/Survival/Source/Progression/ProgressionGameComponent.cs (ResearchCapabilities)`
 
 - Kompiliert: ✅
-- Bootstrap-Klasse: `Survival.Bootstrap.RunAll` ruft `Tests/ResearchReductionRegressionTests.cs` auf
+- Einordnung: Der aktuelle Pfad sammelt abgeschlossene Vanilla-`ResearchProjectDef`s als Read-Model. Er beweist weder Forschungstisch-Freigaben noch den beschlossenen Erfahrungsbaum.
+- Neuer Zielpfad: bestätigte Action-Completion → genau eine Bereichserfahrung → organische Architektenfreigabe.
+- Bootstrap-Klasse: `Survival.Bootstrap.RunAll` ruft `Tests/BuildingProgressionPersistenceRegressionTests.cs` auf
 - Patch-Klassen: `mods/survival/Source/Survival/*.cs`
 
 ## C — Selbsttest (RunAll)
 
-`Tests.ResearchRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
+`Tests.BuildingProgressionPersistenceRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
 
 ## D — Runtime-Boot (User Live-Test erforderlich)
 
@@ -41,6 +43,18 @@ Quelle: `Source/Survival/Source/Progression/ProgressionGameComponent.cs (Researc
 ## G — Performance-Kennzahl
 
 <!-- Step: Spielstart in 30s belegen; Sample 5 Zyklen -->
+
+## Neue Design-Grenze
+
+Dieser Bericht darf erst auf einen organischen Wissens-/Freigabepfad erweitert werden, wenn getrennt belegt ist:
+
+1. eine physisch abgeschlossene Handlung,
+2. genau ein idempotenter Erfahrungsgewinn,
+3. eine gespeicherte Freigabe im Architektenmenü,
+4. kein Fortschritt durch Platzieren, Abbrechen, Menüöffnen oder Spam,
+5. Save/Load ohne Phantomfreigabe oder Verlust.
+
+Vanilla-ResearchProjectDefs bleiben für DLC-/Mod-Kompatibilität bestehen, sind aber nicht automatisch ein Rimconemy-Unlock.
 
 ## User-Aktion Pflicht
 

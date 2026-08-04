@@ -19,7 +19,7 @@ Quelle: `Source/Survival/Source/Needs/NeedMapping.cs`
 
 ## C — Selbsttest (RunAll)
 
-`Tests.NeedsRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
+`Tests.HungerAmplifierTests.RunAll()` ist in `Bootstrap` aufgerufen.
 
 ## D — Runtime-Boot (User Live-Test erforderlich)
 

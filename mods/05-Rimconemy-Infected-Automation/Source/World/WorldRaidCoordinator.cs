@@ -15,6 +15,13 @@ namespace Rimconemy.InfectedAutomation.World
     /// should fire. WorldObject registration is owned by a User Live-Test
     /// phase.
     ///
+    /// Audit-Finding 6 (2026-08-04): both this class and
+    /// <see cref="InfectedRaidSpawnService"/> previously constructed a
+    /// local <c>new ThreatAggregator { TotalPressure = ... }</c> instance.
+    /// That pattern would have caused double Pressure-Berechnung when
+    /// both stubs transition to live mode. Threat reads are now routed
+    /// through <see cref="ThreatSnapshotBridge"/>.
+    ///
     /// Spec: docs/P6-PROGRESS.md Task 15.
     /// </summary>
     public static class WorldRaidCoordinator
@@ -74,16 +81,14 @@ namespace Rimconemy.InfectedAutomation.World
             return 60_000 * 3;                          // 3 days baseline
         }
 
-        /// <summary>Resolves the latest threat snapshot via ThreatAggregator / StoryDirector bridge.</summary>
+        /// <summary>
+        /// Resolves the latest threat snapshot via the central
+        /// <see cref="Threat.ThreatSnapshotBridge"/>.
+        /// </summary>
         private static ThreatAggregator LatestThreatSnapshot()
         {
-            try
-            {
-                var d = Story.StoryDirector.Get();
-                if (d?.LastSnapshot == null) return null;
-                return new ThreatAggregator { TotalPressure = d.LastSnapshot.ThreatPressure };
-            }
-            catch (System.Exception) { return null; }
+            // Audit-Finding 6 (2026-08-04) consolidation: single-source read.
+            return Threat.ThreatSnapshotBridge.GetLatest();
         }
     }
 }

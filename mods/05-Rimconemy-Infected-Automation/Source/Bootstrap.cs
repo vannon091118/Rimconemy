@@ -12,7 +12,10 @@ namespace Rimconemy.InfectedAutomation
     /// Vanilla Storyteller/Wealth-Raids remain authoritative until A3
     /// validates an explicit IncidentDef/IncidentWorker wiring.
     ///
-    /// No Foundation, Scavenger, Survival or Economy compile references.
+    /// Compile references (resolved at build time): Rimconemy.Foundation (01),
+    /// Rimconemy.ScavengerInfrastructure (03). Survival (02) is reached via the
+    /// Foundation servicebus. Economy (04) is reached via the late-bound
+    /// reflection bridge in Foundation.CrossPackageState (audit-bundle B / F-01).
     /// </summary>
     [StaticConstructorOnStartup]
     public static class Bootstrap
@@ -43,6 +46,8 @@ namespace Rimconemy.InfectedAutomation
             Tests.StoryStateSchemaBumpTests.RunAll();
             Tests.BuildingThreatRegressionTests.RunAll();
             Tests.MechadroidJobRegressionTests.RunAll();
+            // Phase-1.4 (2026-08-04): deterministic dedup for the starter-infected spawn.
+            Tests.StartEnemiesRegressionTests.RunAll();
             // P2/H3 §2 (Setting Rule CollectiveDefense): regression for ThoughtDef
             // shape, tracker aggregation, and scribe-roundtrip invariants.
             Tests.CollectiveDefenseRegressionTests.RunAll();
@@ -52,6 +57,14 @@ namespace Rimconemy.InfectedAutomation
             // P5 Vanilla-/DLC-Incident-Klassifikation: prefix detection +
             // one-Infected-Provider invariant validator.
             Tests.IncidentClassifierRegressionTests.RunAll();
+            // P6/F-6 (2026-08-04) — ThreatSnapshotBridge single-source read.
+            // Both InfectedRaidSpawnService and WorldRaidCoordinator route
+            // through ThreatSnapshotBridge.GetLatest(). The regression suite
+            // covers the defensive null path with no Current.Game loaded.
+            Tests.ThreatSnapshotBridgeRegressionTests.RunAll();
+            // Audit-Bündel C / F-13 (2026-08-04) — FIFO edge-trigger queue
+            // for game-over pendings (replaces single-pending tuple).
+            Tests.GameOverPendingQueueRegressionTests.RunAll();
             Log.Message("[Rimconemy.InfectedAutomation] Building threat adapter available; Mechadroid job contracts are gated for Milestone B; no incident or raid is spawned.");
         }
     }

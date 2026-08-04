@@ -273,25 +273,55 @@ namespace Rimconemy.Foundation.Canonical
     /// RimWorld 1.6 internally emits a red <c>Log.Error("Keyed missing…")</c>
     /// BEFORE the user's catch can intervene, so missing localized strings
     /// flooded the operator log even though the runtime value was safe.
-    /// The current implementation uses try/catch with <c>.Translate()</c>
-    /// since HasKey is not available in RimWorld 1.6.
+    /// The current implementation uses reflection to query the active language
+    /// dictionary directly, avoiding the Log.Error side effect entirely.
     /// </summary>
     public static class RimconemyKeyed
     {
+        private static System.Reflection.FieldInfo _languageDictField;
+        private static System.Reflection.PropertyInfo _activeLanguageProperty;
+
+        private static System.Collections.Generic.Dictionary<string, string> GetLanguageDict()
+        {
+            // F-01 helper fix (2026-08-04): RimWorld 1.6 exposes the active
+            // Language via `LanguageDatabase.ActiveLanguage` (property of
+            // type `RimWorld.Language`). The dictionary lives on the
+            // `Language` instance under a NonPublic field named "dictionary"
+            // (per Cecil-Spike). We resolve both endpoints through reflection
+            // to keep this file free of symbol dependencies on the Language
+            // type — if 1.6 renames the path we still discover it at runtime
+            // and degrade to "no dictionary" without a hard build break.
+            if (_activeLanguageProperty == null)
+            {
+                _activeLanguageProperty = System.Type.GetType("RimWorld.LanguageDatabase, Assembly-CSharp", false)
+                    ?.GetProperty("ActiveLanguage",
+                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (_activeLanguageProperty == null) return null;
+            }
+            object active = _activeLanguageProperty.GetValue(null);
+            if (active == null) return null;
+
+            if (_languageDictField == null)
+            {
+                _languageDictField = active.GetType().GetField(
+                    "dictionary",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            }
+            if (_languageDictField == null) return null;
+            return _languageDictField.GetValue(active) as System.Collections.Generic.Dictionary<string, string>;
+        }
+
         public static string Try(string key, string fallback)
         {
             if (string.IsNullOrEmpty(key)) return fallback;
-            try
-            {
-                string translated = key.Translate();
-                if (string.IsNullOrEmpty(translated) || translated == key)
-                    return fallback;
-                return translated;
-            }
-            catch
-            {
-                return fallback;
-            }
+
+            // Query the language dictionary directly to avoid Translate() side-effect (Log.Error on missing key).
+            var dict = GetLanguageDict();
+            if (dict != null && dict.TryGetValue(key, out string text) && !string.IsNullOrEmpty(text))
+                return text;
+
+            // Key not found or dictionary inaccessible - return fallback without calling Translate().
+            return fallback;
         }
     }
 

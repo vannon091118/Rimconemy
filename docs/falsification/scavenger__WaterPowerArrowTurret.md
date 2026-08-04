@@ -2,7 +2,7 @@
 
 > **Capability:** `rimconemy.scavengerinfrastructure` v1 · **Owner:** Scavenger · **Stand:** 2026-08-04
 > **Status:** `COMPILED`
-> **Code-Anker:** `Source/Building/ArrowTurretPowerGate.cs + Source/Power/FueledGeneratorService.cs` · **Test:** `Tests/WaterPowerArrowTurretRegressionTests.cs`
+> **Code-Anker:** `Source/Building/ArrowTurretPowerGate.cs + Source/Power/FueledGeneratorService.cs` · **Test:** `Tests/ArrowTurretBlockTests.cs`
 > **ROADMAP-Referenz:** §8.2 · **Owner-Checklist:** siehe `docs/falsification/README.md`
 
 ## A — Def-Liste (XML-Defs)
@@ -14,12 +14,12 @@
 Quelle: `Source/Scavenger/Source/Building/ArrowTurretPowerGate.cs + Source/Power/FueledGeneratorService.cs`
 
 - Kompiliert: ✅
-- Bootstrap-Klasse: `Scavenger.Bootstrap.RunAll` ruft `Tests/WaterPowerArrowTurretRegressionTests.cs` auf
+- Bootstrap-Klasse: `Scavenger.Bootstrap.RunAll` ruft `Tests/ArrowTurretBlockTests.cs` auf
 - Patch-Klassen: `mods/scavenger/Source/Scavenger/*.cs`
 
 ## C — Selbsttest (RunAll)
 
-`Tests.WaterPowerArrowTurretRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
+`Tests.ArrowTurretBlockTests.RunAll()` ist in `Bootstrap` aufgerufen.
 
 ## D — Runtime-Boot (User Live-Test erforderlich)
 

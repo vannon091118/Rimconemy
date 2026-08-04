@@ -55,7 +55,7 @@ namespace Rimconemy.ScavengerInfrastructure.Building
 
         // StorageQuery is intentionally read-only. This guard prevents the
         // immediate designator from allocating the same unchanged snapshot
-        // repeatedly while the physical storage-write gate remains open.
+        // repeatedly after a successful best-effort storage write.
         private static string _lastAppliedStorageKey;
 
         // ── Test-Seams ───────────────────────────────────────────────
@@ -154,7 +154,7 @@ namespace Rimconemy.ScavengerInfrastructure.Building
             /// <summary>Anzahl platzierter Wall-Blueprints (= BauschuttConsumed bei Success).</summary>
             public int WallsPlaced;
 
-            /// <summary>Logisch zugeordneter Bauschutt-Count; Storage bleibt read-only und wird nicht physisch reduziert.</summary>
+            /// <summary>Bauschutt-Count, für den nach erfolgreicher Platzierung ein best-effort Storage-Write angefordert wurde.</summary>
             public int BauschuttConsumed;
 
             /// <summary>Zellen, an denen Blueprints platziert wurden (deterministisch sortiert).</summary>
@@ -298,12 +298,36 @@ namespace Rimconemy.ScavengerInfrastructure.Building
                     }
 
                     result.WallsPlaced += 1;
-                    // This is a logical allocation for the result only. Package 03's
-                    // StorageQuery is read-only; physical consumption remains a
-                    // separate owner-approved Storage-Write gate.
+                // BauschuttConsumed tracks the successful placement cost in
+                // the ApplyResult. The physical map-storage mutation is
+                // delegated to StorageWriteMutationService after the loop
+                // (one batched best-effort write per Apply call).
                     result.BauschuttConsumed += 1;
                     result.PlacedAt.Add(cell);
                     remaining -= 1;
+                }
+
+                // ── Storage-Write-Gate: Bauschutt verbrauchen ───────────
+                // Loop-Closure 2026-08-04: ship the physical cost in the
+                // same Apply call. We deliberately batch the removal so a
+                // single ApplyRemap() consumption is atomic for the player.
+                // Owner-Constraint: MutateDown lives in Package-03 because
+                // we just wrote the Map via PlaceBlueprintForBuild; Mod-04
+                // (Economy) consumes through its own PhysicalTransfer path
+                // and does not call into this service.
+                if (input.TargetMap != null && result.BauschuttConsumed > 0)
+                {
+                    int removed = Storage.StorageWriteMutationService.MutateDown(
+                        input.TargetMap,
+                        BauschuttRemapService.BauschuttDefName,
+                        result.BauschuttConsumed);
+                    if (removed < result.BauschuttConsumed)
+                    {
+                        Log.Warning("[Rimconemy.ScavengerInfrastructure] Bauschutt storage-write partial: "
+                            + "requested=" + result.BauschuttConsumed
+                            + ", removed=" + removed
+                            + " resource=" + BauschuttRemapService.BauschuttDefName);
+                    }
                 }
 
                 if (result.WallsPlaced == 0 && remaining == toPlace)
@@ -375,7 +399,7 @@ namespace Rimconemy.ScavengerInfrastructure.Building
                 {
                     return new ApplyResult
                     {
-                        ReasonBlocked = "Unchanged Bauschutt snapshot already allocated; physical storage consumption is OPEN",
+                        ReasonBlocked = "Unchanged Bauschutt snapshot already allocated; write already requested",
                         PlacedAt = new List<IntVec3>(),
                         PlacementFailures = new List<string>(),
                     };

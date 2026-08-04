@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Infected & Automation
+  Stable defName: Rimconemy_InfectedRavager
+  Loop-Closure 2026-08-04: minimal PawnKindDef so
+  InfectedRaidWorker.TryExecuteWorker has a real defender to spawn
+  after it fires the letter. The single SpawnPlan entry point in
+  InfectedRaidSpawnService.BuildPlanForTick returns PawnCount from the
+  ThreatAggregator; the worker spawns min(plan.PawnCount, 1) of these.
+  combatPower=80 / melee-armed placeholder — not yet a tuned hostile.
+  Owner-Constraint: this Pawn MUST stay hidden (faction.hidden=true) and
+  humanlikeFaction=false otherwise 1.6 ConfigErrors on missing ranges.
+-->
+<Defs>
+  <PawnKindDef>
+    <defName>Rimconemy_InfectedRavager</defName>
+    <label>infected ravager</label>
+    <description>Smallest representation of the Rimconemy-infected threat: a single hostile pawn dropped near the colony when a story event fires the Raid incident. Used for Phase-1 MVP.</description>
+    <defaultFactionDef>Rimconemy_HiddenInfectedFaction</defaultFactionDef>
+    <race>Human</race>
+    <initialResistanceRange>0~0</initialResistanceRange>
+    <initialWillRange>0.5~0.7</initialWillRange>
+    <combatPower>80</combatPower>
+  </PawnKindDef>
+</Defs>

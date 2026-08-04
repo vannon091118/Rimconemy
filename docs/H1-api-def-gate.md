@@ -1,5 +1,6 @@
 # H1 — RimWorld 1.6 API- und Def-Gate
 
+> **SSOT-Hinweis:** Detail-Topic dieser Datei ist im Orient-Index [ARCHITECTURE.md §1](ARCHITECTURE.md). Topic-Landkarte: [INDEX.md §1](INDEX.md).
 > **Owner:** Research/Design (kein Code)
 > **Status:** `PLANNED` — Symboltabelle erstellt, Runtime-Verifikation durch User erforderlich
 > **Basis:** Lokale Installation RimWorld 1.6.4566, `Assembly-CSharp.dll`-String-Scan, Core-/DLC-Def-XML, RimWorld-Wiki

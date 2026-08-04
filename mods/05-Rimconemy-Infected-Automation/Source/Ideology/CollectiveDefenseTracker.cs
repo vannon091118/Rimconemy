@@ -17,13 +17,18 @@ namespace Rimconemy.InfectedAutomation.Ideology
     ///
     /// Persisted as <see cref="GameComponent"/> state via Scribe so the
     /// tracker survives Save/Load and the per-pawn counters do not drift.
-    ///
-    /// Specification: docs/H3-ideology-influence-matrix.md §2 + §8.3.
+    /// Aggregation runs every 600 ticks from GameComponentTick override
+    /// (no Harmony patch). See H3 §2 + §8.3.
     /// </summary>
     public class CollectiveDefenseTracker : GameComponent
     {
         // Last combat tick (Game.TicksGame) used to scope aggregation.
         private long lastCombatTick = -1L;
+
+        // Last tick when aggregation ran (persisted via Scribe).
+        // Using TicksGame delta instead of static counter so Save/Load
+        /// preserves cadence without resetting.
+        private long lastAggregateTick = 0L;
 
         // Participating pawn ids (thingIDNumber) per combat round.
         // Reset by ApplyPostCombatEffects() after the thought pass.
@@ -150,12 +155,26 @@ namespace Rimconemy.InfectedAutomation.Ideology
 
         public override void GameComponentTick()
         {
-            // No-op on tick; combat hooks drive state changes.
+            if (Find.TickManager == null) return;
+            long currentTick = Find.TickManager.TicksGame;
+            const long AggregateIntervalTicks = 600L;
+
+            if (currentTick < lastAggregateTick + AggregateIntervalTicks)
+                return;
+
+            lastAggregateTick = currentTick;
+
+            if (Current.Game == null) return;
+
+            var participants = new HashSet<int>();
+            var shirkers = new HashSet<int>();
+            ComputeAndApply(participants, shirkers);
         }
 
         public override void ExposeData()
         {
             Scribe_Values.Look(ref lastCombatTick, "lastCombatTick", -1L);
+            Scribe_Values.Look(ref lastAggregateTick, "lastAggregateTick", 0L);
             Scribe_Values.Look(ref totalDefenders, "totalDefenders", 0);
             Scribe_Values.Look(ref totalShirkers, "totalShirkers", 0);
             Scribe_Values.Look(ref totalRounds, "totalRounds", 0);

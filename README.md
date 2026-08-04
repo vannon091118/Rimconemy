@@ -49,6 +49,10 @@ Die Spielschleife führt vom Sammeln und Bauen über Wirtschaft und Expansion bi
 | ⚙️ **Automatisieren** | Mechadroids, automatisierte Raids, Outpost-Proxy-Graph — wenn du überlebt hast, fängst du an zu skalieren. |
 | 🛡️ **Verteidigen** | Deterministische Story-Events, ideologische Reaktionen, Bedrohungsdruck mit erklärbaren Regeln. Und die Infizierten kommen sowieso. |
 
+## 👁️‍🗨️ Vision
+
+Unsere Vision ist es, RimWorld in eine tiefgreifende Überlebenssimulation zu verwandeln, in der jedes Entscheidungsgewicht trägt und emergent narratives aus der Interaktion von Wirtschaft, Ökologie und Sozialdynamik entstehen. Wir streben danach, dass Spieler nicht nur überleben, sondern bedeutende Geschichten schreiben – wo Ressourcenknappheit, moralische Dilemmata und emergentende Bedrohungen jedes Spiel zu einer einzigartigen Odyssee machen.
+
 ---
 
 ## 📦 Die fünf Pakete
@@ -73,7 +77,7 @@ Rimconemy ist in **5 unabhängige Pakete** aufgeteilt. Jedes Paket kann einzeln 
 </tr>
 <tr>
 <td><code>02</code></td>
-<td><strong>🛡️ Survival &amp; Progression</strong></td>
+<td><strong>🛡️ Survival & Progression</strong></td>
 <td>Bedürfnisse, Charakter-Setup, Arbeitserfahrung, Forschungspfad, Save-Migration, Game-Over-Erkennung</td>
 <td>✅ BOOT · Save-Migration first-class</td>
 </tr>
@@ -85,13 +89,13 @@ Rimconemy ist in **5 unabhängige Pakete** aufgeteilt. Jedes Paket kann einzeln 
 </tr>
 <tr>
 <td><code>04</code></td>
-<td><strong>💰 Economy &amp; Territory</strong></td>
+<td><strong>💰 Economy & Territory</strong></td>
 <td>Credits-Wallet, lokale Märkte, Outposts, Weltkarte, Territorial-Expansion</td>
 <td>✅ BOOT · Logistik offen</td>
 </tr>
 <tr>
 <td><code>05</code></td>
-<td><strong>☣️ Infected &amp; Automation</strong></td>
+<td><strong>☣️ Infected & Automation</strong></td>
 <td>Deterministische Story-Events, Infizierte, Mechadroids, Ideologie-Integration, Dev-Auswertung</td>
 <td>✅ BOOT · Raids offen</td>
 </tr>

@@ -291,66 +291,102 @@ runtime_gates() {
   if has_match 'Registry: 5 package\(s\) registered' "$LOG_PATH"; then pass "five packages registered"; else fail "registry did not report five packages"; fi
 
   local required_summaries=(
-    'CapabilityGate tests: [0-9]+ passed, 0 failed'
-    'ColonialReader tests: [0-9]+ passed, 0 failed'
-    'CrossPackageState tests: [0-9]+ passed, 0 failed'
-    'EventLog regression tests: [0-9]+ passed, 0 failed'
-    'Profile refresh tests: [0-9]+ passed, 0 failed'
-    'Profile detector dedup tests: [0-9]+ passed, 0 failed'
-    'BioRemap tests: [0-9]+ passed, 0 failed'
-    'NeedMappingService tests: [0-9]+ passed, 0 failed'
-    'CreditsLedger regression tests: [0-9]+ passed, 0 failed'
-    'Market persistence tests: [0-9]+ passed, 0 failed'
-    'StorySelector tests: [0-9]+ passed, 0 failed'
-    'StoryState regression tests: [0-9]+ passed, 0 failed'
-    'Building capability tests: [0-9]+ passed, 0 failed'
-    'Building progression regression tests: [0-9]+ passed, 0 failed'
-    'Building progression persistence tests: [0-9]+ passed, 0 failed'
-    'BuildingCore regression tests: [0-9]+ passed, 0 failed'
-    'Building input regression tests: [0-9]+ passed, 0 failed'
-    'Physical transfer regression tests: [0-9]+ passed, 0 failed'
-    'Outpost investment regression tests: [0-9]+ passed, 0 failed'
-    'Building threat regression tests: [0-9]+ passed, 0 failed'
-    'Mechadroid job regression tests: [0-9]+ passed, 0 failed'
-    'CampfireScraps regression tests: [0-9]+ passed, 0 failed'
-    'BauschuttRemapApply tests: [0-9]+ passed, 0 failed'
-    'ArrowTurretBlock tests: [0-9]+ passed, 0 failed'
-    'CoalChain regression tests: [0-9]+ passed, 0 failed'
-    'StainlessSteelChain regression tests: [0-9]+ passed, 0 failed'
-  )
-  local summary
-  for summary in "${required_summaries[@]}"; do
-    if has_match "$summary" "$LOG_PATH"; then pass "summary: $summary"; else fail "missing summary: $summary"; fi
-  done
-  if [[ "$REQUIRE_SCENARIO_TESTS" == true ]]; then
-    if has_match 'Scenario contract tests: [0-9]+ passed, 0 failed' "$LOG_PATH"; then
-      pass "Scenario contract summary"
+      'CapabilityGate tests: [0-9]+ passed, 0 failed'
+      'ColonialReader tests: [0-9]+ passed, 0 failed'
+      'CrossPackageState tests: [0-9]+ passed, 0 failed'
+      'EventLog regression tests: [0-9]+ passed, 0 failed'
+      'Profile refresh tests: [0-9]+ passed, 0 failed'
+      'Profile detector dedup tests: [0-9]+ passed, 0 failed'
+      'BioRemap tests: [0-9]+ passed, 0 failed'
+      'NeedMappingService tests: [0-9]+ passed, 0 failed'
+      'CreditsLedger regression tests: [0-9]+ passed, 0 failed'
+      'Market persistence tests: [0-9]+ passed, 0 failed'
+      'StorySelector tests: [0-9]+ passed, 0 failed'
+      'StoryState regression tests: [0-9]+ passed, 0 failed'
+      'Building capability tests: [0-9]+ passed, 0 failed'
+      'Building progression regression tests: [0-9]+ passed, 0 failed'
+      'Building progression persistence tests: [0-9]+ passed, 0 failed'
+      'BuildingCore regression tests: [0-9]+ passed, 0 failed'
+      'Building input regression tests: [0-9]+ passed, 0 failed'
+      'Physical transfer regression tests: [0-9]+ passed, 0 failed'
+      'Outpost investment regression tests: [0-9]+ passed, 0 failed'
+      'Building threat regression tests: [0-9]+ passed, 0 failed'
+      'Mechadroid job regression tests: [0-9]+ passed, 0 failed'
+      'CampfireScraps regression tests: [0-9]+ passed, 0 failed'
+      'BauschuttRemapApply tests: [0-9]+ passed, 0 failed'
+      'ArrowTurretBlock tests: [0-9]+ passed, 0 failed'
+      'CoalChain regression tests: [0-9]+ passed, 0 failed'
+      'StainlessSteelChain regression tests: [0-9]+ passed, 0 failed'
+    )
+    local summary
+    for summary in "${required_summaries[@]}"; do
+      if has_match "$summary" "$LOG_PATH"; then pass "summary: $summary"; else fail "missing summary: $summary"; fi
+    done
+    if [[ "$REQUIRE_SCENARIO_TESTS" == true ]]; then
+      if has_match 'Scenario contract tests: [0-9]+ passed, 0 failed' "$LOG_PATH"; then
+        pass "Scenario contract summary"
+      else
+        fail "Scenario contract summary missing"
+      fi
     else
-      fail "Scenario contract summary missing"
+      warn "Scenario contract summary not required; use --require-scenario-tests"
     fi
-  else
-    warn "Scenario contract summary not required; use --require-scenario-tests"
-  fi
 
-  # Do not match successful summaries such as "0 failed". Actual
-  # Rimconemy failures use Log.Error/Log.Warning stack markers with an
-  # uppercase diagnostic token (Exception, FAILED, or Error) on the primary
-  # Rimconemy line. The anchored package prefix avoids Unity/vanilla noise.
-  local runtime_error_pattern='^\[Rimconemy[^]]*\].*(Exception|FAILED|Error|error|exception|failed)'
-  local runtime_summary_pattern='^\[Rimconemy[^]]*\].*tests: [0-9]+ passed, [0-9]+ failed\.$'
-  # This check is intentionally case-sensitive: successful summaries contain
-  # the lowercase word "failed" in "0 failed" and must not be treated as
-  # runtime diagnostics.
-  # Exclude only canonical successful test summaries; inspect all other
-  # Rimconemy primary lines case-insensitively for real diagnostics.
-  local runtime_diagnostics
-  runtime_diagnostics=$(grep -Ei -- "$runtime_error_pattern" "$LOG_PATH" | grep -Eiv -- "$runtime_summary_pattern" || true)
-  if [[ -n "$runtime_diagnostics" ]]; then
-    fail "Rimconemy error/exception/failure marker found"
-    printf '%s\n' "$runtime_diagnostics" | tail -80
-  else
-    pass "no Rimconemy error/exception/failure markers"
-  fi
+    # Flexible summary detection: handle "X passed, 0 failed (expected=N)" and "X/Y passed" formats
+    # Collect all summary-like lines and evaluate them
+    local summary_lines
+    summary_lines=$(grep -E '^\\[Rimconemy[^]]*\\].*tests:' "$LOG_PATH" || true)
+    local detected_failed=false
+    while IFS= read -r line; do
+      [[ -z "$line" ]] && continue
+      # Pattern 1: "X passed, 0 failed" (with optional "(expected=N)")
+      if echo "$line" | grep -Eq 'tests: [0-9]+ passed, 0 failed'; then
+        # Success - explicit 0 failed
+        :
+      # Pattern 2: "X passed, Y failed" where Y > 0
+      elif echo "$line" | grep -Eq 'tests: [0-9]+ passed, [1-9][0-9]* failed'; then
+        fail "summary shows failures: $line"
+        detected_failed=true
+      # Pattern 3: "X/Y passed" - success only if X == Y
+      elif echo "$line" | grep -Eq 'tests: [0-9]+/[0-9]+ passed'; then
+        local x y
+        x=$(echo "$line" | sed -E 's/.*tests: ([0-9]+)\/([0-9]+) passed.*/\1/')
+        y=$(echo "$line" | sed -E 's/.*tests: ([0-9]+)\/([0-9]+) passed.*/\2/')
+        if [[ "$x" -eq "$y" ]]; then
+          : # success
+        else
+          fail "summary shows partial pass: $line (X=$x, Y=$y)"
+          detected_failed=true
+        fi
+      # Pattern 4: "X passed, 0 failed (expected=N)" - explicit 0 failed is success
+      elif echo "$line" | grep -Eq 'tests: [0-9]+ passed, 0 failed \(expected=[0-9]+\)'; then
+        : # success
+      else
+        # Unknown format - warn but don't fail
+        warn "unrecognized summary format: $line"
+      fi
+    done <<< "$summary_lines"
+
+    # Do not match successful summaries such as "0 failed". Actual
+    # Rimconemy failures use Log.Error/Log.Warning stack markers with an
+    # uppercase diagnostic token (Exception, FAILED, or Error) on the primary
+    # Rimconemy line. The anchored package prefix avoids Unity/vanilla noise.
+    local runtime_error_pattern='^\\[Rimconemy[^]]*\\].*(Exception|FAILED|Error|error|exception|failed)'
+    local runtime_summary_pattern='^\\[Rimconemy[^]]*\\].*tests: [0-9]+ passed, [0-9]+ failed\\.$'
+    local runtime_summary_pattern2='^\\[Rimconemy[^]]*\\].*tests: [0-9]+/[0-9]+ passed\\.$'
+    # This check is intentionally case-sensitive: successful summaries contain
+    # the lowercase word "failed" in "0 failed" and must not be treated as
+    # runtime diagnostics.
+    # Exclude only canonical successful test summaries; inspect all other
+    # Rimconemy primary lines case-insensitively for real diagnostics.
+    local runtime_diagnostics
+    runtime_diagnostics=$(grep -Ei -- "$runtime_error_pattern" "$LOG_PATH" | grep -Eiv -- "$runtime_summary_pattern|$runtime_summary_pattern2" || true)
+    if [[ -n "$runtime_diagnostics" ]]; then
+      fail "Rimconemy error/exception/failure marker found"
+      printf '%s\n' "$runtime_diagnostics" | tail -80
+    else
+      pass "no Rimconemy error/exception/failure markers"
+    fi
 
   # Bootstrap-log dedup invariants (ProfileDetector dedup token must hold).
   # See scripts/verify_bootstrap_log.sh and
@@ -365,6 +401,12 @@ finish_report() {
     echo "failures=$FAILURES"
     echo "warnings=$WARNINGS"
     echo "result=$([[ "$FAILURES" -eq 0 ]] && echo PASS || echo FAIL)"
+    echo "failure_details_begin"
+    for d in "${FAIL_DETAILS[@]}"; do echo "$d"; done
+    echo "failure_details_end"
+    echo "warning_details_begin"
+    for d in "${WARN_DETAILS[@]}"; do echo "$d"; done
+    echo "warning_details_end"
   } >> "$REPORT_PATH"
   echo "Report: $REPORT_PATH"
 }

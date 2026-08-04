@@ -19,7 +19,7 @@ Quelle: `Source/Economy/Source/Outposts/OutpostProxyGraph.cs`
 
 ## C — Selbsttest (RunAll)
 
-`Tests.OutpostProductionRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
+`Tests.OutpostInvestmentRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
 
 ## D — Runtime-Boot (User Live-Test erforderlich)
 

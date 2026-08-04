@@ -193,91 +193,7 @@ namespace Rimconemy.InfectedAutomation.Story
 
             // Don't evaluate if threat is below profile minimum
             var snapshot = BuildLiveSnapshot(currentTick);
-            LastSnapshot = snapshot;
-
-            // §8.3 UI-Read-Model: record threat sample for sparkline (max 30 entries).
-            ThreatHistory.Add(snapshot.ThreatPressure);
-            if (ThreatHistory.Count > 30) ThreatHistory.RemoveAt(0);
-
-            if (snapshot.ThreatPressure < ActiveProfile.MinThreatLevel)
-            {
-                LastSelectionReason = $"Bedrohungspegel {snapshot.ThreatPressure:P0} < Profil-Minimum {ActiveProfile.MinThreatLevel:P0} — kein Event ausgelöst.";
-                return;
-            }
-
-            // Select an event
-            var result = StorySelector.SelectEvent(
-                ActiveProfile, snapshot, State, _catalog, currentTick);
-
-            if (result.HasEvent)
-            {
-                // Stage pending event metadata first so the worker (called by
-                // RimWorld's storyteller on the next cycle) can locate it via
-                // HasPendingIncident(defName) and consume it via
-                // ConsumePendingEvent() for label/text.
-                PendingIncidentDefName = "Rimconemy_InfectedRaidIncident";
-                PendingEventLabel = result.SelectedEvent.LetterLabel;
-                PendingEventText = result.SelectedEvent.LetterText;
-
-                State.PruneOldKeys(currentTick);
-
-                // §7 closure: force-fire the incident via RimWorld's
-                // Storyteller.incidentQueue. The IncidentDef
-                // (Defs/Incidents/InfectedRaid.xml) has <baseChance>0.0</baseChance>
-                // so the vanilla storyline StorytellerComp will never select it
-                // spontaneously; without this explicit Add, the Letter never
-                // appears. Adding to incidentQueue guarantees the next
-                // storyteller cycle invokes InfectedRaidWorker, whose
-                // CanFireNowSub returns true because we set PendingIncidentDefName
-                // above, and whose TryExecuteWorker issues the player letter.
-                //
-                // Audit-round-3 §3 (2026-08-04): we now commit the selection
-                // to StoryState (idempotency key, cooldown, LastEventId, etc.)
-                // ONLY after the queue call succeeded. Pre-fire-commit semantics.
-                // If the queue reports a failure (null Storyteller, no map,
-                // def missing, exception inside TryFire), we keep state untouched
-                // and clear the Pending* fields so the same event is re-selected
-                // on the next evaluation cycle — a Letter that didn't appear
-                // counts as not-having-happened.
-                bool queued = QueueSelectedIncident(snapshot);
-                if (queued)
-                {
-                    State.CommitSelection(
-                        eventId: result.SelectedEvent.EventId,
-                        idempotencyKey: result.IdempotencyKey,
-                        currentTick: currentTick,
-                        seed: result.SelectionSeed,
-                        cooldownTicks: result.CooldownTicks);
-
-                    // §8.3: persist selection reason for UI.
-                    LastSelectionReason = $"[Tick {currentTick}] {result.Reason}";
-                    Log.Message($"[Rimconemy.InfectedAutomation] StoryDirector: {result.Reason}");
-
-                    // P2/H3 §3 (Setting Rule Transparency): feed the
-                    // TransparencyTracker with the explained/unexplained
-                    // state of the fired event. The decision is "explained"
-                    // because we always carry a LastSelectionReason with
-                    // a deterministic reason string. Unexplained is reserved
-                    // for future cross-package modes where a StoryDirector
-                    // sibling fires a hidden event.
-                    var tt = Ideology.TransparencyTracker.Get();
-                    if (tt != null)
-                    {
-                        tt.RecordDecision(true, result.Reason);
-                    }
-                }
-                else
-                {
-                    // Fire failed: roll back Pending* so the next tick does not
-                    // see stale metadata. Reasons are logged inside QueueSelectedIncident
-                    // so we just summarize here at the orchestration level.
-                    PendingIncidentDefName = null;
-                    PendingEventLabel = null;
-                    PendingEventText = null;
-                    LastSelectionReason = $"[Tick {currentTick}] Queue-Fehler — Event '{result.SelectedEvent.Label}' nicht ausgelöst. Retry nächste Evaluation.";
-                    Log.Warning($"[Rimconemy.InfectedAutomation] StoryDirector: event '{result.SelectedEvent.Label}' selection dropped - queue failed; will retry next eval. ({result.Reason})");
-                }
-            }
+            EvaluateWithSnapshot(snapshot, currentTick);
         }
 
         /// <summary>
@@ -447,6 +363,16 @@ namespace Rimconemy.InfectedAutomation.Story
             var snapshot = new SituationSnapshot
             {
                 GameTick = tick,
+                // Production-stamp the snapshot so ThreatSnapshotBridge
+                // (and any future read-through cache) can validate its
+                // cached ThreatAggregator against the snapshot's own
+                // tick, not the game's potentially-advanced TicksGame.
+                // Same value as GameTick today; kept separate so a
+                // future "post-build enrichment" phase (e.g. storage
+                // hash refresh after the snapshot frame) can stamp a
+                // different value without breaking downstream caches
+                // that compare on this field.
+                SnapshotUpdatedTick = tick,
                 ActiveEventIds = new List<string>(),
                 ActiveEventFamilies = new List<string>(),
                 CompletedResearchIds = new List<string>(),
@@ -645,15 +571,13 @@ namespace Rimconemy.InfectedAutomation.Story
 
             // Phase B / F-V1: use ColonialReader.NoColonists (single source of
             // truth shared with Mod 02).
-            if (!ColonialReader.NoColonists)
-            {
-                // Living colonists — no wipe. We don't write to State here.
-                return;
-            }
+            bool colonistsPresent = !ColonialReader.NoColonists;
 
-            // Trigger-condition: 0 colonists anywhere. Mark a single canonical
-            // reason. Multiple ticks re-write the same reason.
-            State.MarkGameOverPending("Mod 05 (InfectedAutomation): no living player colonists observed at game tick " + currentTick + ".");
+            // Edge-triggered: only write when transitioning from colonists>0 to 0.
+            // MarkGameOverPending now handles the edge logic internally.
+            State.MarkGameOverPending(
+                "Mod 05 (InfectedAutomation): no living player colonists observed at game tick " + currentTick + ".",
+                colonistsPresent);
         }
 
         // ── public API for IncidentWorkers ────────────────────
@@ -730,14 +654,101 @@ namespace Rimconemy.InfectedAutomation.Story
             // Reset the gate so GameComponentTick's interval check passes.
             LastEvaluationTick = currentTick - EvaluationIntervalTicks;
             // Build and store the snapshot immediately so the dashboard can
-            // display it, then invoke the tick path.
+            // display it, then invoke the shared evaluation path.
             var snapshot = BuildLiveSnapshotPublic(currentTick);
+            EvaluateWithSnapshot(snapshot, currentTick);
+            Log.Message("[Rimconemy.InfectedAutomation] StoryDirector.EvaluateNow triggered from Dev mode.");
+        }
+
+        /// <summary>
+        /// Shared evaluation logic used by both GameComponentTick and EvaluateNow.
+        /// Avoids double-snapshot / double-ThreatHistory entries.
+        /// </summary>
+        private void EvaluateWithSnapshot(SituationSnapshot snapshot, long currentTick)
+        {
             LastSnapshot = snapshot;
             ThreatHistory.Add(snapshot.ThreatPressure);
             if (ThreatHistory.Count > 30) ThreatHistory.RemoveAt(0);
-            Log.Message("[Rimconemy.InfectedAutomation] StoryDirector.EvaluateNow triggered from Dev mode.");
-            // Re-run the normal tick path which will now pass the interval gate.
-            GameComponentTick();
+
+            if (snapshot.ThreatPressure < ActiveProfile.MinThreatLevel)
+            {
+                LastSelectionReason = $"Bedrohungspegel {snapshot.ThreatPressure:P0} < Profil-Minimum {ActiveProfile.MinThreatLevel:P0} — kein Event ausgelöst.";
+                return;
+            }
+
+            // Select an event
+            var result = StorySelector.SelectEvent(
+                ActiveProfile, snapshot, State, _catalog, currentTick);
+
+            if (result.HasEvent)
+            {
+                // Stage pending event metadata first so the worker (called by
+                // RimWorld's storyteller on the next cycle) can locate it via
+                // HasPendingIncident(defName) and consume it via
+                // ConsumePendingEvent() for label/text.
+                PendingIncidentDefName = "Rimconemy_InfectedRaidIncident";
+                PendingEventLabel = result.SelectedEvent.LetterLabel;
+                PendingEventText = result.SelectedEvent.LetterText;
+
+                State.PruneOldKeys(currentTick);
+
+                // §7 closure: force-fire the incident via RimWorld's
+                // Storyteller.incidentQueue. The IncidentDef
+                // (Defs/Incidents/InfectedRaid.xml) has <baseChance>0.0</baseChance>
+                // so the vanilla storyline StorytellerComp will never select it
+                // spontaneously; without this explicit Add, the Letter never
+                // appears. Adding to incidentQueue guarantees the next
+                // storyteller cycle invokes InfectedRaidWorker, whose
+                // CanFireNowSub returns true because we set PendingIncidentDefName
+                // above, and whose TryExecuteWorker issues the player letter.
+                //
+                // Audit-round-3 §3 (2026-08-04): we now commit the selection
+                // to StoryState (idempotency key, cooldown, LastEventId, etc.)
+                // ONLY after the queue call succeeded. Pre-fire-commit semantics.
+                // If the queue reports a failure (null Storyteller, no map,
+                // def missing, exception inside TryFire), we keep state untouched
+                // and clear the Pending* fields so the same event is re-selected
+                // on the next evaluation cycle — a Letter that didn't appear
+                // counts as not-having-happened.
+                bool queued = QueueSelectedIncident(snapshot);
+                if (queued)
+                {
+                    State.CommitSelection(
+                        eventId: result.SelectedEvent.EventId,
+                        idempotencyKey: result.IdempotencyKey,
+                        currentTick: currentTick,
+                        seed: result.SelectionSeed,
+                        cooldownTicks: result.CooldownTicks);
+
+                    // §8.3: persist selection reason for UI.
+                    LastSelectionReason = $"[Tick {currentTick}] {result.Reason}";
+                    Log.Message($"[Rimconemy.InfectedAutomation] StoryDirector: {result.Reason}");
+
+                    // P2/H3 §3 (Setting Rule Transparency): feed the
+                    // TransparencyTracker with the explained/unexplained
+                    // state of the fired event. The decision is "explained"
+                    // because we always carry a LastSelectionReason with
+                    // a deterministic reason string. Unexplained is reserved
+                    // for future cross-package modes where a StoryDirector
+                    // sibling fires a hidden event.
+                    var tt = Ideology.TransparencyTracker.Get();
+                    if (tt != null)
+                    {
+                        tt.RecordDecision(true, result.Reason);
+                    }
+                }
+                else
+                {
+                    // Fire failed: roll back Pending* so the next tick does not
+                    // see stale metadata. Reasons are logged inside QueueSelectedIncident
+                    // so we just summarize here at the orchestration level.
+                    PendingIncidentDefName = null;
+                    PendingEventLabel = null;
+                    PendingEventText = null;
+                    LastSelectionReason = $"[Tick {currentTick}] Queue-Fehler — Event '{result.SelectedEvent.Label}' nicht ausgelöst. Retry nächste Evaluation.";
+                    Log.Warning($"[Rimconemy.InfectedAutomation] StoryDirector: event '{result.SelectedEvent.Label}' selection dropped - queue failed; will retry next eval. ({result.Reason})");
+                }
+            }
         }
 
         /// <summary>

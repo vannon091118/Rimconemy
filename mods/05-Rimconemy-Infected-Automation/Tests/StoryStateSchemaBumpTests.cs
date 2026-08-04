@@ -58,7 +58,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 state.MigrateIfNeeded();
                 return state.SchemaVersion == StoryState.CurrentSchemaVersion;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod05] test caught: " + ex); return false; }
         }
 
         // ── T2 ────────────────────────────────────────────────────────
@@ -73,7 +73,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 state.MigrateIfNeeded();
                 return state.SchemaVersion == StoryState.CurrentSchemaVersion;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod05] test caught: " + ex); return false; }
         }
 
         // ── T3 ────────────────────────────────────────────────────────
@@ -108,7 +108,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 if (!state.EventCooldowns.ContainsKey("EvtA") || state.EventCooldowns["EvtA"] != 1000L) return false;
                 return true;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod05] test caught: " + ex); return false; }
         }
 
         // ── T4 ────────────────────────────────────────────────────────
@@ -132,7 +132,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 // verifies schema version is correct.
                 return state.SchemaVersion == StoryState.CurrentSchemaVersion;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod05] test caught: " + ex); return false; }
         }
 
         // ── T5 ────────────────────────────────────────────────────────
@@ -153,7 +153,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                     && state.GameOverReasonPending == "test-reason"
                     && state.SchemaVersion == StoryState.CurrentSchemaVersion;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod05] test caught: " + ex); return false; }
         }
 
         // ── T6 ────────────────────────────────────────────────────────
@@ -182,7 +182,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 // this file-cycle assertion to a logic-only migration test.
                 return false;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod05] test caught: " + ex); return false; }
         }
     }
 }

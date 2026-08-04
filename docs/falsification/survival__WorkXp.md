@@ -19,7 +19,7 @@ Quelle: `Source/Survival/Source/Progression/BuildingProgressionAdapter.cs`
 
 ## C — Selbsttest (RunAll)
 
-`Tests.WorkXpRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
+`Tests.BuildingProgressionRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
 
 ## D — Runtime-Boot (User Live-Test erforderlich)
 

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure (Package 03).
+  Loop-Closure A0.1 (2026-08-04): Make Rimconemy buildings
+  reachable from the Architect → Strukturen tab. Until now all
+  Rimconemy building ThingDefs lacked a designationCategory, so
+  the player saw only the regular Campfire / Wood-Fired Generator
+  / vanilla turret and never our scaffold.
+
+  Owner-Constraint: only Mod 03 owns its own designation. Mod 02
+  is read-only on this list; Mod 04 / Mod 05 likewise have their
+  own categories (EconomyTab, ThreatTab) declared in their own
+  Patches dirs.
+
+  Design Decision (2026-08-04): use Category="Structure" so that
+  the existing Architect → Strukturen tab is the surface for all
+  Rimconemy construction. We deliberately do NOT create a new
+  Rimconemy-specific category here — separating tabs made the bottom
+  bar too long (Bootstrap-Log/UX feedback) and Structure already
+  exposes floors / walls / production. A future round may split
+  into Rimconemy_Construction if needed.
+
+  Each <Operation> is keyed on the existing defName + an
+  explicit not()-guard so the patch is idempotent on subsequent loads
+  (PatchOperationAdd would otherwise duplicate the category list).
+-->
+<Patch>
+
+  <!-- ── Campfire ────────────────────────────────────────────── -->
+  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.scavengerinfrastructure">
+    <xpath>Defs/ThingDef[defName="Rimconemy_Campfire"][not(designationCategory)]</xpath>
+    <value><designationCategory>Structure</designationCategory></value>
+  </Operation>
+
+  <!-- ── WoodCoalGenerator ───────────────────────────────────── -->
+  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.scavengerinfrastructure">
+    <xpath>Defs/ThingDef[defName="Rimconemy_WoodCoalGenerator"][not(designationCategory)]</xpath>
+    <value><designationCategory>Structure</designationCategory></value>
+  </Operation>
+
+  <!-- ── WaterTurbineGenerator ───────────────────────────────── -->
+  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.scavengerinfrastructure">
+    <xpath>Defs/ThingDef[defName="Rimconemy_WaterTurbineGenerator"][not(designationCategory)]</xpath>
+    <value><designationCategory>Structure</designationCategory></value>
+  </Operation>
+
+  <!-- ── TurbineWaterPump ────────────────────────────────────── -->
+  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.scavengerinfrastructure">
+    <xpath>Defs/ThingDef[defName="Rimconemy_TurbineWaterPump"][not(designationCategory)]</xpath>
+    <value><designationCategory>Structure</designationCategory></value>
+  </Operation>
+
+  <!-- ── ArrowTurret_Power ───────────────────────────────────── -->
+  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.scavengerinfrastructure">
+    <xpath>Defs/ThingDef[defName="Rimconemy_ArrowTurret_Power"][not(designationCategory)]</xpath>
+    <value><designationCategory>Structure</designationCategory></value>
+  </Operation>
+
+  <!-- ── StainlessSteelTower ─────────────────────────────────── -->
+  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.scavengerinfrastructure">
+    <xpath>Defs/ThingDef[defName="Rimconemy_StainlessSteelTower"][not(designationCategory)]</xpath>
+    <value><designationCategory>Structure</designationCategory></value>
+  </Operation>
+
+</Patch>

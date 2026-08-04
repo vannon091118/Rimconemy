@@ -71,6 +71,13 @@ namespace Rimconemy.SurvivalProgression
             ScenarioContractTests.RunAll();
             BuildingProgressionRegressionTests.RunAll();
             BuildingProgressionPersistenceRegressionTests.RunAll();
+            // Phase-1.1 (2026-08-04): deterministic dedup for single-survivor setup.
+            RimconemyStartStateRegressionTests.RunAll();
+            // Phase-8 (2026-08-04): organic XP tree — Domain, Unlock, Bridge.
+            DomainXpStateTests.RunAll();
+            UnlockServiceTests.RunAll();
+            RimconemyUnlockExtensionTests.RunAll();
+            BuildingCompletionBridgeTests.RunAll();
             // Phase-4.2 Character Setup Save-State: schema + upsert + Get round-trip.
             Tests.CharacterSetupStateRegressionTests.RunAll();
             // Phase-2.8 (2026-08-04): Save/Load-SchemaBump v0 → v1 Beleg for Audit §B6.

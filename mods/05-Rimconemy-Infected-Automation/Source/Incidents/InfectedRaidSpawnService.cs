@@ -19,6 +19,11 @@ namespace Rimconemy.InfectedAutomation.Incidents
     /// produces numbers + categories. No exceptions escape so
     /// <see cref="InfectedRaidWorker"/> stays safe.
     ///
+    /// Audit-Finding 6 (2026-08-04): the snapshot read now delegates to
+    /// <see cref="ThreatSnapshotBridge"/> so neither this service nor
+    /// <see cref="WorldRaidCoordinator"/> constructs duplicate
+    /// ThreatAggregator instances.
+    ///
     /// Spec: docs/P6-PROGRESS.md Task 12.
     /// </summary>
     public static class InfectedRaidSpawnService
@@ -73,38 +78,14 @@ namespace Rimconemy.InfectedAutomation.Incidents
         }
 
         /// <summary>
-        /// Returns the active ThreatAggregator instance owned by Story /
-        /// Founders, or a stub with TotalPressure=0 when no aggregator is
-        /// currently registered. Stub callers should treat the zero
-        /// snapshot as "no pressure, no spawn".
+        /// Returns the latest threat snapshot via the central
+        /// <see cref="Threat.ThreatSnapshotBridge"/>. Returns null when no
+        /// StoryDirector snapshot is available.
         /// </summary>
         private static ThreatAggregator GetCurrentThreatSnapshot()
         {
-            // The ThreatAggregator today is a passive record carried by
-            // the StoryDirector pipeline (LastSnapshot) — we mirror its
-            // TotalPressure. If StoryDirector is missing or hasn't run,
-            // we fall back to zero so callers can still complete.
-            try
-            {
-                Story.StoryDirector director = Story.StoryDirector.Get();
-                if (director?.LastSnapshot == null) return null;
-            }
-            catch (System.Exception) { return null; }
-            // StoryDirector.LastSnapshot is SituationSnapshot, not
-            // ThreatAggregator. We synthesise a stub with the proxy
-            // pressure so the caller's pressure&gt;0 path triggers
-            // a sensible spawn count.
-            return new ThreatAggregator { TotalPressure = PressureFromDirector() };
-        }
-
-        private static float PressureFromDirector()
-        {
-            try
-            {
-                var d = Story.StoryDirector.Get();
-                return d?.LastSnapshot?.ThreatPressure ?? 0f;
-            }
-            catch (System.Exception) { return 0f; }
+            // Audit-Finding 6 (2026-08-04) consolidation: single-source read.
+            return Threat.ThreatSnapshotBridge.GetLatest();
         }
     }
 }

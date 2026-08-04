@@ -19,7 +19,7 @@ Quelle: `Source/Infected/Source/Incidents/IncidentClassifier.cs`
 
 ## C — Selbsttest (RunAll)
 
-`Tests.ManualRaidRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
+`Tests.IncidentClassifierRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
 
 ## D — Runtime-Boot (User Live-Test erforderlich)
 

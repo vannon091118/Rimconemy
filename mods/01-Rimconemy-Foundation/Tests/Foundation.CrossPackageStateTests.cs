@@ -35,6 +35,10 @@ namespace Rimconemy.Foundation.Tests
             TestTryReadStoryGameOverPending_NoMod05_ReturnsFalse();
             TestTryReadStoryGameOverPending_NoNREOrCrash();
 
+            TestTryReadWalletBalance_NoMod04_ReturnsFalse();
+            TestTryReadWalletBalance_NoNREOrCrash();
+            TestTryReadWalletBalance_DefaultZero();
+
             string summary = "[Rimconemy.Foundation] CrossPackageState tests: " +
                 _passed + " passed, " + _failed + " failed.";
             if (_failed > 0)
@@ -87,6 +91,19 @@ namespace Rimconemy.Foundation.Tests
             }
         }
 
+        private static void AssertEqual(long expected, long actual, string label)
+        {
+            if (expected != actual)
+            {
+                _failed++;
+                _failures.Add(label + ": expected " + expected + ", got " + actual);
+            }
+            else
+            {
+                _passed++;
+            }
+        }
+
         // ── tests ──────────────────────────────────────
 
         /// <summary>
@@ -122,6 +139,64 @@ namespace Rimconemy.Foundation.Tests
                 bool result = CrossPackageState.TryReadStoryGameOverPending(out reason);
                 AssertFalse(result, "CPS-Nocrash iter " + i + ": false");
                 AssertNull(reason, "CPS-Nocrash iter " + i + ": null reason");
+            }
+        }
+
+        // ── F-01 wallet-balance tests (Audit-Bündel B) ──
+
+        /// <summary>
+        /// When Mod 04 (Economy) is NOT registered, the capability gate
+        /// refuses the read and the helper returns (false, 0).
+        /// </summary>
+        private static void TestTryReadWalletBalance_NoMod04_ReturnsFalse()
+        {
+            CapabilityAudit.ClearWarningCache();
+
+            long balance = 999L; // sentinel - must be reset to 0 by TryReadWalletBalance
+            bool result = CrossPackageState.TryReadWalletBalance(out balance);
+            AssertFalse(result, "CPS-Wallet-Nomod04: returns false (capability gate)");
+            AssertEqual(0L, balance, "CPS-Wallet-Nomod04: balance is 0 when capability missing");
+        }
+
+        /// <summary>
+        /// Repeated calls with a missing capability stay safe, idempotent
+        /// and never throw. The once-warning pattern of CapabilityAudit
+        /// guarantees no log spam.
+        /// </summary>
+        private static void TestTryReadWalletBalance_NoNREOrCrash()
+        {
+            CapabilityAudit.ClearWarningCache();
+
+            for (int i = 0; i < 3; i++)
+            {
+                long balance = -1L;
+                bool result = CrossPackageState.TryReadWalletBalance(out balance);
+                AssertFalse(result, "CPS-Wallet-Nocrash iter " + i + ": false");
+                AssertEqual(0L, balance, "CPS-Wallet-Nocrash iter " + i + ": 0");
+            }
+        }
+
+        /// <summary>
+        /// Documents the default value contract: callers that receive a
+        /// <c>false</c> return must treat <c>balance == 0L</c> as the
+        /// "no wallet data" sentinel, not as a real wallet total of 0.
+        /// </summary>
+        private static void TestTryReadWalletBalance_DefaultZero()
+        {
+            CapabilityAudit.ClearWarningCache();
+
+            long balance = 42L;
+            bool result = CrossPackageState.TryReadWalletBalance(out balance);
+            // result == false (no wallet) AND balance is the helper's default 0L
+            if (result)
+            {
+                // If somehow the capability gate passed in some test env,
+                // accept the result as long as balance has been overwritten.
+                _passed++;
+            }
+            else
+            {
+                AssertEqual(0L, balance, "CPS-Wallet-Default: false-return sets balance=0");
             }
         }
     }

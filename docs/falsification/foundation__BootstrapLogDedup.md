@@ -78,7 +78,7 @@ Erwartetes Pattern (post-`v0.1.37`) in `Player.log`:
 **Anzahl `Profile detected:`-Linien: 5. Anzahl `DLC 'X' detected by Name match`-Linien: 0.**
 
 Die letzte Linie (mit `rimconemy.tests.synthetic`) entstammt der Foundation-Test
-`FoundationCapabilityGateTests.TestMockRegisterSatisfiedCapability_NoWarn`,
+`FoundationCapabilityGateTests (File: `mods/01/Tests/Foundation.CapabilityGateTests.cs`).TestMockRegisterSatisfiedCapability_NoWarn`,
 der während Bootstrap eine Mock-Package registriert. Die Linie ist
 **canonical** und nicht duplikativ — der dedup-Mechanismus behandelt
 diese Mock-Registrierung als legitimen State-Übergang und emittiert

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Survival & Progression (Package 02)
+  Phase 1.1 — ScenPartDef for ScenPart_RimconemyStart (single-survivor setup).
+  Vanilla anchor: ScenPartDef -> RimWorld.ScenPart (siehe vanilla-api-matrix §3.1).
+  Stable defName: Rimconemy_SingleSurvivorStartPart
+-->
+<Defs>
+
+  <ScenPartDef>
+    <defName>Rimconemy_SingleSurvivorStartPart</defName>
+    <label>Rimconemy single survivor setup</label>
+    <category>Fixed</category>
+    <scenPartClass>Rimconemy.SurvivalProgression.Scenarios.ScenPart_RimconemyStart</scenPartClass>
+    <summaryPriority>800</summaryPriority>
+  </ScenPartDef>
+
+</Defs>

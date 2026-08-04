@@ -27,12 +27,11 @@
       <HintPath>../03-Rimconemy-Scavenger-Infrastructure/Assemblies/Rimconemy.ScavengerInfrastructure.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <!-- slop-audit-fix H3: PlaceholderResolver reads WalletService.GetOrCreateLedger
-         when resolving {WalletBalance}; CreditsLedger lives in Mod 04. -->
-    <Reference Include="Rimconemy.EconomyTerritory">
-      <HintPath>../04-Rimconemy-Economy-Territory/Assemblies/Rimconemy.EconomyTerritory.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
+    <!-- Audit-Bündel B / F-01 (2026-08-04): Mod 04 Economy refers via late-bound
+         reflection through Foundation.CrossPackageState.TryReadWalletBalance.
+         INTERFACE_CONTRACT §9.1 forbids non-adjacent compile refs. The runtime
+         load order (About.xml loadAfter="rimconemy.economyterritory") remains
+         unchanged—capability registration is checked at runtime. -->
     <Reference Include="Assembly-CSharp">
       <HintPath>$(RimWorldManagedPath)/Assembly-CSharp.dll</HintPath>
       <Private>false</Private>

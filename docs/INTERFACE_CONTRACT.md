@@ -1,6 +1,7 @@
 # INTERFACE_CONTRACT.md — Rimconemy Cross-Package Interfaces
 
-Stand: 2026-08-04 | Owner: Foundation (01) | Code-Status-Referenz: `docs/CODE_STATUS.md`
+> **SSOT-Owner für:** Paket-Compile-Dependencies, Paket-Eigentumsgrenzen (welches Package besitzt was), Servicebus-Vertrag & Capability-IDs, Read/Write-Lanes, 5-Paket-Owner-Matrix. Wer ein Topic aus [docs/INDEX.md §1](INDEX.md) hier behandelt, hält eine SSOT-Verletzung fest.
+> **Stand:** 2026-08-04  | Owner: Foundation (01) | Code-Status-Referenz: `docs/CODE_STATUS.md`
 
 ## Zweck
 
@@ -318,10 +319,18 @@ Pakete 03–05 können das gleiche Pattern bei Bedarf übernehmen.
    └── 05 (InfectedAutomation)
             ↑ (DLL-Ref, neu Phase B / F-V3)
             └── 03 (StorageQuery.ReadStorage)
+            (Economy 04: late-bound reflection only, no DLL-Ref)
 ```
 
 **Kein inter-Paket-Cycle.** Mod 02 hat Ref auf 01. Mod 05 hat Ref auf 01+03. Mod 03 hat Ref auf 01.
-Mod 04 hat Ref auf 01 alleine. Mod 04 → 02 / 05 / 03 wenn benötigt (Phase 2+).
+Mod 04 hat Ref auf 01 alleine.
+
+**Audit-Bündel B / F-01 (2026-08-04):** Mod 05 → Mod 04 Wallet-balance lookup war ein
+direkter Compile-Ref auf `Rimconemy.EconomyTerritory.Wallet`. INTERFACE_CONTRACT §0
+verbietet non-adjacent Compile-Refs; der Ref wurde entfernt und durch
+`Rimconemy.Foundation.CrossPackage.CrossPackageState.TryReadWalletBalance` ersetzt,
+Capability-gate `rimconemy.economyterritory.wallet`. About.xml `loadAfter="rimconemy.economyterritory"`
+bleibt unverändert (Runtime-Lade-Reihenfolge).
 
 ### 9.4 Capability-Audit (Foundation-Mirror für Cross-Package-Reads)
 

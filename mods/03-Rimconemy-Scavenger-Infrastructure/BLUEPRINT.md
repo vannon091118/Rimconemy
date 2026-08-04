@@ -34,6 +34,23 @@ Artefakte:
 
 Nicht belegt (Live-Gates): MakeCoal-Durchlauf, Salvage-Ausbeute, Save/Load
 
+### Geplanter T2-Energy-Schritt: elektrischer Hochofen
+
+Der elektrische Hochofen folgt erst nach dem stabilen Survival-/Power-Fundament:
+
+```text
+Stahl → elektrischer Hochofen → Munition
+
+Kohle → Ofen-Refuelable für ausgewählte Rezepte und Generator-Refuelable für das PowerNet
+```
+
+- Tier: `T2 Energy`.
+- Geplanter Bauinput: Kalkstein, Sandstein oder Granit sowie Eisen/Stahl.
+- Stahl ist der physische Rezeptinput; ausgewählte Rezepte verbrauchen Kohle über die Ofen-Refuelable-Mechanik. Der Generator verbraucht Kohle separat für das PowerNet; Credits sind kein Ersatz.
+- Keine garantierte Munitionsquelle durch Gegner-Drops. Ruinenfunde bleiben zufällig.
+- Combat Extended bleibt optional; der Core muss ohne CE funktionieren.
+- Vor `LIVE` bleiben Hochofen, Munitions-ThingDef, Recipe, Energieverbrauch und Save/Load ausdrücklich `OPEN`.
+
 ## Standalone-Spielwert
 
 ```text
@@ -114,7 +131,7 @@ Vanilla-Needs und Vanilla-Raids bleiben aktiv, solange die optionalen Pakete feh
 ### I5 – Integration, Save und DLC-Inventur
 
 - ResourceSnapshot/PowerSnapshot veröffentlichen.
-- Survival-XP nur über Command/Output melden.
+- Survival-Erfahrung nur über physisch bestätigte Command-/Output-Abschlüsse melden; keine Meldung für Preview, Platzierung oder Abbruch.
 - Economy liest physische Waren; Infected liest Aktivität, nicht eigene Farmkopien.
 - Core + alle fünf DLC-Defs/Recipes/Trader/Loot/Questpfade durchsuchen.
 
@@ -141,3 +158,4 @@ Remapping-Version und lokale Infrastrukturzustände versionieren. Keine stillen 
 - `MarketValue=0` nicht als Wealth-Raid-Lösung übernehmen; Wealth-/Threat-Policy separat testen.
 - Wasser nicht automatisch aus Odyssey-Fishing ableiten.
 - Caravan Camp, Gravship und temporäre Maps erst nach Vertical Slice.
+- Erfahrungsbaum-/Architektenfreigaben bleiben Eigentum von Paket 02; keine parallele Forschungslogik in Paket 03.

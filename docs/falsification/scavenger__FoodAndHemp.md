@@ -2,7 +2,7 @@
 
 > **Capability:** `rimconemy.scavengerinfrastructure` v1 · **Owner:** Scavenger · **Stand:** 2026-08-04
 > **Status:** `COMPILED`
-> **Code-Anker:** `Source/Plants/FoodHarvestCycleService.cs` · **Test:** `Tests/FoodAndHempRegressionTests.cs`
+> **Code-Anker:** `Source/Plants/FoodHarvestCycleService.cs` · **Test:** `Tests/CoalChainRegressionTests.cs`
 > **ROADMAP-Referenz:** §8.2 · **Owner-Checklist:** siehe `docs/falsification/README.md`
 
 ## A — Def-Liste (XML-Defs)
@@ -14,12 +14,12 @@
 Quelle: `Source/Scavenger/Source/Plants/FoodHarvestCycleService.cs`
 
 - Kompiliert: ✅
-- Bootstrap-Klasse: `Scavenger.Bootstrap.RunAll` ruft `Tests/FoodAndHempRegressionTests.cs` auf
+- Bootstrap-Klasse: `Scavenger.Bootstrap.RunAll` ruft `Tests/CoalChainRegressionTests.cs` auf
 - Patch-Klassen: `mods/scavenger/Source/Scavenger/*.cs`
 
 ## C — Selbsttest (RunAll)
 
-`Tests.FoodAndHempRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
+`Tests.CoalChainRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
 
 ## D — Runtime-Boot (User Live-Test erforderlich)
 

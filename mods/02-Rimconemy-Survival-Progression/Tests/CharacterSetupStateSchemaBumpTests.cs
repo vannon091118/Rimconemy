@@ -77,7 +77,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                 state.MigrateIfNeeded();
                 return state.SchemaVersion == CharacterSetupState.CurrentSchemaVersion;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod02A] test caught: " + ex); return false; }
         }
 
         // ── T2 ────────────────────────────────────────────────────────
@@ -96,7 +96,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                 state.MigrateIfNeeded();
                 return state.SchemaVersion == CharacterSetupState.CurrentSchemaVersion;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod02A] test caught: " + ex); return false; }
         }
 
         // ── T3 ────────────────────────────────────────────────────────
@@ -138,7 +138,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                 if (persisted.TraitDefNames[0] != "Rimconemy_Trait_Hardy") return false;
                 return true;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod02A] test caught: " + ex); return false; }
         }
 
         // ── T4 ────────────────────────────────────────────────────────
@@ -156,7 +156,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                 state.MigrateIfNeeded();
                 return state.Records != null && state.Records.Count == 0;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod02A] test caught: " + ex); return false; }
         }
 
         // ── T5 ────────────────────────────────────────────────────────
@@ -176,7 +176,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                 state.MigrateIfNeeded();
                 return state.Applied == true;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod02A] test caught: " + ex); return false; }
         }
 
         // ── T6 ────────────────────────────────────────────────────────
@@ -200,6 +200,16 @@ namespace Rimconemy.SurvivalProgression.Tests
                     SkillDefNames = new List<string> { "Shooting" },
                     SkillLevels = new List<int> { 6 }
                 };
+                // Keep a second, distinct key: a wrong dictionary key
+                // LookMode can appear to work with one value while dropping
+                // or misaligning keys during Scribe_Collections loading.
+                state.Records[84] = new PawnSetupRecord
+                {
+                    AgeBiologicalYears = 19,
+                    AgeChronologicalYears = 20,
+                    SkillDefNames = new List<string> { "Construction" },
+                    SkillLevels = new List<int> { 4 }
+                };
 
                 bool roundTripOk = ScribeRoundTripHelper.RoundTrip(state);
 
@@ -209,11 +219,24 @@ namespace Rimconemy.SurvivalProgression.Tests
                     // sollten den Save/Load-Zyklus überlebt haben.
                     return state.SchemaVersion == CharacterSetupState.CurrentSchemaVersion
                         && state.Records != null
-                        && state.Records.Count == 1
+                        && state.Records.Count == 2
                         && state.Records[42] != null
+                        && state.Records[42].AgeBiologicalYears == 18
                         && state.Records[42].SkillDefNames != null
                         && state.Records[42].SkillDefNames.Count == 1
-                        && state.Records[42].SkillDefNames[0] == "Shooting";
+                        && state.Records[42].SkillDefNames[0] == "Shooting"
+                        && state.Records[42].SkillLevels != null
+                        && state.Records[42].SkillLevels.Count == 1
+                        && state.Records[42].SkillLevels[0] == 6
+                        && state.Records[84] != null
+                        && state.Records[84].AgeBiologicalYears == 19
+                        && state.Records[84].AgeChronologicalYears == 20
+                        && state.Records[84].SkillDefNames != null
+                        && state.Records[84].SkillDefNames.Count == 1
+                        && state.Records[84].SkillDefNames[0] == "Construction"
+                        && state.Records[84].SkillLevels != null
+                        && state.Records[84].SkillLevels.Count == 1
+                        && state.Records[84].SkillLevels[0] == 4;
                 }
 
                 // A failed stream helper is a failed T6; do not downgrade

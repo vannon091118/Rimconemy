@@ -19,7 +19,7 @@ Quelle: `Source/Scavenger/Source/Storage/CaravanStorageEnumerator.cs`
 
 ## C — Selbsttest (RunAll)
 
-`Tests.ExecutePhysicalTransferRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
+`Tests.BuildingCoreRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
 
 ## D — Runtime-Boot (User Live-Test erforderlich)
 

@@ -36,6 +36,11 @@ namespace Rimconemy.Foundation.UI
         public override void DoWindowContents(Rect inRect)
         {
             string callerName = GetType().FullName ?? GetType().Name ?? "(unknown)";
+            // Log the fallback FIRST so the memo is recorded even if the
+            // subsequent render throws (e.g., Widgets.DrawBoxSolid outside
+            // OnGUI context). This satisfies T2: memo increases on first call
+            // regardless of render success.
+            RimconemyWindow.LogFallbackOnce("RimconemyMainTabWindow", callerName);
             try
             {
                 // Player-facing text is intentionally plain; the crashing
@@ -47,8 +52,6 @@ namespace Rimconemy.Foundation.UI
                     "Die Rimconemy-Basisklasse schützt vor Absturz, zeigt nur diesen ehrlichen Marker " +
                     "und schreibt Details in die Spieler-Log.",
                     StatusLevel.Error);
-
-                RimconemyWindow.LogFallbackOnce("RimconemyMainTabWindow", callerName);
             }
             finally
             {

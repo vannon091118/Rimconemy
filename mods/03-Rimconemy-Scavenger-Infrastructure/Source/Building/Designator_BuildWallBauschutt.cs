@@ -15,9 +15,14 @@ namespace Rimconemy.ScavengerInfrastructure.Building
     /// Designator-Subklassen registrieren ohne Patch-Operationen.
     ///
     /// Owner-Constraint (INTERFACE_CONTRACT §9.1 + §9.4): Paket 03 mutiert
-    /// die Map; falls Wallet-Zugriff je nötig wird, muss CapabilityAudit-Gate
-    /// genutzt werden (rimconemy.economyterritory.wallet check). Aktuell wird
-    /// kein Wallet-Zugriff gebraucht — ApplyRemap platziert nur Blueprints.
+    /// die Map und den eigenen physischen Bauschutt-Bestand; falls Wallet-Zugriff
+    /// je nötig wird, muss das CapabilityAudit-Gate genutzt werden.
+    /// ApplyRemap platziert Blueprints und fordert danach einen best-effort
+    /// Storage-Write für den verbrauchten Bauschutt an.
+    ///
+    /// Screenshot-Beleg (2026-08-04): der Designator ist im Architect sichtbar.
+    /// Das beweist nicht den vollständigen Vanilla-Bau-/Save-Lifecycle; dieser
+    /// bleibt ein Runtime-Gate.
     ///
     /// Vanilla-Healthy-Verification: der Designator bleibt ein UI-Trigger;
     /// die tatsächliche Blueprint-Construction bleibt ein Runtime-Gate.
@@ -27,7 +32,7 @@ namespace Rimconemy.ScavengerInfrastructure.Building
         public Designator_BuildWallBauschutt() : base()
         {
             this.defaultLabel = "Rimconemy · BuildWallBauschutt";
-            this.defaultDesc = "Platziert Wall-Blueprints anhand des gelesenen Bauschutt-Bestands. Der physische Verbrauch bleibt bis zum Storage-Write-Gate offen.";
+            this.defaultDesc = "Platziert Wall-Blueprints anhand des gelesenen Bauschutt-Bestands und fordert danach einen best-effort physischen Storage-Abzug an. Teilabzug möglich; Vanilla-Bau-/Save-Lifecycle bleibt ein Runtime-Gate.";
             this.icon = ContentFinder<Texture2D>.Get("Things/Building/Misc/Campfire_MenuIcon", false);
             this.hotKey = KeyBindingDefOf.Misc1; // Beispiel-Belegung
             this.soundSucceeded = SoundDefOf.Designate_ZoneAdd;
@@ -56,7 +61,8 @@ namespace Rimconemy.ScavengerInfrastructure.Building
 
             string placementSummary =
                 "Rimconemy build: " + result.WallsPlaced + " Wall-Blueprints platziert "
-                + "(Bauschutt logisch zugeordnet: " + result.BauschuttConsumed + "; physischer Storage-Verbrauch: OPEN).";
+                + "(Bauschutt-Write angefordert: " + result.BauschuttConsumed
+                + "; best effort, Teilabzug möglich).";
             Messages.Message(placementSummary, MessageTypeDefOf.PositiveEvent);
 
             if (result.PlacementFailures != null && result.PlacementFailures.Count > 0)

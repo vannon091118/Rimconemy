@@ -64,7 +64,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                 float f = NeedAmplifier.AmplifierFactor(0.0f);
                 return Mathf.Approximately(f, 1.4f);
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod02B] test caught: " + ex); return false; }
         }
 
         // ── T2 ─────────────────────────────────────────────────────────
@@ -76,7 +76,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                 float f = NeedAmplifier.AmplifierFactor(0.5f);
                 return Mathf.Approximately(f, 1.0f);
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod02B] test caught: " + ex); return false; }
         }
 
         // ── T3 ─────────────────────────────────────────────────────────
@@ -89,7 +89,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                 float f = NeedAmplifier.AmplifierFactor(1.0f);
                 return Mathf.Approximately(f, 0.7f);
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod02B] test caught: " + ex); return false; }
         }
 
         // ── T4 ─────────────────────────────────────────────────────────
@@ -109,7 +109,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                 bool infOk = Mathf.Approximately(NeedAmplifier.AmplifierFactor(float.PositiveInfinity), 1.0f);
                 return belowOk && aboveOk && nanOk && infOk;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod02B] test caught: " + ex); return false; }
         }
 
         // ── T5 ─────────────────────────────────────────────────────────
@@ -130,7 +130,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                 }
                 return true;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod02B] test caught: " + ex); return false; }
         }
 
         // ── T6 ─────────────────────────────────────────────────────────
@@ -155,7 +155,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                 if (sat > 0.10f) return false; // erwartet ungefähr 0.05
                 return true;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod02B] test caught: " + ex); return false; }
         }
     }
 }
