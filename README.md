@@ -39,7 +39,70 @@ Ein **komplettes, modulares Survival-Economy-Overhaul** — in fünf Paketen, di
 | **04** | **Economy & Territory** | Dein Imperium: Credits, Märkte, Outposts, Territorium, Weltkarten-Raids |
 | **05** | **Infected & Automation** | Dein Feind & dein Werkzeug: Story-Writer, Bedrohungsdruck, Infizierte, Mechadroids |
 
-**Wo das Projekt gerade steht:** Alle fünf Pakete kompilieren und booten in RimWorld 1.6 — die Story-Schicht (Determinismus, Cooldowns, Eventkatalog), die Charakter-Regeln, die Storage-Read-Models und die Wallet-Domäne sind code- und runtime-belegt. Was noch fehlt: der **echte Spiel-Loop** — Save/Load-Roundtrips, Live-Event-Feuerung, echte Infizierten-Spawns, Territorium auf der Weltkarte. Genau daran wird gebaut. Der ehrliche Status steht in [`docs/CODE_STATUS.md`](docs/CODE_STATUS.md).
+---
+
+## 🏁 Meilensteine
+
+### ✅ Erreicht
+
+| Meilenstein | Status | Details |
+|---|---|---|
+| **Phase 0 — Root-Verträge** | ✅ fertig | Kanonische Docs (ROADMAP, DECISIONS, Architektur-Verträge), kein Overclaim |
+| **Phase 1 — Story Writer** | ✅ code-fertig | `SettingProfile` (3 Difficulty-Profile: Refuge/Survival/Collapse), `StoryEventSpec`, `StoryState` mit Schema-Version, `StorySelector` (deterministisch), `StoryEventCatalog` (12 hardcoded + Def-Overlay), 12 Unit-Tests, 3 MVP-Events (SupplyShortage, IdeologyConflict, ExternalThreat) |
+| **Phase 3 — Storage-only** | ✅ implementiert | `StorageSnapshot` + `StorageQuery.ReadStorage()`, 250-Tick-Cache, ContentHash, Lagerortfilter — **einzige** Ressourcen-Quelle für UI + StoryDirector + Economy |
+| **Phase 4 — Character Setup** | ✅ implementiert | Alter 18/18, Skillbudget 30, NeutralCenter 25, Neutralzone [-5, +3], Trait-Schwellen, Bio-Remap, Harmony-PreOpen-Patch, `SingleSurvivor`-Scenario |
+| **5 Pakete kompilieren** | ✅ | Alle gegen RimWorld 1.6.4566 lokal; GameFont-Medium-Fix nach 1.6-Kompatibilitäts-Spike |
+| **Runtime-Boot** | ✅ | Alle 5 Mods laden, FullOverhaul erkannt, 20 Boot-Regression-Summaries mit 0 Failed |
+| **CreditsWallet** | ✅ | Persistente Wallet, 256er History, Idempotenz-Index (`Key → TxId`), Overflow/Underflow-Rejection |
+| **Deterministischer Markt** | ✅ | Lokale Preisberechnung `base × (1+scarcity) × (1-demandBuffer)`, kein Vanilla-MarketValue |
+| **Magic Numbers** | ✅ audit-fertig | F1–F4 gebunden (`TimeConstants.TicksPerDay`, `WealthFullPressureThreshold`, etc.) |
+| **DECISIONS-Drift** | ✅ | H1–H6 abgeglichen (Need-System, GameOver, Storyteller, StorageHash, Markt, Wallet) |
+| **Falsifizierungs-Härtung** | ✅ | CreditsLedger, StoryState, EventLog — Idempotenz, Escape-Awareness, Scribe-Roundtrip |
+| **InfectedRaidWorker** | ✅ | Letter statt Spawn, Vanilla-Incidents nicht deaktiviert |
+| **Ideology-Adapter** | ✅ (1/3) | `ThoughtWorker_ResourceFairness` als erste Regel implementiert |
+| **UI-Toolkit** | ✅ | `RimconemyUi`, `RimconemyWindow`, `RimconemyMainTabWindow`, `RimconemyInspectTab`, Shared Tokens |
+| **Dokumentation** | ✅ | CODE_STATUS.md, INTERFACE_CONTRACT, SAVE_CONTRACT, COMPATIBILITY_MATRIX, H1–H5-Spezis |
+
+### 🔄 In Arbeit
+
+| Meilenstein | Status | Was fehlt |
+|---|---|---|
+| **Save/Load-Roundtrip** | 🔄 | Story-State, Character-Setup-State, Credits-Ledger über Save/Load überlebt noch nicht verifiziert |
+| **Live-Event-Feuerung** | 🔄 | StoryDirector → StorySelector → StoryState → IncidentWorker → Letter — kein echter Ingame-Run belegt |
+| **StorageHash-Brücke** | 🔄 | `AnyResourceCritical` auf echten `StorageQuery.ReadStorage()`-Wert umstellen (C1–C5) |
+| **GameFont-UI-Lauf** | 🔄 | Alle UI-Panels kompilieren nach Fix, aber vollständiger Ingame-Lauf noch nicht beobachtet |
+
+### ⬜ Nächste Ziele (Phase 2–6)
+
+| Meilenstein | Phase | Beschreibung |
+|---|---|---|
+| **Setting-Ideologie Regel 2–3** | P2 | `CollectiveDefense` (RoleDef + ThoughtDef + RitualDef), `Transparency` (PreceptDef + ThoughtDef) |
+| **Setting-/Erfahrungsfenster** | P2 | Ideology-Fenster als Setting-Regel-Anzeige, keine Religionssimulation |
+| **Kartenwechsel & Caravan** | P3 | StorageSnapshot muss unloaded Maps, Caravans und Temporary-Maps überleben |
+| **Pawn-Generator-API** | P4 | `FixedBiologicalAge`, `GeneratePawn`, `GenerateTraits` — lokaler Spike nötig |
+| **Character-Setup-Save-State** | P4 | Persistenter Seed, Skills, Trait-IDs als eigenes Scribe-Schema |
+| **Vanilla-/DLC-Incident-Klassifikation** | P5 | Wealth-Raids, Quests, DLC-Incidents separat; genau **ein** Infizierten-Provider |
+| **Bauschutt → Wand/Tür** | P6 | Erste sichtbare Gameplay-Mechanik (Patches bereits angelegt) |
+| **Nahrung/Hanf getrennt** | P6 | WorkGiver, Ernte, Verderb als eigene Domäne |
+| **Wasser-/Brennstoff-Physisch** | P6 | Wasser und Holz/Kohle als physische Pfade zum Generator |
+| **Pfeilturm** | P6 | Strom als harte Bedingung, Zustände Active/Blocked/Offline/Damaged |
+| **Infizierten-Raids** | P6 | Echter Spawn-Pfad statt Letter-only |
+| **Mechadroids** | P6 | Grundsystem, Aufträge, Automation |
+| **Outposts & Proxy-Graph** | P6 | Gründung, Produktion, Verteidigung, Drei-Tage-Countdown |
+| **Weltkarten-Endgame** | P6 | Territorium, World-Map-Overlay, automatisierte Raids |
+| **20 Falsifizierungsberichte** | Alle | Jedes Feature mit `SURVIVED`-Status und A–G-Belegen |
+
+### 📊 Test-Übersicht
+
+| Paket | Tests | Status |
+|---|---|---|
+| **01 Foundation** | CapabilityGate (19), ColonialReader (7), CrossPackageState (8), EventLog (10), ProfileRefresh (10), BuildingCapability (5), TimeConstants (6) | ✅ alle grün |
+| **02 Survival** | BioRemap (31), NeedMapping (48), ScenarioContract (9), BuildingProgression (6+4) | ✅ alle grün |
+| **03 Scavenger** | BuildingCore (12) | ✅ alle grün |
+| **04 Economy** | CreditsLedger (14), Market (4), BuildingInput (8), PhysicalTransfer (17), OutpostInvestment (7) | ✅ alle grün |
+| **05 Infected** | StorySelector (12+), StoryState, BuildingThreat, MechadroidJob | ✅ alle grün |
+
+---
 
 ## ⚙️ Voraussetzungen
 
@@ -52,7 +115,7 @@ Ein **komplettes, modulares Survival-Economy-Overhaul** — in fünf Paketen, di
 
 ```bash
 ./scripts/runtime_test.sh                  # Build + Deploy + RimWorld-Start + Log-Gates
-./scripts/runtime_test.sh --skip-start --no-deploy   # nur statischer Check
+./scripts/runtime_test.sh --skip-start -- no-deploy   # nur statischer Check
 ```
 
 Der kanonische Boot-Test verlangt einen *frisch veränderten* `Player.log` — alte Logs werden abgelehnt. So stellen wir sicher, dass das Spiel wirklich gestartet wurde und nicht nur so tut.
@@ -62,7 +125,7 @@ Der kanonische Boot-Test verlangt einen *frisch veränderten* `Player.log` — a
 - ✅ Story-Writer: Difficulty-Profile (`Refuge` / `Survival` / `Collapse`), deterministische Eventauswahl, Cooldowns, Idempotenz
 - ✅ Character Setup: Bio → Skillbudget 30 → Traits (Balance-Regeln dokumentiert)
 - ✅ Storage-only-Read-Model: echte Lagerbestände, kein Parallelinventar
-- 🔄 Als Nächstes: erster echter Spiel-Moment — Bauschutt → Wand/Tür, dann die vertikale Full-Profile-Kette
+- 🔄 Als Nächstes: Save/Load-Roundtrip, Live-Event-Feuerung, Bauschutt → Wand/Tür
 - ⬜ Später: Infizierten-Raids, Mechadroids, Outposts & Proxy-Graph, Weltkarten-Endgame
 
 ---
