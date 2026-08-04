@@ -75,15 +75,17 @@ namespace Rimconemy.SurvivalProgression.Needs
             float clamped = Mathf.Clamp01(sample);
             if (clamped <= NeutralSample)
             {
-                // sample in [0, 0.5] → multiplier in [1.0, 1.4]
+                // sample in [0, 0.5] → multiplier in [MaxMultiplier, 1.0] = [1.4, 1.0]
+                // At sample=0.0: t=0 → 1.4; at sample=0.5: t=1 → 1.0
                 float t = clamped / NeutralSample; // 0..1
-                return 1.0f + (MaxToNeutralSpan * t); // 1.0 → 1.4
+                return MaxMultiplier - (MaxToNeutralSpan * t);
             }
             else
             {
-                // sample in [0.5, 1.0] → multiplier in [0.7, 1.0]
+                // sample in [0.5, 1.0] → multiplier in [1.0, MinMultiplier] = [1.0, 0.7]
+                // At sample=0.5: t=0 → 1.0; at sample=1.0: t=1 → 0.7
                 float t = (clamped - NeutralSample) / (1.0f - NeutralSample); // 0..1
-                return 1.0f + (MinToNeutralSpan * t); // 1.0 → 0.7
+                return 1.0f + (MinToNeutralSpan * t);
             }
         }
 

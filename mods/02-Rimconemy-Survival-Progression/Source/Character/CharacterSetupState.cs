@@ -125,7 +125,16 @@ namespace Rimconemy.SurvivalProgression.Character
         {
             Scribe_Values.Look(ref SchemaVersion, "charSetupSchema", 1);
             Scribe_Values.Look(ref Applied, "charSetupApplied", false);
-            Scribe_Collections.Look(ref Records, "charSetupRecords", LookMode.Deep);
+            // Dictionary contract: thingIDNumber keys are scalar ints, while
+            // PawnSetupRecord values own their nested lists and therefore need
+            // Deep mode. Using a single LookMode.Deep makes Scribe treat the
+            // int keys as IExposable values; the resulting load can report
+            // "keys=0, values=1" and silently drop records.
+            Scribe_Collections.Look(
+                ref Records,
+                "charSetupRecords",
+                LookMode.Value,
+                LookMode.Deep);
 
             // Phase-2.8 (2026-08-04): Schema-migration is delegated to
             // <see cref="MigrateIfNeeded"/>, the public entry point that the

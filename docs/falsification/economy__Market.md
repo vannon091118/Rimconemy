@@ -19,7 +19,7 @@ Quelle: `Source/Economy/Source/Market/Market.cs`
 
 ## C — Selbsttest (RunAll)
 
-`Tests.MarketRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
+`Tests.MarketPersistenceTests.RunAll()` ist in `Bootstrap` aufgerufen.
 
 ## D — Runtime-Boot (User Live-Test erforderlich)
 

@@ -2,7 +2,7 @@
 
 > **Capability:** `rimconemy.foundation` v1 · **Owner:** Foundation · **Stand:** 2026-08-04
 > **Status:** `COMPILED`
-> **Code-Anker:** `mods/01-Rimconemy-Foundation/Source/CrossPackage/CrossPackageState.cs` · **Test:** `Tests/ServiceBusRegressionTests.cs`
+> **Code-Anker:** `mods/01-Rimconemy-Foundation/Source/CrossPackage/CrossPackageState.cs` · **Test:** `Tests/FoundationProfileRefreshTests.cs`
 > **ROADMAP-Referenz:** §8.2 · **Owner-Checklist:** siehe `docs/falsification/README.md`
 
 ## A — Def-Liste (XML-Defs)
@@ -14,12 +14,12 @@
 Quelle: `Source/Foundation/mods/01-Rimconemy-Foundation/Source/CrossPackage/CrossPackageState.cs`
 
 - Kompiliert: ✅
-- Bootstrap-Klasse: `Foundation.Bootstrap.RunAll` ruft `Tests/ServiceBusRegressionTests.cs` auf
+- Bootstrap-Klasse: `Foundation.Bootstrap.RunAll` ruft `Tests/FoundationProfileRefreshTests.cs` auf
 - Patch-Klassen: `mods/foundation/Source/Foundation/*.cs`
 
 ## C — Selbsttest (RunAll)
 
-`Tests.ServicebusRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
+`Tests.FoundationProfileRefreshTests.RunAll()` ist in `Bootstrap` aufgerufen.
 
 ## D — Runtime-Boot (User Live-Test erforderlich)
 

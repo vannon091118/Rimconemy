@@ -1,0 +1,1 @@
+Rimconemy_MiningGate_Blocked=Mining {0} or higher required to extract steel.

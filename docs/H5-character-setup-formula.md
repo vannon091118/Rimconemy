@@ -1,5 +1,6 @@
 # H5 — Character Setup-Formel
 
+> **SSOT-Hinweis:** Detail-Topic dieser Datei ist im Orient-Index [ARCHITECTURE.md §5](ARCHITECTURE.md). Topic-Landkarte: [INDEX.md §1](INDEX.md).
 > **Owner:** Survival & Progression / Research-Design
 > **Status:** `PARTIALLY IMPLEMENTED (Hybrid-Schnitt, 2026-08-04); Runtime- und API-Gates offen`
 > **Referenz:** [ROADMAP.md §3 Phase 4](../ROADMAP.md#phase-4--character-setup-und-bio-remap), [ROADMAP.md §8.4](../ROADMAP.md#84-phase-34--storage-only--character-setup-offen)

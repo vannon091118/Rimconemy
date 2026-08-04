@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Infected & Automation
+  Stable defName: Rimconemy_HiddenInfectedFaction
+  Loop-Closure 2026-08-04: minimal FactionDef hosting the
+  Rimconemy_InfectedRavager PawnKind. Hidden (not in faction list),
+  hostile (so raids feel hostile), humanlikeFaction=false so 1.6 does
+  not require backstory categories.
+-->
+<Defs>
+  <FactionDef>
+    <defName>Rimconemy_HiddenInfectedFaction</defName>
+    <label>Rimconemy infected</label>
+    <description>Hidden faction representing the Rimconemy-infected threat. Unseen on the factions tab, only present as hostile spawns from story events.</description>
+    <hidden>true</hidden>
+    <techLevel>Medieval</techLevel>
+    <humanlikeFaction>false</humanlikeFaction>
+    <raidLootValueFromPointsCurve>
+      <points>
+        <li>(0, 0)</li>
+        <li>(5000, 0)</li>
+      </points>
+    </raidLootValueFromPointsCurve>
+  </FactionDef>
+</Defs>

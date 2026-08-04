@@ -65,15 +65,52 @@ namespace Rimconemy.InfectedAutomation.Story
 
         // ── game-over signaling (Phase B, F-V2) ──────────────
         /// <summary>
-        /// True when this StoryState has flagged a game-over reason
-        /// that the SOLE-OWNER (Mod 02 — ProgressionGameComponent) has
-        /// not yet consumed. Mod 02 reads via a late-bound reflection
-        /// bridge defined in Foundation to avoid a binary cycle.
+        /// Edge-trigger FIFO queue of pending game-over reasons.
+        /// Audit-Bündel C / F-13 (2026-08-04): the earlier single-pending
+        /// (bool, string) tuple silently overwrote on every consecutive tick
+        /// with 0 colonists, dropping intermediate events. The Sole-Owner
+        /// (Mod 02) consumed only the most-recent reason on its 250-tick
+        /// poll, losing the wipe chronology. The list now accumulates one
+        /// entry per distinct edge event (Rationale, Tick), so each
+        /// consumer-side tick drains one FIFO entry rather than overwriting.
+        ///
+        /// Mod 02 reads via a late-bound reflection bridge defined in
+        /// Foundation to avoid a binary cycle. Read call shape is
+        /// unchanged: ConsumeGameOverPending(out reason) returns the
+        /// oldest entry, then dequeues; the legacy (out string) signature
+        /// is preserved as an overload for callers that only need the
+        /// latest reason.
+        /// </summary>
+        public List<GameOverPendingEntry> GameOverPendingQueue = new List<GameOverPendingEntry>();
+
+        /// <summary>Reason string pending consumption (legacy single-pending view).</summary>
+        public string GameOverReasonPending;
+
+        /// <summary>
+        /// Mirror of the queue's oldest-entry reason for legacy consumers
+        /// that read the single-string field. Updated on every successful
+        /// Enqueue and every ConsumeGameOverPending call.
         /// </summary>
         public bool GameOverPending;
 
-        /// <summary>Reason string pending consumption.</summary>
-        public string GameOverReasonPending;
+        /// <summary>
+        /// Tick of the FIRST wipe detection (transition from colonists>0 to 0).
+        /// Persisted so Save/Load preserves wipe chronology. 0 = no wipe observed yet.
+        /// Used by UI + falsification (survival__GameOver.md / infected__AutoResolve.md).
+        /// </summary>
+        public long FirstWipeTick;
+
+        /// <summary>
+        /// FIFO-queue entry for game-over reasons. Each entry carries the
+        /// reason string and the originating tick so consumers can render a
+        /// chronological wipe history without losing intermediate events.
+        /// </summary>
+        public struct GameOverPendingEntry
+        {
+            public string Reason;
+            public long Tick;
+            public string TriggerId; // e.g. "wipe"', "shuttle", "fire" — chain-safe extension point
+        }
 
         /// <summary>Maximum age of idempotency keys in ticks (30 days).</summary>
         private const long IdempotencyKeyMaxAgeTicks = 30 * 60000;
@@ -83,6 +120,14 @@ namespace Rimconemy.InfectedAutomation.Story
         private List<long> _cooldownValues;
         private List<string> _idempotencyList;
         private List<long> _idempotencyTicks;
+
+        // F-13 (2026-08-04): FIFO game-over queue persistence via parallel lists.
+        // GameOverPendingEntry is a struct that round-trips as three parallel
+        // lists; we deliberately avoid introducing a custom Scribe mode to
+        // keep the migration contract minimal.
+        private List<string> _queueReasons;
+        private List<long> _queueTicks;
+        private List<string> _queueTriggerIds;
 
         // Audit-fix (Befund 3, 2026-08-04): insertion-order tracker for
         // idempotency keys. This is a FIFO list that records every key
@@ -125,9 +170,20 @@ namespace Rimconemy.InfectedAutomation.Story
             Scribe_Values.Look(ref LastSnapshotHash, "lastSnapshotHash", "");
             Scribe_Values.Look(ref TotalEventsSelected, "totalEventsSelected", 0);
             Scribe_Values.Look(ref LastPruneTick, "lastPruneTick", 0L);
-            // Phase B / F-V2: game-over signaling (default false / null on first save).
+            // Phase B / F-V2: game-over signaling (default false / empty queue on first save).
+            // F-13 (2026-08-04): persist a FIFO queue and the legacy single-pending mirror
+            // so existing Reason-based readers (UI + 2.x callers) keep working.
             Scribe_Values.Look(ref GameOverPending, "gameOverPending", false);
             Scribe_Values.Look(ref GameOverReasonPending, "gameOverReasonPending", (string)null);
+            Scribe_Values.Look(ref FirstWipeTick, "firstWipeTick", 0L);
+            // Queue is persisted as parallel lists because F-13 deliberately
+            // does not introduce a new Scribe mode on GameOverPendingEntry.
+            if (GameOverPendingQueue == null)
+                GameOverPendingQueue = new List<GameOverPendingEntry>();
+            QueueReasonsForScribe();
+            Scribe_Collections.Look(ref _queueReasons, "gameOverPendingQueueReasons", LookMode.Value);
+            Scribe_Collections.Look(ref _queueTicks, "gameOverPendingQueueTicks", LookMode.Value);
+            Scribe_Collections.Look(ref _queueTriggerIds, "gameOverPendingQueueTriggerIds", LookMode.Value);
 
             // Dictionary<string, long> → parallel lists for Scribe
             SerializeCooldownsForScribe();
@@ -250,11 +306,86 @@ namespace Rimconemy.InfectedAutomation.Story
             // Schema migration — self-guarding entry point
             MigrateIfNeeded();
 
+            // F-13 (2026-08-04): rebuild F-13 FIFO queue from the
+            // parallel Scribe lists we wrote. Older saves (pre-F-13)
+            // have empty/legacy single-pending fields; we synthesise
+            // exactly one queue entry from GameOverReasonPending so
+            // ConsumeGameOverPending() continues to surface the same
+            // value without dropping the wipe signal.
+            if (GameOverPendingQueue == null)
+                GameOverPendingQueue = new List<GameOverPendingEntry>();
+            else
+                GameOverPendingQueue.Clear();
+
+            if (_queueReasons != null && _queueReasons.Count > 0)
+            {
+                int count = _queueReasons.Count;
+                // F-13 (2026-08-04): if the parallel lists drift apart due
+                // to a future save-write bug, surface the mismatch loudly
+                // instead of silently zero-filling the tick slot.
+                if ((_queueTicks != null && _queueTicks.Count != count)
+                    || (_queueTriggerIds != null && _queueTriggerIds.Count != count))
+                {
+                    Log.Warning("[Rimconemy.InfectedAutomation] StoryState.RebuildAfterLoad: " +
+                        "F-13 queue parallel-list length mismatch (reasons=" + count +
+                        ", ticks=" + (_queueTicks?.Count ?? 0) +
+                        ", triggerIds=" + (_queueTriggerIds?.Count ?? 0) +
+                        "). Save schema may be out of sync; truncating to shortest list.");
+                    int minCount = count;
+                    if (_queueTicks != null && _queueTicks.Count < minCount) minCount = _queueTicks.Count;
+                    if (_queueTriggerIds != null && _queueTriggerIds.Count < minCount) minCount = _queueTriggerIds.Count;
+                    count = minCount;
+                }
+                for (int i = 0; i < count; i++)
+                {
+                    long tick = (_queueTicks != null && i < _queueTicks.Count) ? _queueTicks[i] : 0L;
+                    string triggerId = (_queueTriggerIds != null && i < _queueTriggerIds.Count)
+                        ? _queueTriggerIds[i]
+                        : null;
+                    string reason = string.IsNullOrEmpty(_queueReasons[i])
+                        ? "Mod 05 signalled game over."
+                        : _queueReasons[i];
+                    GameOverPendingQueue.Add(new GameOverPendingEntry
+                    {
+                        Reason = reason,
+                        Tick = tick,
+                        TriggerId = triggerId,
+                    });
+                }
+            }
+            else if (GameOverPending && !string.IsNullOrEmpty(GameOverReasonPending))
+            {
+                // Legacy pre-F-13 save: mirror the single-pending fields
+                // into one queue entry so the first ConsumeGameOverPending()
+                // picks up exactly what the legacy reader would have.
+                GameOverPendingQueue.Add(new GameOverPendingEntry
+                {
+                    Reason = GameOverReasonPending,
+                    Tick = FirstWipeTick > 0L ? FirstWipeTick : 0L,
+                    TriggerId = null,
+                });
+            }
+
+            // Refresh the mirror fields to reflect the queue state on load.
+            if (GameOverPendingQueue.Count > 0)
+            {
+                GameOverPending = true;
+                GameOverReasonPending = GameOverPendingQueue[0].Reason;
+            }
+            else
+            {
+                GameOverPending = false;
+                GameOverReasonPending = null;
+            }
+
             // Clear transient scribe helpers
             _cooldownKeys = null;
             _cooldownValues = null;
             _idempotencyList = null;
             _idempotencyTicks = null;
+            _queueReasons = null;
+            _queueTicks = null;
+            _queueTriggerIds = null;
         }
 
         // ── ISchemaMigratable contract ────────────────────────
@@ -432,33 +563,138 @@ namespace Rimconemy.InfectedAutomation.Story
 
         /// <summary>
         /// Flag a game-over condition with a reason. Mod 02 (Sole-Owner)
-        /// consumes it via ConsumeGameOverPending. Repeated calls overwrite
-        /// the reason; the most-recent write wins. Safe to call from any
-        /// background context (writes are not concurrent: GameComponents
-        /// run on the main thread).
+        /// consumes it via ConsumeGameOverPending.
+        ///
+        /// F-13 (2026-08-04) — edge-triggered FIFO ENQUEUE: each call while
+        /// colonists are absent appends a new entry to the queue rather
+        /// than overwriting the previous one. The legacy single-pending
+        /// fields (<see cref="GameOverPending"/>, <see cref="GameOverReasonPending"/>)
+        /// mirror the queue's oldest entry for callers that haven't migrated.
+        /// On the first wipe tick, records <see cref="FirstWipeTick"/> for
+        /// chronology.
+        ///
+        /// Safe to call from any background context (writes are not
+        /// concurrent: GameComponents run on the main thread).
         /// </summary>
-        public void MarkGameOverPending(string reason)
+        public void MarkGameOverPending(string reason, bool colonistsPresent,
+            string triggerId = null, long? atTick = null)
         {
+            if (colonistsPresent)
+            {
+                // Living colonists — no wipe. Don't write anything.
+                return;
+            }
+
+            // Edge-trigger: only record FirstWipeTick on the FIRST 0-colonists tick.
+            if (!GameOverPending && GameOverPendingQueue.Count == 0 && FirstWipeTick == 0L)
+            {
+                FirstWipeTick = atTick ?? (Find.TickManager?.TicksGame ?? 0L);
+            }
+
+            // F-13: enqueue a new entry for every wipe signal so consumers
+            // drain FIFO instead of seeing only the most-recent reason.
+            long tick = atTick ?? (Find.TickManager?.TicksGame ?? 0L);
+            if (GameOverPendingQueue == null)
+                GameOverPendingQueue = new List<GameOverPendingEntry>();
+            GameOverPendingQueue.Add(new GameOverPendingEntry
+            {
+                Reason = reason ?? "Mod 05 signalled game over.",
+                Tick = tick,
+                TriggerId = triggerId,
+            });
+            // Mirror the queue's oldest entry so legacy single-pending
+            // readers continue to see what the next Consume would yield.
             GameOverPending = true;
-            GameOverReasonPending = reason ?? "Mod 05 signalled game over.";
+            GameOverReasonPending = GameOverPendingQueue[0].Reason;
         }
 
         /// <summary>
-        /// Reader-side pull: returns whether a game-over is pending and the
-        /// reason. Clears the pending flag before returning so each pending
-        /// is consumed exactly once.
+        /// Reader-side pull: drains the oldest pending entry (FIFO) and
+        /// returns it. Returns false when the queue is empty. Clears the
+        /// legacy single-pending mirror once the queue empties.
+        ///
+        /// Out parameter shape is preserved (out string reason) so callers
+        /// using the legacy signature keep working unchanged.
         /// </summary>
         public bool ConsumeGameOverPending(out string reason)
         {
-            if (!GameOverPending)
+            reason = null;
+            if (GameOverPendingQueue == null || GameOverPendingQueue.Count == 0)
             {
-                reason = null;
+                GameOverPending = false;
+                GameOverReasonPending = null;
                 return false;
             }
-            reason = GameOverReasonPending ?? "Mod 05 signalled game over.";
-            GameOverPending = false;
-            GameOverReasonPending = null;
+
+            var head = GameOverPendingQueue[0];
+            GameOverPendingQueue.RemoveAt(0);
+            reason = head.Reason ?? "Mod 05 signalled game over.";
+
+            if (GameOverPendingQueue.Count == 0)
+            {
+                // Queue drained — leave the mirror state empty for the next
+                // "consume attempted on empty queue" call path.
+                GameOverPending = false;
+                GameOverReasonPending = null;
+            }
+            else
+            {
+                // Reflect the new oldest entry so legacy readers continue to
+                // see what the next Consume would yield.
+                GameOverPending = true;
+                GameOverReasonPending = GameOverPendingQueue[0].Reason;
+            }
             return true;
+        }
+
+        /// <summary>
+        /// Read-only view of the queue's oldest entry without draining.
+        /// Returns the chronological entry that ConsumeGameOverPending would
+        /// yield next. Useful for UI surfaces that re-render after each
+        /// GameComponentTick without consuming the signal.
+        /// Marked <c>internal</c> until a UI consumer (<see cref="ThreatDashboard"/>
+        /// or a GameStateHook) adopts it — the public surface stays honest
+        /// about who calls it.
+        /// </summary>
+        internal bool PeekGameOverPending(out string reason, out long tick, out string triggerId)
+        {
+            if (GameOverPendingQueue == null || GameOverPendingQueue.Count == 0)
+            {
+                reason = null;
+                tick = 0L;
+                triggerId = null;
+                return false;
+            }
+            var head = GameOverPendingQueue[0];
+            reason = head.Reason;
+            tick = head.Tick;
+            triggerId = head.TriggerId;
+            return true;
+        }
+
+        /// <summary>
+        /// Serializer helper: copies the FIFO queue into three parallel lists
+        /// for Scribe round-tripping. Called only on LoadSaveMode.Saving.
+        /// </summary>
+        private void QueueReasonsForScribe()
+        {
+            if (Scribe.mode != LoadSaveMode.Saving) return;
+            if (GameOverPendingQueue == null || GameOverPendingQueue.Count == 0)
+            {
+                _queueReasons = new List<string>();
+                _queueTicks = new List<long>();
+                _queueTriggerIds = new List<string>();
+                return;
+            }
+            _queueReasons = new List<string>(GameOverPendingQueue.Count);
+            _queueTicks = new List<long>(GameOverPendingQueue.Count);
+            _queueTriggerIds = new List<string>(GameOverPendingQueue.Count);
+            foreach (var entry in GameOverPendingQueue)
+            {
+                _queueReasons.Add(entry.Reason ?? "");
+                _queueTicks.Add(entry.Tick);
+                _queueTriggerIds.Add(entry.TriggerId ?? "");
+            }
         }
 
         /// <summary>

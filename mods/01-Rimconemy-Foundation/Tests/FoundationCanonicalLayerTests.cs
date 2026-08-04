@@ -128,7 +128,7 @@ namespace Rimconemy.Foundation.Tests
                 }
                 return true;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T2: null / un-extended ThingDef → Unclassified ---
@@ -140,7 +140,7 @@ namespace Rimconemy.Foundation.Tests
                 if (MaterialIdentityRegistry.GetRoleOf((Thing)null) != MaterialRole.Unclassified) return false;
                 return true;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T3: Reindex is idempotent and not throwing ---
@@ -153,7 +153,7 @@ namespace Rimconemy.Foundation.Tests
                 MaterialIdentityRegistry.Reindex();
                 return MaterialIdentityRegistry.IsReady;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T4: MaterialIdentityExt exposes the documented fields ---
@@ -172,7 +172,7 @@ namespace Rimconemy.Foundation.Tests
                 if (inst.secondaryRoles != null && inst.secondaryRoles.Count != 0) return false;
                 return true;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T5: every SettingIdentity has a label ---
@@ -187,7 +187,7 @@ namespace Rimconemy.Foundation.Tests
                 }
                 return true;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T6: null NeedDef → None ---
@@ -199,7 +199,7 @@ namespace Rimconemy.Foundation.Tests
                 if (NeedSettingsTranslator.Translate((Need)null) != SettingIdentity.None) return false;
                 return true;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T7: NeedDefOf.Food → Food ---
@@ -210,7 +210,7 @@ namespace Rimconemy.Foundation.Tests
                 if (NeedDefOf.Food == null) return true; // DefDatabase might not be ready in tests; soft skip
                 return NeedSettingsTranslator.Translate(NeedDefOf.Food) == SettingIdentity.Food;
             }
-            catch { return true; }
+            catch (System.Exception ex) { Log.Warning("[Rimconemy.Mod01] test swallowed (asserted-as-pass): " + ex); return true; }
         }
 
         // --- T8: NeedDefOf.Rest → Safety ---
@@ -221,7 +221,7 @@ namespace Rimconemy.Foundation.Tests
                 if (NeedDefOf.Rest == null) return true;
                 return NeedSettingsTranslator.Translate(NeedDefOf.Rest) == SettingIdentity.Safety;
             }
-            catch { return true; }
+            catch (System.Exception ex) { Log.Warning("[Rimconemy.Mod01] test swallowed (asserted-as-pass): " + ex); return true; }
         }
 
         // --- T9: IsCritical boundary semantics ---
@@ -235,7 +235,7 @@ namespace Rimconemy.Foundation.Tests
                 if (NeedSettingsTranslator.IsCritical(SettingIdentity.Food, 0.99f)) return false;
                 return true;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T10: every RimconemyRoomRole has a label ---
@@ -250,7 +250,7 @@ namespace Rimconemy.Foundation.Tests
                 }
                 return true;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T11: null Room → Other ---
@@ -262,7 +262,7 @@ namespace Rimconemy.Foundation.Tests
                 if (RoomRoleResolver.ResolveIncludingFurniture(null) != RimconemyRoomRole.Other) return false;
                 return true;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T12: vanilla mapping table contains core rooms ---
@@ -283,7 +283,7 @@ namespace Rimconemy.Foundation.Tests
                 }
                 return true;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T13: Kitchen → Produktion (vanilla-table inspection) ---
@@ -302,7 +302,7 @@ namespace Rimconemy.Foundation.Tests
                 if (value == null) return false;
                 return value.Equals(RimconemyRoomRole.Produktion);
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T14: PrisonBarracks → Verteidigung ---
@@ -321,7 +321,7 @@ namespace Rimconemy.Foundation.Tests
                 if (value == null) return false;
                 return value.Equals(RimconemyRoomRole.Verteidigung);
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T15: enum coverage invariant (N MaterialRole >= 1 + N RoomRole >= 5 + N SettingIdentity >= 3) ---
@@ -338,7 +338,7 @@ namespace Rimconemy.Foundation.Tests
                 if (settingIdentities < 3) return false;
                 return true;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T16: ReindexVanillaTable is idempotent and preserves at least the same entries ---
@@ -356,7 +356,7 @@ namespace Rimconemy.Foundation.Tests
                 int secondCount = (field.GetValue(null) as IDictionary)?.Count ?? 0;
                 return firstCount == secondCount && firstCount >= 6;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T17: MaterialIdentityRegistry Critical-stability (defName-keyed, not ushort-hashed) ---
@@ -371,18 +371,26 @@ namespace Rimconemy.Foundation.Tests
                 if (fieldPrimary == null) return false;
                 var dict = fieldPrimary.GetValue(null) as IDictionary;
                 if (dict == null) return false;
-                // Key type must be string, not ushort. Critical-Fix: avoids
-                // 15-bit hash collisions dropping entries silently.
-                Type keyType = null;
-                foreach (var key in dict.Keys)
-                {
-                    if (key == null) continue;
-                    keyType = key.GetType();
-                    break;
-                }
-                return keyType == typeof(string);
+                // Key type must be string, not ushort. Inspect the declared
+                // generic argument rather than the first runtime key: a
+                // registry with no MaterialIdentityExt entries is valid and
+                // therefore has no keys to enumerate.
+                Type declaredType = fieldPrimary.FieldType;
+                if (!declaredType.IsGenericType
+                    || declaredType.GetGenericTypeDefinition() != typeof(Dictionary<,>))
+                    return false;
+                Type[] genericArguments = declaredType.GetGenericArguments();
+                if (genericArguments.Length != 2 || genericArguments[0] != typeof(string))
+                    return false;
+
+                // Keep a runtime-shape guard as well: the field must still
+                // contain the declared Dictionary instance after Reindex().
+                Type runtimeType = dict.GetType();
+                return runtimeType.IsGenericType
+                    && runtimeType.GetGenericTypeDefinition() == typeof(Dictionary<,>)
+                    && runtimeType.GetGenericArguments()[0] == typeof(string);
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T18: Reindex of MaterialIdentityRegistry is stable across calls ---
@@ -400,7 +408,7 @@ namespace Rimconemy.Foundation.Tests
                 int secondCount = (field.GetValue(null) as IDictionary)?.Count ?? -2;
                 return firstCount == secondCount;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T19: RimconemyKeyed.Try returns fallback (no Log.Error spam) for missing keys ---
@@ -413,7 +421,7 @@ namespace Rimconemy.Foundation.Tests
                     "Test-Fallback");
                 return result == "Test-Fallback";
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T20: RimconemyKeyed.Try returns fallback for empty key ---
@@ -424,7 +432,7 @@ namespace Rimconemy.Foundation.Tests
                 string result = RimconemyKeyed.Try("", "empty-fallback");
                 return result == "empty-fallback";
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T21: RoomRoleResolver RebuildFurnitureHashSets creates empty but non-null sets when DB not ready ---
@@ -440,11 +448,13 @@ namespace Rimconemy.Foundation.Tests
                     "_defenseFurnitureDefNames",
                     BindingFlags.Static | BindingFlags.NonPublic);
                 if (fieldStorage == null || fieldDefense == null) return false;
-                var storage = fieldStorage.GetValue(null) as ICollection;
-                var defense = fieldDefense.GetValue(null) as ICollection;
+                // HashSet<string> implements ICollection<string> (generic) but not
+                // the non-generic System.Collections.ICollection. Just check non-null.
+                object storage = fieldStorage.GetValue(null);
+                object defense = fieldDefense.GetValue(null);
                 return storage != null && defense != null;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
 
         // --- T22: ResolveIncludingFurniture is null-safe (room == null or things == null) ---
@@ -458,7 +468,7 @@ namespace Rimconemy.Foundation.Tests
                 RimconemyRoomRole r1 = RoomRoleResolver.ResolveIncludingFurniture(null);
                 return r1 == RimconemyRoomRole.Other;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] test caught: " + ex); return false; }
         }
     }
 }

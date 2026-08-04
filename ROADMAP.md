@@ -1,9 +1,11 @@
 # Rimconemy — Root Roadmap
 
+> **SSOT-Owner für:** Master-Plan, 5-Paket-Übersicht, Sole-Owner-Map, Phase-Hierarchie P0–P8, Paket-Identitäten. Wer ein Topic aus [docs/INDEX.md §1](INDEX.md) hier behandelt, hält eine SSOT-Verletzung fest.
 > **Stand:** 2026-08-04 (Dokument-Konsolidierung: Handoffs/Audits/Tasklisten in §§1–8 integriert, alte MD-Dateien archiviert in `docs/archive-md-2026-08-04.tar.gz`)
-> **Zielplattform:** RimWorld 1.6.4566; Royalty, Ideology, Biotech, Anomaly, Odyssey  
+> **Zielplattform:** RimWorld 1.6.4566; Royalty, Ideology, Biotech, Anomaly, Odyssey
 > **Status:** Phase 1 Coding-Cut mit Runtime-Boot-Gates belegt. Alle 5 Mods laden, Foundation erkennt FullOverhaul, alle Bootstraps und Regression-Summaries laufen; `scripts/runtime_test.sh` erzwingt frischen Log sowie Need-/Sandbox-/Patch-/Market-Gates. Save/Load, Kartenwechsel und vollständige Event-/Raid-Ausführung bleiben offen. Code-nahe Statusreferenz: `docs/CODE_STATUS.md`.
-> **Kanonische Dokumente:** `ROADMAP.md` (dieses Dokument), `docs/DECISIONS.md`, Architektur-Verträge (`docs/INTERFACE_CONTRACT.md`, `docs/SAVE_CONTRACT.md`, `docs/COMPATIBILITY_MATRIX.md`, `docs/H1-…H5-…`, `docs/superpowers/specs/*`, `mods/*/BLUEPRINT.md`). Paket-Roadmaps: `mods/*/ROADMAP.md`.
+> **SSOT-Landkarte:** Die vollständige Topic-Tabelle *welche Datei was final besitzt* liegt in [docs/INDEX.md §1](docs/INDEX.md). Wer ein Topic dupliziert, hält eine SSOT-Verletzung fest.
+> **Kanonische Dokumente:** `ROADMAP.md` (dieses Dokument), `docs/DECISIONS.md`, Architektur-Verträge (`docs/INTERFACE_CONTRACT.md`, `docs/SAVE_CONTRACT.md`, `docs/COMPATIBILITY_MATRIX.md`, `docs/ARCHITECTURE.md`), Falsifikations-Index (`docs/falsification/README.md`). Paket-Roadmaps: `mods/*/ROADMAP.md`.
 
 ## 1. Verbindliche Priorität
 
@@ -118,6 +120,71 @@ Das Setting besitzt die Regeln. RimWorld Ideology dient als technischer Träger 
 „Ideologie“ bedeutet in diesem Projekt kein zusätzliches Religionssystem. Das vorhandene Ideology-Fenster wird als **Setting-/Erfahrungsfenster** genutzt: Regeln, Rollen, Gemeinschaftsreaktionen und Konsequenzen werden dort verständlich angezeigt.
 
 Vanilla-Ideologie wird im Zielprofil nicht als primäre Spielerlogik vorausgesetzt. Ob technische Vanilla-Elemente geerbt, ersetzt oder nur adaptiert werden, wird pro Precept-/Role-/Ritual-Familie dokumentiert. Keine globale, stille Löschung fremder Ideology-Inhalte.
+
+### 2.5 Early-Game-Vertikalscheibe: Survival → Schutz → Energie
+
+Die nächste spielerische Scheibe beginnt beim einzelnen Survivor und endet erst bei einer reproduzierbaren Infrastrukturentscheidung:
+
+```text
+Startcharakter + knappes Inventar
+  → begrenzte Waffe/Munition
+  → garantierter schwacher Drucktest ohne garantierten Loot
+  → Schutzraum, Licht und erste Verteidigung
+  → Stahl als Rezeptinput; Kohle als physischer Refuelable-Brennstoff für ausgewählte Ofenrezepte und den Generator
+  → T2-Energy: elektrischer Hochofen
+  → eigene Munitionsproduktion
+```
+
+Verbindliche Regeln:
+
+- Ruinen-Loot ist zufällig und darf die Kampagne nicht voraussetzen.
+- Gegner-Drops sind keine garantierte Progressionsquelle.
+- Fehlende Munition verweigert keine Vanilla-Arbeitstypen; der Spieler darf weiterhin bauen, sammeln, farmen und produzieren, soweit die normalen Inputs/Jobs vorhanden sind.
+- Combat Extended bleibt optional und wird nicht zur Core-Abhängigkeit.
+- Der elektrische Hochofen ist ein geplanter T2-Energy-Freischaltpunkt. Er benötigt einen dokumentierten Stein-/Eisen-/Stahl-Baupfad. Stahl ist Rezeptinput; Kohle wird über die physische Ofen-Refuelable-Mechanik nur für ausgewählte Rezepte verbraucht. Der Generator verbraucht Kohle separat für das PowerNet.
+
+**Beweisgrenze:** Startinventar, Verbrauch, Nachtspawn, Hochofen, Research-Capability und Save/Load sind noch keine `LIVE`-Belege. Die Scheibe wird erst als geschlossen gewertet, wenn ein Runtime-Save die physische Änderung und ihre Folge ohne Drift überlebt.
+
+### 2.6 Erfahrungsbaum: Wissen entsteht aus Handlung
+
+Die Spielerprogression läuft nicht über einen Forschungstisch oder abstrakte Forschungspunkte. Der Survivor lernt durch physisch abgeschlossene Handlungen:
+
+```text
+Sammeln / Bauen / Feuern / Verarbeiten / Verteidigen
+  → bestätigtes Ergebnis
+  → Bereichserfahrung
+  → Wissen und Freigabe
+  → neues Architektenmenü-Rezept oder Gebäude
+  → nächste Handlung
+```
+
+Der Start bleibt bewusst klein: **Notlager** mit Campfire, Schlafplatz, Lagerzone und Sammelaufträgen. Das erste erfolgreich entzündete Campfire öffnet **Zuflucht**; eine fertiggestellte Holz-Stahl-Barrikade (1 Holz + 1 Stahlrest) erzeugt Baukunst-Erfahrung und kann Tür, Feuerüberdachung und weitere Schutzoptionen freigeben.
+
+Die sichtbaren Bereiche heißen **Überlebenswissen**, **Bergung**, **Feuerwissen**, **Baukunst**, **Verarbeitung**, **Maschinenwissen** und **Verteidigung**. Freigaben brauchen neben einer Bereichsstufe konkrete Ergebnisse, zum Beispiel einmal hergestellte Kohle, verarbeitete Maschinenteile oder erlebte stabile Energie.
+
+Erfahrung entsteht nur nach echtem Abschluss. Platzieren, Abbrechen, Menüöffnen, reines Verschieben und triviales Spammen erzeugen keine Fortschrittsbelohnung. Diminishing Returns, Idempotency-Keys und situative Ergebnisboni verhindern, dass 200 Campfires den Survivor zum Meisteringenieur machen.
+
+Vanilla-`ResearchProjectDef`s bleiben als DLC-/Mod-Kompatibilitätsschicht bestehen. Sie sind nicht die primäre Rimconemy-Freischaltlogik; der Forschungstisch wird nicht benötigt. Die Übersicht darf gelerntes Wissen anzeigen, darf aber keine zweite widersprüchliche Progressionsbahn erzeugen.
+
+**Beweisgrenze:** Erfahrungsbereiche, echte Abschluss-Hooks, organische Architektenfreigaben, Anti-Exploit-Regeln und Save/Load-Persistenz sind Designziele und noch keine `LIVE`-Belege.
+
+### 2.7 Vertikalscheiben-Plan „Die erste Nacht" (operativ)
+
+Die operative Umsetzung von §2.5 und §2.6 ist im Plan-Dokument `docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md` strukturiert. Der Plan führt die nächsten 37 Subtasks in 12 Phasen (Phase 0 API/DLC → Phase 12 Research/DLC-Kompatibilität) mit Vanilla-API-Ankern, Datei-Pfaden, Owner-Paket und Akzeptanz-Gate pro Task auf. Er übernimmt die Architekturleitlinie **Defs/Game-/Map-Components/Harmony/Architect-Gates**, lässt Vanilla-`ResearchProjectDef` als Kompatibilitätsschicht bestehen und definiert das Vertikal-Scheiben-Release-Gate (`Single Survivor → Campfire → Tier-1-Barrikade → 1 Nacht → Save/Load`).
+
+Der Plan reflektiert den aktuellen Code-Stand und markiert vorhandene Vorstufen (z.B. `BuildingProgressionAdapter`, `InfectedRaidSpawnService` mit 1-Pawn-Bridge, P0 Coal Chain) sowie offene `LIVE`-Aufgaben (SingleSurvivor-Szenario, eigener Ammo-Tank, Stahlreste ThingDef, `IncidentWorker_NightInfected` mit echtem Spawn, organische Architektenfreigaben).
+
+Neue Designentscheidungen aus dem Plan sind in `docs/DECISIONS.md §25 Vanilla-API-Strategie` und `§26 KALT-als-Hediff` verankert. Bestehende §24 zu Early-Game-Munition bleibt unverändert.
+
+### 2.8 Vanilla-API-Matrix (Source-of-Truth für 1.6)
+
+Die verbindliche Mono.Cecil-verifizierte Vanilla-API-Matrix steht in `docs/vanilla-api-matrix-1.6.md`. Sie wurde am 2026-08-04 gegen die lokale RimWorld-1.6.4566-Assembly gespikt (SHA-256 dokumentiert) und führt für jeden der 15 Vanilla-Anker-Exemplare den BaseType, die Anzahl Public/Protected Methods und die kritischen Hook-Signaturen auf. Drei `SPIKE-PFLICHT NICHT GESCHLOSSEN`-Befunde sind in §8 der Matrix explizit dokumentiert und blockieren die korrespondierenden Phasen-Tasks:
+
+- Phase 1.1: `Verse.ScenarioBase` existiert nicht → `RimWorld.Scenario` direkt verwenden
+- Phase 3.2: keine Vanilla-Temperature-Helfer mit den Heuristik-Namen gefunden → TASK BLOCKED
+- Phase 8.3: `FrameCompleted`/`FinishBlueprint`/`InstallBlueprint` haben 0 Treffer → TASK BLOCKED
+
+Jeder zukünftige API-Aufruf gegen RimWorld 1.6 MUSS in der Matrix verifiziert sein; Inline-`strings`-Behauptungen sind unzulässig. Reproduktion: `dotnet tools/inspect/bin/Release/net10.0/Rimconemy.Inspect.dll`.
 
 ## 3. Phasen
 
@@ -386,11 +453,11 @@ Arbeit stoppt vor der nächsten Phase, wenn:
 
 | Paket | Version |
 |---|---|
-| 01-Rimconemy-Foundation | 0.1.36 |
-| 02-Rimconemy-Survival-Progression | 0.1.30 |
-| 03-Rimconemy-Scavenger-Infrastructure | 0.0.23 |
-| 04-Rimconemy-Economy-Territory | 0.0.26 |
-| 05-Rimconemy-Infected-Automation | 0.0.35 |
+| 01-Rimconemy-Foundation | 0.1.37 |
+| 02-Rimconemy-Survival-Progression | 0.1.32 |
+| 03-Rimconemy-Scavenger-Infrastructure | 0.0.25 |
+| 04-Rimconemy-Economy-Territory | 0.0.27 |
+| 05-Rimconemy-Infected-Automation | 0.0.40 |
 
 ## 8. Offener Arbeits-Backlog (Stand 2026-08-04)
 
@@ -405,17 +472,17 @@ Arbeit stoppt vor der nächsten Phase, wenn:
 | `API-NEED-01` … `API-MECH-01` | `COMPILES` vs. `STRING`-Belege auflösen (Need, Job, Resource, Trade, World, Incident, Mech) | je Paket |
 | netstandard2.1 | Laufzeitverhalten (kein Spielstart-Beleg) | Runtime-Gates |
 
-### 8.2 Falsifizierungsberichte (20 Stück, Gate vor Übergabe)
+### 8.2 Falsifizierungsberichte (27 Berichte, Gate vor Übergabe)
 
 Ohne `SURVIVED`-Berichte mit A–G-Belegen gilt keine Übergabe:
 
 - Foundation (2): `Servicebus`, `BootstrapLogDedup`
-- Survival (5): `Needs`, `WorkXp`, `Research`, `GameOver`, `SaveMigration`
+- Survival (5): `Needs`, `WorkXp`, `ExperienceUnlocks`, `GameOver`, `SaveMigration`; `Research` bleibt Legacy-/Kompatibilitäts-Read-Model
 - Scavenger (5): `ConstructionDebris`, `FoodAndHemp`, `WaterPowerArrowTurret`, `ExecutePhysicalTransfer`, `ReservePhysicalTransfer`
 - Economy (5): `WalletCredits`, `Market`, `ReservePhysicalTransfer`, `OutpostProduction`, `TerritoryCountdown`
 - Infected (5): `ThreatPressure`, `InfectedRaid`, `MechadroidJob`, `ManualRaid`, `AutoResolve`
 
-**Status 2026-08-04:** 24 Bericht-Dateien unter `docs/falsification/` (22 Domain-Berichte + `status-vs-code-audit-2026-08-04.md` + `README.md`). Lifecycle-Schritte `A/B/C` aus dem Code ableitbar (`COMPILED`); `D/E/F/G` benötigen Live-Test. `foundation__BootstrapLogDedup.md` (ProfileDetector-Dedup) und `survival__SaveMigration.md` (236 Z., 7-Sektion-Layout) sind die zwei neuesten Berichte; letzterer dokumentiert die Schema-Migration als First-Class-Domain via `ISchemaMigratable` (4 Migratoren, Walker, Registry, Extension).
+**Status 2026-08-04:** 29 Bericht-Dateien unter `docs/falsification/` (27 aktiv-tracked Berichte in der Tabelle + `status-vs-code-audit-2026-08-04.md` + `README.md`). Davon: 22 Domain-Berichte (2 Foundation + 5 Survival + 5 Scavenger + 5 Economy + 5 Infected) und 5 Vertical-Slice-Early-Game-Berichte (`COMPILED (Pre-LIVE)` oder `UNVERIFIED`). Lifecycle-Schritte `A/B/C` aus dem Code ableitbar (`COMPILED`); `D/E/F/G` benötigen Live-Test. `foundation__BootstrapLogDedup.md` (ProfileDetector-Dedup) und `survival__SaveMigration.md` (236 Z., 7-Sektion-Layout) sind die zwei neuesten Stammsberichte; `earlygame__Survivor.md` und `earlygame__SaveLoad.md` sind die Early-Game-Eintritts-Punkte mit `COMPILED (Pre-LIVE)`-Status.
 
 **Aktionsanleitung:** `./scripts/runtime_test.sh --require-scenario-tests` startet die Beleg-Sammlung. Logs in Block D, Save-Roundtrip in Block E, Cross-Read in Block F, Perf in Block G eintragen — Status wandert von `COMPILED` → `LOADED` → `OBSERVED` → `SURVIVED`.
 
@@ -446,10 +513,10 @@ Ohne `SURVIVED`-Berichte mit A–G-Belegen gilt keine Übergabe:
 
 ### 8.6 Phase 6 — Paket-Gameplay (offen, Stubs → echte Mechaniken)
 
-- **02 Survival:** 2.1 Pawn-/Start-/Szenariovertrag; 2.2 Kernbedürfnisse (Nahrung/Sicherheit/Soziales); 2.3 Arbeit→XP ohne Tick-Sampling (GESAMTREPORT F2: XP nur bei validiertem Job-Output + Diminishing + Idempotency-ID); 2.4 Forschungsbaum Tier 0–3 als Capability-Graph; 2.5 Game Over exakt einmal; 2.7/2.8 DLC- und Save-Migration.
-- **03 Scavenger:** 3.3 Nahrung/Hanf getrennt (WorkGiver/Ernte/Verderb); 3.4 Wasser-/Brennstoffmodell als physischer Pfad; 3.5 Stromnetz mit harten Input-Regeln; 3.6 Pfeilturm (Strom als harte Bedingung, Zustände Active/Blocked/Offline/Damaged); 3.7–3.10 XP-/Research-/Economy-/Threat-Adapter, DLC-/Save-Kompatibilität.
+- **02 Survival:** 2.1 Pawn-/Start-/Szenariovertrag; 2.2 Kernbedürfnisse (Nahrung/Sicherheit/Soziales); 2.3 Arbeit→Erfahrung ohne Tick-Sampling (nur validierter Output + Diminishing + Idempotency-ID); 2.4 Erfahrungsbaum der Bereiche und organische Freigaben statt Forschungsbaum; 2.5 Game Over exakt einmal; 2.7/2.8 DLC- und Save-Migration.
+- **03 Scavenger:** 3.2 Bauschutt→Wall-Blueprint mit best-effort Storage-Write (Teilabzug möglich, kein atomarer Rollback) ist im lokalen Arbeitsstand als CODE/Test-Seam ergänzt; der End-to-end-Live-Beleg bleibt offen. Weiter offen: 3.3 Nahrung/Hanf getrennt (WorkGiver/Ernte/Verderb); 3.4 Wasser-/Brennstoffmodell als physischer Pfad; 3.5 Stromnetz mit harten Input-Regeln; 3.6 Pfeilturm (Strom als harte Bedingung, Zustände Active/Blocked/Offline/Damaged); 3.7–3.10 XP-/Research-/Economy-/Threat-Adapter, DLC-/Save-Kompatibilität.
 - **04 Economy:** 4.1 Wallet atomar/rollbackfähig; 4.2 Markt deterministisch; 4.4 Outpost-Gründung; 4.5 Produktion/Verteidigung (Brutto/Bindung/Wartung/Netto); 4.6 Proxy-Graph + Drei-Tage-Countdown (180.000 Ticks, F1-Fix); 4.7 World-Map-Overlay; 4.8 automatisierte Raids; 4.9/4.10 Integrationen + DLC-/Save-Kompatibilität.
-- **05 Infected:** 5.1 Gegner-/Infektionsdomäne (IncidentStub → echter Spawn-Pfad); 5.2 Bedrohungsaggregator deterministisch; 5.4/5.5 lokale + World-Map-Raids idempotent; 5.6 Mechadroid-Grundsystem; 5.7 Automation-Aufträge; 5.9 Hauptstädte/Endgame; 5.10–5.12 Integrationen, DLC-/Vanilla-Kompatibilität, Save/Performance/Determinismus.
+- **05 Infected:** 5.1 `HiddenInfected`/`InfectedRavager` plus begrenzte 1-Pawn-Spawn-Bridge sind im lokalen Arbeitsstand als CODE/DEF ergänzt; vollständige Raid-Skalierung, Auflösung und Live-Beleg bleiben offen. 5.2 Bedrohungsaggregator deterministisch; 5.4 lokale Raids; 5.5 `WorldRaidCoordinator` als Planungsgerüst, World-Map-Raid-Lifecycle offen; 5.6 Mechadroid-Grundsystem; 5.7 Automation-Aufträge; 5.9 Hauptstädte/Endgame; 5.10–5.12 Integrationen, DLC-/Vanilla-Kompatibilität, Save/Performance/Determinismus.
 
 ### 8.7 Qualitäts-Backlog (aus LLM-SLOP-Checkliste)
 
@@ -487,5 +554,5 @@ Ohne `SURVIVED`-Berichte mit A–G-Belegen gilt keine Übergabe:
 
 1. Meta-Verträge prüfen (`INTERFACE_CONTRACT`, `SAVE_CONTRACT`, `COMPATIBILITY_MATRIX` sind in `docs/` vorhanden; Referenzen in Paket-Roadmaps auf `../docs/…` korrigiert).
 2. Storage-Bridge und `AnyResourceCritical` gegen einen echten Save-/Event-Lauf belegen; danach Phase-1-Gate offiziell schließen.
-3. Erste echte Gameplay-Mechanik: Bauschutt→Wand/Tür-Remap (Patches bereits angelegt, `mods/03/Patches/Bauschutt_Remap_Patches.xml`), größter sichtbarer Fortschritt.
+3. Bauschutt→Wand/Tür-Remap end-to-end verifizieren: lokaler Arbeitsstand enthält Blueprint-Platzierung, Dashboard-Aktion und best-effort Storage-Write; `mods/03/Patches/Bauschutt_Remap_Patches.xml` bleibt mit Falsifizierungs-/Runtime-Gate abzusichern.
 4. Danach vertikale Full-Profile-Kette statt horizontales Fertigstellen einzelner Pakete.

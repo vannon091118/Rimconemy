@@ -42,7 +42,9 @@ namespace Rimconemy.ScavengerInfrastructure.Power
                 if (entry == null) continue;
                 if (entry.ResourceId == "WoodLog")
                     inv.WoodLogs += entry.TotalAmount;
-                else if (entry.ResourceId == "ChunkCoal" || entry.ResourceId == "Coal")
+                else if (entry.ResourceId == "Rimconemy_Coal"
+                    || entry.ResourceId == "Coal"
+                    || entry.ResourceId == "ChunkCoal")
                     inv.Coal += entry.TotalAmount;
                 else if (entry.ResourceId == "Rimconemy_WaterUnit" || entry.ResourceId == "Water")
                     inv.WaterUnits += entry.TotalAmount;

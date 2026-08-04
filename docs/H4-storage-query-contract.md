@@ -1,5 +1,6 @@
 # H4 — Storage-Query-Vertrag
 
+> **SSOT-Hinweis:** Detail-Topic dieser Datei ist im Orient-Index [ARCHITECTURE.md §4](ARCHITECTURE.md). Topic-Landkarte: [INDEX.md §1](INDEX.md).
 > **Owner:** Research/Design (kein Code)
 > **Status:** `CODE` — `StorageSnapshot` und `StorageQuery.ReadStorage()` sind implementiert; Caravan-/Temporary-Map-, Save/Load- und vollständige Konsumenten-Gates bleiben offen.
 > **Referenz:** [ROADMAP.md §3 Phase 3](../ROADMAP.md#phase-3--storage-only-ressourcenmodell), [ROADMAP.md §8.4](../ROADMAP.md#84-phase-34--storage-only--character-setup-offen)

@@ -91,7 +91,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 return report.State == ArrowTurretPowerGate.GateState.NoTurret
                     && report.ReasonCode == "turret-null";
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod03A] test caught: " + ex); return false; }
         }
 
         // ── T2 ─────────────────────────────────────────────────────────
@@ -108,7 +108,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 if (ArrowTurretPowerGate.IsBlockableGateState(ArrowTurretPowerGate.GateState.Damaged))  return false;
                 return true;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod03A] test caught: " + ex); return false; }
         }
 
         // ── T3 ─────────────────────────────────────────────────────────
@@ -128,7 +128,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 int delta = ArrowTurretPowerGate.ApplyAttempts - before;
                 return delta == 5;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod03A] test caught: " + ex); return false; }
         }
 
         // ── T4 ─────────────────────────────────────────────────────────
@@ -146,7 +146,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                     && apply.ReasonBlocked != null
                     && apply.ReasonCode == "turret-null";
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod03A] test caught: " + ex); return false; }
         }
 
         // ── T5 ─────────────────────────────────────────────────────────
@@ -168,7 +168,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                     && reason != null
                     && reason.Contains("override: mock-reason-42");
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod03A] test caught: " + ex); return false; }
         }
 
         // ── T6 ─────────────────────────────────────────────────────────
@@ -196,7 +196,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
 
                 return ok && before == 99 && mock.burstCooldownTicksLeft == 0;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod03A] test caught: " + ex); return false; }
         }
 
         // ── T7 ─────────────────────────────────────────────────────────

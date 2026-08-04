@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Rimconemy.EconomyTerritory.Wallet;
 using Rimconemy.Foundation.Colonials;
+using Rimconemy.Foundation.CrossPackage;
 using RimWorld;
 using Verse;
 
@@ -104,7 +104,7 @@ namespace Rimconemy.InfectedAutomation.Story
                 if (ctx.Pawn != null && ctx.Pawn.Faction != null)
                     return ctx.Pawn.Faction.Name;
             }
-            catch { }
+            catch (System.Exception ex) { Log.Warning("[Rimconemy.InfectedAutomation] PlaceholderResolver.TryGetFactionName: " + ex.Message); }
             return null;
         }
 
@@ -116,7 +116,7 @@ namespace Rimconemy.InfectedAutomation.Story
                 if (Find.AnyPlayerHomeMap != null)
                     return Find.AnyPlayerHomeMap.Parent?.LabelCap ?? "an unknown map";
             }
-            catch { }
+            catch (System.Exception ex) { Log.Warning("[Rimconemy.InfectedAutomation] PlaceholderResolver.TryGetMapName: " + ex.Message); }
             return null;
         }
 
@@ -124,11 +124,15 @@ namespace Rimconemy.InfectedAutomation.Story
         {
             try
             {
-                if (ctx.WalletLedger != null) return ctx.WalletLedger.Balance;
-                var ledger = WalletService.GetOrCreateLedger();
-                return ledger?.Balance ?? 0L;
+                // Caller-provided override (preferred path; keeps Wallet type
+                // out of our compile surface).
+                if (ctx.WalletBalanceOverride.HasValue) return ctx.WalletBalanceOverride.Value;
+                // Late-bound reflection bridge via Foundation — no compile
+                // reference to Rimconemy.EconomyTerritory required.
+                if (CrossPackageState.TryReadWalletBalance(out long bal)) return bal;
+                return 0L;
             }
-            catch { return 0L; }
+            catch (System.Exception ex) { Log.Warning("[Rimconemy.InfectedAutomation] PlaceholderResolver.TryGetWalletBalance: " + ex.Message); return 0L; }
         }
 
         private static string TryGetWeather(PlaceholderContext ctx)
@@ -140,7 +144,7 @@ namespace Rimconemy.InfectedAutomation.Story
                 var w = map.weatherManager?.curWeather;
                 return w != null ? (w.label ?? "clear") : "clear";
             }
-            catch { return "clear"; }
+            catch (System.Exception ex) { Log.Warning("[Rimconemy.InfectedAutomation] PlaceholderResolver.TryGetWeather: " + ex.Message); return "clear"; }
         }
 
         private static string TryGetSeason(PlaceholderContext ctx)
@@ -152,7 +156,7 @@ namespace Rimconemy.InfectedAutomation.Story
                 // Season enum cannot be looked up without reflection; fall back to quadrant.
                 return SeasonUtils.DescribeSeason(map);
             }
-            catch { return "spring"; }
+            catch (System.Exception ex) { Log.Warning("[Rimconemy.InfectedAutomation] PlaceholderResolver.TryGetSeason: " + ex.Message); return "spring"; }
         }
     }
 
@@ -160,6 +164,12 @@ namespace Rimconemy.InfectedAutomation.Story
     /// Bag of values the resolver reads from the live game. Re-build
     /// per incident rather than caching to keep the surface area
     /// explicit at call sites.
+    ///
+    /// Wallet-balance edge: callers that already have a wallet total may
+    /// inject <see cref="WalletBalanceOverride"/> for zero-reflection
+    /// rendering. When the override is null the resolver falls back to the
+    /// late-bound CrossPackageState.TryReadWalletBalance path (no compile
+    /// reference to Rimconemy.EconomyTerritory).
     /// </summary>
     public sealed class PlaceholderContext
     {
@@ -172,7 +182,7 @@ namespace Rimconemy.InfectedAutomation.Story
         public string FirstCriticalResource;
         public int CriticalAmount;
         public int CriticalFloor;
-        public CreditsLedger WalletLedger;
+        public long? WalletBalanceOverride;
 
         public static PlaceholderContext FromSnapshot(SituationSnapshot snap, StoryEventSpec evt, Pawn pawn = null, Pawn otherPawn = null)
         {
@@ -198,7 +208,7 @@ namespace Rimconemy.InfectedAutomation.Story
                     : null,
                 CriticalAmount = snap.CriticalResourceIds?.Count ?? 0,
                 CriticalFloor = Rimconemy.InfectedAutomation.ResourceThresholds.FallbackCriticalUnits,
-                WalletLedger = null, // resolved lazily via WalletService
+                WalletBalanceOverride = null, // resolved lazily via CrossPackageState
             };
         }
     }

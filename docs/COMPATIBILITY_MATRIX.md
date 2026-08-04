@@ -1,5 +1,6 @@
 # COMPATIBILITY_MATRIX.md — Rimconemy Load Order & Compatibility Matrix
 
+> **SSOT-Owner für:** L0–L7 Lade-Reihenfolge, DLC-Kompatibilitätstabelle (Royalty/Ideology/Biotech/Anomaly/Odyssey), Third-Party-Mod-Klassifikation (Combat Extended, VSE, ...), DLC-Fallbacks. Wer ein Topic aus [docs/INDEX.md §1](INDEX.md) hier behandelt, hält eine SSOT-Verletzung fest.
 > **Stand:** 2026-08-04  
 > **Owner:** Foundation (01) & Full Suite  
 > **Zielplattform:** RimWorld 1.6.4566  
@@ -43,8 +44,10 @@ Rimconemy-Pakete sind **standalone-fähig**. Das Fehlen eines DLCs darf zu keine
 ## 3. Drittmod-Klassifikation & Verhaltensregeln
 
 ### 3.1 Combat Extended (CE)
-- **Status:** Kompatibel.
-- **Regel:** Rimconemy-Gebäude (z.B. Pfeilturm) und Bauschutt-Materialien nutzen Standard-`ThingDef`-Werte (`statBases`). CE-Munitions-Patcher greifen automatisch auf Vanilla-Verhalten zurück.
+- **Status:** Optionaler Adapter-/Kompatibilitätsfall, keine Core-Abhängigkeit.
+- **Regel:** Rimconemy muss ohne CE spielbar bleiben. Frühwaffe, Startmunition, Nacht-/Threat-Logik und die geplante physische Kette `Stahl + Ofen-Refuelable-Kohle → Munition` im elektrischen Hochofen (T2 Energy) dürfen keine CE-Assembly oder CE-Munitions-Def voraussetzen. Der Generator verbraucht Kohle separat für das PowerNet.
+- Rimconemy-Gebäude und Bauschutt-Materialien nutzen weiterhin Standard-`ThingDef`-/`statBases`-Anker, soweit kein eigener Def-Vertrag beschlossen ist. Ein CE-Munitionsadapter darf später optional Werte/Zuordnungen ergänzen, aber nicht die Core-Progression ersetzen.
+- **Beleggrenze:** CE-Kompatibilität ist erst nach einem getrennten Adapter-Test belegt; Vanilla-Fallback und ein fehlender CE-Mod dürfen nicht als identischer Runtime-Nachweis behandelt werden.
 
 ### 3.2 Vanilla Expanded Suite
 - **Status:** Kompatibel.

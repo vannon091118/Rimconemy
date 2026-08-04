@@ -544,6 +544,92 @@ Biotech-Pollution × Wasser, Odyssey Travel-Events × Territory-Discovery, Biome
 
 ---
 
+## 24. Early-Game-Munitions- und Hochofenvertrag (E4-SURVIVAL)
+
+**Status:** ✅ Entschieden (Design-Lock 2026-08-04; Implementierung offen)
+
+**Entscheidung:** Der Early-Game-Kampf bleibt ein begrenzter Survival-Druckpuffer und wird nicht zu einer Pflichtabhängigkeit auf Combat Extended.
+
+- Der Einzelstarter erhält eine definierte, knappe Startwaffe und Startmunition über Charakter-/Szenariovertrag und Startinventar.
+- Der garantierte Startgegner ist ein Drucktest, kein Loot-Automat: Es gibt **keinen garantierten Gegner-Drop** für Munition, Stahlreste oder Maschinenteile.
+- Ruinen dürfen Munition, Stahlreste oder technische Teile nur zufällig liefern. Der Start muss auch ohne diesen Fund spielbar bleiben.
+- Wegen fehlender Munition werden **keine Vanilla-Arbeitstypen deaktiviert oder verweigert**. Arbeit bleibt über die normalen WorkGiver-/Job-Regeln verfügbar.
+- Die spätere Munitionsproduktion ist ein physischer Midgame-Pfad: **Stahl → Munition im elektrischen Hochofen**, wobei ausgewählte Rezepte Kohle über die Ofen-`Refuelable`-Mechanik verbrauchen. Der Generator verbraucht Kohle separat für das PowerNet.
+- Der elektrische Hochofen ist eine **T2-Energy-Capability**. Der konkrete Bau-/Forschungs- und Rezeptpfad benötigt mindestens einen geeigneten Steinbaustoff (Kalkstein, Sandstein oder Granit) sowie Eisen/Stahl und wird vor Implementierung lokal gegen RimWorld-1.6-Defs geprüft.
+- Combat Extended bleibt optional. Der Rimconemy-Core definiert keine CE-Pflicht und darf ohne CE keinen Phantom-Munitionsstatus erzeugen.
+
+**Begründung:** Die Startressourcen sollen Entscheidungen erzwingen, aber keinen zufälligen Softlock erzeugen. Gegner erzeugen Aufmerksamkeit; Produktion und Infrastruktur erzeugen Stabilität. Der Übergang Survival → Energie → Produktion bleibt dadurch sichtbar und paketübergreifend anschlussfähig.
+
+**Betroffene Verträge:**
+
+- Paket 02: Startcharakter, Startinventar, Arbeitstypen und Survival-Druck.
+- Paket 03: Stahl als physischer Rezeptinput, Kohle als Ofen-/Generator-Refuelable, elektrischer Hochofen und Munitions-Thing-/Recipe-Defs.
+- Paket 05: Startgegner-/Nachtbedrohung ohne garantierte Beute.
+- `docs/COMPATIBILITY_MATRIX.md`: CE bleibt Adapter-/Kompatibilitätsfall, nicht Core-Abhängigkeit.
+
+**Nicht behauptet:** Diese Entscheidung belegt noch keine vorhandene Startwaffe, keinen echten Munitionsverbrauch, keinen elektrischen Hochofen, kein Research-Unlock und keinen Live-Nachtspawn. Diese Punkte bleiben eigene CODE/DEF/COMPILES/LIVE-Gates.
+
+## 25. Erfahrungsbaum statt Forschungsbaum (S-PROG-EXPERIENCE)
+
+**Status:** ✅ Entschieden (Design-Lock 2026-08-04; Implementierung offen)
+
+**Entscheidung:** Rimconemy verwendet für die Spielerprogression keinen klassischen Forschungsbaum mit Forschungstisch, Forschungspunkten und Warteauftrag als primäre Freischaltlogik. Wissen entsteht aus tatsächlich abgeschlossenen Handlungen:
+
+```text
+Handlung
+  → gültiges Ergebnis
+  → Erfahrung in einem passenden Bereich
+  → Bereichsstufe / Wissen
+  → Freigabe
+  → neues Architektenmenü-Rezept oder Gebäude
+  → neue Handlung
+```
+
+**Spielerregel:** Der Spieler beginnt mit einem fast leeren Architektenmenü („Notlager“). Campfire, Schlafplatz, Lagerzone und Sammeln bilden den Start. Das erste erfolgreich entzündete Campfire öffnet den Pfad **Zuflucht**; eine abgeschlossene Holz-Stahl-Barrikade (1 Holz + 1 Stahlrest) erzeugt Bau-Erfahrung und kann weitere Schutzoptionen freigeben.
+
+**Erfahrungsbereiche:** Überlebenswissen, Bergung, Feuerwissen, Baukunst, Verarbeitung, Maschinenwissen und Verteidigung. Technisch dürfen diese Bereiche numerische Stufen besitzen; sichtbar werden sie als Unkundig, Anfänger, Geübt, Erfahren oder Meisterhaft.
+
+**Gültiges Ergebnis:** Erfahrung entsteht nur nach physisch bestätigtem Abschluss — zum Beispiel erfolgreich gesammelte Ressource, entzündetes Campfire, fertiggestellte Wand, abgeschlossene Kohleherstellung, tatsächlich betriebener Generator oder überstandene vorbereitete Gefahr. Platzieren, Abbrechen, Menüöffnen, bloßes Verschieben und Campfire-Spam erzeugen keine gültige Erfahrung.
+
+**Anti-Exploit-Regeln:** Jeder Bereich erhält Idempotency-Keys, Diminishing Returns für Wiederholungen, Boni für neue Rezepte/Materialien und situative Krisenboni sowie eine Begrenzung für triviale Aktionen. Ein billiges Objekt darf nicht endlos gespammt werden, um Meisterschaft zu erzeugen.
+
+**Voraussetzungen:** Eine Freigabe hängt nicht nur an einer Stufe. Sie kann zusätzlich ein echtes Ergebnis verlangen, etwa „Kohle mindestens einmal hergestellt“, „Maschinenteile verarbeitet“ oder „stabile Energie erlebt“. Dadurch bleibt der Erfahrungsbaum handlungsgebunden.
+
+**Forschungstisch und Vanilla-Forschung:** Vanilla-`ResearchProjectDef`s werden nicht global gelöscht, damit DLCs und andere Mods kompatibel bleiben. Sie sind jedoch nicht die Rimconemy-Quelle der Spielerfreigaben. Die Forschung kann als Übersicht/Kompatibilitätsansicht anzeigen, was gelernt wurde und was möglich wird; Rimconemy-Freigaben benötigen keinen Forschungstisch und dürfen keine parallele, widersprüchliche Fortschrittsbahn bilden.
+
+**Eigentum:** Paket 02 besitzt Erfahrungsbereiche, Stufen, Freigaben und abgeschlossene Aktions-IDs. Paket 03 besitzt physische Defs, Rezepte, Bauwerke und meldet nur physisch bestätigte Outputs. Paket 05 liest Schutz-/Wissensfolgen für Bedrohung; Paket 04 erhält seine Handels-/Grenzfreigaben erst aus bestätigten Versorgungsvoraussetzungen.
+
+**Nicht behauptet:** Der Erfahrungsbaum, organische Architektenfreigaben, echte Abschluss-Hooks, Diminishing Returns und die vollständige Save-/Load-Persistenz sind noch keine Code-, Def- oder Live-Belege.
+
+## 26. KALT und Wärme als Hediff-Severity-Offset (E4-WARM)
+
+**Status:** ✅ Entschieden (Design-Lock 2026-08-04; Implementierung offen)
+
+**Entscheidung:** Der Kältezustand wird als RimWorld-Hediff (`Rimconemy_ColdExposure`) mit gestaffeltem Severity-Offset über `statOffsets` modelliert — nicht als zweiter Need, nicht als Override der Vanilla-Thermoregulation, nicht als eigener Tod-Kanal.
+
+```text
+Stages:
+  fröstelnd (0.25..0.6):  MoveSpeed -5 %, WorkSpeedGlobal -5 %
+  kalt    (0.6..1.0):      MoveSpeed -12 %, WorkSpeedGlobal -12 %
+```
+
+**Begründung:**
+- Ein eigener Need würde Vanilla-Mood und DLC-Hediffs doppeln (§1 Anti-Pattern). Ein Hediff mit `statOffsets` bleibt in der RimWorld-Pipeline und respektiert Kleidung, Temperaturbereiche und Fire-Glower automatisch.
+- Der Vanilla-Tod durch Hypothermie bleibt die einzige Kältesterben-Ursache (§9 unsere Anti-Softlock-Position). Hediff ist *Druck*, nicht *Tod*.
+- Die Severity-Update-Rate wird über einen bounded Map-/Game-Tick (`ColdExposureService.Update`) aktualisiert, nicht durch freies Tick-Sampling. Dadurch bleibt die Last berechenbar und Save-stabil.
+
+**Spike-Pflicht:** `ReadVanillaTemperature(pawn)` exakte 1.6-API vor Implementierung bestätigen — kein `strings`-Beweis. Genaue Bezugspunkte sind `RoomTemperature`/`GenTemperature` oder pawn-spezifische `Zone`/`TemperatureZone`-Felder; verbindlich wird die 1.6-Signatur per Decompile/Reflection.
+
+**Eigentum:** Paket 02 (`Source/Needs/ColdExposureService`) liest Vanilla-Temperatur, mutiert die Hediff-Severity und meldet das Resultat nicht an andere Pakete. Paket 03 liest `ShelterSnapshot.EnclosureScore` + `FireSignature` und kann die KALT-Hediff-Sensitivity kontextualisieren — schreibt aber nicht direkt.
+
+**Negativ-Pfad:** Feuer reduziert KALT durch Erhöhung der lokalen Temperatur (Vanilla); Nacht/Kälte erhöht KALT durch Vanilla-Source. Der Hediff ist nur eine *Anzeige- und Modifikationsschicht*, kein Ersatz für den Thermal-Layer.
+
+**Bezug zu §24:** §26 folgt der Anti-Softlock-Linie aus §24 (kein garantierter Drop, keine Vanilla-Arbeitstypen-Sperre). KALT ist *zusätzlicher Druck*, kein Ersatz für Vanilla-Hypothermie-Tod oder eine globale Spielersperre. §9 (gestrichener stochastischer Tod-Layer) bleibt bestehen — §26 zitiert §24 als inhaltlichen Bezugspunkt.
+
+**Betroffene Tasks:** Phase 3.1/3.2 aus `docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md`.
+
+**Nicht behauptet:** Diese Entscheidung belegt noch keinen Hediff-Def, keinen bounded Update-Service und keinen Live-Temperaturwert. Die Punkte bleiben CODE/DEF/COMPILES/LIVE-Gates.
+
 ## Zusammenfassung: Implementierungsreihenfolge
 
 | Reihenfolge | Task | Beschreibung | Blockiert |
@@ -595,3 +681,4 @@ Biotech-Pollution × Wasser, Odyssey Travel-Events × Territory-Discovery, Biome
 | 2026-08-04 | **Audit-Runde:** §2 GameOver-Logic an INTERFACE_CONTRACT §9.5 angeglichen (Sole-Owner Mod 02); §3 Storyteller mit Dual-Source-Realität (Hardcoded + DefDatabase-Overlay); §9 stochastischen Tod-Layer gestrichen wegen unimplementierbarer Intervall-Definition; §10 GameMode `Load` → `Softcore` umbenannt; §13 Event-Variablen mit Determinism-Key-Template und FreeText-Fallback präzisiert; §15-§19 neu (DLC-Content-Policy, Hard-Requires, Construction-Cost-Patches, Gravship-Territory, Anomaly-Shambler-Basis); Offene-Punkte-Tabelle von "keine" auf 8 echte offene Punkte befüllt. | Buffy |
 | 2026-08-04 | Code-Fix: `rimconemy.foundation.colonials` Capability in PackageRegistry.cs registriert (Phase-B / F-V1 audit-gap, gegen INTERFACE_CONTRACT §9.1) | Buffy |
 | 2026-08-04 | **Dokument-Konsolidierung:** §20 DLC-Detail-Ergänzungen (aus `DECISIONS_DLC.md`), §21 Harmony-Strategie, §22 Scribe-/ExposeData-Pattern, §23 GameComponent-Zuordnung (aus `docs/AUDIT.md`) übernommen. Quell-Dokumente archiviert in `docs/archive-md-2026-08-04.tar.gz`. | Buffy |
+| 2026-08-04 | **Design-Lock:** §24 Early-Game-Munitions-/Hochofenvertrag und §25 Erfahrungsbaum statt Forschungsbaum ergänzt; Start- und Midgame-Progression bleiben handlungs- und ergebnisgebunden, Vanilla-Forschung bleibt Kompatibilitätsschicht. | Buffy |

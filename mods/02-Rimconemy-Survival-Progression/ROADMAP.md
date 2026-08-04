@@ -1,12 +1,13 @@
 # Roadmap 02 – Rimconemy Survival & Progression
 
+> **SSOT-Hinweis:** Owner-Matrix → [../../docs/INTERFACE_CONTRACT.md](../../docs/INTERFACE_CONTRACT.md); Tech/Wissen & Experience → [../../docs/CANONICAL_VANILLA_DOMAIN_MAP.md §2.4](../../docs/CANONICAL_VANILLA_DOMAIN_MAP.md); ISchemaMigratable → [../../docs/SAVE_CONTRACT.md](../../docs/SAVE_CONTRACT.md); Theme-Map → [../../docs/INDEX.md §1](../../docs/INDEX.md).
 > Eigenständige Paketaufgabe 2 von 5  
 > Standalone zuerst, Full-Overhaul-Integration danach  
 > Zielplattform: RimWorld 1.6 mit Royalty, Ideology, Biotech, Anomaly und Odyssey
 
 ## 1. Paketauftrag
 
-Survival & Progression definiert den geplanten Survival-/Progressions-Loop. Im aktuellen Code sind Need-Mapping, Progression-Read-Model, Character-Setup-Logik, Sandbox-/Game-Over-Anker und Regression-Gates belegt; vollständige Need-, Job-/Output-XP-, Research- und Save/Load-Live-Schichten bleiben offen.
+Survival & Progression definiert den geplanten Survival-/Progressions-Loop. Im aktuellen Code sind Need-Mapping, Progression-Read-Model, Character-Setup-Logik, Sandbox-/Game-Over-Anker und Regression-Gates belegt; vollständige Need-, Job-/Output-Erfahrungs-, Experience-/Unlock- und Save/Load-Live-Schichten bleiben offen. Das vorhandene Research-Read-Model ist Legacy-/Kompatibilitätsschicht.
 
 Im Full Overhaul wird es zur Progressionsdomäne für Bauschuttbau, Energie, Verteidigung, Mechadroids und Outposts. Diese Verbindungen laufen über Capability-IDs und Arbeitstyp-Verträge, nicht über direkte Compile-Abhängigkeiten auf andere Rimconemy-Assemblies.
 
@@ -16,14 +17,26 @@ Mit Vanilla-Ressourcen, Vanilla-Gebäuden und Vanilla-Fraktionen bietet das Pake
 
 ```text
 Nahrung/Sicherheit/Soziales
-→ Arbeitsentscheidung
-→ Erfahrung und Spezialisierung
-→ Forschung
+→ Handlung und Arbeit
+→ bestätigtes Ergebnis
+→ Überlebenswissen / Freigabe
 → höhere Überlebensfähigkeit
 → Game Over bei Verlust aller kontrollierbaren Bewohner
 ```
 
+Der Start beginnt mit einem fast leeren Architektenmenü (**Notlager**): Campfire, Schlafplatz, Lagerzone und Sammeln. Der Survivor lernt durch echte Ergebnisse; der Forschungstisch ist nicht die Quelle der Rimconemy-Freigaben.
+
 Das Paket muss auch ohne Bauschutt, Economy, Outposts und Infizierte build-/bootstrap-fähig bleiben; ein vollständiger eigenständiger Survival-Loop ist ein offenes Live-Gate.
+
+### Early-Game-Vertrag: Survivor, Startinventar und Arbeit
+
+- Der Einzelstarter erhält die begrenzte Frühwaffe und Munition über den Startcharakter-/Szenariovertrag, nicht über einen verpflichtenden Gegner-Drop.
+- Der erste schwache Gegner ist ein Drucktest. Gegner liefern keine garantierte Munition, keine garantierten Stahlreste und keine garantierten Maschinenteile.
+- Zufällige Ruinenfunde dürfen die Startreserve ergänzen, sind aber keine notwendige Voraussetzung für den ersten Schutz- oder Produktionsschritt.
+- Fehlende Munition sperrt keine Arbeitstypen. `Building`, `Farming`, `Scavenging`, `Power`, `Engineering`, `Combat`, `Social/Trade`, `Expedition` und `Automation` bleiben als Verträge verfügbar; konkrete Jobs können weiterhin nur durch ihre normalen Ressourcen-, Skill- und Reservation-Regeln blockiert werden.
+- Der spätere Munitionspfad gehört in die physische Infrastruktur von Paket 03: Stahl → Munition im elektrischen Hochofen (T2 Energy); ausgewählte Rezepte verbrauchen Kohle über die Ofen-Refuelable-Mechanik, der Generator verbraucht Kohle separat.
+
+**Status:** Design entschieden, Implementierung und Runtime-Beleg offen. Diese Regeln dürfen nicht als vorhandene Startwaffe, Munition oder Nachtspawn gelesen werden.
 
 ## 3. Full-Overhaul-Ziel
 
@@ -31,7 +44,8 @@ Im gemeinsamen Profil:
 
 - Scavenger-Arbeiten melden standardisierte Arbeitstypen für XP.
 - Bauschutt-, Farm-, Energie- und Verteidigungsarbeit nutzt dieselbe Progression.
-- Forschung schaltet Wasser, Strom, Pfeilturm, Mechadroids, Credits und Outposts frei.
+- Wissen und organische Freigaben schalten Wasser, Strom, Pfeilturm, Mechadroids, Credits und Outposts frei.
+- Der T2-Energy-Pfad umfasst später den elektrischen Hochofen für physische Munitionsproduktion; die Freigabe darf diese Aktion erst öffnen, wenn Def, Rezept, Arbeitsweg und Save-Verhalten belegt sind.
 - Sicherheit verarbeitet Basiszustand, Infizierten-Druck und territoriale Verbindung.
 - Game Over bleibt an direkt kontrollierbare Spielerbewohner gebunden.
 - Foundation zeigt Needs, XP, Forschung, Modus und Blockadegründe in gemeinsamen Snapshots.
@@ -75,19 +89,39 @@ Automation
 
 Ein Arbeitsschritt kann Erfahrung geben, aber nicht unbegrenzt farmbar sein. XP muss an geleistete Arbeit, tatsächlichen Output, Risiko und sinnvolle Abkling-/Diminishing-Regeln gebunden werden.
 
-### Forschung
+### Wissen und Freigaben
 
-ResearchProjectDefs bilden die sichtbare Technikprogression. Forschung allein erzeugt keine Ressourcen; sie schaltet Regeln und Gebäude frei. Jede Freischaltung besitzt:
+Rimconemy verwendet einen **Erfahrungsbaum der Zivilisation** statt eines klassischen Forschungsbaums. Der Survivor entwickelt bereichsbezogenes Wissen durch echte Handlungen:
 
-- eindeutige Capability-ID,
-- Kosten-/Zeitdefinition,
-- sichtbaren Zweck,
-- mindestens einen Testpfad,
-- Full-Overhaul-Adapter, falls sie ein späteres Paket betrifft.
+- **Überlebenswissen:** Nahrung finden, Kälte und Nächte überstehen, Verletzungen behandeln.
+- **Bergung:** Holz, Stahlreste und Bauschutt tatsächlich bergen.
+- **Feuerwissen:** Campfire entzünden, Brennstoff vorbereiten und Wärme kontrollieren.
+- **Baukunst:** Barrikaden, Wände, Türen und Reparaturen fertigstellen.
+- **Verarbeitung:** Kohle, Stahlreste und Maschinenteile physisch herstellen/verarbeiten.
+- **Maschinenwissen:** Generatoren und Verbraucher stabil betreiben, Ausfälle beheben.
+- **Verteidigung:** vorbereitete Gefahren überstehen und Zuflucht sinnvoll verteidigen.
+
+Eine gültige Handlung läuft immer über:
+
+```text
+Material/Arbeitsauftrag
+→ echter Abschluss
+→ genau eine idempotente Erfahrung
+→ Bereichsstufe + konkrete Voraussetzung
+→ Freigabe im Architektenmenü
+```
+
+Keine Erfahrung entsteht durch Platzieren, Abbrechen, Menüöffnen, bloßes Verschieben oder billiges Spam-Rezept. Diminishing Returns, neue Material-/Rezeptboni und Situationsboni verhindern Exploits.
+
+Vanilla-`ResearchProjectDef`s bleiben als Kompatibilitäts- und Übersichts­schicht für DLCs und Fremdmods erhalten. Sie ersetzen nicht den Erfahrungsbaum; Rimconemy benötigt für seine Freigaben keinen Forschungstisch und darf keine parallele widersprüchliche Progression erzeugen.
 
 ## 5. Sequenzielle Arbeitsschritte
 
 ### Task 2.1 – Pawn-, Start- und Szenariovertrag
+
+> **Vertikal-Scheiben-Verankerung (2026-08-04):** Der konkrete Sub-task-Block zu Single-Survivor-Szene, Notwaffe und Ammo-Tank steht in Phase 1.1–1.4 des Vertical-Slice-Plans. Die Architekturentscheidungen sind in `DECISIONS.md §24` festgelegt; eine eigene Phase für die Vanilla-API-Verifikation des `PawnGenerator`-Spikes (`H6-pawn-generator-api-spike.md`, UNVERIFIED) bleibt offen.
+
+
 
 - eigenen Startcharakter über RimWorld-kompatiblen Szenario-/Pawn-Generator definieren,
 - Aussehen und zulässige Individualisierung erhalten,
@@ -100,6 +134,10 @@ ResearchProjectDefs bilden die sichtbare Technikprogression. Forschung allein er
 **Exit-Test:** Neue Kampagne startet reproduzierbar mit einem zulässigen individuellen Startcharakter und dokumentiertem Startinventar.
 
 ### Task 2.2 – Bedürfnis- und Zustandsmodell
+
+> **Vertikal-Scheiben-Verankerung (2026-08-04):** Die Kältemechanik (Hediff-Severity-Offset) ist als eigene Architekturentscheidung in `DECISIONS.md §26` dokumentiert; Sub-tasks stehen in Phase 3.1/3.2 des Vertical-Slice-Plans. Die Hediff-Logik gehört zu diesem Task.
+
+
 
 - Nahrung, Sicherheit und Soziales als sichtbare Kernbedürfnisse registrieren,
 - Vanilla-Mood-/Mental-Break-Anbindung festlegen,
@@ -121,28 +159,38 @@ ResearchProjectDefs bilden die sichtbare Technikprogression. Forschung allein er
 
 **Exit-Test:** dieselbe Arbeit erzeugt deterministisch nachvollziehbare XP; mehr Erfahrung verändert mindestens einen messbaren Output.
 
-### Task 2.4 – Forschungsbaum und Technikstufen
+### Task 2.4 – Erfahrungsbaum und Architektenfreigaben
 
-Stufen für Standalone:
+> **Vertikal-Scheiben-Verankerung (2026-08-04):** Die operative Sub-task-Struktur zu diesem Task steht in `docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md` Phase 8.1–8.4 (Domain-XP, ActionResult-Vertrag, Bauabschluss-Hook, Rezeptabschluss-Hook) und Phase 9.1–9.4 (UnlockExtension, UnlockService, Architect-Gate, erster Lernpfad). Die zugehörige Designentscheidung ist `DECISIONS.md §25`. Der vorliegende Task bleibt als Ausgangspunkt im Paket-Roadmap stehen.
 
-```text
-Tier 0 – Grundversorgung
-Tier 1 – Stabilisierung
-Tier 2 – Spezialisierung
-Tier 3 – Automatisierung
-```
 
-Im Full Overhaul werden weitere Capabilities nur aktiviert, wenn die zuständigen Pakete vorhanden sind:
+
+Der Startpfad bleibt bewusst klein:
 
 ```text
-Scavenger.Power
-Scavenger.ArrowTurret
-Automation.Mechadroids
-Economy.Credits
-Territory.Outposts
+Notlager
+→ Campfire erfolgreich entzündet
+→ Zuflucht: Holz-Stahl-Barrikade (1 Holz + 1 Stahlrest)
+→ Tür / Feuerüberdachung / Vorratszone
+→ Kohle / Maschinenteile
+→ Generator / Energie
+→ Elektrohochofen / Munition
+→ Arbeitsmaschinen / Automation
 ```
 
-**Exit-Test:** Forschung ist nicht nur Text: Jede abgeschlossene Stufe verändert Gebäude, Arbeit, UI oder zugängliche Aktionen.
+Jede Freigabe besitzt:
+
+- eine Bereichs-ID,
+- eine sichtbare Spielerbezeichnung,
+- ein echtes Abschlussereignis,
+- eine idempotente Action-ID,
+- optionale zusätzliche Voraussetzungen,
+- einen sichtbaren Architektenmenü-Output,
+- eine Save-/Load-Version.
+
+`ResearchProjectDef` bleibt für Vanilla-/DLC-Kompatibilität vorhanden, ist aber nicht die primäre Quelle der Rimconemy-Freigabe.
+
+**Exit-Test:** Eine abgeschlossene Handlung erzeugt genau einmal Erfahrung, erweitert reproduzierbar das Architektenmenü und überlebt Save/Load ohne Phantomfreigabe oder Verlust.
 
 ### Task 2.5 – Game Over und Wiederaufnahme
 
@@ -207,7 +255,7 @@ Prüfe explizit:
 | XP wird durch Idle-Ticks gefarmt | XP nur bei validiertem Job-Output, mit Diminishing-Regel |
 | Vanilla-Skills und neue XP konkurrieren | klare Rollen: Vanilla-Skill oder Adapter, niemals unklare Doppelboni |
 | WorkGiver/Reservation-Lock | Job-/Reservation-Stresstest mit mehreren Pawns |
-| Forschung schaltet nichts Reales frei | jede Forschung braucht überprüfbaren Output |
+| Wissen schaltet nichts Reales frei | jede Freigabe braucht ein überprüfbares Handlungsergebnis |
 | Game Over wird durch Outposts verhindert | ausschließlich kontrollierbare Pawns zählen |
 | DLC startet eigene Progression | Adaptermatrix und Full-Profile-Test |
 | Scenario-/Start-Spot-Änderungen in 1.6 | Szenario- und neue Map-Startlogik testen |
@@ -236,7 +284,11 @@ Das Paket darf XP, Needs und Forschung nicht für jeden Pawn mehrfach pro Tick b
 
 ## 10. Falsifizierungs-Gate
 
-Vor Übergabe müssen die vier Berichte `../../docs/FALSIFICATION_REPORTS/rimconemy.survivalprogression__Needs.md`, `../../docs/FALSIFICATION_REPORTS/rimconemy.survivalprogression__WorkXp.md`, `../../docs/FALSIFICATION_REPORTS/rimconemy.survivalprogression__Research.md` und `../../docs/FALSIFICATION_REPORTS/rimconemy.survivalprogression__GameOver.md` jeweils `SURVIVED` erreichen. Jeder Bericht braucht die sieben Achsen A–G mit eigenem Test, Ergebnis und Beleg; Vanilla-Mood, Traits, Genes, Jobs, Reservations, DLCs und relevante Fremdmod-Need-/Jobpfade werden nach `../../docs/COMPATIBILITY_MATRIX.md` klassifiziert.
+Vor Übergabe müssen die vier Berichte `../../docs/falsification/survival__Needs.md`, `../../docs/falsification/survival__WorkXp.md`, `../../docs/falsification/survival__Research.md` und `../../docs/falsification/survival__GameOver.md` jeweils `SURVIVED` erreichen.
+
+Der Bericht `survival__Research` prüft den bestehenden Legacy-/Kompatibilitäts-Read-Model-Pfad. Der neue primäre Fortschrittspfad wird zusätzlich als `ExperienceUnlocks` über bestätigte Action-Completion, idempotente Erfahrung, Architektenfreigabe und Save/Load geprüft.
+
+Jeder Bericht braucht die sieben Achsen A–G mit eigenem Test, Ergebnis und Beleg; Vanilla-Mood, Traits, Genes, Jobs, Reservations, DLCs und relevante Fremdmod-Need-/Jobpfade werden nach `../../docs/COMPATIBILITY_MATRIX.md` klassifiziert.
 
 ## 11. Exit-Kriterien für Übergabe an Paket 3
 

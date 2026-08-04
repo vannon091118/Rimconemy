@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rimconemy.Foundation.Maps;
 using RimWorld;
 using Rimconemy.ScavengerInfrastructure.Power;
 using Verse;
@@ -26,10 +27,11 @@ namespace Rimconemy.ScavengerInfrastructure.Building
         public static List<BuildingSnapshot> Read(long tick)
         {
             var result = new List<BuildingSnapshot>();
-            if (Find.Maps == null)
-                return result;
-
-            foreach (var map in Find.Maps.Where(m => m != null && m.IsPlayerHome))
+            // Phase-2 / Welle 2 / Item #3 (2026-08-05): route through
+            // MapRegistry.GetPlayerHomeMaps() (Foundation-owned) instead of
+            // an ad-hoc LINQ Where(...) allocation per call. Snapshot list
+            // is reused; no List<Map> closure allocated here.
+            foreach (var map in MapRegistry.GetPlayerHomeMaps())
             {
                 if (map.listerThings?.AllThings == null)
                     continue;

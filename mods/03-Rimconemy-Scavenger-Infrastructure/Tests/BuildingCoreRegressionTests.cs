@@ -27,6 +27,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             TestStorageSnapshotSchema();
             TestLoadedWallDoorMaterialContract();
             TestWallDoorPatchContractWhenSourceAvailable();
+            TestBauschuttUiStatusContractWhenSourceAvailable();
 
             string summary = "[Rimconemy.ScavengerInfrastructure] BuildingCore regression tests: "
                 + _passed + " passed, " + _failed + " failed.";
@@ -86,6 +87,41 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 AssertTrue(door.stuffCategories != null
                     && door.stuffCategories.Exists(category => category != null && category.defName == "Stony"),
                     "Building: loaded Door accepts Stony material category");
+        }
+
+        private static void TestBauschuttUiStatusContractWhenSourceAvailable()
+        {
+            string designatorPath = FindSourceFile(
+                "Source", "Building", "Designator_BuildWallBauschutt.cs");
+            string applyPath = FindSourceFile(
+                "Source", "Building", "BauschuttRemapApply.cs");
+            string dashboardPath = FindSourceFile(
+                "Source", "UI", "InfrastructureDashboard.cs");
+
+            if (!File.Exists(designatorPath)
+                || !File.Exists(applyPath)
+                || !File.Exists(dashboardPath))
+            {
+                Log.Message("[Rimconemy.ScavengerInfrastructure] BuildingCore tests: Bauschutt UI source unavailable in deployed mod; runtime DefDatabase gates remain authoritative.");
+                return;
+            }
+
+            string designator = File.ReadAllText(designatorPath);
+            string apply = File.ReadAllText(applyPath);
+            string dashboard = File.ReadAllText(dashboardPath);
+
+            AssertTrue(designator.Contains("best-effort physischen Storage-Abzug"),
+                "Building: Architect designator explains best-effort physical write");
+            AssertFalse(designator.Contains("physischer Storage-Verbrauch: OPEN"),
+                "Building: Architect designator has no stale OPEN consumption claim");
+            AssertTrue(apply.Contains("write already requested"),
+                "Building: unchanged snapshot guard describes completed write request");
+            AssertFalse(apply.Contains("physical storage consumption is OPEN"),
+                "Building: apply guard has no stale OPEN consumption claim");
+            AssertTrue(dashboard.Contains("Bauschutt-Aktion schreibt best effort"),
+                "Building: dashboard distinguishes read-only snapshots from write action");
+            AssertFalse(dashboard.Contains("echte Verbrauchs-, Bau- und Power-Mutationen sind noch nicht aktiv"),
+                "Building: dashboard has no stale all-mutations-disabled banner");
         }
 
         private static void TestWallDoorPatchContractWhenSourceAvailable()

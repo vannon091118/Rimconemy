@@ -1,5 +1,6 @@
 # Roadmap 03 – Rimconemy Scavenger Infrastructure
 
+> **SSOT-Hinweis:** Storage-Query-Vertrag → [../../docs/H4-storage-query-contract.md](../../docs/H4-storage-query-contract.md); Owner-Matrix → [../../docs/INTERFACE_CONTRACT.md](../../docs/INTERFACE_CONTRACT.md); Theme-Map → [../../docs/INDEX.md §1](../../docs/INDEX.md).
 > Eigenständige Paketaufgabe 3 von 5  
 > Standalone zuerst, Full-Overhaul-Integration danach  
 > Zielplattform: RimWorld 1.6 mit Royalty, Ideology, Biotech, Anomaly und Odyssey
@@ -39,9 +40,10 @@ Das Paket ist ohne Economy, Territory, Infected oder Survival & Progression buil
 Im Full Overhaul:
 
 - Bauschutt ist das frühe Wand-/Türmaterial und regional handelbar.
+- Der elektrische Hochofen ist ein T2-Energy-Meilenstein für die spätere Munitionskette, nicht Teil des garantierten Startinventars.
 - Farmfläche erzeugt Nahrung, aber auch sichtbaren Infizierten-Druck.
 - Arbeit an Farmen, Generatoren, Bau- und Verteidigungsanlagen gibt XP über Paket 2.
-- Forschung aus Paket 2 schaltet die Infrastruktur stufenweise frei.
+- Paket 2 schaltet Infrastruktur über bestätigte Verarbeitungsergebnisse und Maschinenwissen stufenweise frei; Vanilla-Forschung bleibt Kompatibilitätsschicht, nicht die Spielerquelle der Freigaben.
 - Economy verwendet physische Waren statt Credits als Item.
 - Outposts verbrauchen Bauschutt, Nahrung und Technikmaterial für Gründung, Proxies und Verteidigung.
 - Mechadroids können Farm-, Energie- und Wartungsaufgaben übernehmen.
@@ -65,9 +67,9 @@ Bauschutt besitzt eine eigene stabile Def-/Ressourcen-ID und darf nicht nur als 
 
 ### SteelScraps
 
-Stahlreste sind das erste Scavenging-Produkt. Sie werden in Ruinen gefunden und im Campfire zu nutzbarem Stahl verarbeitet.
+Stahlreste sind das erste Scavenging-Produkt. Sie können zufällig in Ruinen oder Events gefunden und im Campfire zu nutzbarem Stahl verarbeitet werden; diese Quellen sind nicht garantiert und keine notwendige Startprogression.
 
-- Quelle: Ruinen-Abbruch, Events
+- Quelle: zufälliger Ruinen-Abbruch oder Event, nicht garantiert
 - Verarbeitung: Campfire → `Rimconemy_BurnSteelScraps` (3 → 2 Steel)
 - Lagerfilter: `Rimconemy_Scraps`
 - Stack: 200
@@ -86,9 +88,32 @@ Kohle ist der Pyrolysis-Output aus Holz und Hanf. Sie verbrennt im Generator 1.5
 Maschinenteile sind Präzisionskomponenten für fortgeschrittene Fertigung (Edelstahl, Türme, Automation).
 
 - Quelle: Campfire → `Rimconemy_SalvageMachineParts` (5 SteelScraps → 1 MachineParts)
-- Geplante Quellen: Ruinen-Events, Mechanoid-Abbau, Supply Drops
+- Geplante optionale Quellen: zufällige Ruinen-Events, Mechanoid-Abbau oder Supply Drops; kein garantierter Drop
 - Lagerfilter: `Rimconemy_Scraps`
 - Stack: 150
+
+### Early-/Midgame-Munitionspfad (Design-Lock 2026-08-04)
+
+Die Munitionsproduktion ist kein Early-Game-Drop und kein abstrakter UI-Zähler. Sie ist als spätere physische Produktionskette geplant:
+
+```text
+Stahl
+  → elektrischer Hochofen (T2 Energy)
+  → Munition
+
+Kohle
+  → Ofen-Refuelable für ausgewählte Rezepte
+  → Generator-Refuelable für das PowerNet
+```
+
+- Der Hochofen benötigt einen dokumentierten Baupfad mit Kalkstein, Sandstein oder Granit sowie Eisen/Stahl als Bauinput.
+- Stahl ist der physische Rezeptinput; ausgewählte Produktionsrezepte verbrauchen Kohle über die Ofen-Refuelable-Mechanik. Kohle bleibt damit ein echter Brennstoff und kein UI-Zähler.
+- Der Generator verbraucht Kohle separat für das PowerNet; Credits ersetzen weder Kohle noch Stahl.
+- Die konkrete Munition erhält eine stabile ThingDef-/Recipe-ID erst nach dem lokalen RimWorld-1.6-Def-Spike.
+- Ohne Hochofen-/Recipe-/Verbrauchsbeleg darf die UI keine fertige Munitionsproduktion oder CE-Kompatibilität behaupten.
+- Ruinen und Gegner sind optionale beziehungsweise zufällige Ergänzungsquellen; kein garantierter Drop ist Teil dieses Pfads.
+
+**Gate:** `CODE`/`DEF`/`COMPILES` reichen nicht. Der Pfad benötigt einen Live-Nachweis für Energieinput, Kohle-/Stahlverbrauch, Munitionsoutput und Save/Load-Rehydrierung.
 
 ### Pflanzen
 
@@ -120,6 +145,10 @@ Jede Pflanze braucht:
 
 ### Task 3.1 – Defs- und Ressourcen-Spike
 
+> **Vertikal-Scheiben-Verankerung (2026-08-04):** Stahlreste (`Rimconemy_SteelScraps`) sind als Sub-task Phase 2.1 des Vertical-Slice-Plans dokumentiert. Campfire ist bereits als `Defs/BuildingDefs/Campfire.xml` codeseitig mit drei Rezepten (`BurnSteelScraps`, `MakeCoal`, `SalvageMachineParts`) vorhanden; Phase 2.3/2.4 des Vertical-Slice-Plans sind daher im laufenden P0-Coal-Chain-Sprint abgedeckt.
+
+
+
 - Bauschutt-ThingDef anlegen.
 - Kategorien, Stack, MarketValue, Flammability, Hauling und Storage festlegen.
 - Vanilla-Textur nur als temporäre Grafik verwenden und dokumentieren.
@@ -135,6 +164,8 @@ Jede Pflanze braucht:
 - andere Vanilla-Def-/Patchquellen auf alte Holz-/Eisenkosten prüfen.
 
 **Blindspot-Gate:** Nur die zwei sichtbaren Gebäude zu ändern reicht nicht. Recipes, Quest-Belohnungen, Start-Szenarien, Trader, Loot, WorkGivers und DLC-Gebäude dürfen keinen unbeabsichtigten alten Baumaterialpfad öffnen.
+
+**Arbeitsstand 2026-08-04:** `BauschuttRemapApply` platziert Wall-Blueprints deterministisch und `StorageWriteMutationService` fordert nach erfolgreicher Platzierung einen best-effort physischen Bauschutt-Abzug an (Teilabzug möglich, kein atomarer Rollback); `InfrastructureDashboard` und der Architect-Designator bieten den UI-Pfad. Der lokale Test-Seam deckt die Write-Anforderung ab. Die Screenshot-Serie vom 2026-08-04 (21:08:51–21:09:15) belegt die sichtbare Architect-/UI-Integration einschließlich Campfire und Generatoren, aber nicht den vollständigen Vanilla-Bau-/Transport-/Stack-/Save-Lifecycle; dieser bleibt ein `COMPILES`-/`LIVE`-Gate.
 
 **Exit-Test:** Eine neue Standalone-Kampagne kann nur mit Bauschutt eine Wand und eine Tür errichten; UI erklärt fehlende Ressourcen.
 
@@ -166,6 +197,8 @@ Keine globale Wasserzahl ohne physische Logistik: Der Spieler muss erkennen, wo 
 **Exit-Test:** Generator kann ohne Wasser oder Brennstoff nicht dauerhaft laufen; Blockadegrund ist sichtbar.
 
 ### Task 3.4.1 – P0 Coal Chain (ABGESCHLOSSEN)
+
+> **Vertikal-Scheiben-Verankerung (2026-08-04):** Der konkrete Sub-task-Block zu Phase 4 (Tier-1-Barrikade + Architect-Kategorie) und Phase 5 (ShelterSnapshot, FireSignature) des Vertical-Slice-Plans wird über die bestehende Bauschutt-Bridge (`Designator_BuildWallBauschutt`, `BauschuttRemapApply`, `Bauschutt_Remap_Patches.xml`) verankert. Eine eigene Mischkosten-Barrikade `Rimconemy_Tier1Barricade` (1 Holz + 1 Stahlrest) ist im Plan als Phase 4.1 eingeplant.
 
 Implementiert: 2026-08-04
 
@@ -203,19 +236,20 @@ Implementiert: 2026-08-04
 
 **Exit-Test:** Der erste funktionierende Pfeilturm benötigt alle definierten Inputs und verteidigt eine Testbasis automatisch.
 
-### Task 3.7 – XP-/Research-Adapter
+### Task 3.7 – Output-/Erfahrungs-Adapter
 
 Optional prüfen:
 
+- physisch bestätigte Output-Ereignisse als Eingang für Paket 02,
 - `Scavenging` für Bauschuttgewinnung,
 - `Farming` für Pflanzenarbeit,
 - `Power`/`Engineering` für Generator und Reparatur,
 - `Building` für Wände/Türen,
 - `Combat` für Turm-/Verteidigungsarbeit.
 
-Ohne Paket 2 laufen diese Arbeiten mit Vanilla-Verhalten. Mit Paket 2 werden nur standardisierte Capability-/Arbeitstyp-IDs aktiviert.
+Ohne Paket 2 laufen diese Arbeiten mit Vanilla-Verhalten. Mit Paket 2 melden sie nur physisch bestätigte Abschlüsse; Paket 02 entscheidet über Erfahrung und organische Architektenfreigaben. Vanilla-`ResearchProjectDef`s werden dabei nicht als zweite Freischaltbahn vorausgesetzt.
 
-**Gate:** Keine doppelte XP-Vergabe durch Vanilla-Job plus Rimconemy-Adapter.
+**Gate:** Keine doppelte Erfahrung durch Vanilla-Job plus Rimconemy-Adapter; kein Fortschritt durch bloßes Platzieren, Abbrechen oder Menüöffnen.
 
 ### Task 3.8 – Economy-/Threat-Adapter
 
@@ -294,7 +328,7 @@ Ressourcen-, Pflanzen- und Power-Updates werden aggregiert; kein Outpost- oder M
 
 ## 10. Falsifizierungs-Gate
 
-Vor Übergabe müssen die drei Berichte `../../docs/FALSIFICATION_REPORTS/rimconemy.scavengerinfrastructure__ConstructionDebris.md`, `../../docs/FALSIFICATION_REPORTS/rimconemy.scavengerinfrastructure__FoodAndHemp.md` und `../../docs/FALSIFICATION_REPORTS/rimconemy.scavengerinfrastructure__WaterPowerArrowTurret.md` jeweils `SURVIVED` erreichen. Zusätzlich müssen `../../docs/FALSIFICATION_REPORTS/rimconemy.scavengerinfrastructure__ExecutePhysicalTransfer.md` und `../../docs/FALSIFICATION_REPORTS/rimconemy.economyterritory__ReservePhysicalTransfer.md` im Full Profile jeweils `SURVIVED` erreichen. Jeder Bericht braucht A–G mit eigenem Test, Ergebnis und Beleg; Vanilla-Bau-/Plant-/Powerpfade sowie Wasser-, Combat-, Def-/Recipe- und Load-Order-Fremdmodfälle werden nach `../../docs/COMPATIBILITY_MATRIX.md` klassifiziert.
+Vor Übergabe müssen die drei Berichte `../../docs/falsification/scavenger__ConstructionDebris.md`, `../../docs/falsification/scavenger__FoodAndHemp.md` und `../../docs/falsification/scavenger__WaterPowerArrowTurret.md` jeweils `SURVIVED` erreichen. Zusätzlich müssen `../../docs/falsification/scavenger__ExecutePhysicalTransfer.md` und `../../docs/falsification/economy__ReservePhysicalTransfer.md` im Full Profile jeweils `SURVIVED` erreichen. Jeder Bericht braucht A–G mit eigenem Test, Ergebnis und Beleg; Vanilla-Bau-/Plant-/Powerpfade sowie Wasser-, Combat-, Def-/Recipe- und Load-Order-Fremdmodfälle werden nach `../../docs/COMPATIBILITY_MATRIX.md` klassifiziert.
 
 ## 11. Exit-Kriterien für Übergabe an Paket 4
 

@@ -1,5 +1,6 @@
 # Canonical Vanilla Domain Map — Rimconemy
 
+> **SSOT-Owner für:** Vanilla↔Rimconemy-Domain-Mapping (Worker/Good/Room/Tech/State/Transfer), Tech/Wissen & Experience-Bäume, Unlock-Extension (§2.4). Wer ein Topic aus [docs/INDEX.md §1](INDEX.md) hier behandelt, hält eine SSOT-Verletzung fest.
 > **Stand:** 2026-08-04 · **Reihenfolge dieser Seite:** vor Paketen 02–05 · **Zweck:** Leitseite, kein zweiter Vertrag · **Owner-Invariante:** INTERFACE_CONTRACT §9.1 · **Anti-Claim:** hier steht *was Rimconemy meint*, nicht *was Rimconemy baut*.
 
 ## Prinzip — eine Zeile
@@ -17,7 +18,7 @@ Die richtigen Haken sind: `Defs` + `PatchOperation` + `DefModExtension` + `Comp`
 | **Need** | `RimWorld.Need` + `NeedDef` | Setting-Druck, nicht zweite Realität | „Setting-Bedarf-Übersetzung" |
 | **Good** | `RimWorld.ThingDef` + `Comp*` | Ware mit Rolle und Zustand | „Material/Ware/Resource" |
 | **Room** | `RimWorld.RoomDef` + `RoomRoleDef` | Funktionsraum mit Rolle + Stats | „Werkstatt/Wache/Küche" |
-| **Tech** | `RimWorld.ResearchProjectDef` | Freischaltgraph für Capabilities | „Tech-Stufe/Tier" |
+| **Tech/Wissen** | `RimWorld.ResearchProjectDef` als Kompatibilitätsanker plus Rimconemy-Experience-/Unlock-State | Spielerfreigaben aus bestätigten Handlungen | „Wissen/Freigabe" |
 | **State** | `HediffDef` + `HediffComp` | Zustand an Pawn / Tier / Welt | „Verletzung/Infektion/Buff" |
 | **Transfer** | `Haul` + `Trade` + `Caravan` | Bewegung mit Empfänger-Sicherheit | „Wallet/Booking/Outpost" |
 
@@ -66,18 +67,19 @@ Pro Hook haben wir eine kanonische Vanilla-Quelle. Was Rimconemy beiträgt, ist 
 **Anti-Pattern:** Eigener Room-Mechanismus mit eigenem Score, eigenem Wachstum, eigener Wirkung → Konflikt mit Vanilla-RoomStats.
 **Sauber:** Eigene RoomRoleDef oder PatchOperation auf existierende Roles mit ModExtension, die Rimconemy-Aggregation ohne Side-Effects trägt.
 
-### 2.4 Tech
+### 2.4 Tech und Wissen
 
 | Feld | Wert |
 |---|---|
-| Rimconemy-Begriff | Tech-Stufe, die Capabilities + Unlock-Pfade öffnet |
-| Vanilla-Anker | `ResearchProjectDef` mit `prerequisites` + `costList` + `ResearchModExtension`-Framework |
-| Modding-Hook | `ResearchProjectDef.researchModExtensions` und `<li Class="ResearchProjectFinished">`-Effects auf patche-t-up `BuildingDef`s, `WorkTypeDef`s, `TerrainDef`s |
-| Owner | Vanilla · Research-Selection: 02 (ProgressionGameComponent); Research-Effects (Unlock-Pfade): Pakete 03/04/05 als **Consumer**, **nicht** selbst Definierer |
-| Beispiel | `Rimconemy_Research_TechTier1_SolidFuelPlant` — `costList=Steel×30`, `researchModExtensions=[<Rimconemy.UnlockBuilding>Rimconemy_WoodCoalGenerator</…>]` |
+| Rimconemy-Begriff | Wissen/Freigabe aus einer tatsächlich abgeschlossenen Handlung |
+| Primärer Spielerpfad | Experience-Bereiche + idempotente Action-Completion + organische Architektenfreigabe |
+| Vanilla-Kompatibilitätsanker | `ResearchProjectDef`/`ResearchManager` bleiben für DLCs, Fremdmods und Übersicht erhalten |
+| Modding-Hook | bestätigtes Output-/Bau-/Gefahrenereignis; Freigabestatus als savebarer Rimconemy-State |
+| Owner | Paket 02 besitzt Erfahrung, Stufen und Freigaben; Paket 03 meldet physische Outputs; 03/04/05 konsumieren Capability-/Unlock-Reads |
+| Spielerbeispiel | Campfire abgeschlossen → Feuerwissen → Zuflucht-Rezept; Kohle/Maschinenteile/Stable-Power abgeschlossen → Maschinenwissen → Generator-/Ofenfreigabe |
 
-**Anti-Pattern:** Eigene Tech-Tabelle außerhalb `ResearchProjectDef`, eigener `IsFinished`-Loop, eigene Cooldown-Welt.
-**Sauber:** Vanilla-ResearchProjectDef + ResearchModExtension-Effect, der bei `ResearchProjectFinished` (RimWorld-Event) Vanilla-Defs patched/liftet.
+**Anti-Pattern:** Forschungstisch, abstrakte Forschungspunkte oder eine zweite `ResearchProjectDef`-Progression als primäre Rimconemy-Spielschleife.
+**Sauber:** Handlung → physischer Abschluss → genau eine Erfahrung → konkrete Freigabe → neues Architektenmenü-Rezept. Vanilla-ResearchProjectDefs werden nicht blind gelöscht, sondern als Kompatibilitäts-/Übersichtsschicht belassen.
 
 ### 2.5 State
 
@@ -129,7 +131,7 @@ Pro Hook haben wir eine kanonische Vanilla-Quelle. Was Rimconemy beiträgt, ist 
 | Need | Vanilla + 02 (Translation, kein Override) | 02 (Snapshot), 03 (Vacancy-Reads), 05 (Snapshot) |
 | Good | Vanilla + 01 (PatchOperation-Sammlung + DefModExtension) | 02, 03, 04, 05 |
 | Room | Vanilla + 01 (RoomRoleExt) | 02, 03, 05 |
-| Tech | Vanilla + 02 (Selection-Regel, Effect-Lift über ResearchModExtensions) | 03, 04, 05 als Consumer |
+| Tech/Wissen | 02 (Experience-/Unlock-Owner, bestätigte Action-Completion) + Vanilla-Kompatibilitätsschicht | 03, 04, 05 als Consumer |
 | State | Vanilla + 02 + 05 (PatchOperations + ThoughtWorker) | 02, 03, 05 |
 | Transfer | Vanilla + 04 (Booking/Ledger) | 02 (Wallet-Balance-Read), 03 (Storage-Read), 05 (Threat-Read) |
 
@@ -159,7 +161,7 @@ Wer eine neue Rimconemy-Funktion plant:
    - `DefModExtension` für eigene Annotation
    - `PatchOperation` für Modifikation bestehender Defs
    - `Comp` für Verhalten an ThingOrPawn
-   - `ResearchModExtension` für Tech->Effect-Lift
+   - `ResearchModExtension` nur für Vanilla-/DLC-Kompatibilitäts- oder Übersichtseffekte; primäre Rimconemy-Freigaben kommen aus Experience-/Action-Completion-State
    - `RoomRoleExt` für Room-Score-Side-Channel
 3. Dann klären: **in welcher Owner-Spalte (INTERFACE_CONTRACT §9.1 / §4) wird geschrieben?**
 4. Dann erst: **Code + Tests**
@@ -179,7 +181,7 @@ Wer eine bestehende Funktion liest:
 | Need | `NeedMappingService` (Paket 02) liest vanilla → `0..1`-Anzeige · nicht-Override garantiert | optional: `Need-Amplifier` als Begleit-Hediff (DECISIONS §1) |
 | Good | Storage-Reads (03) funktionieren · `Rimconemy_Bauschutt` / `Rimconemy_Hemp*` als **eigene ThingDefs** → **Drift** | Migration: ersetzen durch PatchOperations auf Vanilla + DefModExtension |
 | Room | nicht etabliert — kein Rimconemy-Room-Hook | Erstaufnahme: `Foundation/RoomDefinitionExt.cs` + ModExtension-Pattern auf RoomRoleDef |
-| Tech | `ProgressionGameComponent.UpdateResearchCapabilities` (02) liest `ResearchProjectDef.IsFinished` · **keine** `researchModExtensions` | Migration: Tech-Effects statt Code-Pfad |
+| Tech/Wissen | `ProgressionGameComponent.UpdateResearchCapabilities` (02) liest heute `ResearchProjectDef.IsFinished` als Read-Model; organischer Experience-/Unlock-Pfad fehlt | Migration: bestätigte Action-Completion, Experience-/Unlock-State und Architektenfreigaben; Vanilla-Research bleibt Kompatibilitätsschicht |
 | State | `ThoughtWorker_ResourceFairness`, `ThoughtWorker_CollectiveDefense`, `ThoughtWorker_Transparency` · PatchOperations auf existierende Hediff-Chains | optional: Severity-Offset-Pattern auf Setting-spezifische HediffDefs |
 | Transfer | `CreditsLedger` (04) · `OutpostService` (04) · Booking-Reservation infrastrukturell vorhanden | Migration: `Rimconemy_Wallet.Reserve` als Idempotenz-Schnittstelle + Reconciliation-on-Drop |
 
@@ -194,7 +196,7 @@ Wer eine bestehende Funktion liest:
 | `mods/03/Defs/BuildingDefs/PowerPlants.xml` | `Rimconemy_WoodCoalGenerator` (Parent: `BuildingBase`) · `Rimconemy_WaterTurbineGenerator` · `Rimconemy_ArrowTurret_Power` als 3 eigene BuildingDefs mit `CompProperties_Power`/`CompProperties_TurretGun` | Vanilla hat `WoodFiredGenerator`/`WatermillGenerator`/`Turret_MiniTurret` (1.6 Standard) — PatchOperation auf Vanilla-Defs + `CompProperties_Refuelable`-Anreicherung statt Neuerschaffung | a) PatchOperation auf Vanilla-Defs; b) DefModExtension `Rimconemy.SettingFuelClass = "solid/liquid"`; c) Rimconemy-Building-Namen rausfallen lassen |
 | `mods/04/Source/Building/BuildingInputAdapter.cs` | Hartkodierte Strings `Rimconemy_WoodCoalGenerator` → `30`, `Rimconemy_WoodCoalGenerator` → `WoodLog 30`, `Rimconemy_ArrowTurret_Power` → `Steel 25` | DefModExtension auf Vanilla `WoodFiredGenerator` mit `inputAmount` etc. | a) PatchOperation auf Vanilla-BuildingDefs mit `costList`-Anpassung; b) Adapter liest DefModExtensions statt hartkodierte Strings |
 | (keine Datei heute) | Room-Hooks komplett fehlen | `Foundation/RoomDefinitionExt.cs` als DefModExtension-Bibliothek | a) Erstanlage |
-| `mods/02/Source/Progression/ProgressionGameComponent.cs:389` | Hard-Code-Loop liest `ResearchProjectDef.IsFinished` und sammelt IDs in Liste | `ResearchModExtension`-Effects + `ResearchProjectFinished`-Event-Subscription | a) PatchOperation auf Vanilla + `Rimconemy.UnlockBuilding`-Extension auf relevante ResearchProjectDefs; b) Histogramm der Unlock-Pfade als State |
+| `mods/02/Source/Progression/ProgressionGameComponent.cs:389` | Legacy-Read-Model liest `ResearchProjectDef.IsFinished` und sammelt IDs in Liste | bestätigte Action-Completion + Experience-/Unlock-State + Architektenfreigaben; Vanilla-Research bleibt Kompatibilitätsschicht | a) organische Freigabe aus physischem Output; b) Vanilla-Research nur für DLC-/Mod-Kompatibilität und Übersicht; c) Histogramm der Unlock-Pfade als State |
 | `mods/05/Source/Incidents/IncidentStub.cs` (in Audit) | Reiner Datencontainer mit `LogMarker = "v0"` | `IncidentDef` + `IncidentWorker`-Subklasse (die existiert schon in `InfectedRaidWorker.cs`) | a) `IncidentStub` löschen, stattdessen `IncidentWorker`-Subklasse erweitern; b) Datenfelder als ModExtension auf Vanilla `IncidentDef` |
 
 ---

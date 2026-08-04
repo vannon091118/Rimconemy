@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Phase-First Vanilla Patch (Task 7 — Vanilla-Patches Stufe 1).
+
+  Purpose:
+    Additive Stufe-1-PatchOperationAdd on Vanilla `TableMachining`. Both
+    <recipes> and <recipeUsers> anchors patched if present.
+
+  Patch risk tier: STUFE 1 (Add only).
+  Idempotence: explicit `not(... li[...Rimconemy_SalvageMachineParts])` guard.
+
+  Vanilla anchor: game/Data/Core/Defs/ThingDefs_Buildings/Buildings_Production.xml (TableMachining).
+-->
+<Patch>
+
+  <Operation Class="PatchOperationFindMod">
+    <mods><li>Core</li></mods>
+    <match Class="PatchOperationSequence">
+      <success>Normal</success>
+      <operations>
+
+        <li Class="PatchOperationTest">
+          <xpath>/Defs/ThingDef[defName="TableMachining"]</xpath>
+        </li>
+
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/ThingDef[defName="TableMachining"][not(recipes/li[text()="Rimconemy_SalvageMachineParts"])]/recipes</xpath>
+          <order>Prepend</order>
+          <value>
+            <li>Rimconemy_SalvageMachineParts</li>
+          </value>
+        </li>
+
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/ThingDef[defName="TableMachining"][not(recipeUsers/li[text()="Rimconemy_SalvageMachineParts"])]/recipeUsers</xpath>
+          <order>Prepend</order>
+          <value>
+            <li>Rimconemy_SalvageMachineParts</li>
+          </value>
+        </li>
+
+      </operations>
+    </match>
+  </Operation>
+
+</Patch>

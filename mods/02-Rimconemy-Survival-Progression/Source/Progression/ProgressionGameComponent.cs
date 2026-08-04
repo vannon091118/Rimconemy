@@ -16,6 +16,10 @@ namespace Rimconemy.SurvivalProgression.Progression
     /// Owns package-02 runtime state. It samples vanilla needs and active jobs at
     /// a fixed interval, awards bounded XP, and persists the read model per pawn.
     /// Phase B additions: F-V4 (capability-gate) and F-V2 (sole-owner GameOver).
+    /// Perf optimizations (2026-08-04):
+    /// - ClassifyJob result cached per pawn (invalidated on job change)
+    /// - ResearchCapabilities uses HashSet for O(1) Contains
+    /// - RecreationAvailable hoisted out of pawn loop (loop invariant)
     /// </summary>
     public sealed class ProgressionGameComponent : GameComponent
     {
@@ -45,7 +49,8 @@ namespace Rimconemy.SurvivalProgression.Progression
         private bool _bioRemapApplied;
 
         public List<ProgressionSnapshot> Snapshots = new List<ProgressionSnapshot>();
-        public List<string> ResearchCapabilities = new List<string>();
+        // HashSet for O(1) Contains instead of O(n) List scan
+        public HashSet<string> ResearchCapabilities = new HashSet<string>();
         public bool RecreationAvailable;
         public bool HasObservedPlayerColonist;
         public bool GameOverTriggered;
@@ -53,8 +58,17 @@ namespace Rimconemy.SurvivalProgression.Progression
         public long LastUpdateTick;
         public int SchemaVersion = CurrentSchemaVersion;
         public BuildingProgressionLedger BuildingAwards = new BuildingProgressionLedger();
+        // Phase 8.1 — 7-domain XP hub with diminishing-returns + idempotency.
+        // Replaces the legacy BuildingProgressionAward-only path as the
+        // primary read-side for organic unlocks. See DomainXpState.cs.
+        public DomainXpState DomainXp = new DomainXpState();
         private int _emptyColonistIntervals;
         private bool _lastThreatAvailabilityState;
+
+        // Cache: pawnID -> (lastJobDefName, classifiedDomain)
+        // Invalidated when pawn's CurJobDef changes
+        private readonly Dictionary<int, (string jobDef, string domain)> _jobClassificationCache
+            = new Dictionary<int, (string, string)>();
 
         private readonly Dictionary<int, ProgressionSnapshot> _byPawnId
             = new Dictionary<int, ProgressionSnapshot>();
@@ -68,7 +82,13 @@ namespace Rimconemy.SurvivalProgression.Progression
             base.ExposeData();
             Scribe_Values.Look(ref SchemaVersion, "survivalProgressionSchema", CurrentSchemaVersion);
             Scribe_Collections.Look(ref Snapshots, "survivalProgressionSnapshots", LookMode.Deep);
-            Scribe_Collections.Look(ref ResearchCapabilities, "survivalResearchCapabilities", LookMode.Value);
+            // ResearchCapabilities is now a HashSet - serialize as list for Scribe
+            var researchList = ResearchCapabilities?.ToList() ?? new List<string>();
+            Scribe_Collections.Look(ref researchList, "survivalResearchCapabilities", LookMode.Value);
+            if (Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                ResearchCapabilities = new HashSet<string>(researchList);
+            }
             Scribe_Values.Look(ref RecreationAvailable, "recreationAvailable", false);
             Scribe_Values.Look(ref HasObservedPlayerColonist, "hasObservedPlayerColonist", false);
             Scribe_Values.Look(ref GameOverTriggered, "gameOverTriggered", false);
@@ -77,6 +97,9 @@ namespace Rimconemy.SurvivalProgression.Progression
             Scribe_Values.Look(ref _emptyColonistIntervals, "emptyColonistIntervals", 0);
             Scribe_Deep.Look(ref BuildingAwards, "buildingProgressionAwards");
             EnsureBuildingAwards();
+            // Phase 8.1 — persist the 7-domain XP hub via its own ExposeData.
+            Scribe_Deep.Look(ref DomainXp, "rimconemyDomainXp");
+            EnsureDomainXp();
 
             // Bio-Remap (Phase 5 sprint 2026-08-04): persist the bio-remap-applied
             // flag across save loads. Without Scribe persistence the field resets
@@ -91,7 +114,7 @@ namespace Rimconemy.SurvivalProgression.Progression
             if (Snapshots == null)
                 Snapshots = new List<ProgressionSnapshot>();
             if (ResearchCapabilities == null)
-                ResearchCapabilities = new List<string>();
+                ResearchCapabilities = new HashSet<string>();
             if (SchemaVersion < CurrentSchemaVersion)
             {
                 SchemaVersion = CurrentSchemaVersion;
@@ -117,6 +140,18 @@ namespace Rimconemy.SurvivalProgression.Progression
         public void EnsureBuildingAwards()
         {
             if (BuildingAwards == null) BuildingAwards = new BuildingProgressionLedger();
+        }
+
+        /// <summary>
+        /// Phase 8.1 — accessor for the DomainXp hub. The Harmony postfix in
+        /// <see cref="Hooks.FrameCompletionPatch"/> reaches into this via
+        /// <c>component.EnsureDomainXp()</c>; tests reach for the field
+        /// directly. Always returns a non-null reference.
+        /// </summary>
+        public DomainXpState EnsureDomainXp()
+        {
+            if (DomainXp == null) DomainXp = new DomainXpState();
+            return DomainXp;
         }
 
         public override void FinalizeInit()
@@ -235,6 +270,11 @@ namespace Rimconemy.SurvivalProgression.Progression
             }
 
             UpdateResearchCapabilities();
+
+            // Finding 5: RecreationAvailable is loop-invariant — compute once before the pawn loop.
+            RecreationAvailable = NeedMappingService.Get(NeedMappingService.SocialSetting) != null
+                && NeedMappingService.Get(NeedMappingService.SocialSetting).Sources.Count > 0;
+
             foreach (var pawn in colonists)
                 UpdatePawn(pawn);
 
@@ -338,13 +378,12 @@ namespace Rimconemy.SurvivalProgression.Progression
             snapshot.NeedFoodLevel = NeedMappingService.SampleByName(pawn, NeedMappingService.FoodSetting);
             snapshot.NeedSafetyLevel = NeedMappingService.SampleByName(pawn, NeedMappingService.SafetySetting);
             snapshot.NeedSocialLevel = NeedMappingService.SampleByName(pawn, NeedMappingService.SocialSetting);
-            RecreationAvailable = NeedMappingService.Get(NeedMappingService.SocialSetting) != null
-                && NeedMappingService.Get(NeedMappingService.SocialSetting).Sources.Count > 0;
-            snapshot.WorkDomain = ClassifyJob(pawn);
+            // Finding 5: RecreationAvailable hoisted out of loop — use the pre-computed value.
+            snapshot.WorkDomain = ClassifyJobCached(pawn);
             snapshot.Efficiency = CalculateEfficiency(snapshot, RecreationAvailable);
             snapshot.LastUpdatedTick = LastUpdateTick;
             UpdateWorkEpisode(snapshot, pawn);
-            snapshot.ResearchCapabilities = new List<string>(ResearchCapabilities);
+            snapshot.ResearchCapabilities = ResearchCapabilities.ToList();
         }
 
         private static void EnsureNeedAmplifier(Pawn pawn)
@@ -412,6 +451,7 @@ namespace Rimconemy.SurvivalProgression.Progression
             if (Find.ResearchManager == null)
                 return;
 
+            // HashSet gives O(1) Contains instead of O(n) List scan
             foreach (var project in DefDatabase<ResearchProjectDef>.AllDefs)
             {
                 if (project != null && project.IsFinished && !ResearchCapabilities.Contains(project.defName))
@@ -514,6 +554,28 @@ namespace Rimconemy.SurvivalProgression.Progression
                 return "Building";
 
             return "Other";
+        }
+
+        /// <summary>
+        /// Cached wrapper around ClassifyJob. Invalidates cache when pawn's
+        /// CurJobDef changes. Finding 4: avoids O(WorkTypeDefs) scan per pawn
+        /// per 250-tick block when job hasn't changed.
+        /// </summary>
+        private string ClassifyJobCached(Pawn pawn)
+        {
+            if (pawn == null) return "Idle";
+            string currentJobDef = pawn.CurJobDef?.defName ?? "";
+            int pawnId = pawn.thingIDNumber;
+
+            if (_jobClassificationCache.TryGetValue(pawnId, out var cached))
+            {
+                if (cached.jobDef == currentJobDef)
+                    return cached.domain;
+            }
+
+            string domain = ClassifyJob(pawn);
+            _jobClassificationCache[pawnId] = (currentJobDef, domain);
+            return domain;
         }
 
         private void RebuildIndex()

@@ -1,5 +1,6 @@
 # Roadmap 05 – Rimconemy Infected & Automation
 
+> **SSOT-Hinweis:** Story-Vertrag → [../../docs/H2-story-contract.md](../../docs/H2-story-contract.md); Ideology-Influence-Matrix → [../../docs/H3-ideology-influence-matrix.md](../../docs/H3-ideology-influence-matrix.md); Theme-Map → [../../docs/INDEX.md §1](../../docs/INDEX.md).
 > Eigenständige Paketaufgabe 5 von 5  
 > Standalone zuerst, Full-Overhaul-Integration danach  
 > Zielplattform: RimWorld 1.6 mit Royalty, Ideology, Biotech, Anomaly und Odyssey
@@ -28,7 +29,8 @@ Mit Vanilla-Ressourcen, lokaler Energieintegration, Vanilla-Handel und lokalen Z
 - Infizierte als erkennbare Gegnerrolle,
 - einen Setting-Director-/Incident-Modus als aktuelle Runtime-Basis,
 - Bedrohungsdruck mit code-seitig definierter Snapshot-Grundlage,
-- einen aktuell letter-basierten Incident-Pfad; echte lokale und World-Map-Raids bleiben geplant,
+- einen Letter-/Incident-Pfad mit lokaler Spawn-Bridge: `HiddenInfected`/`InfectedRavager` sind als DEF vorhanden, der Arbeitsstand begrenzt den Spawn auf maximal einen Pawn pro Worker-Ausführung,
+- ein `WorldRaidCoordinator`-Planungsgerüst für druckabhängige Raid-Fenster; WorldObject-Erzeugung, Ankunft und Auflösung bleiben geplant,
 - Mechadroid-Datenmodelle als vorbereitete Domäne; echte Einheiten-/Auftragsmechanik bleibt geplant,
 - Silber als technisches Upgrade-Material im eigenen Automation-Modus,
 - lokale Automationsaufgaben,
@@ -119,6 +121,8 @@ Outpost-Bevölkerung bleibt abstrakt; Mechadroids zählen nicht als kontrollierb
 
 ### Task 5.1 – Gegner- und Infektionsdomäne
 
+**Arbeitsstand 2026-08-04:** `HiddenInfected.xml` und `InfectedRavager.xml` liefern die minimale DEF-Basis; `InfectedRaidWorker` nutzt `InfectedRaidSpawnService` und spawnt im Arbeitsstand maximal einen Pawn pro Ausführung. Vollständige Gegner-Skalierung, Balancing und Live-Beleg bleiben offen.
+
 - Infizierten-Defs/Fraktionen/Archetypen definieren.
 - Unterschied zwischen Infizierten, Vanilla-Mechanoids, Tieren und Survivor-Fraktionen festlegen.
 - Infektions-/Hediff-/Scaria-/Anomaly-Wechselwirkungen prüfen.
@@ -148,6 +152,8 @@ Outpost-Bevölkerung bleibt abstrakt; Mechadroids zählen nicht als kontrollierb
 
 ### Task 5.4 – Lokale Infizierten-Raids
 
+**Arbeitsstand 2026-08-04:** Der minimale Letter→Spawn-Pfad ist als CODE/DEF verdrahtet; maximal ein Ravager wird pro Worker-Ausführung angefordert. Spawn-Skalierung, tatsächliche Ankunft/Angriff/Rückzug, Kampffolgen, Idempotenz und Runtime-LIVE bleiben offen.
+
 - Spawn/Ankunft/Angriff/Rückzug definieren.
 - Zielprioritäten: Farm, Strom, Proxy, Bewohner, Lager oder Hauptbasis.
 - Verteidigungsanlagen und Stromabhängigkeit einbeziehen.
@@ -157,6 +163,8 @@ Outpost-Bevölkerung bleibt abstrakt; Mechadroids zählen nicht als kontrollierb
 **Exit-Test:** lokale Raidentscheidung zeigt Ursache, Stärke, Ziel und Konsequenz; Überleben und Scheitern sind reproduzierbar prüfbar.
 
 ### Task 5.5 – World-Map-Raids
+
+**Arbeitsstand 2026-08-04:** `WorldRaidCoordinator.PlanWorldRaids` erzeugt druckabhängige Raid-Fenster pro relevanter Map als CODE-Gerüst. WorldObject mit stabiler ID, sichtbarer Pfad/ETA, Ankunft, Auflösung und Save/Load bleiben offen.
 
 - Raidobjekt mit stabiler ID erstellen.
 - Symbol, Nummer, Einheitenanzahl, Fraktion, Ziel, Pfad, Richtung und ETA zeigen.
@@ -311,7 +319,7 @@ Bedrohung, World-Map-Raids und Automation werden aggregiert aktualisiert. Outpos
 
 ## 11. Falsifizierungs-Gate
 
-Vor dem Full-Overhaul-Review müssen die fünf Berichte `../../docs/FALSIFICATION_REPORTS/rimconemy.infectedautomation__ThreatPressure.md`, `../../docs/FALSIFICATION_REPORTS/rimconemy.infectedautomation__InfectedRaid.md`, `../../docs/FALSIFICATION_REPORTS/rimconemy.infectedautomation__MechadroidJob.md`, `../../docs/FALSIFICATION_REPORTS/rimconemy.infectedautomation__ManualRaid.md` und `../../docs/FALSIFICATION_REPORTS/rimconemy.infectedautomation__AutoResolve.md` jeweils `SURVIVED` erreichen. Jeder Bericht braucht A–G mit eigenem Test, Ergebnis und Beleg; Vanilla-Wealth-Raids, Storyteller, Biotech-Mechanoids, Anomaly, Combat Extended und Vehicle-/World-Map-Fälle werden nach `../../docs/COMPATIBILITY_MATRIX.md` klassifiziert.
+Vor dem Full-Overhaul-Review müssen die fünf Berichte `../../docs/falsification/infected__ThreatPressure.md`, `../../docs/falsification/infected__InfectedRaid.md`, `../../docs/falsification/infected__MechadroidJob.md`, `../../docs/falsification/infected__ManualRaid.md` und `../../docs/falsification/infected__AutoResolve.md` jeweils `SURVIVED` erreichen. Jeder Bericht braucht A–G mit eigenem Test, Ergebnis und Beleg; Vanilla-Wealth-Raids, Storyteller, Biotech-Mechanoids, Anomaly, Combat Extended und Vehicle-/World-Map-Fälle werden nach `../../docs/COMPATIBILITY_MATRIX.md` klassifiziert.
 
 ## 12. Exit-Kriterien für das Full-Overhaul-Review
 

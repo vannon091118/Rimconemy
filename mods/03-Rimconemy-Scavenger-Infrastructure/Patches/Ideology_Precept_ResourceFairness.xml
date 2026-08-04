@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Phase-First DLC Adapter (Task 11 — Ideology).
+
+  Purpose:
+    Additive Stufe-1-PatchOperationAdd gated by Ideology-DLC presence.
+    Apply Rimconemy.ResourceFairness.Ext DefModExtension to a Vanilla
+    Ideology Precept that exists in Ideology/Defs/Precepts/Precepts_Ideo.xml
+    (e.g. TreeConnection-flavoured mortal-bond precept).
+
+  Patch risk: STUFE 1 (Add only).
+  Idempotence: def/defs/li[defName=...]/modExtensions not() guard.
+-->
+<Patch>
+
+  <Operation Class="PatchOperationFindMod">
+    <mods><li>Ideology</li></mods>
+    <match Class="PatchOperationSequence">
+      <success>Normal</success>
+      <operations>
+
+        <li Class="PatchOperationTest">
+          <xpath>/Defs/PreceptDef[defName="TreeConnection"]</xpath>
+        </li>
+
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/PreceptDef[defName="TreeConnection"]
+                [not(modExtensions/li[@Class="Rimconemy.ScavengerInfrastructure.Ideology.ResourceFairnessExt"])]
+                /modExtensions</xpath>
+          <order>Append</order>
+          <value>
+            <li Class="Rimconemy.ScavengerInfrastructure.Ideology.ResourceFairnessExt">
+              <priorityBonus>0.5</priorityBonus>
+            </li>
+          </value>
+        </li>
+
+      </operations>
+    </match>
+  </Operation>
+
+</Patch>

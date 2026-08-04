@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Phase-First Vanilla Patch (Task 7/8 — Vanilla-Patches Stufe 1).
+
+  Purpose:
+    Additive Stufe-1-PatchOperationAdd on Vanilla compact steel mineables.
+    MiningGateExt DefModExtension is added to the existing Vanilla Defs so
+    the MiningHookPatch (see mods/02/Source/HarmonyPatches/MiningHookPatch.cs)
+    can block low-skill mining.
+
+  Patch risk tier: STUFE 1 (Add only).
+  Idempotence: def/defs/li[defName=...]/modExtensions already guards via
+    ref="". PatchOperationAdd not() guard.
+
+  Vanilla anchor: game/Data/Core/Defs/ThingDefs_Natural/.../Misc/SteelMineable.xml
+-->
+<Patch>
+
+  <Operation Class="PatchOperationFindMod">
+    <mods><li>Core</li></mods>
+    <match Class="PatchOperationSequence">
+      <success>Normal</success>
+      <operations>
+
+        <!-- CompactMineableSteel: src Def may exist under different file paths
+             across RimWorld releases. The locate via defName is robust. -->
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/ThingDef[defName="CompactMineableSteel"]
+                [not(modExtensions/li[@Class="Rimconemy.SurvivalProgression.Mining.MiningGateExt"])]
+                /modExtensions</xpath>
+          <order>Append</order>
+          <value>
+            <li Class="Rimconemy.SurvivalProgression.Mining.MiningGateExt">
+              <minMiningLevel>8</minMiningLevel>
+              <requirePawn>true</requirePawn>
+            </li>
+          </value>
+        </li>
+
+        <!-- ChunkSlagSteel: secondary compact-steel route. Same gate. -->
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/ThingDef[defName="ChunkSlagSteel"]
+                [not(modExtensions/li[@Class="Rimconemy.SurvivalProgression.Mining.MiningGateExt"])]
+                /modExtensions</xpath>
+          <order>Append</order>
+          <value>
+            <li Class="Rimconemy.SurvivalProgression.Mining.MiningGateExt">
+              <minMiningLevel>8</minMiningLevel>
+              <requirePawn>true</requirePawn>
+            </li>
+          </value>
+        </li>
+
+      </operations>
+    </match>
+  </Operation>
+
+</Patch>

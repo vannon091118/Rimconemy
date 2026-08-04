@@ -58,7 +58,7 @@ namespace Rimconemy.EconomyTerritory.Tests
                 ledger.MigrateIfNeeded();
                 return ledger.SchemaVersion == CreditsLedger.CurrentSchemaVersion;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod04] test caught: " + ex); return false; }
         }
 
         // ── T2 ────────────────────────────────────────────────────────
@@ -72,7 +72,7 @@ namespace Rimconemy.EconomyTerritory.Tests
                 ledger.MigrateIfNeeded();
                 return ledger.SchemaVersion == CreditsLedger.CurrentSchemaVersion;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod04] test caught: " + ex); return false; }
         }
 
         // ── T3 ────────────────────────────────────────────────────────
@@ -99,7 +99,7 @@ namespace Rimconemy.EconomyTerritory.Tests
                 if (ledger.LastTransactionId != 42) return false;
                 return true;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod04] test caught: " + ex); return false; }
         }
 
         // ── T4 ────────────────────────────────────────────────────────
@@ -118,7 +118,7 @@ namespace Rimconemy.EconomyTerritory.Tests
                 // schema-bump test, we just verify the version.
                 return ledger.SchemaVersion == CreditsLedger.CurrentSchemaVersion;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod04] test caught: " + ex); return false; }
         }
 
         // ── T5 ────────────────────────────────────────────────────────
@@ -139,7 +139,7 @@ namespace Rimconemy.EconomyTerritory.Tests
                     && ledger.Balance == 999_000_000L
                     && ledger.SchemaVersion == CreditsLedger.CurrentSchemaVersion;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod04] test caught: " + ex); return false; }
         }
 
         // ── T6 ────────────────────────────────────────────────────────
@@ -168,7 +168,7 @@ namespace Rimconemy.EconomyTerritory.Tests
                 // this file-cycle assertion to a logic-only migration test.
                 return false;
             }
-            catch { return false; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod04] test caught: " + ex); return false; }
         }
     }
 }

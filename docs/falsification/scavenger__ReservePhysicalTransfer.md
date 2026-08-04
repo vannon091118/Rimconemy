@@ -2,7 +2,7 @@
 
 > **Capability:** `rimconemy.scavengerinfrastructure` v1 · **Owner:** Scavenger · **Stand:** 2026-08-04
 > **Status:** `COMPILED`
-> **Code-Anker:** `Source/Storage/StorageQuery.cs` · **Test:** `Tests/StorageReserveRegressionTests.cs`
+> **Code-Anker:** `Source/Storage/StorageQuery.cs` · **Test:** `Tests/CaravanStorageRegressionTests.cs`
 > **ROADMAP-Referenz:** §8.2 · **Owner-Checklist:** siehe `docs/falsification/README.md`
 
 ## A — Def-Liste (XML-Defs)
@@ -14,12 +14,12 @@
 Quelle: `Source/Scavenger/Source/Storage/StorageQuery.cs`
 
 - Kompiliert: ✅
-- Bootstrap-Klasse: `Scavenger.Bootstrap.RunAll` ruft `Tests/StorageReserveRegressionTests.cs` auf
+- Bootstrap-Klasse: `Scavenger.Bootstrap.RunAll` ruft `Tests/CaravanStorageRegressionTests.cs` auf
 - Patch-Klassen: `mods/scavenger/Source/Scavenger/*.cs`
 
 ## C — Selbsttest (RunAll)
 
-`Tests.ReservePhysicalTransferRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
+`Tests.PhysicalTransferRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
 
 ## D — Runtime-Boot (User Live-Test erforderlich)
 

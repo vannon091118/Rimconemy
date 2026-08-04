@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Rimconemy.Foundation.Maps;
 using RimWorld;
 using Verse;
 
@@ -201,23 +202,32 @@ namespace Rimconemy.ScavengerInfrastructure.Storage
 
         private static List<Map> ResolveMaps(StorageScope scope)
         {
+            // Phase-2 / Welle 2 / Item #3 (2026-08-05): routes go through
+            // MapRegistry (Foundation-owned) instead of allocating a fresh
+            // Where-clause Filter on every call. MapRegistry caches the
+            // IReadOnlyList<Map> snapshot on its own GameComponent tick and
+            // rebuilds only when Find.Maps.Count or the IsPlayerHome
+            // flag-set drifts. Result: 0 list allocations per call for the
+            // hot consumer path. We materialize to a mutable List<Map> here
+            // because the old return contract is List<Map>; callers can
+            // sort/mutate as before.
             var maps = new List<Map>();
 
             switch (scope)
             {
                 case StorageScope.PlayerHomeMaps:
-                    if (Find.Maps != null)
-                        maps.AddRange(Find.Maps.Where(m => m != null && m.IsPlayerHome));
+                    foreach (var m in MapRegistry.GetPlayerHomeMaps())
+                        maps.Add(m);
                     break;
 
                 case StorageScope.AllLoadedMaps:
-                    if (Find.Maps != null)
-                        maps.AddRange(Find.Maps.Where(m => m != null));
+                    foreach (var m in MapRegistry.GetAllLoadedMaps())
+                        maps.Add(m);
                     break;
 
                 case StorageScope.AllMapsIncludingCaravans:
-                    if (Find.Maps != null)
-                        maps.AddRange(Find.Maps.Where(m => m != null));
+                    foreach (var m in MapRegistry.GetAllLoadedMaps())
+                        maps.Add(m);
                     // Caravans live in Find.WorldObjects, not Find.Maps.
                     // The CaravanStorageEnumerator maintains a parallel
                     // sentinel-encoded entry stream so player caravans show up

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Phase-First DLC Adapter (Task 13 — Anomaly + Odyssey).
+
+  Purpose:
+    Anomaly entities (Revenant, Gorehulk) drop a small amount of
+    Rimconemy_ConstructionDebris as butcher/leavings byproduct. Odyssey
+    ancient-ruins exposed via LayoutRoomDefs get a small Debris spawn hint.
+
+  Phase: Production (Anomaly) / Expansion (Odyssey).
+-->
+<Patch>
+
+  <Operation Class="PatchOperationFindMod">
+    <mods><li>Anomaly</li></mods>
+    <match Class="PatchOperationSequence">
+      <success>Normal</success>
+      <operations>
+
+        <li Class="PatchOperationTest">
+          <xpath>/Defs/ThingDef[defName="Revenant"]</xpath>
+        </li>
+
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/ThingDef[defName="Revenant"]/killedLeavings</xpath>
+          <order>Append</order>
+          <value>
+            <Rimconemy_ConstructionDebris>4</Rimconemy_ConstructionDebris>
+          </value>
+        </li>
+
+      </operations>
+    </match>
+  </Operation>
+
+  <Operation Class="PatchOperationFindMod">
+    <mods><li>Odyssey</li></mods>
+    <match Class="PatchOperationSequence">
+      <success>Normal</success>
+      <operations>
+
+        <li Class="PatchOperationTest">
+          <xpath>/Defs/LayoutRoomDef[defName="AncientRuinsEmpty"]</xpath>
+        </li>
+
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/LayoutRoomDef[defName="AncientRuinsEmpty"]
+                [not(modExtensions/li[@Class="Rimconemy.ScavengerInfrastructure.Odyssey.RuinsDebrisExt"])]
+                /modExtensions</xpath>
+          <order>Append</order>
+          <value>
+            <li Class="Rimconemy.ScavengerInfrastructure.Odyssey.RuinsDebrisExt">
+              <initialDebrisCount>6</initialDebrisCount>
+            </li>
+          </value>
+        </li>
+
+      </operations>
+    </match>
+  </Operation>
+
+</Patch>

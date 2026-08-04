@@ -23,6 +23,24 @@ namespace Rimconemy.InfectedAutomation.Story
         /// <summary>Game time in ticks when this snapshot was taken.</summary>
         public long GameTick;
 
+        /// <summary>
+        /// Tick at which StoryDirector produced this snapshot.
+        /// Set by <see cref="StoryDirector.BuildLiveSnapshot"/> on every
+        /// freshly built instance so callers can reason about the
+        /// snapshot's age even when no live game tick is queried. Used
+        /// by <see cref="ThreatSnapshotBridge.IsCachedForCurrentTick"/>
+        /// to validate the bridge's read-through cache against the
+        /// snapshot's own production tick rather than the game's
+        /// <c>TicksGame</c>, which may have advanced by the time a
+        /// later consumer reads the bridge.
+        ///
+        /// Default 0 means \"never produced\" — callers must treat
+        /// 0 as stale and re-resolve rather than trust a tick equality.
+        /// Not persisted: rebuilt every evaluation cycle from
+        /// <see cref="StoryDirector.GameComponentTick"/>.
+        /// </summary>
+        public long SnapshotUpdatedTick;
+
         /// <summary>Days elapsed (GameTick / <see cref="Rimconemy.Foundation.TimeConstants.TicksPerDay"/>).</summary>
         public float GameDays => GameTick / Rimconemy.Foundation.TimeConstants.TicksPerDay;
 

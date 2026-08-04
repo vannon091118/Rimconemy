@@ -2,7 +2,7 @@
 
 > **Capability:** `rimconemy.infectedautomation` v1 · **Owner:** Infected · **Stand:** 2026-08-04
 > **Status:** `COMPILED`
-> **Code-Anker:** `Source/Story/StoryDirector.cs` · **Test:** `Tests/ThreatPressureRegressionTests.cs`
+> **Code-Anker:** `Source/Story/StoryDirector.cs` · **Test:** `Tests/BuildingThreatRegressionTests (ThreatSnapshotBridge-Pfad).cs`
 > **ROADMAP-Referenz:** §8.2 · **Owner-Checklist:** siehe `docs/falsification/README.md`
 
 ## A — Def-Liste (XML-Defs)
@@ -14,12 +14,12 @@
 Quelle: `Source/Infected/Source/Story/StoryDirector.cs`
 
 - Kompiliert: ✅
-- Bootstrap-Klasse: `Infected.Bootstrap.RunAll` ruft `Tests/ThreatPressureRegressionTests.cs` auf
+- Bootstrap-Klasse: `Infected.Bootstrap.RunAll` ruft `Tests/BuildingThreatRegressionTests (ThreatSnapshotBridge-Pfad).cs` auf
 - Patch-Klassen: `mods/infected/Source/Infected/*.cs`
 
 ## C — Selbsttest (RunAll)
 
-`Tests.ThreatPressureRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
+`Tests.BuildingThreatRegressionTests (ThreatSnapshotBridge-Pfad).RunAll()` ist in `Bootstrap` aufgerufen.
 
 ## D — Runtime-Boot (User Live-Test erforderlich)
 

@@ -2,21 +2,42 @@
 <!--
   Owner: Scavenger Infrastructure
   Stable defName: Rimconemy_SalvageMachineParts
-  DLC condition: none
-  Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> Scavenger -> later packages
+  DLC condition: none (Core recipe)
+  Load order: Core/DLCs -> Foundation -> Survival -> Scavenger -> later
   Vanilla anchor: RecipeDef (smelting/salvaging).
 
-  Gameplay: Breaks down steel scraps into machine parts at the campfire.
-  Represents precision component recovery from mangled steel.
-  Low yield reflects the rarity of intact mechanisms in ruins.
+  Phase-First contract:
+    Phase:                Automation (only).
+    EarlySurvival phase:  NOT visible (research/Machining gate hides recipe).
+    Production phase:     NOT producible.
+    Automation phase:     Producible.
+
+  Phase-Gate (XML, real):
+    researchPrerequisites: Smithing AND Machining.
+      Vanilla Machining research gates TableMachining construction;
+      combined with Smithing, the player must cross both Production-phase
+      research before this recipe is queued.
+
+  Material economics:
+    5 SteelScraps -> 1 Rimconemy_MachineParts (preserved from prior draft).
+
+  Recipe users:
+    TableMachining (Phase 3 Automation anchor);
+    Rimconemy_Campfire (Phase-1 salvage access if player skipped Smithy route,
+                        still gated by both research items).
 -->
 <Defs>
   <RecipeDef>
     <defName>Rimconemy_SalvageMachineParts</defName>
     <label>salvage machine parts</label>
-    <description>Carefully extract gears, actuators, and precision components from steel scraps. Most scraps are too damaged, but patient work yields occasional intact machine parts for advanced manufacturing.</description>
+    <description>Extract gears, actuators, and precision components from steel scraps. Smithing + Machining research unlock the recipe; Automation-phase precision tooling.</description>
     <jobString>Salvaging machine parts</jobString>
     <workAmount>800</workAmount>
+    <workSkill>Smithing</workSkill>
+    <researchPrerequisites>
+      <li>Smithing</li>
+      <li>Machining</li>
+    </researchPrerequisites>
     <ingredients>
       <li>
         <filter>
@@ -37,6 +58,7 @@
     </products>
     <recipeUsers>
       <li>Rimconemy_Campfire</li>
+      <li>TableMachining</li>
     </recipeUsers>
   </RecipeDef>
 </Defs>

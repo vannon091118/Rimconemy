@@ -19,7 +19,7 @@ Quelle: `Source/Economy/Source/Wallet/CreditsLedger.cs`
 
 ## C — Selbsttest (RunAll)
 
-`Tests.WalletCreditsRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
+`Tests.CreditsLedgerRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
 
 ## D — Runtime-Boot (User Live-Test erforderlich)
 

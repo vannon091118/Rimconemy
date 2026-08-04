@@ -2,21 +2,41 @@
 <!--
   Owner: Scavenger Infrastructure
   Stable defName: Rimconemy_MakeStainlessSteel
-  DLC condition: none
-  Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> Scavenger -> later packages
-  Vanilla anchor: RecipeDef (smelting/alloying).
+  DLC condition: none (Core recipe)
+  Load order: Core/DLCs -> Foundation -> Survival -> Scavenger -> later
+  Vanilla anchor: RecipeDef (alloying).
 
-  Gameplay: Alloys 2 steel and 1 machine parts into 2 stainless steel at the campfire.
-  This is the first step in the stainless steel chain: steel + machine parts -> stainless steel.
-  The campfire is intentionally primitive; a proper smelting forge (P2) will be more efficient.
+  Phase-First contract:
+    Phase:                Trade / late Production.
+    EarlySurvival:        NOT visible.
+    Production:           NOT producible until Advanced Smelting is researched.
+    Automation:           NOT producible.
+    Trade+:               Producible (after Advanced Smelting).
+
+  Phase-Gate (XML, real):
+    researchPrerequisites: Smithing (already required for prior tier).
+      Vanilla does not ship an "Advanced Smelting" research project; the
+      Rimconemy ReservedNames pattern handles this — registering a
+      Rimconemy_AdvancedSmelting research project in the upcoming
+      Mod-02 patch is the planned upgrade. Until that project ships, this
+      RecipeDef records its research gate as Smithing which is the
+      verifying research for an advanced Forge path that Rimconemy will
+      register in Phase 2 / Trade. This is documented as an
+      OPEN gap in PHASE_PROGRESSION_CONTRACT.md §6.
+
+  Material economics: 2 Steel + 1 Rimconemy_MachineParts -> 2 StainlessSteel.
 -->
 <Defs>
   <RecipeDef>
     <defName>Rimconemy_MakeStainlessSteel</defName>
     <label>make stainless steel</label>
-    <description>Alloy steel with salvaged machine parts to produce stainless steel. The precision components provide chromium and nickel content for corrosion resistance. Primitive campfire process has significant material loss.</description>
+    <description>Alloy steel with salvaged machine parts to strip the chromium and nickel content needed for corrosion-resistant stainless steel. Trade-phase recipe — beyond Vanilla Smelting.</description>
     <jobString>Alloying stainless steel</jobString>
     <workAmount>800</workAmount>
+    <workSkill>Smithing</workSkill>
+    <researchPrerequisites>
+      <li>Smithing</li>
+    </researchPrerequisites>
     <ingredients>
       <li>
         <filter>

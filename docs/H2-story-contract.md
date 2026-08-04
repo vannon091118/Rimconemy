@@ -1,5 +1,6 @@
 # H2 — Story-Vertrag: Profile, Events, Gewichtungen
 
+> **SSOT-Hinweis:** Detail-Topic dieser Datei ist im Orient-Index [ARCHITECTURE.md §2](ARCHITECTURE.md). Topic-Landkarte: [INDEX.md §1](INDEX.md).
 > **Owner:** Research/Design (kein Code)
 > **Status:** `CODE + SPEC` — Profile, Eventkatalog, deterministische Auswahl und StoryState sind im Code vorhanden; konkrete Balancewerte, vollständige Effekte und Live-Save-/Event-Gates bleiben offen.
 > **Referenz:** [ROADMAP.md §2](../ROADMAP.md#2-produktentscheidung-für-phase-1), [ROADMAP.md §8.3](../ROADMAP.md#83-phase-12--story-writer--setting-ideologie-offen)

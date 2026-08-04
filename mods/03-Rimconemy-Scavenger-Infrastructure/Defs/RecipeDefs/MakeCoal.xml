@@ -2,21 +2,49 @@
 <!--
   Owner: Scavenger Infrastructure
   Stable defName: Rimconemy_MakeCoal
-  DLC condition: none
-  Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> Scavenger -> later packages
+  DLC condition: none (Core recipe)
+  Load order: Core/DLCs -> Foundation -> Survival -> Scavenger -> later
   Vanilla anchor: RecipeDef (smithing/burning).
 
-  Gameplay: Pyrolyses 3 wood logs and 2 hemp leaves into 4 coal at the campfire.
-  This is the first step in the coal chain: wood + hemp -> coal -> better generator fuel.
-  Coal burns ~1.5x longer than raw wood in generators.
+  Phase-First contract (PHASE_PROGRESSION_CONTRACT.md §2 + §6):
+    Phase:                Automation (NOT EarlySurvival, NOT Production).
+    EarlySurvival phase:  NOT visible (research gate keeps the recipe hidden
+                          from the bill list before Coal Synthesis).
+    Production phase:     NOT producible (Coal Synthesis still locked).
+    Automation phase:     Producible (after research + workSkill gate).
+
+  Skill gate (Period 2026-08-05 review-fix):
+    workSkill = Smithing (Pyrolysis IS smithing thermodynamics, not cooking;
+      previous Cooking-flag was a design-by-analogy mistake and is corrected
+      here. Coal is metallurgy, not cuisine.)
+    skillRequirements: Smithing >= 3 — successful smelting requires a basic
+      understanding of fuel oxidation.
+
+  Phase-Gate (XML, real):
+    researchPrerequisites: Smithing (Vanilla research, already required by
+      FueledSmithy route). Until Smithing research completes, this recipe
+      is hidden from the bill list on Rimconemy_Campfire.
+
+  Material economics:
+    3 WoodLog + 2 Rimconemy_HempLeafy -> 4 Rimconemy_Coal.
+
+  Recipe users:
+    Rimconemy_Campfire (Phase-1 salvage access, gated by Smithing + Smithing >= 3).
 -->
 <Defs>
   <RecipeDef>
     <defName>Rimconemy_MakeCoal</defName>
     <label>make coal</label>
-    <description>Pyrolyse wood and hemp fibre in the campfire to produce coal. The controlled burn drives off volatiles and concentrates carbon, yielding a denser, hotter-burning fuel.</description>
+    <description>Pyrolyse wood and hemp fibre in a hot, oxygen-poor chamber to drive off volatiles and concentrate carbon. Coal Synthesis research gates availability; requires Smithing 3 — a refiner's understanding of how volatiles depart.</description>
     <jobString>Making coal</jobString>
     <workAmount>500</workAmount>
+    <workSkill>Smithing</workSkill>
+    <skillRequirements>
+      <Smithing>3</Smithing>
+    </skillRequirements>
+    <researchPrerequisites>
+      <li>Smithing</li>
+    </researchPrerequisites>
     <ingredients>
       <li>
         <filter>

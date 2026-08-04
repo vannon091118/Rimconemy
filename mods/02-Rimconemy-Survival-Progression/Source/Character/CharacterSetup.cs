@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using Rimconemy.Foundation.Colonials;
+using Rimconemy.Foundation.Maps;
 using RimWorld;
 using Verse;
 
@@ -80,16 +82,19 @@ namespace Rimconemy.SurvivalProgression.Character
         public static int ApplyAndCountAgeChanges()
         {
             int changed = 0;
-            if (Find.Maps == null) return changed;
-            foreach (var map in Find.Maps)
+            // Phase-2 / Welle 2 / Item #3 (2026-08-05) — Pawn-Definitions-Drift
+            // fix. FreeColonists vs FreeColonistsSpawned was an audit
+            // inconsistency that ColonialReader has to absorb. Use the
+            // registry's canonical snapshot + the canonical Pawn selector
+            // (ColonialReader.GetActiveColonists()) so this site stops
+            // using the raw Pawns property that over-broadly matches
+            // non-spawned "free" colonists.
+            var colonists = ColonialReader.GetActiveColonists();
+            foreach (var pawn in colonists)
             {
-                if (map?.mapPawns?.FreeColonists == null) continue;
-                foreach (var pawn in map.mapPawns.FreeColonists)
-                {
-                    if (pawn?.story == null) continue;
-                    if (FixAge(pawn))
-                        changed++;
-                }
+                if (pawn?.story == null) continue;
+                if (FixAge(pawn))
+                    changed++;
             }
             return changed;
         }
@@ -110,23 +115,21 @@ namespace Rimconemy.SurvivalProgression.Character
         /// </summary>
         public static void ApplyToAllStartingPawns(Dictionary<SkillDef, int> budgetOverride = null)
         {
-            if (Find.Maps == null) return;
-
-            foreach (var map in Find.Maps)
+            // Phase-2 / Welle 2 / Item #3 (2026-08-05) — same drift fix as
+            // ApplyAndCountAgeChanges: route through ColonialReader instead of
+            // raw mapPawns.FreeColonists (which silently over-matches).
+            var colonists = ColonialReader.GetActiveColonists();
+            foreach (var pawn in colonists)
             {
-                if (map?.mapPawns?.FreeColonists == null) continue;
-                foreach (var pawn in map.mapPawns.FreeColonists)
-                {
-                    if (pawn?.story == null) continue;
+                if (pawn?.story == null) continue;
 
-                    bool applied;
-                    if (budgetOverride != null)
-                        applied = ApplyBudget(pawn, budgetOverride);
-                    else
-                        applied = DistributeSkillBudget(pawn);
-                    if (applied)
-                        TraitAssigner.AssignTraitsForBudget(pawn);
-                }
+                bool applied;
+                if (budgetOverride != null)
+                    applied = ApplyBudget(pawn, budgetOverride);
+                else
+                    applied = DistributeSkillBudget(pawn);
+                if (applied)
+                    TraitAssigner.AssignTraitsForBudget(pawn);
             }
         }
 

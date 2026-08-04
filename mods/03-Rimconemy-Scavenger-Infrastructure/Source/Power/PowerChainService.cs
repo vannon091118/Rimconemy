@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Rimconemy.Foundation.Maps;
 using RimWorld;
 using Verse;
 
@@ -7,7 +8,10 @@ namespace Rimconemy.ScavengerInfrastructure.Power
 {
     /// <summary>
     /// Owner: Scavenger and Infrastructure (Package 03).
-    /// Replacement for the historical <c>PowerChainStub</c>.
+    /// Live implementation of the power-chain aggregation layer. Owns the
+    /// canonical Const-FuelClass lookup and resolves all defs via
+    /// <see cref="DefDatabase{ThingDef}"/>. Replaces the historical
+    /// <c>PowerChainStub</c> alias (removed 2026-08-05).
     ///
     /// Reads Setting-spezifische Power-Komponenten aus dem Live-Spiel:
     ///   - Solid-Fuel-Generator  (Wood / Coal / Chemfuel)
@@ -81,7 +85,10 @@ namespace Rimconemy.ScavengerInfrastructure.Power
             var result = new List<PowerUnitState>();
             if (Find.Maps == null) return result;
 
-            foreach (var map in Find.Maps.Where(m => m != null && m.IsPlayerHome))
+            // Phase-2 / Welle 2 / Item #3 (2026-08-05): MapRegistry.GetPlayerHomeMaps()
+            // instead of an allocated Where(...) filter. Foundation-owned,
+            // tick-cached IReadOnlyList<Map>.
+            foreach (var map in MapRegistry.GetPlayerHomeMaps())
             {
                 if (map.listerThings == null) continue;
                 if (_solidDef != null)

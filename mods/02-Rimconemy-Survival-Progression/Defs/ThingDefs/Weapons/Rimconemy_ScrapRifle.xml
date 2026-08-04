@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Survival & Progression (Package 02)
+  Phase 1.2 — Notwaffe / Fr\u00fchwaffe f\u00fcr den Single-Survivor.
+  Vanilla anchor: ThingDef (ParentName=BaseWeapon), Verb_Shoot.
+  Hook-Integration: Ammo-Verbrauch wird in Phase 1.3 via CompRimconemyAmmo
+  eingef\u00fchrt. Diese Waffe ist ohne eigene Munitionscomp kompatibel
+  zu bestehender Standard-Rimworld-Munition \u2014 siehe Phase 1.3.
+  Wichtig: Diese Waffe ist *bewusst* einfach gehalten \u2014 keine eigene
+  Grafik, keine CustomTexture. Vanilla-Pfade bevorzugt.
+-->
+<Defs>
+
+  <ThingDef Name="Rimconemy_ScrapRifle" ParentName="BaseWeapon">
+    <defName>Rimconemy_ScrapRifle</defName>
+    <label>Schrottkarabiner</label>
+    <description>Eine zusammengeschwei\u00dfte Notwaffe. Funktioniert als Standard-Vanilla-Bolt-Action-Gewehr, aber Zuverl\u00e4ssigkeit und Genauigkeit sind geringer als bei einer industriell gefertigten Waffe.</description>
+    <thingClass>ThingWithComps</thingClass>
+    <category>Weapon</category>
+    <techLevel>Neolithic</techLevel>
+    <generateCommonality>0.0</generateCommonality>
+
+    <statBases>
+      <MarketValue>40</MarketValue>
+      <Mass>2.5</Mass>
+      <DeteriorationRate>2.0</DeteriorationRate>
+      <WorkToMake>12000</WorkToMake>
+    </statBases>
+
+    <equippedStatOffsets>
+      <MoveSpeed>-0.05</MoveSpeed>
+    </equippedStatOffsets>
+
+    <verbs>
+      <li Class="VerbProperties">
+        <verbClass>Verb_Shoot</verbClass>
+        <hasStandardCommand>true</hasStandardCommand>
+        <range>24</range>
+        <warmupTime>1.6</warmupTime>
+        <defaultProjectile>Bullet_BoltActionRifle</defaultProjectile>
+        <minRange>3</minRange>
+        <noiseRadius>4.5</noiseRadius>
+        <muzzleFlashScale>1.0</muzzleFlashScale>
+      </li>
+    </verbs>
+
+    <graphicData>
+      <texPath>Things/Item/Weapon/Rifle</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+    </graphicData>
+
+    <comps>
+      <li Class="CompProperties_Forbiddable" />
+    </comps>
+  </ThingDef>
+
+</Defs>

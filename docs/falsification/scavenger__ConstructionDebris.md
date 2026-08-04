@@ -2,7 +2,7 @@
 
 > **Capability:** `rimconemy.scavengerinfrastructure` v1 · **Owner:** Scavenger · **Stand:** 2026-08-04
 > **Status:** `COMPILED`
-> **Code-Anker:** `Source/Building/BauschuttRemapService.cs` · **Test:** `Tests/ConstructionDebrisRegressionTests.cs`
+> **Code-Anker:** `Source/Building/BauschuttRemapService.cs` · **Test:** `Tests/BuildingCoreRegressionTests.cs`
 > **ROADMAP-Referenz:** §8.2 · **Owner-Checklist:** siehe `docs/falsification/README.md`
 
 ## A — Def-Liste (XML-Defs)
@@ -14,12 +14,12 @@
 Quelle: `Source/Scavenger/Source/Building/BauschuttRemapService.cs`
 
 - Kompiliert: ✅
-- Bootstrap-Klasse: `Scavenger.Bootstrap.RunAll` ruft `Tests/ConstructionDebrisRegressionTests.cs` auf
+- Bootstrap-Klasse: `Scavenger.Bootstrap.RunAll` ruft `Tests/BuildingCoreRegressionTests.cs` auf
 - Patch-Klassen: `mods/scavenger/Source/Scavenger/*.cs`
 
 ## C — Selbsttest (RunAll)
 
-`Tests.ConstructionDebrisRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
+`Tests.BuildingCoreRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
 
 ## D — Runtime-Boot (User Live-Test erforderlich)
 

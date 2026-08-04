@@ -2,7 +2,7 @@
 
 > **Capability:** `rimconemy.economyterritory` v1 · **Owner:** Economy · **Stand:** 2026-08-04
 > **Status:** `COMPILED`
-> **Code-Anker:** `Source/Outposts/OutpostProxyGraph.cs` · **Test:** `Tests/OutpostCountdownRegressionTests.cs`
+> **Code-Anker:** `Source/Outposts/OutpostProxyGraph.cs` · **Test:** `Tests/OutpostInvestmentRegressionTests.cs`
 > **ROADMAP-Referenz:** §8.2 · **Owner-Checklist:** siehe `docs/falsification/README.md`
 
 ## A — Def-Liste (XML-Defs)
@@ -14,12 +14,12 @@
 Quelle: `Source/Economy/Source/Outposts/OutpostProxyGraph.cs`
 
 - Kompiliert: ✅
-- Bootstrap-Klasse: `Economy.Bootstrap.RunAll` ruft `Tests/OutpostCountdownRegressionTests.cs` auf
+- Bootstrap-Klasse: `Economy.Bootstrap.RunAll` ruft `Tests/OutpostInvestmentRegressionTests.cs` auf
 - Patch-Klassen: `mods/economy/Source/Economy/*.cs`
 
 ## C — Selbsttest (RunAll)
 
-`Tests.TerritoryCountdownRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
+`Tests.OutpostInvestmentRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen.
 
 ## D — Runtime-Boot (User Live-Test erforderlich)
 
