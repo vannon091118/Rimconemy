@@ -20,7 +20,6 @@
       <texPath>Things/Item/Resource/Component</texPath>
       <graphicClass>Graphic_StackCount</graphicClass>
       <drawSize>0.85</drawSize>
-      <color>(180,160,130)</color>
     </graphicData>
     <statBases>
       <MaxHitPoints>100</MaxHitPoints>

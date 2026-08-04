@@ -1,0 +1,77 @@
+using System.Reflection;
+using RimWorld;
+using Verse;
+
+namespace Rimconemy.ScavengerInfrastructure.Building
+{
+    /// <summary>
+    /// Phase-3.2 (2026-08-04): Vanilla UI-Hook für Bauschutt-Wall-Build.
+    ///
+    /// Owner: Scavenger Infrastructure (Package 03).
+    ///
+    /// Hook-Pfad OHNE Harmony-Transpiler: vanilla-Basis <see cref="Designator_Build"/>
+    /// wird subklassifiziert. <c>ProcessInput</c> ruft <see cref="BauschuttRemapApply.ApplyRemap"/>
+    /// direkt auf. Das ist die kanonische vanilla-Integration: jeder Mod kann
+    /// Designator-Subklassen registrieren ohne Patch-Operationen.
+    ///
+    /// Owner-Constraint (INTERFACE_CONTRACT §9.1 + §9.4): Paket 03 mutiert
+    /// die Map; falls Wallet-Zugriff je nötig wird, muss CapabilityAudit-Gate
+    /// genutzt werden (rimconemy.economyterritory.wallet check). Aktuell wird
+    /// kein Wallet-Zugriff gebraucht — ApplyRemap platziert nur Blueprints.
+    ///
+    /// Vanilla-Healthy-Verification: Designator_Build ist nicht instanziierbar
+    /// ohne Map und prüft BuildPhase-State mit vanilla-eigener Logik.
+    /// </summary>
+    public class Designator_BuildWallBauschutt : Designator_Build
+    {
+        public Designator_BuildWallBauschutt() : base()
+        {
+            this.defaultLabel = "Rimconemy · BuildWallBauschutt";
+            this.defaultDesc = "Platziert Wall-Blueprints aus Bauschutt-Bestand im Storage.";
+            this.icon = null; // Vanilla-Default-Icon ist Wall; wir lassen es.
+            this.hotKey = HotKeyDefOf.Misc1; // Beispiel-Belegung
+            this.soundSucceeded = SoundDefOf.Designate_ZoneAdd;
+        }
+
+        /// <summary>
+        /// Vanilla ruft <c>ProcessInput</c> auf, wenn der Spieler den Designator
+        /// ausgewählt und Enter/LMB gedrückt hat. Wir umgehen den cell-pick-Selector
+        /// und rufen direkt <see cref="BauschuttRemapApply.ApplyRemap"/> auf.
+        /// </summary>
+        public override void ProcessInput(EventArgs ev)
+        {
+            base.ProcessInput(ev);
+            var result = BauschuttRemapApply.ApplyRemap();
+
+            if (!string.IsNullOrEmpty(result.ReasonBlocked))
+            {
+                Messages.Message(
+                    "Rimconemy Bauschutt-Remap blockiert: " + result.ReasonBlocked,
+                    MessageTypeDefOf.RejectInput);
+                return;
+            }
+
+            string placementSummary =
+                "Rimconemy build: " + result.WallsPlaced + " Wall-Blueprints platziert "
+                + "(Bauschutt consumed: " + result.BauschuttConsumed + ").";
+            Messages.Message(placementSummary, MessageTypeDefOf.PositiveEvent);
+
+            if (result.PlacementFailures != null && result.PlacementFailures.Count > 0)
+            {
+                foreach (var fail in result.PlacementFailures)
+                {
+                    Log.Warning("[Rimconemy.ScavengerInfrastructure] Bauschutt-Remap placement issue: " + fail);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Vanilla <c>CanDesignateCell</c> bleibt true (wir haben keinen Cell-Pick-Mechanismus).
+        /// Notwendig, dass Player den Designator überhaupt auswählen kann.
+        /// </summary>
+        public override AcceptanceReport CanDesignateCell(IntVec3 loc)
+        {
+            return true;
+        }
+    }
+}

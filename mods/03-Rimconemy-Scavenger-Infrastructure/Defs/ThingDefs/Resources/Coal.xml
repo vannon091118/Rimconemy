@@ -19,7 +19,6 @@
       <texPath>Things/Item/Resource/Steel</texPath>
       <graphicClass>Graphic_StackCount</graphicClass>
       <drawSize>0.9</drawSize>
-      <color>(40,40,40)</color>
     </graphicData>
     <statBases>
       <MaxHitPoints>80</MaxHitPoints>
