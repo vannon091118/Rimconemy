@@ -28,11 +28,23 @@ namespace Rimconemy.InfectedAutomation
             var _mechLog = Mechadroids.MechadroidUnit.LogMarker;
             Log.Message($"[Rimconemy.InfectedAutomation] Domain stubs ready: threat={_threatLog}, raid={_raidLog}, mechadroid={_mechLog}");
 
+            // P2/H3 §2: CollectiveDefense tracker is a GameComponent subclass -
+            // RimWorld auto-registers any GameComponent subclass on mod load.
+            // We log a one-shot marker so the operator sees the ThoughtDef
+            // registration succeeded before the post-combat patch takes over.
+            Log.Message(
+                "[Rimconemy.InfectedAutomation] CollectiveDefense setting rule (H3 §2): " +
+                "thoughts=" + (Ideology.ThoughtDefs_CollectiveDefense.ValiantDefense != null) +
+                ", tracker=GameComponent-auto-registry");
+
             // Run self-tests at startup (determinism, idempotency, profiles, RNG)
             Tests.StorySelectorTests.RunAll();
             Tests.StoryStateRegressionTests.RunAll();
             Tests.BuildingThreatRegressionTests.RunAll();
             Tests.MechadroidJobRegressionTests.RunAll();
+            // P2/H3 §2 (Setting Rule CollectiveDefense): regression for ThoughtDef
+            // shape, tracker aggregation, and scribe-roundtrip invariants.
+            Tests.CollectiveDefenseRegressionTests.RunAll();
             Log.Message("[Rimconemy.InfectedAutomation] Building threat adapter available; Mechadroid job contracts are gated for Milestone B; no incident or raid is spawned.");
         }
     }

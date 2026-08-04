@@ -185,6 +185,15 @@ Vanilla-Ideologie wird im Zielprofil nicht als primäre Spielerlogik vorausgeset
 
 **Gate:** Mindestens drei Setting-Regeln erzeugen reproduzierbar dokumentierte Charakterreaktionen; kein globales Verhalten wird nur aus einem Namen oder Assembly-String abgeleitet.
 
+**Status 2026-08-04 (P2-Fortschritt):**
+
+- ✅ **Regel 1 — `ResourceFairness`** (code-fertig; `ThoughtWorker_ResourceFairness`, `ThoughtDefs_ResourceFairness`).
+- ✅ **Regel 2 — `CollectiveDefense`** (neu in 0.0.36): `Rimconemy_Thought_ValiantDefense` (+5/2Tage), `Rimconemy_Thought_DefenseShirking` (-8/3Tage), `Rimconemy_Thought_UnitedAfterDefense` (+3/2Tage), `CollectiveDefenseTracker` (`GameComponent`, Scribe-fähig), `CollectiveDefensePostCombatPatch` (Harmony auf `Pawn.PostApplyDamage`), `Rimconemy_Role_Defender` (`Precept_RoleMulti`-basiert, Issue `Rimconemy_CollectiveDefenseIssue`), `CollectiveDefenseRegressionTests` (4 Tests).
+- ⬜ **Regel 3 — `Transparency`** (`PreceptDef` + `ThoughtDef` + `ThoughtWorker`) offen.
+- ⬜ **RitualDef-Realisierung** für `Ritual_PostDefense` offen — RimWorld 1.6 zerlegt Rituale in `RitualBehaviorDef` + Outcome/Visual; weitere Iteration nach Ideology-Spike.
+- ⬜ **`Setting-/Erfahrungsfenster`**-Anzeige im Ideology-Tab offen.
+- ⬜ **`Vanilla-Precept-Policy`**-Dokumentation pro Familie offen (Beobachten/Neutralisieren).
+
 ### Phase 3 — Storage-only-Ressourcenmodell
 
 **Besitzer:** Scavenger Infrastructure für physische Bestände; Foundation für Read-only-Snapshots.

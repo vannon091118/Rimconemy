@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Owner: Infected & Automation (Package 05).
+  Setting Rule: CollectiveDefense (H3 §2).
+
+  RimWorld 1.6 Ideology does NOT provide a top-level RoleDef type.
+  Roles are produced by PreceptDefs whose preceptClass is
+    Precept_RoleSingle  : single-pawn roles (moralist)
+    Precept_RoleMulti   : multi-pawn roles (bestower)
+  This XML contributes a multi-pawn Defender role - any adult colonist
+  can hold it; awarding happens in code (CollectiveDefenseTracker.Apply).
+  The PreceptComp applies the Valiant/Shirking thoughts so they show up
+  in the Ideology Precepts tab exactly like vanilla IdeoRole thoughts.
+
+  The role intentionally inherits from IdeoRole issue so the Ideology
+  window groups it with the existing role list. This honors the
+  "Ideology is the Setting-/Erfahrungsfenster" project decision
+  (DECISIONS §2.4 / H3 §2.2).
+-->
+<Defs>
+
+  <IssueDef>
+    <defName>Rimconemy_CollectiveDefenseIssue</defName>
+    <label>Verteidigungspflicht</label>
+    <description>Regel zur Beteiligung an der Verteidigung der Gemeinschaft. Wird im Überlebens-Setting als sichtbare Erwartung geführt.</description>
+  </IssueDef>
+
+  <PreceptDef ParentName="PreceptRoleSingleBase">
+    <defName>Rimconemy_Role_Defender</defName>
+    <issue>Rimconemy_CollectiveDefenseIssue</issue>
+    <preceptClass>Precept_RoleMulti</preceptClass>
+    <label>Verteidiger</label>
+    <description>Mitglieder dieser Rolle haben aktiv an der Verteidigung teilgenommen. Sie sind die anerkannten Helden der letzten Auseinandersetzung.</description>
+    <iconPath>UI/Roles/Apiarist</iconPath>
+    <displayOrderInImpact>110</displayOrderInImpact>
+    <expectsRoleApparelRequirements>false</expectsRoleApparelRequirements>
+    <comps>
+      <li Class="PreceptComp_SituationalThought">
+        <thought>Rimconemy_Thought_ValiantDefense</thought>
+      </li>
+      <li Class="PreceptComp_SituationalThought">
+        <thought>Rimconemy_Thought_DefenseShirking</thought>
+      </li>
+      <li Class="PreceptComp_SituationalThought">
+        <thought>Rimconemy_Thought_UnitedAfterDefense</thought>
+      </li>
+    </comps>
+  </PreceptDef>
+
+</Defs>
