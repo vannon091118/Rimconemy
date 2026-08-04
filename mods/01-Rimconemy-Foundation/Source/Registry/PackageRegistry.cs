@@ -223,7 +223,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.ScavengerInfrastructure",
                 packageId: "rimconemy.scavengerinfrastructure",
-                packageVersion: "0.0.24",
+                packageVersion: "0.0.25",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.scavengerinfrastructure.resources", 1),
@@ -234,7 +234,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.EconomyTerritory",
                 packageId: "rimconemy.economyterritory",
-                packageVersion: "0.0.26",
+                packageVersion: "0.0.27",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.economyterritory.wallet", 1),
@@ -246,7 +246,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.InfectedAutomation",
                 packageId: "rimconemy.infectedautomation",
-                packageVersion: "0.0.39",
+                packageVersion: "0.0.40",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.infectedautomation.threat", 1),
