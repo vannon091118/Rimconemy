@@ -4,10 +4,24 @@
 Implement the approved Rimconemy Visual Language across toolkit, Survival, Infected, Economy, Scavenger, and Foundation UI while keeping UI read-only over existing runtime state.
 
 ## Current Phase
-All phases complete (Phase 1 to Phase 6).
+
+**UI-Toolkit-Phasen 1–6 abgeschlossen** (Toolkit / Survival-P0 / Threat-UI / Economy-Hub / Scavenger-UI / Foundation-Polish).
+
+Die hier gelisteten 6 UI-Phasen beziehen sich ausschließlich auf den
+beauftragten Rimconemy-Visual-Language-Sprint und **nicht** auf die
+Gameplay-Phasen aus dem Vertical-Slice-Plan
+(`docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md`).
+Gameplay-Phasen (insbesondere Vertical-Slice 7+ mit echten Raids,
+Save/Load-LIVE-Belegen, Build-Completions und Mechanic-Vollständigkeit)
+sind weiterhin `OFFEN` per `docs/falsification/audit-fixes-2026-08-04.md`.
+
+Aussage "alle Phasen fertig" gilt **nur** für den oben umrissenen
+UI-Toolkit-Scope. Kein impliziter Gameplay-Vollständigkeitsanspruch.
 
 ## Next Step
 Runtime verification by starting RimWorld (`./start.sh`).
+
+> **SSOT-Hinweis:** Diese Datei dokumentiert nur den UI-Toolkit-Sprint. Für alle anderen Themen (Owner-Matrix, Save/Load, Storage-Query, Story-Profil, Ideology, DLC, Tech/Experience) siehe [docs/INDEX.md §1](docs/INDEX.md) für die SSOT-Landkarte.
 
 ## Phases
 - [x] 1. Shared toolkit + Survival P0

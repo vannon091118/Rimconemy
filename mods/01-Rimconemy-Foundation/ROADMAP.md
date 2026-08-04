@@ -1,5 +1,6 @@
 # Roadmap 01 – Rimconemy Foundation
 
+> **SSOT-Hinweis:** Owner-Matrix, Eigentum und Servicebus → [../../docs/INTERFACE_CONTRACT.md](../../docs/INTERFACE_CONTRACT.md) und [../../docs/INDEX.md §1](../../docs/INDEX.md).
 > Eigenständige Paketaufgabe 1 von 5  
 > Zielplattform: RimWorld 1.6 mit Royalty, Ideology, Biotech, Anomaly und Odyssey  
 > Status: Foundation-Runtime implementiert; verbleibende Gameplay- und Falsifizierungs-Gates offen
@@ -205,7 +206,7 @@ Foundation darf bei unverändertem Spielzustand keine wiederholten Warnungen ode
 
 ## 10. Falsifizierungs-Gate
 
-Vor Übergabe muss der Bericht `../../docs/FALSIFICATION_REPORTS/rimconemy.foundation__Servicebus.md` den Status `SURVIVED` erreichen. Seine Achsen A–G müssen jeweils einen eigenen Test, ein Ergebnis und einen Beleg enthalten: Vanilla-Doppelbetrieb, Besitz/Daten, Minimalität, Fremdmod-Konflikt, Save/Lifecycle, UI-Blackbox und Performance/Determinismus. Die L0–L7-Load-Order-Fälle aus `../../docs/COMPATIBILITY_MATRIX.md` werden im Bericht eingegrenzt; ohne vollständigen Scope bleibt er `UNVERIFIED`.
+Vor Übergabe muss der Bericht `../../docs/falsification/foundation__Servicebus.md` den Status `SURVIVED` erreichen. Seine Achsen A–G müssen jeweils einen eigenen Test, ein Ergebnis und einen Beleg enthalten: Vanilla-Doppelbetrieb, Besitz/Daten, Minimalität, Fremdmod-Konflikt, Save/Lifecycle, UI-Blackbox und Performance/Determinismus. Die L0–L7-Load-Order-Fälle aus `../../docs/COMPATIBILITY_MATRIX.md` werden im Bericht eingegrenzt; ohne vollständigen Scope bleibt er `UNVERIFIED`.
 
 ## 11. Exit-Kriterien für Übergabe an Paket 2
 

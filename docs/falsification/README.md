@@ -1,11 +1,12 @@
-# Falsifizierungsberichte — Rimconemy 22-Berichte-Index
+# Falsifizierungsberichte — Rimconemy Berichte-Index
 
 > **Owner:** Buffy (Agent) + User
 > **Stand:** 2026-08-04
 > **Lifecycle:** `UNVERIFIED` → `COMPILED` → `LOADED` → `OBSERVED` → `SURVIVED`
 > **Quelle:** `ROADMAP.md §8.2`
 
-Dieses Dokument verlinkt die 20 Falsifizierungsberichte. Jeder Bericht
+Dieses Dokument verlinkt alle Falsifizierungsberichte. Aktueller Stand:
+22 Stammsberichte (Foundation/Survival/Scavenger/Economy/Infected) + 5 Vertical-Slice-Early-Game-Berichte = **27 Berichte**. Jeder Bericht
 folgt einem einheitlichen A–G-Beleg-Schema (siehe Vorlage). Status wird
 mit jeder Patch-Stage zusammen aktualisiert.
 
@@ -32,7 +33,7 @@ mit jeder Patch-Stage zusammen aktualisiert.
 |---|---|---|---|---|
 | 3 | `Needs` | [`survival__Needs.md`](survival__Needs.md) | `NeedMappingService` | `COMPILED` |
 | 4 | `WorkXp` | [`survival__WorkXp.md`](survival__WorkXp.md) | `BuildingProgressionAdapter` | `COMPILED` |
-| 5 | `Research` | [`survival__Research.md`](survival__Research.md) | `ProgressionGameComponent.ResearchCapabilities` | `COMPILED` |
+| 5 | `ExperienceUnlocks` (vormals `Research (Legacy-Read-Model)`) | [`survival__Research.md`](survival__Research.md) | `ProgressionGameComponent.ResearchCapabilities` | `COMPILED` |
 | 6 | `GameOver` | [`survival__GameOver.md`](survival__GameOver.md) | `GameOverDetector` | `COMPILED` |
 | 7 | `SaveMigration` | [`survival__SaveMigration.md`](survival__SaveMigration.md) | `CharacterSetupState.MigrateIfNeeded` (ISchemaMigratable) | `COMPILED` |
 
@@ -61,10 +62,25 @@ mit jeder Patch-Stage zusammen aktualisiert.
 | # | Bericht | Datei | Code-Anker | Status |
 |---|---|---|---|---|
 | 18 | `ThreatPressure` | [`infected__ThreatPressure.md`](infected__ThreatPressure.md) | `ThreatAggregator` + `StoryDirector` | `COMPILED` |
-| 19 | `InfectedRaid` | [`infected__InfectedRaid.md`](infected__InfectedRaid.md) | `InfectedRaidSpawnService` + `InfectedRaidWorker` | `LOADED` |
+| 19 | `InfectedRaid` | [`infected__InfectedRaid.md`](infected__InfectedRaid.md) | `InfectedRaidSpawnService` + `InfectedRaidWorker` | `UNVERIFIED` |
 | 20 | `MechadroidJob` | [`infected__MechadroidJob.md`](infected__MechadroidJob.md) | `MechadroidJobRegistry` | `COMPILED` |
 | 21 | `ManualRaid` | [`infected__ManualRaid.md`](infected__ManualRaid.md) | `IncidentClassifier` | `COMPILED` |
 | 22 | `AutoResolve` | [`infected__AutoResolve.md`](infected__AutoResolve.md) | `WorldRaidCoordinator` + `ThreatAggregator` | `COMPILED` |
+
+### Vertical Slice — Early Game (5)
+
+Diese Berichte bündeln die 5 Phasen-Gates aus
+`docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md` (Survivor → Campfire → Barrikade → 1. Nacht → Save/Load). Sie sind **Stand-Berichte vor dem LIVE-Lauf**: A–C-Stubs pre-LIVE, D–G warten auf `runtime_test.sh`. Erst nach vollständigem A–G darf der Phase-Übergang freigegeben werden.
+
+| # | Bericht | Datei | Code-Anker | Status |
+|---|---|---|---|---|
+| 23 | `Early Game: Survivor` | [`earlygame__Survivor.md`](earlygame__Survivor.md) | `ScenPart_RimconemyStart` + `ScenPart_RimconemyStartEnemies` + `Rimconemy_ScrapRifle` + `Rimconemy_SteelScraps` | `COMPILED` (Pre-LIVE) |
+| 24 | `Early Game: Campfire` | [`earlygame__Campfire.md`](earlygame__Campfire.md) | `Rimconemy_Campfire` + `Rimconemy_MakeCoal` + `Rimconemy_SalvageMachineParts` | `COMPILED` (Pre-LIVE) |
+| 25 | `Early Game: Barricade` | [`earlygame__Barricade.md`](earlygame__Barricade.md) | `Rimconemy_Tier1Barricade` + `Rimconemy_Shelter` | `UNVERIFIED` |
+| 26 | `Early Game: First Night` | [`earlygame__FirstNight.md`](earlygame__FirstNight.md) | `RimconemyNightComponent` + `NightSpawnFormula` + `IncidentWorker_NightInfected` | `UNVERIFIED` |
+| 27 | `Early Game: Save/Load` | [`earlygame__SaveLoad.md`](earlygame__SaveLoad.md) | `RimconemyStartState` + `RimconemyStartEnemiesLedger` + `ISchemaMigratable` | `COMPILED` (Pre-LIVE) |
+
+> **Akzeptanz-Reihenfolge:** Erst `Early Game: Survivor`+`SavLoad` grün (echte Phase-1-Belege), dann Campfire → Barrikade → First Night. Save/Load ist die Brücke, die jeden Übergang absichert.
 
 ## Beleg-Strategie
 

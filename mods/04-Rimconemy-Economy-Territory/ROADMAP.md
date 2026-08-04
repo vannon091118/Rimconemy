@@ -1,5 +1,6 @@
 # Roadmap 04 – Rimconemy Economy & Territory
 
+> **SSOT-Hinweis:** Wallet/Booking/Outpost-Transfer-Schnittstelle → [../../docs/INTERFACE_CONTRACT.md §3](../../docs/INTERFACE_CONTRACT.md); ISchemaMigratable → [../../docs/SAVE_CONTRACT.md](../../docs/SAVE_CONTRACT.md); Theme-Map → [../../docs/INDEX.md §1](../../docs/INDEX.md).
 > Eigenständige Paketaufgabe 4 von 5  
 > Standalone zuerst, Full-Overhaul-Integration danach  
 > Zielplattform: RimWorld 1.6 mit Royalty, Ideology, Biotech, Anomaly und Odyssey
@@ -348,7 +349,7 @@ Outposts, Märkte und Proxy-Graphen werden aggregiert aktualisiert. Es gibt kein
 
 ## 12. Falsifizierungs-Gate
 
-Vor Übergabe müssen die fünf Berichte `../../docs/FALSIFICATION_REPORTS/rimconemy.economyterritory__WalletCredits.md`, `../../docs/FALSIFICATION_REPORTS/rimconemy.economyterritory__Market.md`, `../../docs/FALSIFICATION_REPORTS/rimconemy.economyterritory__ReservePhysicalTransfer.md`, `../../docs/FALSIFICATION_REPORTS/rimconemy.economyterritory__OutpostProduction.md` und `../../docs/FALSIFICATION_REPORTS/rimconemy.economyterritory__TerritoryCountdown.md` jeweils `SURVIVED` erreichen. Jeder Bericht braucht A–G mit eigenem Test, Ergebnis und Beleg; Vanilla-WorldObjects, Caravan-/Vehicle-/Hospitality-/Empire-ähnliche Systeme und relevante Save-/Trade-/Load-Order-Konflikte werden nach `../../docs/COMPATIBILITY_MATRIX.md` klassifiziert.
+Vor Übergabe müssen die fünf Berichte `../../docs/falsification/economy__WalletCredits.md`, `../../docs/falsification/economy__Market.md`, `../../docs/falsification/economy__ReservePhysicalTransfer.md`, `../../docs/falsification/economy__OutpostProduction.md` und `../../docs/falsification/economy__TerritoryCountdown.md` jeweils `SURVIVED` erreichen. Jeder Bericht braucht A–G mit eigenem Test, Ergebnis und Beleg; Vanilla-WorldObjects, Caravan-/Vehicle-/Hospitality-/Empire-ähnliche Systeme und relevante Save-/Trade-/Load-Order-Konflikte werden nach `../../docs/COMPATIBILITY_MATRIX.md` klassifiziert.
 
 ## 13. Exit-Kriterien für Übergabe an Paket 5
 
