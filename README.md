@@ -1,5 +1,7 @@
 # Rimconemy
 
+<p align="center"><a href="banner.html"><img src="banner.svg" alt="Rimconemy Banner" width="1200"/></a></p>
+
 > **Du bist der letzte Überlebende. Und je größer du wirst, desto lauter schreit die Welt nach dir.**
 
 **Rimconemy** ist ein modulares RimWorld-Overhaul: Ein einzelner Überlebender, eine zerstörte Welt, ein Plan. Aus Bauschutt werden Wände, aus Farmen Nahrung, aus Wasser und Kohle Strom, aus Strom Verteidigung. Du wirtschaftest mit Credits, investierst in Outposts, expandierst über die Weltkarte — und jeder Erfolg erhöht den Druck. Denn die Infizierten haben einen eigenen Story-Writer, und der hat dich längst auf der Liste.
