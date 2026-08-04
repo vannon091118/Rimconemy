@@ -4,20 +4,19 @@
   Stable defName: Rimconemy_SalvageMachineParts
   DLC condition: none
   Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> Scavenger -> later packages
-  Vanilla anchor: RecipeDef (salvage/smelting).
+  Vanilla anchor: RecipeDef (smelting/salvaging).
 
-  Gameplay: Salvage 5 steel scraps to recover 1 machine part. Low yield represents
-  the difficulty of extracting precision components from mangled steel wreckage.
-  This is the entry point for the Edelstahl/Tower chain.
+  Gameplay: Breaks down steel scraps into machine parts at the campfire.
+  Represents precision component recovery from mangled steel.
+  Low yield reflects the rarity of intact mechanisms in ruins.
 -->
 <Defs>
   <RecipeDef>
     <defName>Rimconemy_SalvageMachineParts</defName>
     <label>salvage machine parts</label>
-    <description>Carefully disassemble steel scraps to recover precision components. Most material is lost in the process — only one in five scraps yields a usable part.</description>
+    <description>Carefully extract gears, actuators, and precision components from steel scraps. Most scraps are too damaged, but patient work yields occasional intact machine parts for advanced manufacturing.</description>
     <jobString>Salvaging machine parts</jobString>
-    <workerClass>WorkGiver_DoBill</workerClass>
-    <workAmount>600</workAmount>
+    <workAmount>800</workAmount>
     <ingredients>
       <li>
         <filter>
@@ -39,6 +38,5 @@
     <recipeUsers>
       <li>Rimconemy_Campfire</li>
     </recipeUsers>
-    <defaultIngredientCount>5</defaultIngredientCount>
   </RecipeDef>
 </Defs>

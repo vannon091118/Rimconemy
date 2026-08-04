@@ -42,11 +42,18 @@
           <thingDefs>
             <li>WoodLog</li>
             <li>Chemfuel</li>
+          </thingDefs>
+        </fuelFilter>
+        <fuelCapacity>120</fuelCapacity>
+        <fuelConsumptionRate>1.0</fuelConsumptionRate>
+      </li>
+      <li Class="CompProperties_Refuelable">
+        <fuelFilter>
+          <thingDefs>
             <li>Rimconemy_Coal</li>
           </thingDefs>
         </fuelFilter>
         <fuelCapacity>120</fuelCapacity>
-        <!-- Coal burns at 0.67 (1.5x efficiency vs wood at 1.0) -->
         <fuelConsumptionRate>0.67</fuelConsumptionRate>
       </li>
     </comps>

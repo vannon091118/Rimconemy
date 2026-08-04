@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure
+  Stable defName: Rimconemy_SteelScraps
+  DLC condition: none
+  Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> Scavenger -> later packages
+  Vanilla anchor: ThingDef (basic resource, ParentName=ResourceBase).
+  1.6-Fixes: Graphic_StackCount; mass authored.
+
+  Gameplay: Steel scraps are scavenged from ruins and burned in a campfire
+  to produce usable steel for wall and structure construction.
+  This replaces the vanilla wood-for-walls loop with a scavenging loop.
+-->
+<Defs>
+  <ThingDef ParentName="ResourceBase">
+    <defName>Rimconemy_SteelScraps</defName>
+    <label>steel scraps</label>
+    <description>Mangled remnants of pre-collapse steel structures. Can be burned down in a campfire to reclaim usable steel for construction.</description>
+    <graphicData>
+      <texPath>Things/Item/Resource/Steel</texPath>
+      <graphicClass>Graphic_StackCount</graphicClass>
+      <drawSize>0.9</drawSize>
+    </graphicData>
+    <statBases>
+      <MaxHitPoints>50</MaxHitPoints>
+      <Mass>0.8</Mass>
+      <MarketValue>3.0</MarketValue>
+    </statBases>
+    <thingCategories>
+      <li>Rimconemy_Scraps</li>
+    </thingCategories>
+    <stackLimit>200</stackLimit>
+    <drawGUIOverlay>true</drawGUIOverlay>
+  </ThingDef>
+</Defs>
