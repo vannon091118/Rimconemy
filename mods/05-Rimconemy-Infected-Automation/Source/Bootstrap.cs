@@ -48,6 +48,9 @@ namespace Rimconemy.InfectedAutomation
             // P2/H3 §3 (Setting Rule Transparency): regression for ThoughtDef
             // shape, cumulative-stage mood chart, and tracker counters.
             Tests.TransparencyRegressionTests.RunAll();
+            // P5 Vanilla-/DLC-Incident-Klassifikation: prefix detection +
+            // one-Infected-Provider invariant validator.
+            Tests.IncidentClassifierRegressionTests.RunAll();
             Log.Message("[Rimconemy.InfectedAutomation] Building threat adapter available; Mechadroid job contracts are gated for Milestone B; no incident or raid is spawned.");
         }
     }
