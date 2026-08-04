@@ -166,7 +166,7 @@ namespace Rimconemy.Foundation.Registry
             // the Full Overhaul profile truthful when all packages are loaded.
             Register(new PackageDescriptor(
                 packageId: "rimconemy.foundation",
-                packageVersion: "0.1.36",
+                packageVersion: "0.1.37",
                 saveSchemaVersion: 1,
                 capabilities: new List<Capability>
                 {

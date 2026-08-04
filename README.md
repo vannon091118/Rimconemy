@@ -44,10 +44,16 @@ Die Projektstatus-Sprache unterscheidet bewusst zwischen **Code**, **Def**, **Bu
 | RimWorld 1.6 Build | ✅ belegt | lokale Builds gegen RimWorld 1.6.4566 |
 | Runtime-Boot | ✅ belegt | alle fünf Mods laden, Foundation erkennt das Full-Overhaul-Profil |
 | Regressionen | ✅ belegt | paketinterne Boot-Regressionen und Status-Summaries laufen |
+| Ideology-Regeln 2 + 3 (H3) | ✅ code-fertig | CollectiveDefense + Transparency (ThoughtDefs, Tracker, PreceptDef, Regression-Tests) |
+| Setting-/Erfahrungsfenster (H3) | ✅ code-fertig | SettingRulesCatalog + SettingRulesInspector |
+| Caravan-Erweiterung (H4 §4) | ✅ code-fertig | StorageQuery.AllMapsIncludingCaravans + Sentinel-MapIds |
+| Character-Setup-Save-State | ✅ code-fertig | CharacterSetupState GameComponent + Schema-Version |
+| Vanilla-/DLC-Incident-Klassifikation | ✅ code-fertig | IncidentClassifier + One-Infected-Provider-Validator |
+| P6 Gameplay-Scaffolding | ✅ code-fertig | Bauschutt-Remap, Food/Hemp, Generator-Fuel, Turret-Power-Gate, InfectedRaid-Spawn, Mechadroid-Registry, Outpost-Proxy-Graph, World-Raids |
 | Save/Load-Roundtrip | 🔄 offen | vollständige Persistenz über alle relevanten Zustände noch nicht live verifiziert |
-| Kartenwechsel/Caravans | 🔄 offen | unloaded Maps, Caravans und temporäre Maps sind noch ein eigenes Gate |
+| Kartenwechsel/Caravans | 🔄 offen | unloaded Maps und temporäre Maps sind noch ein eigenes Gate |
 | Event-/Raid-Ausführung | 🔄 offen | Auswahl und Adapter sind vorhanden; vollständige Live-Auflösung ist noch nicht überall belegt |
-| vollständige Gameplay-Loops | ⬜ in Arbeit | mehrere Mechaniken sind Code/Def-Scaffolds oder noch nicht als Live-Verhalten nachgewiesen |
+| vollständige Gameplay-Loops | ⬜ in Arbeit | Mechaniken sind Code-Scaffolds; Live-Belege in den 20 Falsifizierungsberichten `docs/falsification/` ausstehend |
 
 Die vollständige Beleggrenze steht in [`docs/CODE_STATUS.md`](docs/CODE_STATUS.md). Dort wird nicht aus einem grünen Compiler ein goldener Spielstand gemacht.
 
