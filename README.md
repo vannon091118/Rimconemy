@@ -50,7 +50,7 @@ Ein **komplettes, modulares Survival-Economy-Overhaul** — in fünf Paketen, di
 | **Phase 0 — Root-Verträge** | ✅ fertig | Kanonische Docs (ROADMAP, DECISIONS, Architektur-Verträge), kein Overclaim |
 | **Phase 1 — Story Writer** | ✅ code-fertig | `SettingProfile` (3 Difficulty-Profile: Refuge/Survival/Collapse), `StoryEventSpec`, `StoryState` mit Schema-Version, `StorySelector` (deterministisch), `StoryEventCatalog` (12 hardcoded + Def-Overlay), 12 Unit-Tests, 3 MVP-Events (SupplyShortage, IdeologyConflict, ExternalThreat) |
 | **Phase 3 — Storage-only** | ✅ implementiert | `StorageSnapshot` + `StorageQuery.ReadStorage()`, 250-Tick-Cache, ContentHash, Lagerortfilter — **einzige** Ressourcen-Quelle für UI + StoryDirector + Economy |
-| **Phase 4 — Character Setup** | ✅ implementiert | Alter 18/18, Skillbudget 30, NeutralCenter 25, Neutralzone [-5, +3], Trait-Schwellen, Bio-Remap, Harmony-PreOpen-Patch, `SingleSurvivor`-Scenario |
+| **Phase 4 — Character Setup** | ✅ (teilweise) | Alter 18/18, Skillbudget 30, NeutralCenter 25, Neutralzone [-5, +3], Trait-Schwellen, Bio-Remap, Harmony-PreOpen-Patch, `SingleSurvivor`-Scenario — **offen:** Save-State, Generator-API-Gate, Live-Balance-Test |
 | **5 Pakete kompilieren** | ✅ | Alle gegen RimWorld 1.6.4566 lokal; GameFont-Medium-Fix nach 1.6-Kompatibilitäts-Spike |
 | **Runtime-Boot** | ✅ | Alle 5 Mods laden, FullOverhaul erkannt, 20 Boot-Regression-Summaries mit 0 Failed |
 | **CreditsWallet** | ✅ | Persistente Wallet, 256er History, Idempotenz-Index (`Key → TxId`), Overflow/Underflow-Rejection |
@@ -70,7 +70,7 @@ Ein **komplettes, modulares Survival-Economy-Overhaul** — in fünf Paketen, di
 | **Save/Load-Roundtrip** | 🔄 | Story-State, Character-Setup-State, Credits-Ledger über Save/Load überlebt noch nicht verifiziert |
 | **Live-Event-Feuerung** | 🔄 | StoryDirector → StorySelector → StoryState → IncidentWorker → Letter — kein echter Ingame-Run belegt |
 | **StorageHash-Brücke** | 🔄 | `AnyResourceCritical` auf echten `StorageQuery.ReadStorage()`-Wert umstellen (C1–C5) |
-| **GameFont-UI-Lauf** | 🔄 | Alle UI-Panels kompilieren nach Fix, aber vollständiger Ingame-Lauf noch nicht beobachtet |
+| **Ingame-Verifikation** | 🔄 | Code kompiliert + deployed sauber; vollständiger Ingame-Lauf (Story-Writer + Event-Feuerung) noch nicht beobachtet |
 
 ### ⬜ Nächste Ziele (Phase 2–6)
 
@@ -115,7 +115,7 @@ Ein **komplettes, modulares Survival-Economy-Overhaul** — in fünf Paketen, di
 
 ```bash
 ./scripts/runtime_test.sh                  # Build + Deploy + RimWorld-Start + Log-Gates
-./scripts/runtime_test.sh --skip-start -- no-deploy   # nur statischer Check
+./scripts/runtime_test.sh --skip-start --no-deploy   # nur statischer Check
 ```
 
 Der kanonische Boot-Test verlangt einen *frisch veränderten* `Player.log` — alte Logs werden abgelehnt. So stellen wir sicher, dass das Spiel wirklich gestartet wurde und nicht nur so tut.
