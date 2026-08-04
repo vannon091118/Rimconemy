@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Rimconemy.Foundation.Maps;
 using Rimconemy.ScavengerInfrastructure.Storage;
 using RimWorld;
 using Verse;
@@ -381,17 +382,12 @@ namespace Rimconemy.ScavengerInfrastructure.Building
                 }
 
                 Map targetMap = null;
-                if (Find.Maps != null)
-                {
-                    foreach (var m in Find.Maps)
-                    {
-                        if (m != null && m.IsPlayerHome)
-                        {
-                            targetMap = m;
-                            break;
-                        }
-                    }
-                }
+                // Phase-2 / Welle 2 / Item #3 (2026-08-05): use MapRegistry
+                // instead of an iterating-null-check + IsPlayerHome. MapRegistry
+                // filters null + !IsPlayerHome once at refresh time.
+                Map primary = MapRegistry.GetPrimaryPlayerHomeMap();
+                if (primary != null)
+                    targetMap = primary;
 
                 string storageKey = (Current.Game.GetHashCode().ToString(System.Globalization.CultureInfo.InvariantCulture))
                     + ":" + (snapshot?.ContentHash ?? "<empty>");

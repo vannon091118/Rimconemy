@@ -103,11 +103,29 @@
 
 Diese Datei **gruppiert nach Topic** und verweist auf Detail-Tiefe in H1..H6 + `vanilla-api-matrix`. Die H-Docs selbst bleiben mit eigener Audit-Spur (Datum/Owner-Header) und unverändertem Inhalt als Quellen erhalten — sie werden nicht gelöscht oder zusammengeführt, nur von dieser Orient konsolidiert referenziert.
 
+## Sektion 7 — Phasen-Progression (Detail: PHASE_PROGRESSION_CONTRACT.md)
+
+**Verdict:** Phase-First-Architektur ersetzt Feature-First. Die Reihenfolge `EarlySurvival → Production → Automation → Trade → Expansion → Empire` definiert, **wann** ein System spielerisch relevant wird; Vanilla-Domänen (Sektion 1‑4) definieren **wo** es andockt; DLCs sind Adapter hinter `DLCFilter`.
+
+- **Detail:** [PHASE_PROGRESSION_CONTRACT.md](PHASE_PROGRESSION_CONTRACT.md) (Phase-First-SSOT, 2026-08-05)
+- **Sub-Sektionen:**
+  - §1 Phasen-Übersicht (sechs Phasen, Hauptentscheidung pro Phase)
+  - §2 Ressourcen-Matrix (Visible / Lootable / Producible / Strategic)
+  - §3 Phasen-Übergänge (Milestone-getrieben, kein Tag-Count)
+  - §4 Ressourcen-SSOT + Owner-Map (eine Def-Datei pro Resource)
+  - §5 Negative-Regeln (kein Rimconemy.Masonry, keine Repeats in Early, keine Tag-Count-Übergänge)
+  - §6 DLC-Verstärker-Map (Ideology E→M, Biotech A, Royalty T, Anomaly P→E, Odyssey E→T→E)
+  - §7 Save-Schema-Verzicht (kein PhaseProgressSaveData; live-berechnet)
+- **Pflicht-Verknüpfungen:** `INTERFACE_CONTRACT.md §9` (Owner-Map), `CANONICAL_VANILLA_DOMAIN_MAP.md` (Anker-Reihenfolge), `CODE_STATUS.md` (Phasen-Status), `vanilla-early-blueprint-matrix-1.6.md` (Phase-1/2-Anker), `campfire-parity-1.6.md` (Phase-1-Workstation).
+
 ## Siehe auch
 
 - [INDEX.md §1](INDEX.md) — SSOT-Topics-Map (welche Datei was final besitzt)
 - [INTERFACE_CONTRACT.md](INTERFACE_CONTRACT.md) — Paket-Eigentumsgrenzen
 - [SAVE_CONTRACT.md](SAVE_CONTRACT.md) — `ISchemaMigratable`-Pattern
+- [PHASE_PROGRESSION_CONTRACT.md](PHASE_PROGRESSION_CONTRACT.md) — Phasen-SSOT (Phase-First, 2026-08-05)
+- [vanilla-early-blueprint-matrix-1.6.md](vanilla-early-blueprint-matrix-1.6.md) — Vanilla-Blueprint-Audit für Phase 1+2
+- [campfire-parity-1.6.md](campfire-parity-1.6.md) — Vanilla-Campfire vs. Rimconemy_Campfire
 - [CANONICAL_VANILLA_DOMAIN_MAP.md](CANONICAL_VANILLA_DOMAIN_MAP.md) — Vanilla↔Rimconemy-Mapping
 - [COMPATIBILITY_MATRIX.md](COMPATIBILITY_MATRIX.md) — DLC-Tabelle
 - [DECISIONS.md](DECISIONS.md) — Architektur-Entscheidungen mit Begründung

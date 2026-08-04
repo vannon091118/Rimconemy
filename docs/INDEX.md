@@ -1,71 +1,73 @@
-# Rimconemy — Document Index (SSOT Map)
+# INDEX — SSOT-Topics-Map
 
-> **Stand:** 2026-08-04
-> **Pflicht-Reihenfolge beim Schreiben:** Lieber Querverweis als Textwiederholung. Wer Inhalt aus diesem Index anfasst, hält eine SSOT-Verletzung fest und migriert die Stellen.
+> **Stand:** 2026-08-05
+> **Rolle:** Diese Map zeigt, welche Datei welches Topic final besitzt. Wer ein Topic moved/edits, aktualisiert die Map (und idealerweise gleichzeitig [ARCHITECTURE.md](ARCHITECTURE.md)).
 
-## 1. Single Source of Truth — Tabelle
+## §1 Phasen-First Architecture (2026-08-05)
 
-| Topic | SSOT-Owner | Pfad |
+| Topic | SSOT | Owner | Notes |
+|---|---|---|---|
+| Gameplay-Progression Phasen | [docs/PHASE_PROGRESSION_CONTRACT.md](PHASE_PROGRESSION_CONTRACT.md) | Mod 03 Owner | Phase-First-SSOT; sechs Phasen EarlySurvival→Empire |
+| Vanilla Blueprint Audit Phase 1/2 | [docs/vanilla-early-blueprint-matrix-1.6.md](vanilla-early-blueprint-matrix-1.6.md) | Mod 03 Owner | Stufe-1/2/3 Patch-Rubrik |
+| Campfire Parity Decision | [docs/campfire-parity-1.6.md](campfire-parity-1.6.md) | Mod 03 Owner | `KEEP_DISTINCT` Empfehlung bis Live-Test |
+| Resource SSOT Owner-Map | [docs/PHASE_PROGRESSION_CONTRACT.md §4](PHASE_PROGRESSION_CONTRACT.md) | All Owners | Single-owner pro Resource |
+
+## §2 Vanilla + DLC Anchors
+
+| Topic | SSOT | Owner | Notes |
+|---|---|---|---|
+| Vanilla API Spike Evidence | [docs/H1-api-def-gate.md](H1-api-def-gate.md) + [docs/vanilla-api-matrix-1.6.md](vanilla-api-matrix-1.6.md) | Mod 01 Foundation | Statuswortschatz STRING/COMPILES/DEF-LOAD/RUNTIME/READY |
+| Storage Query | [docs/H4-storage-query-contract.md](H4-storage-query-contract.md) | Mod 03 Scavenger | Read-only Layer |
+| Story-Vertrag | [docs/H2-story-contract.md](H2-story-contract.md) | Mod 05 InfectedAutomation | Profile + Event-Catalog |
+| Ideology-Influence | [docs/H3-ideology-influence-matrix.md](H3-ideology-influence-matrix.md) | Mod 05 | drei Setting-Regeln |
+| Character-Setup | [docs/H5-character-setup-formula.md](H5-character-setup-formula.md) | Mod 02 Survival | Hybrid-Schnitt |
+| Pawn-Generator Spike | [docs/H6-pawn-generator-api-spike.md](H6-pawn-generator-api-spike.md) | Mod 02 | Reflection-Fallback-Pfad |
+
+## §3 Cross-Package & Save
+
+| Topic | SSOT | Owner |
 |---|---|---|
-| 5-Paket-Identitäten, Owner-Spalte, Mod-Liste | **ROADMAP.md** | [../ROADMAP.md §2](../ROADMAP.md) + **INTERFACE_CONTRACT.md §9** | [INTERFACE_CONTRACT.md](INTERFACE_CONTRACT.md) |
-| Paket-Compile-Dependencies (Skript `Bootstrap`) | **INTERFACE_CONTRACT.md** | [INTERFACE_CONTRACT.md §3](INTERFACE_CONTRACT.md) |
-| Paket-Eigentumsgrenzen (welches Package besitzt was) | **INTERFACE_CONTRACT.md** | [INTERFACE_CONTRACT.md §9.1](INTERFACE_CONTRACT.md) |
-| Servicebus-Vertrag, Capability-IDs, Read/Write-Lanes | **INTERFACE_CONTRACT.md** | [INTERFACE_CONTRACT.md §3](INTERFACE_CONTRACT.md) |
-| `ISchemaMigratable`-Vertrag, Schema-Bump-Pattern | **SAVE_CONTRACT.md** | [SAVE_CONTRACT.md](SAVE_CONTRACT.md) |
-| Save/Load-Lifecycle (Foundation-Save-Bridge, IExposable-Adapter) | **SAVE_CONTRACT.md** | [SAVE_CONTRACT.md](SAVE_CONTRACT.md) |
-| Vanilla↔Rimconemy-Domain-Mapping (Worker/Good/Room/Tech/State/Transfer) | **CANONICAL_VANILLA_DOMAIN_MAP.md** | [CANONICAL_VANILLA_DOMAIN_MAP.md](CANONICAL_VANILLA_DOMAIN_MAP.md) |
-| Tech/Wissen, Experience-Bäume, Unlock-Extension | **CANONICAL_VANILLA_DOMAIN_MAP.md §2.4** | [CANONICAL_VANILLA_DOMAIN_MAP.md §2.4](CANONICAL_VANILLA_DOMAIN_MAP.md) |
-| DLC-Kompatibilitätstabelle (Royalty/Ideology/Biotech/Anomaly/Odyssey) | **COMPATIBILITY_MATRIX.md** | [COMPATIBILITY_MATRIX.md](COMPATIBILITY_MATRIX.md) |
-| Third-Party-Mod-Klassifikation (CE, VSE, ...) | **COMPATIBILITY_MATRIX.md** | [COMPATIBILITY_MATRIX.md §3](COMPATIBILITY_MATRIX.md) |
-| Design-Entscheidungen (Architektur-Wahlen mit Datum & Kontext) | **DECISIONS.md** | [DECISIONS.md](DECISIONS.md) |
-| Vanilla-1.6-API-Matrix (Klassen, Methoden, Owner-Spalte) | **docs/ARCHITECTURE.md §1** | [ARCHITECTURE.md §1](ARCHITECTURE.md) |
-| Story-Profile, Event-Katalog, Story-Vertrag | **docs/ARCHITECTURE.md §2** | [ARCHITECTURE.md §2](ARCHITECTURE.md) |
-| Ideology-Influence-Matrix (Setting Rule 1–3) | **docs/ARCHITECTURE.md §3** | [ARCHITECTURE.md §3](ARCHITECTURE.md) |
-| Storage-Query-Vertrag | **docs/ARCHITECTURE.md §4** | [ARCHITECTURE.md §4](ARCHITECTURE.md) |
-| Character-Setup-Formel | **docs/ARCHITECTURE.md §5** | [ARCHITECTURE.md §5](ARCHITECTURE.md) |
-| Pawn-Generator-API-Spike | **docs/ARCHITECTURE.md §6** | [ARCHITECTURE.md §6](ARCHITECTURE.md) |
-| Was ist `COMPILED`/`LOADED`/`RUNNING`/live | **CODE_STATUS.md** | [CODE_STATUS.md](CODE_STATUS.md) |
-| Falsifikations-Berichts-Index (20/22/27-Count) | **docs/falsification/README.md** | [falsification/README.md](falsification/README.md) |
-| Falsifikationsbericht-Eintragspunkt pro Task | **docs/falsification/<topic>__<subtopic>.md** (siehe Index) | [falsification/](falsification/) |
+| Cross-Package Boundaries | [docs/INTERFACE_CONTRACT.md](INTERFACE_CONTRACT.md) | All |
+| Save-Schema + Migration | [docs/SAVE_CONTRACT.md](SAVE_CONTRACT.md) | Mod 01 (ISchemaMigratable) |
+| Architecture SSOT-Orient | [docs/ARCHITECTURE.md](ARCHITECTURE.md) | Mod 01 |
+| Implementation Plan | [docs/superpowers/plans/2026-08-05-phase-first-gameplay-implementation-plan.md](superpowers/plans/2026-08-05-phase-first-gameplay-implementation-plan.md) | Mod 03 |
+| Live-Status Vocabulary | [docs/CODE_STATUS.md](CODE_STATUS.md) | Mod 01 |
 
-## 2. Role-Of-Categories
+## §4 Decisions & Compatibility
 
-**Kanonische Vertragsdokumente** (SSOT-Owner; kein Duplikat-Inhalt woanders):
-- `ROADMAP.md` — Master-Plan, Paket-Übersicht, Sole-Owner-Map
-- `docs/INTERFACE_CONTRACT.md` — Architectural Inheritance Boundaries
-- `docs/SAVE_CONTRACT.md` — Save/Lifecycle-Vertrag
-- `docs/COMPATIBILITY_MATRIX.md` — DLC/Mod-Klassifikation
-- `docs/CANONICAL_VANILLA_DOMAIN_MAP.md` — Vanilla↔Rimconemy-Mapping
-- `docs/DECISIONS.md` — Entscheidungs-Log
-- `docs/CODE_STATUS.md` — Live-Status aller Pakete
-- `docs/ARCHITECTURE.md` — Vanilla-API-Matrix + Story-Contract + Ideology + Storage + Character + Pawn-Generator
+| Topic | SSOT | Notes |
+|---|---|---|
+| Architektur-Entscheidungen | [docs/DECISIONS.md](DECISIONS.md) | mit Begründung |
+| Vanilla + DLC Compat | [docs/COMPATIBILITY_MATRIX.md](COMPATIBILITY_MATRIX.md) | RimWorld 1.6 + DLC-Tabelle |
 
-**Implementierungs-Specs** (sprintspezifisch, veränderbar, dürfen duplizieren):
-- `docs/superpowers/specs/` — Design-Specs (vor Implementation)
-- `docs/superpowers/plans/` — Implementationspläne (mit Task-Lists)
+## §5 Falsifikation (Anti-Confirm-Bias)
 
-**Gameplay-Maps & Fortschritte** (sprintspezifisch, keep local):
-- `task_plan.md` — UI-Toolkit-Sprint-Scope
-- `docs/P6-PROGRESS.md` — P6 Multi-Task-Fortschritt
-- `mods/0X/ROADMAP.md`, `mods/0X/BLUEPRINT.md` — Paket-spezifische Pläne & Eigentumsgrenzen
-- `docs/falsification/*.md` — Task-bezogene Falsifikationsberichte
+| Topic | SSOT-Ordner | Owner |
+|---|---|---|
+| Falsifikations-Berichte | [docs/falsification/](falsification/) | per-Topic-Owner |
 
-**Pitches** (Werbung, schnellster Einstieg):
-- `README.md` — Pitch + Überblick, kein technischer SSOT
-- `banner.html` — Visuelle Darstellung
+## §6 Phasen-First Tasks (2026-08-05)
 
-## 3. Schreib-Regeln
+19 Tasks ausgeführt (Stand 2026-08-05):
 
-1. Wer einen oben gelisteten Topic behandelt, schreibt in die SSOT-Quelle und fügt anderswo nur `→ siehe [docs/INDEX.md §1]`.
-2. Wer einen Topic einführt, der noch nicht gemappt ist, ergänzt zuerst die Tabelle in §1 und schreibt dann die SSOT-Datei.
-3. Konflikte zwischen SSOT-Dateien sind sofort in `DECISIONS.md §<nnn>` zu dokumentieren.
-4. Modul-Eigentum in Tabellen mehrmals gelistet? → ein Verweis auf `INTERFACE_CONTRACT §9.1`.
-5. Versions-Snapshot-Tabelle (z. B. `0.1.37`) wiederholt? → ein Verweis auf `mods/<paket>/VERSION`.
-
-## 4. Pflicht-Verweise
-
-Jede SSOT-Datei beginnt mit einer `> **SSOT-Owner für:** <topic-line>`-Notiz, damit Leser nicht in einer falschen Datei landet. Die Topics sind in §1 abschließend gelistet; jede Datei kennt genau ihr Topic.
-
-## 5. Was diese Konsolidierung NICHT ist
-
-Es werden keine bestehenden Routen, Codes, Build-Pfade oder Falsifikationsberichts-Inhalte gelöscht. Nur Redundanz auf der Dokumentationsebene wird abgebaut. Datei-Inhalte werden entweder konsolidiert (z. B. H1–H6 in `ARCHITECTURE.md`) oder durch SSOT-Verweise ersetzt.
+| # | Task | Status | Output |
+|---|---|---|---|
+| 0  | Baseline | ✅ | Plan-Datei |
+| 1  | Phase-Contract | ✅ | docs/PHASE_PROGRESSION_CONTRACT.md + ARCHITECTURE.md §7 |
+| 2  | SteelScraps-SSOT | ✅ | Mod-02-Duplikat gelöscht; SSOT-Marker in Mod-03 |
+| 3  | Early-Scatter Phase-Gate | ✅ | ScenPart_RimconemyStart.cs |
+| 4  | Vanilla Blueprint Audit | ✅ | docs/vanilla-early-blueprint-matrix-1.6.md |
+| 5  | Campfire Parität | ✅ | docs/campfire-parity-1.6.md (KEEP_DISTINCT) |
+| 6  | Recipe Phase-Gating | ✅ | 5:1 + Smithing-Research + Smithing>=3 |
+| 7  | Vanilla Patches (Stufe 1) | ✅ | FueledSmithy/TableMachining additive idempotent |
+| 8  | Mining-API Spike + Reader | ✅ | MiningGateExt.cs + MiningHookPatch.cs (2 Postfix) + Vanilla DefModExt |
+| 9  | Fuel-Modell | ✅ | PowerPlants.xml duplicate-Refuelable entfernt |
+| 10 | Core-only Vertical Slice | ✅ | Recipe + Patch + SSOT wired |
+| 11 | Ideology-Adapter | ✅ | Ideology_Precept_ResourceFairness.xml |
+| 12 | Biotech-Mechanitor-Adapter | ✅ | Biotech_Mechanitor_Gene_Mining.xml |
+| 13 | Anomaly/Odyssey-Ruinenadapter | ✅ | AnomalyOdyssey_Ruins_ConstructionDebris.xml |
+| 14 | Royalty-Handelsadapter | ✅ | Royalty_Empire_TributeTrader_StainlessTrade.xml |
+| 15 | Mod-04 BuildingInputAdapter | ✅ | Refactor zu Def.costList |
+| 16 | Phasen + Falsifikations-Tests | ✅ | Tests für 5:1 + Mining-Gate + Recipe-Phase |
+| 17 | Validierungsmatrix | ✅ | dev_quick_test.sh --strict → PASS exit 0 |
+| 18 | Doku-Crosswalk | ✅ | INDEX.md (dieses Doc), ARCHITECTURE.md, CODE_STATUS.md aktualisiert |

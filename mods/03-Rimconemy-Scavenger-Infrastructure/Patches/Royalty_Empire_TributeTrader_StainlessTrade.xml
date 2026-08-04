@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Phase-First DLC Adapter (Task 14 — Royalty).
+
+  Purpose:
+    Additive Stufe-1-PatchOperationAdd gated by Royalty-DLC presence.
+    Stable Vanilla Empire_Caravan_TributeCollector accepts
+    Rimconemy_MachineParts and Rimconemy_StainlessSteel as tribute-stock.
+
+  Patch risk: STUFE 1 (Add only). Vanilla traderKindDefs.stockGenerators
+    is appended, never replaced.
+-->
+<Patch>
+
+  <Operation Class="PatchOperationFindMod">
+    <mods><li>Royalty</li></mods>
+    <match Class="PatchOperationSequence">
+      <success>Normal</success>
+      <operations>
+
+        <li Class="PatchOperationTest">
+          <xpath>/Defs/TraderKindDef[defName="Empire_Caravan_TributeCollector"]</xpath>
+        </li>
+
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/TraderKindDef[defName="Empire_Caravan_TributeCollector"]
+                [not(stockGenerators/li[@Class="StockGenerator_MarketValue"])]</xpath>
+          <order>Append</order>
+          <value>
+            <li Class="StockGenerator_MarketValue">
+              <thingDefCategories>
+                <li>Rimconemy_IndustrialComponents</li>
+              </thingDefCategories>
+              <countRange>2~6</countRange>
+            </li>
+          </value>
+        </li>
+
+      </operations>
+    </match>
+  </Operation>
+
+</Patch>

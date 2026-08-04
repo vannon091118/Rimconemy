@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Rimconemy.Foundation.Maps;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -135,9 +136,11 @@ namespace Rimconemy.ScavengerInfrastructure.Plants
         public static Dictionary<string, int> CollectSpawnedPlants()
         {
             var result = new Dictionary<string, int>();
-            if (Find.Maps == null) return result;
 
-            foreach (var map in Find.Maps)
+            // Phase-2 / Welle 2 / Item #3 (2026-08-05): MapRegistry route.
+            // MapRegistry.GetPlayerHomeMaps() returns the tick-cached immutable
+            // snapshot; iterating it costs no LINQ closure allocation.
+            foreach (var map in MapRegistry.GetPlayerHomeMaps())
             {
                 if (map?.listerThings == null) continue;
                 var things = map.listerThings.AllThings;

@@ -38,7 +38,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             TestC5_SalvageMachinePartsRecipeExists();
             TestC6_BurnSteelScrapsRecipeWired();
             TestC7_CampfireHasAllRecipes();
-            TestC8_GeneratorHasTwoRefuelables();
+            TestC8_GeneratorHasSingleRefuelable();
             TestC9_CoalCategory();
             TestC10_MachinePartsCategory();
 
@@ -117,16 +117,18 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             }
         }
 
-        /// <summary>C6: Rimconemy_BurnSteelScraps RecipeDef still wired.</summary>
+        /// <summary>C6: Rimconemy_BurnSteelScraps RecipeDef still wired (Phase-First 5:1 ratio).</summary>
         private static void TestC6_BurnSteelScrapsRecipeWired()
         {
             var recipe = DefDatabase<RecipeDef>.GetNamedSilentFail("Rimconemy_BurnSteelScraps");
             AssertTrue(recipe != null, "C6.Rimconemy_BurnSteelScraps RecipeDef is loaded");
             if (recipe != null)
             {
-                bool producesSteel = recipe.products.Exists(p => 
-                    p.thingDef != null && p.thingDef.defName == "Steel" && p.count == 2);
-                AssertTrue(producesSteel, "C6.BurnSteelScraps produces 2 Steel");
+                // Phase-First contract (PHASE_PROGRESSION_CONTRACT.md): 5 SteelScraps -> 1 Steel.
+                // Updated 2026-08-05 to harden the 5:1 gate.
+                bool producesSteel = recipe.products.Exists(p =>
+                    p.thingDef != null && p.thingDef.defName == "Steel" && p.count == 1);
+                AssertTrue(producesSteel, "C6.BurnSteelScraps produces 1 Steel (5:1 Phase-First)");
             }
         }
 
@@ -150,8 +152,8 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             }
         }
 
-        /// <summary>C8: WoodCoalGenerator has Refuelable comps for fuels.</summary>
-        private static void TestC8_GeneratorHasTwoRefuelables()
+        /// <summary>C8: WoodCoalGenerator has exactly ONE Refuelable comp (Phase-First consolidation).</summary>
+        private static void TestC8_GeneratorHasSingleRefuelable()
         {
             var gen = DefDatabase<ThingDef>.GetNamedSilentFail("Rimconemy_WoodCoalGenerator");
             AssertTrue(gen != null, "C8.Rimconemy_WoodCoalGenerator ThingDef is loaded");
@@ -163,25 +165,21 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                     if (comp is CompProperties_Refuelable r)
                         refuelables.Add(r);
                 }
-                AssertTrue(refuelables.Count == 2,
-                    "C8.Generator has exactly 2 Refuelable comps");
+                // Phase-First (2026-08-05): duplicate Refuelable comp removed because
+                // Vanilla IM only instantiates the first; consolidation into a single
+                // Refuelable with WoodLog/Chemfuel/Rimconemy_Coal in fuelFilter.
+                AssertTrue(refuelables.Count == 1,
+                    "C8.Generator has exactly 1 Refuelable comp (Phase-First consolidation)");
 
-                // Check for WoodLog/Chemfuel Refuelable and its documented rate.
-                var woodRefuel = refuelables.Find(r => r.fuelFilter != null
-                    && r.fuelFilter.AllowedThingDefs.Any(d => d.defName == "WoodLog")
-                    && r.fuelFilter.AllowedThingDefs.Any(d => d.defName == "Chemfuel"));
-                AssertTrue(woodRefuel != null, "C8.Generator has WoodLog/Chemfuel Refuelable");
-                if (woodRefuel != null)
-                    AssertTrue(System.Math.Abs(woodRefuel.fuelConsumptionRate - 1.0f) < 0.001f,
-                        "C8.WoodLog/Chemfuel Refuelable has rate 1.0");
-
-                // Check for Coal Refuelable and its documented efficiency.
-                var coalRefuel = refuelables.Find(r => r.fuelFilter != null
-                    && r.fuelFilter.AllowedThingDefs.Any(d => d.defName == "Rimconemy_Coal"));
-                AssertTrue(coalRefuel != null, "C8.Generator has Coal Refuelable");
-                if (coalRefuel != null)
-                    AssertTrue(System.Math.Abs(coalRefuel.fuelConsumptionRate - 0.67f) < 0.001f,
-                        "C8.Coal Refuelable has rate 0.67");
+                var primaryRefuel = refuelables.Count > 0 ? refuelables[0] : null;
+                if (primaryRefuel != null && primaryRefuel.fuelFilter != null)
+                {
+                    bool hasWood = primaryRefuel.fuelFilter.AllowedThingDefs.Any(d => d.defName == "WoodLog");
+                    bool hasChem = primaryRefuel.fuelFilter.AllowedThingDefs.Any(d => d.defName == "Chemfuel");
+                    bool hasCoal = primaryRefuel.fuelFilter.AllowedThingDefs.Any(d => d.defName == "Rimconemy_Coal");
+                    AssertTrue(hasWood && hasChem && hasCoal,
+                        "C8.Generator Refuelable fuelFilter contains WoodLog+Chemfuel+Rimconemy_Coal");
+                }
             }
         }
 

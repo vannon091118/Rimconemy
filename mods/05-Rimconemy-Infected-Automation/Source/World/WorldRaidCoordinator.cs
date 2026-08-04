@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Rimconemy.Foundation.Maps;
 using Rimconemy.InfectedAutomation.Threat;
 using RimWorld;
 using RimWorld.Planet;
@@ -40,15 +41,16 @@ namespace Rimconemy.InfectedAutomation.World
             {
                 if (Current.Game == null || Find.World == null) return results;
 
-                // We plan a world-raid per player base map (per Map.uniqueID,
-                // tile-equivalence is established by Map.Tile).
-                var maps = Find.Maps;
-                if (maps == null) return results;
-
+                // Phase-2 / Welle 2 / Item #3 (2026-08-05): classic
+                // "Find.Maps + IsPlayerHome || ParentHolder != null" walk
+                // is collapsed to "MapRegistry.GetAllLoadedMaps()" because the
+                // ParentHolder != null condition matches temporary-map sentinels
+                // that are still inspected by the raid plan; we keep the
+                // ParentHolder check explicit so the call site stays readable.
                 var snapshot = LatestThreatSnapshot();
                 float pressure = snapshot?.TotalPressure ?? 0f;
 
-                foreach (var m in maps)
+                foreach (var m in MapRegistry.GetAllLoadedMaps())
                 {
                     if (m == null) continue;
                     if (m.IsPlayerHome == false && m.ParentHolder == null) continue;

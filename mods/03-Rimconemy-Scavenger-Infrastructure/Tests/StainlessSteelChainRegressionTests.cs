@@ -8,17 +8,18 @@ using Verse;
 namespace Rimconemy.ScavengerInfrastructure.Tests
 {
     /// <summary>
-    /// P1 StainlessSteel Chain Regression Gate (2026-08-04).
+    /// P1 StainlessSteel Chain Regression Gate (2026-08-04; Phase-First update 2026-08-05).
     ///
     /// Invariants:
     ///   S1: Rimconemy_StainlessSteel ThingDef exists and is valid.
     ///   S2: Rimconemy_MakeStainlessSteel RecipeDef exists (2 Steel + 1 MachineParts -> 2 StainlessSteel).
     ///   S3: Rimconemy_StainlessSteelTower ThingDef exists with correct cost.
-    ///   S4: Campfire has MakeStainlessSteel recipe wired.
+    ///   S4: Campfire has MakeStainlessSteel recipe wired (and the recipe is gated by Smithing research).
     ///   S5: StainlessSteel has Metallic stuffProps with correct stat factors.
     ///   S6: StainlessSteel category is Rimconemy_Scraps.
     ///   S7: Tower requires power (CompPowerTrader, 150W).
     ///   S8: Tower cost includes StainlessSteel + MachineParts + Steel.
+    ///   S9 (Phase-First 2026-08-05): MakeStainlessSteel has researchPrerequisites element.
     /// </summary>
     public static class StainlessSteelChainRegressionTests
     {
@@ -38,6 +39,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             TestS6_StainlessSteelCategory();
             TestS7_TowerRequiresPower();
             TestS8_TowerCost();
+            TestS9_MakeStainlessHasResearchGate();
 
             string summary = "[Rimconemy.ScavengerInfrastructure] StainlessSteelChain regression tests: "
                 + _passed + " passed, " + _failed + " failed.";
@@ -194,16 +196,34 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
 
         private static void AssertTrue(bool condition, string label)
         {
-            if (condition) 
+            if (condition)
             {
                 _passed++;
                 Log.Message("[StainlessSteelChainRegression] PASS: " + label);
             }
-            else 
-            { 
-                _failed++; 
-                Log.Error("[StainlessSteelChainRegression] FAIL: " + label); 
+            else
+            {
+                _failed++;
+                Log.Error("[StainlessSteelChainRegression] FAIL: " + label);
             }
+        }
+
+        /// <summary>S9: MakeStainlessSteel recipe now has researchPrerequisites (Phase-First).</summary>
+        private static void TestS9_MakeStainlessHasResearchGate()
+        {
+            var recipe = DefDatabase<RecipeDef>.GetNamedSilentFail("Rimconemy_MakeStainlessSteel");
+            if (recipe == null)
+            {
+                Log.Message("[StainlessSteelChainRegression] S9: MakeStainlessSteel not loaded yet; deferred.");
+                return;
+            }
+            AssertTrue(recipe.researchPrerequisites != null && recipe.researchPrerequisites.Count > 0,
+                "S9.MakeStainlessSteel has researchPrerequisites (Phase-First)");
+        }
+
+        private static void HelperPrintRecipeSignal(RecipeDef recipe)
+        {
+            // Reserved: future cross-SSOT signal printer (no-op placeholder).
         }
     }
 }

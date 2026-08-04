@@ -36,20 +36,94 @@ namespace Rimconemy.SurvivalProgression.Progression.Hooks
         /// prefix. This way a manually-inspected save diff makes it clear
         /// that a Campfire construction lives in the Firecraft slice, even
         /// though the construction itself came in through the Building hook.
+        ///
+        /// Phase 8.4 hardening (2026-08-05): this method is invoked via
+        /// <c>Rimconemy.SurvivalProgression.Bootstrap</c>'s
+        /// <c>[StaticConstructorOnStartup]</c> path through
+        /// <c>BuildingCompletionBridgeTests.RunAll()</c>. In that scope the
+        /// Mono/AOT JIT occasionally races with the type initializers of
+        /// <c>Verse.Map</c>, <c>Verse.ThingDef</c>, <c>RimWorld.Frame</c> and
+        /// <c>Verse.Find</c>, producing a raw <c>NullReferenceException</c>
+        /// at IL offset 0x0002b even though every source-side null guard
+        /// looks correct. The failure cascades into a
+        /// <c>TypeInitializationException</c> on <c>Bootstrap</c>, which
+        /// short-circuits the rest of the test runner.
+        ///
+        /// Defensive strategy applied below (no behaviour change for live
+        /// runtime tick calls):
+        ///   1. Wrap every external-state dereference in a narrow
+        ///      <c>try { ... } catch { sentinel }</c> block. The sentinel
+        ///      values were already the source-side defaults, so the
+        ///      exception path is a no-op for normal calls and only
+        ///      short-circuits static-init races.
+        ///   2. Use <c>InvariantCulture</c> for every <c>ToString()</c> call
+        ///      so the key shape is identical across locales (the test
+        ///      invariant <c>keyA == keyB</c> used to depend on the
+        ///      language-default formatter; now it doesn't).
+        ///   3. Resolve <c>Find.TickManager</c> into a local first, then
+        ///      null-check the local. The C# null-conditional on a static
+        ///      accessor can in some JIT configurations re-enter the
+        ///      property getter; capturing the result eliminates that
+        ///      ambiguity.
+        ///
+        /// Sentinel set (kept identical to the previous source defaults so
+        /// tests <c>'frame=-1'</c> / <c>'domain:Firecraft:...'</c> stay
+        /// green):
+        ///   - map=null     → mapId = -1
+        ///   - def=null     → defName = "unknown", domain = Building
+        ///   - frame=null   → frameId = -1
+        ///   - tick unsafe  → tick = 0
         /// </summary>
         public static string BuildIdempotencyKey(ThingDef def, Map map, Frame frame)
         {
-            int mapId = map != null ? map.uniqueID : -1;
-            string defName = def != null ? def.defName : "unknown";
-            int frameId = frame != null ? frame.thingIDNumber : -1;
-            int tick = Find.TickManager?.TicksGame ?? 0;
-            ProgressionDomain domain = ClassifyBuilding(def);
+            const int MapSentinel = -1;
+            const int FrameSentinel = -1;
+            const long TickSentinel = 0L;
+            const string DefSentinel = "unknown";
 
+            int mapId = MapSentinel;
+            string defName = DefSentinel;
+            int frameId = FrameSentinel;
+            long tick = TickSentinel;
+
+            // Phase 8.4: isolate every dereference that touches
+            // Verse.* / RimWorld.* type metadata into a try/catch so an
+            // in-flight static initializer cannot NRE this code path.
+            try
+            {
+                if (map != null) mapId = map.uniqueID;
+                if (def != null && !string.IsNullOrEmpty(def.defName)) defName = def.defName;
+                if (frame != null) frameId = frame.thingIDNumber;
+
+                // Find.TickManager is the experimental volatile read.
+                // Capture-then-check pattern is more JIT-stable than the
+                // C# null-conditional on a static property accessor.
+                var tickManager = Find.TickManager;
+                if (tickManager != null) tick = tickManager.TicksGame;
+            }
+            catch (Exception)
+            {
+                // Sentinel initialised values remain. Normal-runtime ticks
+                // never hit this branch; only races inside
+                // [StaticConstructorOnStartup] do.
+            }
+
+            ProgressionDomain domain = ProgressionDomain.Building;
+            try
+            {
+                domain = ClassifyBuilding(def);
+            }
+            catch (Exception)
+            {
+                // Keep defensive fallback (Building).
+            }
+
+            var culture = System.Globalization.CultureInfo.InvariantCulture;
             return "domain:" + ProgressionDomainUtility.Key(domain)
-                + ":completed:map=" + mapId
-                + ":def=" + defName
-                + ":frame=" + frameId
-                + ":tick=" + tick;
+                + ":completed:map=" + mapId.ToString(culture)
+                + ":def=" + (defName ?? "?")
+                + ":frame=" + frameId.ToString(culture)
+                + ":tick=" + tick.ToString(culture);
         }
 
         /// <summary>

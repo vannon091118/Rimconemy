@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rimconemy.Foundation.Colonials;
+using Rimconemy.Foundation.Maps;
 using Rimconemy.Foundation.Registry;
 using Rimconemy.ScavengerInfrastructure.Storage;
 using RimWorld;
@@ -341,16 +342,13 @@ namespace Rimconemy.InfectedAutomation.Story
 
         /// <summary>
         /// Single source of truth for "which map should IncidentParms target?".
-        /// Centralises the Find.AnyPlayerHomeMap → Find.Maps.FirstOrDefault()
-        /// fallback chain that previously appeared inline in QueueSelectedIncident
-        /// and BuildLiveSnapshot. Returns null if no map is loaded (main menu).
+        /// Reads from <see cref="MapRegistry.GetPrimaryPlayerHomeMap"/>
+        /// (Foundation-owned, tick-cached). Returns null if no map is loaded
+        /// (main menu).
         /// </summary>
         private static Map ResolveCanonicalPlayerMap()
         {
-            Map canonical = Find.AnyPlayerHomeMap;
-            if (canonical == null && Find.Maps != null && Find.Maps.Any())
-                canonical = Find.Maps.FirstOrDefault();
-            return canonical;
+            return MapRegistry.GetPrimaryPlayerHomeMap();
         }
 
         /// <summary>
@@ -388,8 +386,11 @@ namespace Rimconemy.InfectedAutomation.Story
                 : 0f;
 
             // Threat pressure (simplified: based on colony wealth + pawn count)
+            // Phase-2 / Welle 2 / Item #3 (2026-08-05): use MapRegistry to avoid
+            // null+IsPlayerHome re-filter. WealthTotal is a Tw-friendly getter
+            // already cached by RimWorld per Map.
             float wealthFactor = 0f;
-            foreach (var map in Find.Maps)
+            foreach (var map in MapRegistry.GetPlayerHomeMaps())
             {
                 if (map?.wealthWatcher != null)
                     wealthFactor += map.wealthWatcher.WealthTotal;

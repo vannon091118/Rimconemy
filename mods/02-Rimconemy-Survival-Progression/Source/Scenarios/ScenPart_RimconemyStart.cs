@@ -34,8 +34,11 @@ namespace Rimconemy.SurvivalProgression.Scenarios
         public const string EventKey_SteelScrapsScattered = "steel-scraps-scattered";
 
         // 1.6-validated DefNames (do not rename — they cross DLL boundaries).
+        // Owner-Package: 03 (Scavenger Infrastructure). Mod 02 only consumes the name
+        // via Capability-gated DefDatabase lookup (no compile-time reference).
         public const string DefName_ScrapRifle = "Rimconemy_ScrapRifle";
         public const string DefName_SteelScraps = "Rimconemy_SteelScraps";
+        public const string DefOwnerPackage_SteelScraps = "Rimconemy.ScavengerInfrastructure";
 
         // Spawn radius for the steel-scraps scatter (cells, squared).
         public const int SteelScrapsScatterRadius = 8;
@@ -146,12 +149,19 @@ namespace Rimconemy.SurvivalProgression.Scenarios
 
         private static void ScatterSteelScraps(Map map)
         {
+            // Def-SSOT lookup: this ScenPart is in Package 02; the owner of the
+            // Def is Package 03 (ScavengerInfrastructure). If Package 03 is not
+            // loaded, scatter is skipped with a controlled warning — never a hard
+            // exception. This preserves Core-only fallback & Anti-Softlock semantics.
+            // Phase-First alignment: only `Rimconemy_SteelScraps` is scattered here.
+            // Coal, MachineParts, StainlessSteel are intentionally NOT in EarlySurvival scatter.
             var scrapsDef = DefDatabase<ThingDef>.GetNamedSilentFail(DefName_SteelScraps);
             if (scrapsDef == null)
             {
                 Log.Warning(
                     $"[Rimconemy.SurvivalProgression] ScenPart_RimconemyStart: ThingDef '{DefName_SteelScraps}' not loaded. " +
-                    "Make sure Defs/ThingDefs/Resources/Rimconemy_SteelScraps.xml is in this package.");
+                    $"Owner is '{DefOwnerPackage_SteelScraps}' — ensure that package is enabled. " +
+                    "Early game continues without Iron-Scrap-Loot (Anti-Softlock honoured; production line is gated to Phase 2).");
                 return;
             }
 

@@ -1,0 +1,16 @@
+Rimconemy runtime test
+run=20260805-010541
+game=/home/vannon/GOG Games/RimWorld/game
+log=/home/vannon/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Player.log
+timeout=60
+deploy=false build=true start=true
+before_log_signature=5636871|85978|2026-08-05 01:01:36.355402862 +0200|954a71381e49910ca84ac8c5cd43addfe1e8096449dc6453272077958be03c6b
+
+after_log_signature=5648209|75471|2026-08-05 01:06:21.283565155 +0200|b4271d471db3f3d9b52c2f7403d4c66a5643237b3b71cf40371dcf02e82d49ee
+failures=1
+warnings=1
+result=FAIL
+failure_details_begin
+failure_details_end
+warning_details_begin
+warning_details_end

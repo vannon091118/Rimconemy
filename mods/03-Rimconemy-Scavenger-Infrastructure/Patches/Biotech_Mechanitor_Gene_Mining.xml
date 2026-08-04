@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Phase-First DLC Adapter (Task 12 — Biotech).
+
+  Purpose:
+    Additive Stufe-1-PatchOperationAdd gated by Biotech-DLC presence.
+    Trim_SenseDef-Speed Genes (Mining-Speed increases) get a
+    Rimconemy.Biotech.Gene.MinMiningBonus Ext so the Vanilla GeneDef's
+    statOffset can also reduce the MiningGate's threshold by 1 per Level
+    above target (Phase-3 Automation amplifier).
+-->
+<Patch>
+
+  <Operation Class="PatchOperationFindMod">
+    <mods><li>Biotech</li></mods>
+    <match Class="PatchOperationSequence">
+      <success>Normal</success>
+      <operations>
+
+        <li Class="PatchOperationTest">
+          <xpath>/Defs/GeneDef[defName="MiningYield"]</xpath>
+        </li>
+
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/GeneDef[defName="MiningYield"]
+                [not(modExtensions/li[@Class="Rimconemy.ScavengerInfrastructure.Biotech.GeneMiningExt"])]
+                /modExtensions</xpath>
+          <order>Append</order>
+          <value>
+            <li Class="Rimconemy.ScavengerInfrastructure.Biotech.GeneMiningExt">
+              <miningGateOffsetPerLevel>-1</miningGateOffsetPerLevel>
+            </li>
+          </value>
+        </li>
+
+      </operations>
+    </match>
+  </Operation>
+
+</Patch>

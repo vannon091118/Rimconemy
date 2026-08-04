@@ -113,6 +113,18 @@ namespace Rimconemy.Foundation.Save
         /// </summary>
         public bool IsSandboxMode { get; set; }
 
+        /// <summary>
+        /// Welle 2 / Item #10 (2026-08-05): opt-in toggle for the Performance
+        /// RuntimeMeter. When true, Foundation's RuntimeMeterSampler
+        /// GameComponent records tick-duration + GC-delta samples and emits a
+        /// rotation summary line every ~600 enabled-ticks (see
+        /// <see cref="RuntimeMeter"/>). Default false: profiling is OFF in
+        /// production saves; the operator/dev enables it via the next iteration
+        /// of FoundationDashboard. Setter is public so admin tools and the
+        /// dev-mode console can flip it without code changes.
+        /// </summary>
+        public bool EnableProfileMeter { get; set; }
+
         private bool _isLoadingSave;
 
         public FoundationSaveData(Game game)
@@ -126,6 +138,8 @@ namespace Rimconemy.Foundation.Save
             SavedEvents = new List<EventRecord>();
             EnableGlobalThemeOverride = false;
             IsSandboxMode = false;
+            // Welle 2 / Item #10: opt-in profile meter; default OFF in production.
+            EnableProfileMeter = false;
         }
 
         public override void ExposeData()
@@ -196,6 +210,12 @@ namespace Rimconemy.Foundation.Save
             bool sandboxMode = IsSandboxMode;
             Scribe_Values.Look(ref sandboxMode, "foundationIsSandboxMode", false);
             IsSandboxMode = sandboxMode;
+
+            // Welle 2 / Item #10: opt-in performance-meter flag (default false =
+            // production off). Scribe tag mirrors the property name for ease.
+            bool profileMeter = EnableProfileMeter;
+            Scribe_Values.Look(ref profileMeter, "foundationEnableProfileMeter", false);
+            EnableProfileMeter = profileMeter;
 
             // Replace the live history before adding load/migration diagnostics.
             if (_isLoadingSave)

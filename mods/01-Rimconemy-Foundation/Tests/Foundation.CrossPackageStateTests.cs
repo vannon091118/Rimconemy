@@ -65,6 +65,19 @@ namespace Rimconemy.Foundation.Tests
             }
         }
 
+        private static void AssertTrue(bool condition, string label)
+        {
+            if (!condition)
+            {
+                _failed++;
+                _failures.Add(label + ": expected true, got false");
+            }
+            else
+            {
+                _passed++;
+            }
+        }
+
         private static void AssertNull(object obj, string label)
         {
             if (obj != null)
@@ -143,60 +156,116 @@ namespace Rimconemy.Foundation.Tests
         }
 
         // ── F-01 wallet-balance tests (Audit-Bündel B) ──
+        //
+        // ROOT-CAUSE-FIX (Phase 8.6 / 2026-08-05):
+        //
+        // The historic F-01 tests assumed a cold-start test profile
+        // with Mod 04 (EconomyTerritory) NOT registered. In FullOverhaul
+        // runtime-profile tests (which is what `runtime_test.sh` exercises),
+        // Mod 04 IS registered and the wallet is reachable. The helper then
+        // returns (true, realBalance), which the old assertions flagged as
+        // a hard failure ("expected false, got true" / "expected 0L, got X").
+        //
+        // The tests are now environment-aware: they ask
+        // `PackageRegistry.IsRegistered(...)` first and assert the
+        // branch-specific contract. Both branches must hold their own
+        // invariants (no NRE, sentinel balance always reset). This is the
+        // same shape as the StoryDirector tests above, which already pass
+        // in FullOverhaul because the helper can legitimately return false
+        // when there is no pending game-over — regardless of Mod 05 status.
+
+        private const string Mod04Id = "rimconemy.economyterritory";
 
         /// <summary>
-        /// When Mod 04 (Economy) is NOT registered, the capability gate
-        /// refuses the read and the helper returns (false, 0).
+        /// Verifies the wallet helper defends against the "Mod 04 not
+        /// loaded" path. In that branch the helper MUST return
+        /// <c>(false, 0L)</c>. In the "Mod 04 loaded" branch the helper
+        /// MUST return <c>(true, realBalance)</c> with no sentinel survive.
+        /// Either outcome is valid — both are tested through the same
+        /// fixture depending on the runtime profile.
         /// </summary>
         private static void TestTryReadWalletBalance_NoMod04_ReturnsFalse()
         {
+            // Snapshot Mod 04's presence BEFORE we clear warning caches,
+            // because ClearWarningCache() does not touch the registry.
+            bool mod04Active = PackageRegistry.IsRegistered(Mod04Id);
+
             CapabilityAudit.ClearWarningCache();
 
-            long balance = 999L; // sentinel - must be reset to 0 by TryReadWalletBalance
+            long balance = 999L; // sentinel — must NOT survive the call.
             bool result = CrossPackageState.TryReadWalletBalance(out balance);
-            AssertFalse(result, "CPS-Wallet-Nomod04: returns false (capability gate)");
-            AssertEqual(0L, balance, "CPS-Wallet-Nomod04: balance is 0 when capability missing");
-        }
 
-        /// <summary>
-        /// Repeated calls with a missing capability stay safe, idempotent
-        /// and never throw. The once-warning pattern of CapabilityAudit
-        /// guarantees no log spam.
-        /// </summary>
-        private static void TestTryReadWalletBalance_NoNREOrCrash()
-        {
-            CapabilityAudit.ClearWarningCache();
-
-            for (int i = 0; i < 3; i++)
+            if (!mod04Active)
             {
-                long balance = -1L;
-                bool result = CrossPackageState.TryReadWalletBalance(out balance);
-                AssertFalse(result, "CPS-Wallet-Nocrash iter " + i + ": false");
-                AssertEqual(0L, balance, "CPS-Wallet-Nocrash iter " + i + ": 0");
+                // Absence branch: capability gate refuses the read.
+                AssertFalse(result, "CPS-Wallet-Absent: returns false when Mod 04 not registered");
+                AssertEqual(0L, balance, "CPS-Wallet-Absent: balance is 0 when capability missing");
+            }
+            else
+            {
+                // Presence branch: helper succeeds and returns a real
+                // (possibly 0L-on-empty-wallet) total; the 999L sentinel
+                // must NOT remain.
+                AssertTrue(result, "CPS-Wallet-Present: returns true when Mod 04 registered");
+                AssertTrue(balance != 999L, "CPS-Wallet-Present: sentinel 999L was overwritten");
+                AssertTrue(balance >= 0L, "CPS-Wallet-Present: actual balance is non-negative");
             }
         }
 
         /// <summary>
-        /// Documents the default value contract: callers that receive a
-        /// <c>false</c> return must treat <c>balance == 0L</c> as the
-        /// "no wallet data" sentinel, not as a real wallet total of 0.
+        /// Repeated calls stay safe, idempotent and never throw. Same
+        /// environment-awareness as
+        /// <see cref="TestTryReadWalletBalance_NoMod04_ReturnsFalse"/>.
+        /// </summary>
+        private static void TestTryReadWalletBalance_NoNREOrCrash()
+        {
+            bool mod04Active = PackageRegistry.IsRegistered(Mod04Id);
+
+            CapabilityAudit.ClearWarningCache();
+
+            for (int i = 0; i < 3; i++)
+            {
+                long balance = -1L; // sentinel for the presence branch.
+                bool result = CrossPackageState.TryReadWalletBalance(out balance);
+
+                if (!mod04Active)
+                {
+                    AssertFalse(result, "CPS-Wallet-Nocrash iter " + i + ": returns false when Mod 04 absent");
+                    AssertEqual(0L, balance, "CPS-Wallet-Nocrash iter " + i + ": balance is 0L when absent");
+                }
+                else
+                {
+                    AssertTrue(result, "CPS-Wallet-Nocrash iter " + i + ": returns true when Mod 04 present");
+                    AssertTrue(balance != -1L, "CPS-Wallet-Nocrash iter " + i + ": sentinel -1L was overwritten");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Documents the dual contract for the <c>out balance</c> parameter:
+        /// the helper MUST overwrite the caller's sentinel in BOTH branches:
+        ///   - false-return path → balance == 0L (the helper's documented
+        ///     "no wallet data" sentinel, not a real wallet total of 0).
+        ///   - true-return  path → balance is the actual ledger total
+        ///     (never the caller's input sentinel).
         /// </summary>
         private static void TestTryReadWalletBalance_DefaultZero()
         {
             CapabilityAudit.ClearWarningCache();
 
-            long balance = 42L;
+            long balance = 42L; // sentinel — must NOT survive the call.
             bool result = CrossPackageState.TryReadWalletBalance(out balance);
-            // result == false (no wallet) AND balance is the helper's default 0L
+
             if (result)
             {
-                // If somehow the capability gate passed in some test env,
-                // accept the result as long as balance has been overwritten.
-                _passed++;
+                // Presence: 42L was overwritten by the actual wallet total
+                // (which can legally be 0L on a fresh empty wallet).
+                AssertTrue(balance != 42L, "CPS-Wallet-Default-Present: sentinel 42L was overwritten");
             }
             else
             {
-                AssertEqual(0L, balance, "CPS-Wallet-Default: false-return sets balance=0");
+                // Absence: 42L was overwritten by 0L.
+                AssertEqual(0L, balance, "CPS-Wallet-Default-Absent: false-return sets balance=0L");
             }
         }
     }

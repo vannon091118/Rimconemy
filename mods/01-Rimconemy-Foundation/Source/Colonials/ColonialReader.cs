@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rimconemy.Foundation.Maps;
 using RimWorld;
 using Verse;
 
@@ -66,10 +67,13 @@ namespace Rimconemy.Foundation.Colonials
             List<Pawn> result = new List<Pawn>();
             try
             {
-                if (Find.Maps == null) return result;
-
+                // Phase-2 / Welle 2 / Item #3 (2026-08-05): use MapRegistry
+                // (Foundation-owned, tick-cached IReadOnlyList<Map>) instead
+                // of enumerating Find.Maps directly. Eliminates LINQ-clause
+                // allocation per call and aligns semantics with sibling
+                // consumers in Mod 03 / Mod 05.
                 var seen = new HashSet<int>();
-                foreach (var map in Find.Maps)
+                foreach (var map in MapRegistry.GetPlayerHomeMaps())
                 {
                     if (map?.mapPawns?.FreeColonistsSpawned == null) continue;
                     foreach (var p in map.mapPawns.FreeColonistsSpawned)
