@@ -16,7 +16,8 @@ DEFAULT_LOG="$HOME/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Pla
 
 LOG_PATH="${1:-$DEFAULT_LOG}"
 STRICT_MODE=false
-[[ "${1:-}" == "--strict" || "${2:-}" == "--strict" ]] && STRICT_MODE=true
+[[ "${1:-}" == "--strict" ]] && { STRICT_MODE=true; LOG_PATH="$DEFAULT_LOG"; }
+[[ "${2:-}" == "--strict" ]] && STRICT_MODE=true
 
 FAILURES=0
 WARNINGS=0
