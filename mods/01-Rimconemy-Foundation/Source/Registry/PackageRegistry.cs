@@ -213,7 +213,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.SurvivalProgression",
                 packageId: "rimconemy.survivalprogression",
-                packageVersion: "0.1.30",
+                packageVersion: "0.1.31",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.survivalprogression.needs", 1),
