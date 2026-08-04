@@ -22,7 +22,9 @@ namespace Rimconemy.ScavengerInfrastructure.Building
     /// </summary>
     public static class BauschuttRemapService
     {
-        public const string BauschuttDefName = "Rimconemy_Bauschutt";
+        // Canonical Package-03 material identity. Keep this aligned with the
+        // single ThingDef used by StorageQuery, Economy transfers, and Wall stuff.
+        public const string BauschuttDefName = "Rimconemy_ConstructionDebris";
 
         public struct RemapProposal
         {

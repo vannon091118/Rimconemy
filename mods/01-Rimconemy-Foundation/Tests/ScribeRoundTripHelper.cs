@@ -179,12 +179,12 @@ namespace Rimconemy.Foundation.Tests
             {
                 // ── Restore original Scribe-State ─────────
                 // Scribe.mode-Restore: Fallback wenn BackingField nicht gefunden wird.
-                typeof(Scribe).GetField("<mode>k__BackingField",
+                var modeField = typeof(Scribe).GetField("<mode>k__BackingField",
                     BindingFlags.Static | BindingFlags.NonPublic)
-                    ?.SetValue(null, savedMode)
                     ?? typeof(Scribe).GetField("modeInternal",
-                        BindingFlags.Static | BindingFlags.NonPublic)
-                        ?.SetValue(null, savedMode);
+                        BindingFlags.Static | BindingFlags.NonPublic);
+                if (modeField != null)
+                    modeField.SetValue(null, savedMode);
 
                 if (saverField != null)
                 {

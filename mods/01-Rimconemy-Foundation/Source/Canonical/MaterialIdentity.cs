@@ -245,7 +245,7 @@ namespace Rimconemy.Foundation.Canonical
             if (def == null) return string.Empty;
             if (!_ready) Reindex();
             string tag;
-            if (_tagByHash.TryGetValue(HashKey(def), out tag))
+            if (_tagByName.TryGetValue(def.defName ?? string.Empty, out tag))
                 return tag;
             return def.defName ?? string.Empty;
         }
@@ -256,9 +256,9 @@ namespace Rimconemy.Foundation.Canonical
         /// <summary>Internal test helper: pseudo-clear for synthetic Reindex tests.</summary>
         internal static void ResetForTests()
         {
-            _primaryByHash = null;
-            _secondaryByHash = null;
-            _tagByHash = null;
+            _primaryByName = null;
+            _secondaryByName = null;
+            _tagByName = null;
             _ready = false;
             Reindex();
         }
@@ -273,9 +273,8 @@ namespace Rimconemy.Foundation.Canonical
     /// RimWorld 1.6 internally emits a red <c>Log.Error("Keyed missing…")</c>
     /// BEFORE the user's catch can intervene, so missing localized strings
     /// flooded the operator log even though the runtime value was safe.
-    /// The current implementation uses <see cref="LoadedLanguage.HasKey"/>
-    /// (RimWorld 1.6 API) as a precheck and only calls <c>.Translate()</c>
-    /// when the key actually exists.
+    /// The current implementation uses try/catch with <c>.Translate()</c>
+    /// since HasKey is not available in RimWorld 1.6.
     /// </summary>
     public static class RimconemyKeyed
     {
@@ -284,7 +283,6 @@ namespace Rimconemy.Foundation.Canonical
             if (string.IsNullOrEmpty(key)) return fallback;
             try
             {
-                if (!LoadedLanguage.HasKey(key)) return fallback;
                 string translated = key.Translate();
                 if (string.IsNullOrEmpty(translated) || translated == key)
                     return fallback;

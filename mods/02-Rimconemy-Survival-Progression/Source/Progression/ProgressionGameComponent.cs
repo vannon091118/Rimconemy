@@ -327,6 +327,7 @@ namespace Rimconemy.SurvivalProgression.Progression
             }
 
             snapshot.PawnLabel = pawn.LabelShortCap;
+            EnsureNeedAmplifier(pawn);
             // Track 2-C / S-T1: sample through NeedMappingService. The
             // Setting Needdefs (Rimconemy_Need_Food/Safety/Social) are NOT
             // attached to pawns - they are documented identities. The
@@ -343,6 +344,26 @@ namespace Rimconemy.SurvivalProgression.Progression
             snapshot.LastUpdatedTick = LastUpdateTick;
             UpdateWorkEpisode(snapshot, pawn);
             snapshot.ResearchCapabilities = new List<string>(ResearchCapabilities);
+        }
+
+        private static void EnsureNeedAmplifier(Pawn pawn)
+        {
+            if (pawn?.health?.hediffSet == null)
+                return;
+
+            HediffDef def = DefDatabase<HediffDef>.GetNamedSilentFail("Rimconemy_NeedAmplifier");
+            if (def == null)
+                return;
+
+            Hediff existing = pawn.health.hediffSet.GetFirstHediffOfDef(def);
+            Hediff_NeedAmplifier amplifier = existing as Hediff_NeedAmplifier;
+            if (amplifier == null)
+            {
+                amplifier = pawn.health.AddHediff(def) as Hediff_NeedAmplifier;
+            }
+
+            if (amplifier != null)
+                amplifier.Severity = Hediff_NeedAmplifier.SeverityForPawn(pawn);
         }
 
         private static void UpdateWorkEpisode(ProgressionSnapshot snapshot, Pawn pawn)

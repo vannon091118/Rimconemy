@@ -17,7 +17,7 @@ namespace Rimconemy.ScavengerInfrastructure.Building
     ///   2. <see cref="ApplyRemap"/> ist der Storage-Bridge-Entry-Point:
     ///      liest <see cref="StorageQuery.ReadStorage"/> und füllt <c>ApplyInput</c>.
     ///   3. <see cref="ApplyRemapCore"/> ist die vanilla-vanilla-Mutation: blue-print
-    ///      placement via <c>GenPlace.TryPlaceBlueprint</c>. Keine Vanilla-Patch.
+    ///      placement via vanilla <c>GenConstruct.PlaceBlueprintForBuild</c>. Keine Vanilla-Patch.
     ///   4. <see cref="Designator_BuildWallBauschutt"/> ist der UI-Hook: vanilla
     ///      Architektur-Tab ruft über ProcessInput <c>ApplyRemap</c> auf ohne
     ///      Harmony-Transpiler.
@@ -33,12 +33,12 @@ namespace Rimconemy.ScavengerInfrastructure.Building
     ///   - <see cref="CandidateCellOverride"/> ersetzt enumerator.
     ///   - <see cref="WallSlotPredicateOverride"/> ersetzt occupied-check.
     ///   - <see cref="StuffDefResolver"/> ersetzt DefDatabase (für Test-mock).
-    ///   - <see cref="BlueprintPlacerOverride"/> ersetzt GenPlace.TryPlaceBlueprint.
+    ///   - <see cref="BlueprintPlacerOverride"/> ersetzt den Vanilla-Blueprint-Aufruf.
     ///   - <see cref="PlaceAttempts"/> zählt Place-Versuche.
     /// Keine aktiven Test-Effekte bei Default-Werten (alle null / 0).
     ///
     /// Vanilla-Healthy-Verification:
-    ///   - <c>GenPlace.TryPlaceBlueprint</c> ist vanilla-native; keine Hooks.
+    ///   - <c>GenConstruct.PlaceBlueprintForBuild</c> ist vanilla-native; keine Hooks.
     ///   - Position-Picker ergreift Edge-Cells deterministisch
     ///     (kleinster (x,z) zuerst) — reproduzierbar für Regression-Tests.
     ///   - Reale Build-Phase-Verifikation bleibt Runtime-Gate via
@@ -92,16 +92,15 @@ namespace Rimconemy.ScavengerInfrastructure.Building
 
         /// <summary>
         /// Optional Test-Hook: wenn != null, ersetzt dies
-        /// <c>GenPlace.TryPlaceBlueprint</c>. Tests setzen eine Lambda die
-        /// zählt + einen nicht-null Blueprint-Stub liefert — so kann der
-        /// Placement-Count deterministisch gemessen werden, ohne echten
-        /// Blueprint-Construction-Cycle.
+        /// den Vanilla-Aufruf. Tests setzen eine Lambda, die true liefert —
+        /// so kann der Placement-Count deterministisch gemessen werden, ohne
+        /// einen echten Blueprint-Construction-Cycle.
         /// </summary>
-        public static Func<ThingDef, IntVec3, Map, Rot4, Faction, ThingDef, Blueprint> BlueprintPlacerOverride = null;
+        public static Func<ThingDef, IntVec3, Map, Rot4, Faction, ThingDef, bool> BlueprintPlacerOverride = null;
 
         /// <summary>
         /// Counter: wird bei jedem Place-Versuch inkrementiert (vor dem Aufruf
-        /// von GenPlace.TryPlaceBlueprint oder der Override-Lambda). Tests resetten
+        /// vom Vanilla-Aufruf oder der Override-Lambda). Tests resetten
         /// auf 0 und lesen nach der Operation.
         /// </summary>
         public static int PlaceAttempts = 0;
@@ -149,7 +148,7 @@ namespace Rimconemy.ScavengerInfrastructure.Building
             /// <summary>Anzahl platzierter Wall-Blueprints (= BauschuttConsumed bei Success).</summary>
             public int WallsPlaced;
 
-            /// <summary>Bauschutt-Count der aus Storage gelesen wurde und Blueprints speist.</summary>
+            /// <summary>Logisch zugeordneter Bauschutt-Count; Storage bleibt read-only und wird nicht physisch reduziert.</summary>
             public int BauschuttConsumed;
 
             /// <summary>Zellen, an denen Blueprints platziert wurden (deterministisch sortiert).</summary>
@@ -234,7 +233,10 @@ namespace Rimconemy.ScavengerInfrastructure.Building
                 Faction faction = FactionOverride != null
                     ? FactionOverride()
                     : (input.BuilderFaction ?? Faction.OfPlayer);
-                if (faction == null)
+                // A map mutation requires a real owner faction. The boolean
+                // placement seam is deliberately allowed to run without one
+                // because bootstrap tests have no active game/faction context.
+                if (faction == null && BlueprintPlacerOverride == null)
                 {
                     result.ReasonBlocked = "Builder Faction is null";
                     return result;
@@ -263,32 +265,36 @@ namespace Rimconemy.ScavengerInfrastructure.Building
                         continue;
                     }
 
-                    // Vanilla-mutation via GenPlace.TryPlaceBlueprint
+                    // Vanilla mutation via GenConstruct.PlaceBlueprintForBuild.
                     PlaceAttempts += 1;
-                    Blueprint blueprint;
+                    bool placed;
                     if (BlueprintPlacerOverride != null)
                     {
-                        blueprint = BlueprintPlacerOverride(wallDef, cell, map, Rot4.North, faction, stuffDef);
+                        placed = BlueprintPlacerOverride(wallDef, cell, map, Rot4.North, faction, stuffDef);
                     }
                     else
                     {
-                        blueprint = GenPlace.TryPlaceBlueprint(
+                        var blueprint = GenConstruct.PlaceBlueprintForBuild(
                             wallDef,
                             cell,
                             map,
                             Rot4.North,
                             faction,
                             stuffDef);
+                        placed = blueprint != null;
                     }
 
-                    if (blueprint == null)
+                    if (!placed)
                     {
                         if (result.PlacementFailures.Count < 5)
-                            result.PlacementFailures.Add(cell + ": GenPlace returned null");
+                            result.PlacementFailures.Add(cell + ": blueprint placement returned null/false");
                         continue;
                     }
 
                     result.WallsPlaced += 1;
+                    // This is a logical allocation for the result only. Package 03's
+                    // StorageQuery is read-only; physical consumption remains a
+                    // separate owner-approved Storage-Write gate.
                     result.BauschuttConsumed += 1;
                     result.PlacedAt.Add(cell);
                     remaining -= 1;
@@ -412,8 +418,8 @@ namespace Rimconemy.ScavengerInfrastructure.Building
             if (!cell.InBounds(map)) return false;
 
             // Edge-zone: x oder z am Rand (1-cell-buffer für visuell Place-Markierung)
-            int xEdge = (cell.x == 0 || cell.x == map.Size.x - 1);
-            int zEdge = (cell.z == 0 || cell.z == map.Size.z - 1);
+            bool xEdge = (cell.x == 0 || cell.x == map.Size.x - 1);
+            bool zEdge = (cell.z == 0 || cell.z == map.Size.z - 1);
             if (!xEdge && !zEdge) return false;
 
             // Bereits belegt?

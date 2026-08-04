@@ -137,6 +137,10 @@ if [[ -f "$LOG_PATH" ]]; then
         'StorySelector tests: [0-9]+ passed, 0 failed'
         'BuildingCore regression tests: [0-9]+ passed, 0 failed'
         'Profile detector dedup tests: [0-9]+ passed, 0 failed'
+        'CampfireScraps regression tests: [0-9]+ passed, 0 failed'
+        'BauschuttRemapApply tests: [0-9]+ passed, 0 failed'
+        'ArrowTurretBlock tests: [0-9]+ passed, 0 failed'
+        'CoalChain regression tests: [0-9]+ passed, 0 failed'
     )
     for summary in "${REQUIRED_SUMMARIES[@]}"; do
         has_match "$summary" "$LOG_PATH" && pass "summary: $summary" || warn "summary missing: $summary"

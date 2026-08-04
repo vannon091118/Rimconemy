@@ -3,12 +3,11 @@
   <!--
     Phase-2.7 (2026-08-04): Begleit-Hediff Rimconemy_NeedAmplifier.
 
-    Hook-Mechanik OHNE Harmony-Transpiler: die Hediff-Klasse
-    Hediff_NeedAmplifier ueberschreibt die vanilla-virtuelle Property
-    Hediff.HungerRateFactor. Vanilla iteriert in HediffSet.GetHungerRateFactor()
-    ueber alle Hediffs und multipliziert deren Werte; unser Override liefert
-    den NeedAmplifier.AmplifierFactor(need.CurLevelPercentage) in [0.7, 1.4]
-    und uebertraegt damit den Sample-Amplifier in Vanilla-Hunger-Tick.
+    Hook-Mechanik OHNE Harmony-Transpiler: RimWorld 1.6 liest
+    hungerRateFactor aus der aktuellen HediffStage in
+    HediffSet.GetHungerRateFactor(). Hediff_NeedAmplifier spiegelt den
+    Vanilla-Food-Sample in Severity; die XML-Stages liefern daraus 0.7,
+    1.0 oder 1.4 fuer den nativen Hunger-Tick.
 
     Owner: Survival & Progression (Paket 02). Sole-Owner per
     INTERFACE_CONTRACT §9.1 — kein Cross-Package-Schreiben.
@@ -16,10 +15,9 @@
     Q14-Contract: Setting-NeedDefs werden NICHT an Pawns angehaengt; das
     hier ist ein eigenstaendiges Hediff ohne Setting-Need-Coupling.
 
-    Code-Reviewer-Pass 2026-08-04: capMods in den Stages entfernt — die
-    HungerRate-Wert-Multiplikation kommt allein aus dem Hediff-Override,
-    nicht aus vanilla-Capacity-capMods. Stages sind reine Labels fuer die
-    Severity-Bereichszuordnung.
+    Code-Reviewer-Pass 2026-08-04: keine Hediff-Comps noetig. Die
+    Severity wird direkt von der eigenen Hediff-Klasse aktualisiert; die
+    Stage-Werte sind die native RimWorld-1.6-Hunger-Multiplikation.
 
     Stage-Schwellen vs SeverityOffset:
       satiated: minSeverity 0.05  (Sample 1.0 → Severity 0.05)
@@ -29,33 +27,29 @@
   <HediffDef ParentName="DiseaseBase">
     <defName>Rimconemy_NeedAmplifier</defName>
     <hediffClass>Rimconemy.SurvivalProgression.Needs.Hediff_NeedAmplifier</hediffClass>
-    <defaultSeverity>0.5</defaultSeverity>
+    <initialSeverity>0.5</initialSeverity>
+    <description>Amplifies the vanilla hunger rate from the survival progression need sample.</description>
     <!-- Min-Severity 0.05: bleicht ueber Lifetime non-negative.
          NeedAmplifier.SeverityOffset() mappt in [0.05, 1.0] -->
     <minSeverity>0.05</minSeverity>
     <maxSeverity>1.0</maxSeverity>
     <isBad>false</isBad>
     <scenarioCanAdd>true</scenarioCanAdd>
-    <comps>
-      <!-- Belt-and-Suspenders: severityPerDay=0 plus Klassen-Override
-           TendencySeverityChangePerDay=0. Beide verhindern Severity-Drift
-           unabhaengig voneinander via vanilla-Code-Pfade. -->
-      <li Class="HediffCompProperties_SeverityPerDay">
-        <severityPerDay>0</severityPerDay>
-      </li>
-    </comps>
     <stages>
       <li>
         <label>satiated</label>
         <minSeverity>0.0</minSeverity>
+        <hungerRateFactor>0.7</hungerRateFactor>
       </li>
       <li>
         <label>neutral</label>
         <minSeverity>0.45</minSeverity>
+        <hungerRateFactor>1.0</hungerRateFactor>
       </li>
       <li>
         <label>hungry</label>
         <minSeverity>0.85</minSeverity>
+        <hungerRateFactor>1.4</hungerRateFactor>
       </li>
     </stages>
   </HediffDef>
