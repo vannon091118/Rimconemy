@@ -51,7 +51,6 @@
       <li>Rimconemy_CraftingStations</li>
     </thingCategories>
     <interactionCellOffset>(0,0,-1)</interactionCellOffset>
-    <surfacePosition>0</surfacePosition>
     <passability>PassThroughOnly</passability>
     <size>(1,1)</size>
   </ThingDef>
