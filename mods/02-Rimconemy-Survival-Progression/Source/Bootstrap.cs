@@ -71,6 +71,8 @@ namespace Rimconemy.SurvivalProgression
             ScenarioContractTests.RunAll();
             BuildingProgressionRegressionTests.RunAll();
             BuildingProgressionPersistenceRegressionTests.RunAll();
+            // Phase-4.2 Character Setup Save-State: schema + upsert + Get round-trip.
+            Tests.CharacterSetupStateRegressionTests.RunAll();
             Log.Message("[Rimconemy.SurvivalProgression] Building XP adapter available; live construction-output hook remains an interactive A-gate.");
         }
     }

@@ -218,7 +218,7 @@ Credits bleiben davon getrennt und dürfen nicht als physische Lagerware ausgege
 - StorageSnapshot als **einzige** Quelle für UI + StoryDirector + Economy nachweisen (G4-Gate); Kartenwechsel-/Save-Load-Konsistenz und 11 H4-Randfälle (unloaded Map, Caravan, Cache, Credits …).
 - Startalter 18/18 beim Pawn-Generator erzwingen (`FixedBiologicalAge`); `FixAge`-Reflection-Fallback aktiv (siehe `Page_ConfigureStartingPawnsBioPatch`), direkter `PawnGenerationRequest`-Spike in `docs/H6-pawn-generator-api-spike.md` (UNVERIFIED).
 - `SingleSurvivor.xml` erweitern (aktuell 1 Pawn, 8 Kandidaten, kein Generator-Zwang).
-- `CharacterSetupState`/Scribe-Schema mit Schema-Version, Seed, Skills, Trait-IDs; persistenter Runtime-Seed.
+- `CharacterSetupState`/Scribe-Schema mit `SchemaVersion` + `Applied`-Flag + `Records[thingIDNumber]->PawnSetupRecord(SkillDefNames/SkillLevels parallel + TraitDefNames + NeutralBand)` vorhanden (`mods/02/Source/Character/CharacterSetupState.cs`); Live-Schema-Bump-Pfad in `ExposeData` PostLoadInit. Persistente Seed-Stütze noch in Phase-4.3 vorgesehen.
 - Bio-Remap- und Save/Load-Live-Test; H5-Balance-Gate für Budget 30 und Neutralzone `[-5,+3]`.
 
 **Fortschritt Phase 3 (0.0.24-Patch, 2026-08-04):**
@@ -430,7 +430,7 @@ Ohne `SURVIVED`-Berichte mit A–G-Belegen gilt keine Übergabe:
 - StorageSnapshot als **einzige** Quelle für UI + StoryDirector + Economy nachweisen (G4-Gate); Kartenwechsel-/Save-Load-Konsistenz und 11 H4-Randfälle (unloaded Map, Caravan, Cache, Credits …).
 - Startalter 18/18 beim Pawn-Generator erzwingen (`FixedBiologicalAge`); `FixAge`-Reflection-Fallback aktiv (siehe `Page_ConfigureStartingPawnsBioPatch`), direkter `PawnGenerationRequest`-Spike in `docs/H6-pawn-generator-api-spike.md` (UNVERIFIED).
 - `SingleSurvivor.xml` erweitern (aktuell 1 Pawn, 8 Kandidaten, kein Generator-Zwang).
-- `CharacterSetupState`/Scribe-Schema mit Schema-Version, Seed, Skills, Trait-IDs; persistenter Runtime-Seed.
+- `CharacterSetupState`/Scribe-Schema mit `SchemaVersion` + `Applied`-Flag + `Records[thingIDNumber]->PawnSetupRecord(SkillDefNames/SkillLevels parallel + TraitDefNames + NeutralBand)` vorhanden (`mods/02/Source/Character/CharacterSetupState.cs`); Live-Schema-Bump-Pfad in `ExposeData` PostLoadInit. Persistente Seed-Stütze noch in Phase-4.3 vorgesehen.
 - Bio-Remap- und Save/Load-Live-Test; H5-Balance-Gate für Budget 30 und Neutralzone `[-5,+3]`.
 
 ### 8.5 Phase 5 — Vanilla-/DLC-Adapter (offen)
