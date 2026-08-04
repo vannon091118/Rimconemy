@@ -37,6 +37,9 @@ namespace Rimconemy.ScavengerInfrastructure
             // rimconemy.scavengerinfrastructure.power capability is active.
             Log.Message("[Rimconemy.ScavengerInfrastructure] PowerChainService exposes live PowerChainSnapshot for capability-gated readers.");
             Tests.BuildingCoreRegressionTests.RunAll();
+            // Phase 3 / H4 §4 (Caravan extension): sentinel encoding,
+            // decoding and roundtrip, plus empty-snapshot guard.
+            Tests.CaravanStorageRegressionTests.RunAll();
         }
     }
 }

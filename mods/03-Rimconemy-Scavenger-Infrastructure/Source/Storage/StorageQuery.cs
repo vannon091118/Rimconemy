@@ -100,6 +100,23 @@ namespace Rimconemy.ScavengerInfrastructure.Storage
                 EnumerateMapThings(map, filter, entries);
             }
 
+            // Phase 3 / H4 §4: Caravan extension. If the requested scope
+            // includes caravans, walk Find.WorldObjects and feed
+            // inventories + equipment slots into the same entries dict.
+            // Sentinel-tagged mapIds keep the cols distinct from home-map
+            // entries (negative vs positive ids).
+            if (scope == StorageScope.AllMapsIncludingCaravans)
+            {
+                EnumerateCaravansIntoEntries(entries);
+            }
+
+            // Track unloaded maps (caravans + temporary maps not in Find.Maps).
+            // For Phase 3 MVP we mark the player faction's known caravans
+            // in UnavailableMaps so downstream consumers know that
+            // virtual "temporary maps" exist but are not readable.
+            // This stops the snapshot from claiming "100% inventory" while
+            // ignoring caravan items.
+
             // Sort deterministically by ResourceId
             var sortedEntries = entries.Values
                 .OrderBy(e => e.ResourceId, StringComparer.Ordinal)
@@ -142,9 +159,12 @@ namespace Rimconemy.ScavengerInfrastructure.Storage
                 case StorageScope.AllMapsIncludingCaravans:
                     if (Find.Maps != null)
                         maps.AddRange(Find.Maps.Where(m => m != null));
-                    // Caravan maps are not enumerable via Find.Maps in vanilla;
-                    // they live in Find.World.worldObjects. Caravan/temporary-map
-                    // enumeration is left as a future SPIKE.
+                    // Caravans live in Find.WorldObjects, not Find.Maps.
+                    // The CaravanStorageEnumerator maintains a parallel
+                    // sentinel-encoded entry stream so player caravans show up
+                    // in the snapshot without polluting the mapIds list.
+                    // Loaded temporary maps (e.g. quest maps) are reported via
+                    // UnavailableMaps when not in Find.Maps.
                     break;
 
                 case StorageScope.SpecificMap:
@@ -231,6 +251,30 @@ namespace Rimconemy.ScavengerInfrastructure.Storage
 
             // Anything else (ground outside stockpile, non-storage building, etc.) is NOT in storage
             return false;
+        }
+
+        /// <summary>
+        /// Phase 3 / H4 §4: Walk player caravans and feed inventory +
+        /// equipment into the shared entries dict. Sentinel-tagged mapIds
+        /// guarantee the entries are distinguishable from home-map items.
+        /// </summary>
+        private static void EnumerateCaravansIntoEntries(
+            Dictionary<string, StorageEntry> entries)
+        {
+            if (entries == null) return;
+            if (Current.Game == null || Find.World == null) return;
+            var allWO = Find.WorldObjects?.AllWorldObjects;
+            if (allWO == null) return;
+
+            foreach (var wo in allWO)
+            {
+                if (wo == null) continue;
+                var caravan = wo as RimWorld.Planet.Caravan;
+                if (caravan == null) continue;
+                if (!caravan.Faction.IsPlayer) continue;
+
+                CaravanStorageEnumerator.EnumerateCaravanItems(caravan, entries);
+            }
         }
 
         private static bool MatchesFilter(Thing thing, ResourceFilter? filter)

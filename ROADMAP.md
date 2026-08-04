@@ -213,6 +213,35 @@ Credits bleiben davon getrennt und dürfen nicht als physische Lagerware ausgege
 
 **Gate:** UI, Story Writer und spätere Economy lesen dieselbe Storage-Snapshotquelle; Kartenwechsel und Save/Load erzeugen keine abweichenden Bestände.
 
+### 8.4 Phase 3/4 — Storage-only + Character Setup (offen)
+
+- StorageSnapshot als **einzige** Quelle für UI + StoryDirector + Economy nachweisen (G4-Gate); Kartenwechsel-/Save-Load-Konsistenz und 11 H4-Randfälle (unloaded Map, Caravan, Cache, Credits …).
+- Startalter 18/18 beim Pawn-Generator erzwingen (`FixedBiologicalAge`); `FixAge`-Fallback ist dokumentierter Workaround, kein API-Gate.
+- `SingleSurvivor.xml` erweitern (aktuell 1 Pawn, 8 Kandidaten, kein Generator-Zwang).
+- `CharacterSetupState`/Scribe-Schema mit Schema-Version, Seed, Skills, Trait-IDs; persistenter Runtime-Seed.
+- Bio-Remap- und Save/Load-Live-Test; H5-Balance-Gate für Budget 30 und Neutralzone `[-5,+3]`.
+
+**Fortschritt Phase 3 (0.0.24-Patch, 2026-08-04):**
+
+- ✅ **Caravan-Erweiterung** der `StorageQuery.AllMapsIncludingCaravans`-Scope — `CaravanStorageEnumerator` aggregiert Caravan-Inventare + Equipment über `Find.WorldObjects`/`GetDirectlyHeldThings`. Sentinel-kodierte MapIDs (`-(Caravan.ID+1)`) garantieren unterscheidbare Aggregatzeilen zwischen Heimkarten und Caravans. `CaravanStorageRegressionTests` mit Sentinel-Encode/Decode/Runde-Trip.
+
+**Besitzer:** Scavenger Infrastructure für physische Bestände; Foundation für Read-only-Snapshots.
+
+**Regel:** Survivor-Ressourcen werden ausschließlich aus tatsächlichen RimWorld-Storage-/Map-Beständen gelesen. Kein zweites abstraktes Survivor-Inventar und kein paralleles Ledger für dieselben physischen Items.
+
+**Snapshot enthält:**
+
+- stabile Ressource-/ThingDef-ID,
+- aggregierte Menge,
+- Map-/Storage-Ort,
+- Qualitäts-/Verderbsklasse, soweit relevant,
+- Timestamp,
+- Availability (`Available`, `Blocked`, `Unavailable`, `Frozen`).
+
+Credits bleiben davon getrennt und dürfen nicht als physische Lagerware ausgegeben werden.
+
+**Gate:** UI, Story Writer und spätere Economy lesen dieselbe Storage-Snapshotquelle; Kartenwechsel und Save/Load erzeugen keine abweichenden Bestände.
+
 ### Phase 4 — Character Setup und Bio-Remap
 
 **Besitzer:** Survival & Progression.

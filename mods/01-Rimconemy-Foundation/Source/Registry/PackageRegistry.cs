@@ -223,7 +223,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.ScavengerInfrastructure",
                 packageId: "rimconemy.scavengerinfrastructure",
-                packageVersion: "0.0.23",
+                packageVersion: "0.0.24",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.scavengerinfrastructure.resources", 1),
