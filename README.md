@@ -1,56 +1,69 @@
 # Rimconemy
 
-> Das RimWorld-Overhaul, das Sie nicht bestellt haben — aber das Ihr Siedler definitiv nicht verdient.
+> **Du bist der letzte Überlebende. Und je größer du wirst, desto lauter schreit die Welt nach dir.**
 
-**Rimconemy** verwandelt Ihre gemütliche Kolonie in ein vollautomatisiertes, infrastruktur-schweres Wirtschaftsimperium mit Credits, Territorien, Infizierten und Mechadroids. Weil RimWorld bekanntlich viel zu friedlich war, wenn man einfach nur Essen anbauen kann.
+**Rimconemy** ist ein modulares RimWorld-Overhaul: Ein einzelner Überlebender, eine zerstörte Welt, ein Plan. Aus Bauschutt werden Wände, aus Farmen Nahrung, aus Wasser und Kohle Strom, aus Strom Verteidigung. Du wirtschaftest mit Credits, investierst in Outposts, expandierst über die Weltkarte — und jeder Erfolg erhöht den Druck. Denn die Infizierten haben einen eigenen Story-Writer, und der hat dich längst auf der Liste.
 
-## Warum existiert dieses Projekt?
+---
 
-Fünf modulare Mods, ein einziger Traum: RimWorld so umzubauen, dass der Spieler mehr Zeit mit Dashboards und Read-Models verbringt als mit dem eigentlichen Spiel. Fortschritt wird gemessen, gespeichert, analysiert und in Regressionstests gegossen — denn nichts ist wichtiger als die Gewissheit, dass Ihr Credits-Ledger auch beim 256. Eintrag noch idempotent ist.
+## 🎮 Was ist das? Der Elevator Pitch
 
-## Die fünf Pakete (in absteigender Verantwortungsübernahme)
+Stell dir RimWorld vor, komprimiert auf die Essenz: **Ein Siedler. Kein Colony-Management-Überfluss. Ein langer Überlebenszug nach oben.**
 
-| Paket | Was es verspricht | Was es wirklich tut |
+Rimconemy nimmt dir das gemütliche Aufbauen nicht weg — es macht es zur **Entscheidung**. Jede Ressource ist knapp, jede Investition sichtbar, jede Bedrohung erklärbar. Es gibt keine stillen Schwierigkeits-Multiplikatoren. Wenn etwas schiefgeht, weißt du **warum**.
+
+Die zentrale Fantasie: **Wachstum erzeugt Aufmerksamkeit.** Je stärker deine Basis wird, desto eher kommen sie. Du kannst dich klein und unsichtbar halten — oder groß werden und den Preis zahlen.
+
+## 🧭 Wozu? Dein Spielkreislauf
+
+```text
+Überleben → Aufbauen → Wirtschaften → Expandieren → (Automatisieren) → Verteidigen → Game Over oder Endgame
+```
+
+1. **Überleben** — Ein Überlebender, 18 Jahre, mit deinem Skillbudget (30 Punkte, zwölf Skills). Deine Traits sind das Ergebnis deiner Entscheidungen, nicht des Zufalls.
+2. **Aufbauen** — Bauschutt wird zur Wand, Hanf und Farmen ernähren dich, Wasser + Brennstoff betreiben den Generator, Strom den Pfeilturm. Ressourcen werden **echt** aus deinen Lagern gelesen — kein zweites unsichtbares Inventar.
+3. **Wirtschaften** — Credits sind eine saubere Wallet, Silber ist physisches Material. Lokale Märkte mit deterministischen Preisen, kein Vanilla-Preismurks.
+4. **Expandieren** — Outposts brauchen Investition und Verteidigung. Territorium ist eine **reale Verbindung** über die Weltkarte, kein UI-Symbol.
+5. **Druck** — Der Story-Writer bewertet deine Lage (Lager, Bedrohung, Ideologie) und wählt erklärbare Events: Versorgungskrise, ideologischer Konflikt, äußere Bedrohung. Deterministisch, nachvollziehbar, fair.
+6. **Das Ende** — Eines Tages ist Schluss. Das Game Over ist Teil des Designs — und kommt genau einmal.
+
+## 🔭 Was soll es werden? Die Vision
+
+Ein **komplettes, modulares Survival-Economy-Overhaul** — in fünf Paketen, die auch einzeln spielbar sind:
+
+| # | Paket | Deine Rolle darin |
 |---|---|---|
-| **01 · Foundation** | Integrationsverträge, DLC-Politik, Diagnose | Ein Vanilla-Dashboard, das Sie beruhigt, weil es Zahlen anzeigt |
-| **02 · Survival & Progression** | Nahrung, Sicherheit, Spezialisierung, Forschung | Ein Bedürfnis-Service, der Vanilla-Needs auf 0..1 skaliert, *ohne* sie anzuhängen |
-| **03 · Scavenger Infrastructure** | Bauschutt, Farmen, Hanf, Wasser, Strom, Pfeilturm | Read-only Storage-Snapshots mit ContentHash — Ordnung muss sein |
-| **04 · Economy & Territory** | Credits, Märkte, Outposts, Weltkarten-Raids | Eine Wallet-Domäne, die physische Waren lieber nicht anfasst |
-| **05 · Infected & Automation** | Eigener Storyteller, Bedrohungsdruck, Mechadroids | Ein deterministischer RNG, damit auch der Zufall reproduzierbar scheitert |
+| **01** | **Foundation** | Die Basis: Dashboard, Diagnose, Mod-/DLC-Erkennung, Save-Status, Eventlog |
+| **02** | **Survival & Progression** | Dein Charakter: Bedürfnisse, Arbeit → XP, Spezialisierung, Forschung, Game Over |
+| **03** | **Scavenger Infrastructure** | Dein Basislager: Bauschutt, Farmen, Hanf, Wasser, Strom, Pfeilturm |
+| **04** | **Economy & Territory** | Dein Imperium: Credits, Märkte, Outposts, Territorium, Weltkarten-Raids |
+| **05** | **Infected & Automation** | Dein Feind & dein Werkzeug: Story-Writer, Bedrohungsdruck, Infizierte, Mechadroids |
 
-## Belegstufen (der ehrliche Teil)
+**Wo das Projekt gerade steht:** Alle fünf Pakete kompilieren und booten in RimWorld 1.6 — die Story-Schicht (Determinismus, Cooldowns, Eventkatalog), die Charakter-Regeln, die Storage-Read-Models und die Wallet-Domäne sind code- und runtime-belegt. Was noch fehlt: der **echte Spiel-Loop** — Save/Load-Roundtrips, Live-Event-Feuerung, echte Infizierten-Spawns, Territorium auf der Weltkarte. Genau daran wird gebaut. Der ehrliche Status steht in [`docs/CODE_STATUS.md`](docs/CODE_STATUS.md).
 
-`CODE` → `DEF` → `COMPILES` → `BOOT` → `LIVE` → `OPEN`
+## ⚙️ Voraussetzungen
 
-Alle fünf Pakete erreichen mindestens `BOOT`. `LIVE` bleibt bewusst offen — denn ein Overhaul, das behauptet, fertig zu sein, hat den Geist des frühen Zugangs noch nicht verstanden. Details: [`docs/CODE_STATUS.md`](docs/CODE_STATUS.md).
-
-## Voraussetzungen
-
-- RimWorld **1.6** (GOG oder Steam, was auch immer Sie da treibt)
-- **Harmony** (die eine Abhängigkeit, die niemand hinterfragt)
-- **Anomaly** und **Odyssey** als Hard-Require (Foundation weiß, was es will)
+- RimWorld **1.6**
+- **Harmony**
+- **Anomaly** + **Odyssey** (Hard-Require — Rimconemy weiß, was es will)
 - Ein gesundes Maß an Selbstironie
 
-## Entwicklung
+## 🛠️ Entwicklung
 
 ```bash
-./scripts/runtime_test.sh            # Build + Deploy + RimWorld-Start + Log-Gates
+./scripts/runtime_test.sh                  # Build + Deploy + RimWorld-Start + Log-Gates
 ./scripts/runtime_test.sh --skip-start --no-deploy   # nur statischer Check
 ```
 
 Der kanonische Boot-Test verlangt einen *frisch veränderten* `Player.log` — alte Logs werden abgelehnt. So stellen wir sicher, dass das Spiel wirklich gestartet wurde und nicht nur so tut.
 
-## Offene Live-Gates (kuratiert, damit Sie nicht enttäuscht sind)
+## 📌 Roadmap-Kern
 
-- Save/Load über alle fünf Pakete hinweg
-- Event-Fire mit echten Raids statt Letter-only
-- Kartenwechsel, Caravan-Maps, unloaded Storage
-- Infizierten-Spawn, der nicht nur ein Brief ist
-- Territorium, das tatsächlich die Weltkarte benutzt
-
-## Haftungsausschluss
-
-Dieses Projekt erhebt keinen Anspruch darauf, RimWorld spielbarer zu machen. Es erhebt Anspruch darauf, **verifiziert** zu sein. Unterschiedliche Dinge, zugegeben.
+- ✅ Story-Writer: Difficulty-Profile (`Refuge` / `Survival` / `Collapse`), deterministische Eventauswahl, Cooldowns, Idempotenz
+- ✅ Character Setup: Bio → Skillbudget 30 → Traits (Balance-Regeln dokumentiert)
+- ✅ Storage-only-Read-Model: echte Lagerbestände, kein Parallelinventar
+- 🔄 Als Nächstes: erster echter Spiel-Moment — Bauschutt → Wand/Tür, dann die vertikale Full-Profile-Kette
+- ⬜ Später: Infizierten-Raids, Mechadroids, Outposts & Proxy-Graph, Weltkarten-Endgame
 
 ---
 
