@@ -252,6 +252,19 @@ namespace Rimconemy.InfectedAutomation.Story
                     // §8.3: persist selection reason for UI.
                     LastSelectionReason = $"[Tick {currentTick}] {result.Reason}";
                     Log.Message($"[Rimconemy.InfectedAutomation] StoryDirector: {result.Reason}");
+
+                    // P2/H3 §3 (Setting Rule Transparency): feed the
+                    // TransparencyTracker with the explained/unexplained
+                    // state of the fired event. The decision is "explained"
+                    // because we always carry a LastSelectionReason with
+                    // a deterministic reason string. Unexplained is reserved
+                    // for future cross-package modes where a StoryDirector
+                    // sibling fires a hidden event.
+                    var tt = Ideology.TransparencyTracker.Get();
+                    if (tt != null)
+                    {
+                        tt.RecordDecision(true, result.Reason);
+                    }
                 }
                 else
                 {

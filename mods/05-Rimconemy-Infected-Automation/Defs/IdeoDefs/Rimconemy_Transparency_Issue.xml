@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Owner: Infected & Automation (Package 05).
+  Setting Rule: Transparency (H3 §3).
+
+  Precept serves as the Ideology window entry-point for the rule. The
+  PreceptComp_SituationalThought points at both Informed and Unexplained
+  thought defs so reviewers in the Ideology Precepts tab can see the
+  dual-ended behaviour. The actual thought stage is chosen by the
+  ThoughtWorker_Transparency C# class based on consecutive-unexplained.
+
+  Documented Vanilla-Precept-Policy: "Beobachten" (no override) per H3 §3.2
+  / DECISIONS §2.4. We add a parallel setting rule without modifying or
+  replacing existing Ideology precepts.
+-->
+<Defs>
+
+  <IssueDef>
+    <defName>Rimconemy_TransparencyIssue</defName>
+    <label>Transparenz</label>
+    <description>Regel zur Nachvollziehbarkeit von Entscheidungen. Wird im Überlebens-Setting als Vertrauens-Anzeige geführt.</description>
+  </IssueDef>
+
+  <PreceptDef>
+    <defName>Rimconemy_Transparency_Precept</defName>
+    <issue>Rimconemy_TransparencyIssue</issue>
+    <label>Transparenz</label>
+    <description>Entscheidungen der Gruppenführung werden erklärt. Unerklärte Entscheidungen verringern das Vertrauen.</description>
+    <impact>Medium</impact>
+    <displayOrderInIssue>10</displayOrderInIssue>
+    <descriptionMaker>
+      <patterns>
+        <li>Die Führung erklärt jede Entscheidung.</li>
+        <li>Unerklärte Entscheidungen sind eine Seltenheit.</li>
+      </patterns>
+    </descriptionMaker>
+    <comps>
+      <li Class="PreceptComp_SituationalThought">
+        <thought>Rimconemy_Thought_InformedDecision</thought>
+        <description>Eine erklärte Entscheidung wurde getroffen.</description>
+      </li>
+      <li Class="PreceptComp_SituationalThought">
+        <thought>Rimconemy_Thought_UnexplainedDecision</thought>
+        <description>Eine oder mehrere Entscheidungen wurden nicht erklärt.</description>
+      </li>
+    </comps>
+  </PreceptDef>
+
+</Defs>
