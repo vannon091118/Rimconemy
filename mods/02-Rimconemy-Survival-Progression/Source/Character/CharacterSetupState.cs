@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using Rimconemy.SurvivalProgression.Character;
 using RimWorld;
+using Rimconemy.SurvivalProgression.Character;
 using Verse;
 
 namespace Rimconemy.SurvivalProgression.Character
@@ -46,14 +46,68 @@ namespace Rimconemy.SurvivalProgression.Character
         /// <summary>Adds / overwrites a pawn record.</summary>
         public void Upsert(Pawn pawn, PawnSetupRecord record)
         {
-            if (pawn == null || record == null) return;
+            if (pawn == null || pawn.thingIDNumber == 0 || record == null) return;
+            if (Records == null) Records = new Dictionary<int, PawnSetupRecord>();
             Records[pawn.thingIDNumber] = record;
+        }
+
+        /// <summary>
+        /// Records the completed setup for each supplied pawn. Re-recording a
+        /// pawn replaces its scorecard instead of creating duplicate entries.
+        /// The Applied flag is only raised when the supplied records are valid
+        /// and, when requested, complete; empty or partial input cannot claim
+        /// completion. Each attempt replaces the active scorecard atomically,
+        /// so failed retries cannot leave stale pawn records behind.
+        /// </summary>
+        public int RecordAppliedPawns(IEnumerable<Pawn> pawns)
+        {
+            return RecordAppliedPawns(pawns, -1);
+        }
+
+        /// <summary>
+        /// Records a setup only when the optional expected count matches the
+        /// distinct, valid Pawn records. A non-negative expected count is a
+        /// fail-closed completion gate: partial initialization never becomes
+        /// a falsely persistent setup.
+        /// </summary>
+        public int RecordAppliedPawns(IEnumerable<Pawn> pawns, int expectedCount)
+        {
+            // This method describes the current attempt, not historical
+            // success. A failed retry must never leave stale records in the
+            // active scorecard or leave the UI claiming that the new
+            // selection was persisted.
+            Applied = false;
+            Records = new Dictionary<int, PawnSetupRecord>();
+            if (pawns == null) return 0;
+            if (expectedCount < -1 || expectedCount == 0) return 0;
+
+            var pending = new Dictionary<int, PawnSetupRecord>();
+            foreach (var pawn in pawns)
+            {
+                if (pawn == null || pawn.thingIDNumber == 0 || pending.ContainsKey(pawn.thingIDNumber)) continue;
+                pending[pawn.thingIDNumber] = new PawnSetupRecord(pawn);
+            }
+
+            if (expectedCount >= 0 && pending.Count != expectedCount)
+            {
+                // The current attempt is authoritative. Invalid/partial
+                // input leaves an empty inactive scorecard rather than
+                // exposing records from a previous pawn selection.
+                return 0;
+            }
+
+            foreach (var pair in pending)
+                Records[pair.Key] = pair.Value;
+
+            if (pending.Count > 0 && (expectedCount < 0 || pending.Count == expectedCount))
+                Applied = true;
+            return pending.Count;
         }
 
         /// <summary>Reads a pawn record. Returns null if absent.</summary>
         public PawnSetupRecord GetFor(int thingIdNumber)
         {
-            if (thingIdNumber == 0) return null;
+            if (thingIdNumber == 0 || Records == null) return null;
             return Records.TryGetValue(thingIdNumber, out var r) ? r : null;
         }
 
@@ -70,11 +124,16 @@ namespace Rimconemy.SurvivalProgression.Character
         {
             Scribe_Values.Look(ref SchemaVersion, "charSetupSchema", 1);
             Scribe_Values.Look(ref Applied, "charSetupApplied", false);
-            Scribe_Collections.Look(ref Records, "charSetupRecords", LookMode.Value);
+            Scribe_Collections.Look(ref Records, "charSetupRecords", LookMode.Deep);
 
             // Schema-migration scaffold: if the saved SchemaVersion is
             // older, run a no-op migration path so the field is consistent
             // with current SchemaVersion after Save/Load.
+            if (Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                if (Records == null) Records = new Dictionary<int, PawnSetupRecord>();
+            }
+
             if (Scribe.mode == LoadSaveMode.PostLoadInit && SchemaVersion < CurrentSchemaVersion)
             {
                 Log.Message(
@@ -120,12 +179,19 @@ namespace Rimconemy.SurvivalProgression.Character
 
             if (pawn?.skills?.skills != null)
             {
+                int spentPoints = 0;
                 foreach (var s in pawn.skills.skills)
                 {
-                    if (s?.def == null) continue;
+                    // The scorecard mirrors the applied H5 budget, not every
+                    // mod-added/disabled skill that may exist on the pawn.
+                    if (s?.def == null || s.TotallyDisabled
+                        || !CharacterSetup.EligibleSkills.Contains(s.def)) continue;
                     SkillDefNames.Add(s.def.defName);
                     SkillLevels.Add(s.Level);
+                    spentPoints += SkillBudgetCalculator.CostForLevel(s.Level);
                 }
+                NeutralBand = (int)SkillBudgetCalculator.Classify(
+                    spentPoints - SkillBudgetCalculator.NeutralCenter);
             }
 
             if (pawn?.story?.traits?.allTraits != null)

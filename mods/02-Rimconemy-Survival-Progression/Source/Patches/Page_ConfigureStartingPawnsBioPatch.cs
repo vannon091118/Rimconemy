@@ -106,10 +106,13 @@ namespace Rimconemy.SurvivalProgression.Patches
                     continue;
                 }
 
-                // Age: idempotent (returns false and writes nothing if age is
-                // already 18). Re-runs are safe even when FinalizeInit's
-                // TryApplyBioRemap also fires later.
-                if (CharacterSetup.FixAge(pawn))
+                // Bug 1 fix (2026-08-04, post-image-audit): use ForceAge18
+                // instead of FixAge. The new entry point re-anchors
+                // BirthAbsTicks to TickManager.TicksAbs - 18y AND defends
+                // against Storyteller backstories that overwrite AgeBiological
+                // mid-flight (so we stamp BirthAbsTicks again at the end of
+                // the per-pawn loop).
+                if (CharacterSetup.ForceAge18(pawn))
                     ageChanges++;
 
                 // Skills: 30-point default distribution. Does NOT write to
@@ -120,13 +123,21 @@ namespace Rimconemy.SurvivalProgression.Patches
                     skillsSkipped++;
                     continue;
                 }
-                int beforeTotal = 0;
-                foreach (var s in pawn.skills.skills)
-                    if (s != null) beforeTotal += s.Level;
+
                 try
                 {
-                    CharacterSetup.DistributeSkillBudget(pawn);
-                    skillsAllocated++;
+                    bool ok = CharacterSetup.DistributeSkillBudget(pawn);
+                    if (ok)
+                    {
+                        skillsAllocated++;
+                    }
+                    else
+                    {
+                        Log.Warning(
+                            "[Rimconemy.SurvivalProgression] Bio-Remap: DistributeSkillBudget "
+                            + "failed for " + pawn.LabelShort + ". Skills left as backstory.");
+                        skillsSkipped++;
+                    }
                 }
                 catch (System.Exception ex)
                 {
@@ -139,6 +150,12 @@ namespace Rimconemy.SurvivalProgression.Patches
                             $"{ex.GetType().Name}: {ex.Message}. Skills left as backstory.");
                     }
                 }
+                // No defensive re-stamp of BirthAbsTicks here on purpose:
+                // ForceAge18's tail already anchors BirthAbsTicks to
+                // nowAbs - 18 * yearTicks, and the operations above touch
+                // SkillRecord only - none write to ageTracker. A second
+                // ForceAge18 call would be a no-op (bio=18, chrono=18, same
+                // defendedBirthAbs), so call once per pawn.
             }
 
             // Single combined log line so debugging this patch produces one entry
@@ -147,10 +164,12 @@ namespace Rimconemy.SurvivalProgression.Patches
             {
                 Log.Message(
                     "[Rimconemy.SurvivalProgression] Bio-Remap (customization page): " +
-                    $"ages normalised={ageChanges}, budgets distributed={skillsAllocated}, " +
-                    $"skills skipped={skillsSkipped} " +
-                    $"(age target={CharacterSetup.FixedBiologicalAge}, " +
-                    $"skill budget={CharacterSetup.SkillBudgetTotal}).");
+                    "ages normalised=" + ageChanges +
+                    ", budgets distributed=" + skillsAllocated +
+                    ", skills skipped=" + skillsSkipped +
+                    " (age target=" + CharacterSetup.FixedBiologicalAge +
+                    "/" + CharacterSetup.FixedChronologicalAge +
+                    ", skill budget=" + CharacterSetup.SkillBudgetTotal + ").");
             }
         }
     }

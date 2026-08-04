@@ -44,6 +44,7 @@ namespace Rimconemy.ScavengerInfrastructure.UI
             float buildingRows = buildings != null && buildings.Count > 0 ? buildings.Count * 28f : 44f;
             float storageRows = storageCount > 0 ? Mathf.Min(storageCount, 20) * 26f : 44f;
             float contentHeight = 34f + 34f               // header + badge
+                                + RimconemyTheme.RowHeight * 2f + 6f + RimconemyTheme.SectionSpacing // capability banner
                                 + 32f + 58f + 24f + 24f + 32f  // power section
                                 + 32f + buildingRows       // building section
                                 + 32f + plantRows          // farms section
@@ -62,6 +63,12 @@ namespace Rimconemy.ScavengerInfrastructure.UI
                 "Einheiten: " + power.TotalUnits + "  ·  Aktiv: " + (power.ActiveGenerators + power.ActiveTurrets),
                 power.TotalUnits > 0 ? StatusLevel.Success : StatusLevel.Warn);
             y += 34f;
+            RimconemyUi.DrawFeatureStatus(
+                new Rect(0f, y, width, RimconemyTheme.RowHeight * 2f + 6f),
+                "READ-ONLY · Infrastruktur-Snapshot",
+                "OPEN · echte Verbrauchs-, Bau- und Power-Mutationen sind noch nicht aktiv.",
+                StatusLevel.Warn);
+            y += RimconemyTheme.RowHeight * 2f + 6f + RimconemyTheme.SectionSpacing;
 
             // ── Stromnetz ──────────────────────────────────────────
             RimconemyUi.DrawSectionTitle(new Rect(0f, y, width, 26f), "Rimconemy.Infrastructure.Power", GameFont.Medium);

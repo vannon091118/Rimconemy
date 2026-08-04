@@ -33,14 +33,155 @@ namespace Rimconemy.Foundation.UI
         private bool _vanillaExpanded = false;
         private bool _eventsExpanded = true;
 
+        private int _selectedHubTab = 0;
+        private MainTabWindow _survivalWindow;
+        private MainTabWindow _infrastructureWindow;
+        private MainTabWindow _economyWindow;
+        private MainTabWindow _threatWindow;
+
+        public override Vector2 InitialSize => new Vector2(720f, 620f);
+
         private static string T(string key)
         {
-            return key.Translate();
+            return key.CanTranslate() ? key.Translate().ToString() : key;
+        }
+
+        private static System.Type FindType(string fullName)
+        {
+            foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
+            {
+                var t = asm.GetType(fullName);
+                if (t != null) return t;
+            }
+            return null;
+        }
+
+        private MainTabWindow GetSubWindow(int tabIndex)
+        {
+            switch (tabIndex)
+            {
+                case 1:
+                    if (_survivalWindow == null)
+                    {
+                        var t = FindType("Rimconemy.SurvivalProgression.UI.SurvivalProgressionDashboard");
+                        if (t != null) _survivalWindow = (MainTabWindow)System.Activator.CreateInstance(t);
+                    }
+                    return _survivalWindow;
+                case 2:
+                    if (_infrastructureWindow == null)
+                    {
+                        var t = FindType("Rimconemy.ScavengerInfrastructure.UI.InfrastructureDashboard");
+                        if (t != null) _infrastructureWindow = (MainTabWindow)System.Activator.CreateInstance(t);
+                    }
+                    return _infrastructureWindow;
+                case 3:
+                    if (_economyWindow == null)
+                    {
+                        var t = FindType("Rimconemy.EconomyTerritory.Wallet.EconomyHub");
+                        if (t != null) _economyWindow = (MainTabWindow)System.Activator.CreateInstance(t);
+                    }
+                    return _economyWindow;
+                case 4:
+                    if (_threatWindow == null)
+                    {
+                        var t = FindType("Rimconemy.InfectedAutomation.UI.ThreatDashboard");
+                        if (t != null) _threatWindow = (MainTabWindow)System.Activator.CreateInstance(t);
+                    }
+                    return _threatWindow;
+                default:
+                    return null;
+            }
         }
 
         public override void DoWindowContents(Rect inRect)
         {
-            var viewRect = new Rect(inRect.x, inRect.y, inRect.width, inRect.height - 30f);
+            float width = inRect.width - RimconemyTheme.Margin * 2f;
+            float y = inRect.y;
+
+            // ── Top Navigation Tabs ───────────────────────────────────
+            var tabLabels = new List<string>
+            {
+                T("Rimconemy.Hub.Tab.Colony"),
+                T("Rimconemy.Hub.Tab.Survival"),
+                T("Rimconemy.Hub.Tab.Infrastructure"),
+                T("Rimconemy.Hub.Tab.Economy"),
+                T("Rimconemy.Hub.Tab.Threat")
+            };
+
+            int newTab = RimconemyUi.DrawTabs(new Rect(inRect.x, y, inRect.width, 32f), tabLabels, _selectedHubTab);
+            if (newTab != _selectedHubTab)
+            {
+                _selectedHubTab = newTab;
+                _scrollPosition = Vector2.zero;
+            }
+            y += 36f;
+
+            // ── Vanilla Quick-Navigation Toolbar ─────────────────────
+            DrawVanillaQuickNav(new Rect(inRect.x, y, inRect.width, 24f));
+            y += 28f;
+
+            // ── Content Panel ─────────────────────────────────────────
+            var contentRect = new Rect(inRect.x, y, inRect.width, inRect.yMax - y);
+            if (_selectedHubTab == 0)
+            {
+                DrawFoundationContent(contentRect);
+            }
+            else
+            {
+                var subWindow = GetSubWindow(_selectedHubTab);
+                if (subWindow != null)
+                {
+                    subWindow.DoWindowContents(contentRect);
+                }
+                else
+                {
+                    RimconemyUi.DrawEmptyState(contentRect, T("RimconemyFoundation.Status.NotInstalled"));
+                }
+            }
+            RimconemyUi.ResetTextFontAndColor();
+        }
+
+        private void DrawVanillaQuickNav(Rect rect)
+        {
+            Text.Font = GameFont.Tiny;
+            float btnW = (rect.width - 4f * 4f) / 5f;
+            float x = rect.x;
+
+            if (Widgets.ButtonText(new Rect(x, rect.y, btnW, rect.height), "🗺️ Weltkarte"))
+            {
+                DefDatabase<MainButtonDef>.GetNamedSilentFail("World")?.Worker?.InterfaceTryActivate();
+            }
+            x += btnW + 4f;
+
+            if (Widgets.ButtonText(new Rect(x, rect.y, btnW, rect.height), "📜 Quests"))
+            {
+                DefDatabase<MainButtonDef>.GetNamedSilentFail("Quests")?.Worker?.InterfaceTryActivate();
+            }
+            x += btnW + 4f;
+
+            if (Widgets.ButtonText(new Rect(x, rect.y, btnW, rect.height), "🔬 Forschung"))
+            {
+                DefDatabase<MainButtonDef>.GetNamedSilentFail("Research")?.Worker?.InterfaceTryActivate();
+            }
+            x += btnW + 4f;
+
+            if (Widgets.ButtonText(new Rect(x, rect.y, btnW, rect.height), "🛠️ Arbeit"))
+            {
+                DefDatabase<MainButtonDef>.GetNamedSilentFail("Work")?.Worker?.InterfaceTryActivate();
+            }
+            x += btnW + 4f;
+
+            if (Widgets.ButtonText(new Rect(x, rect.y, btnW, rect.height), "📈 Verlauf"))
+            {
+                DefDatabase<MainButtonDef>.GetNamedSilentFail("History")?.Worker?.InterfaceTryActivate();
+            }
+            Text.Font = GameFont.Small;
+        }
+
+
+        private void DrawFoundationContent(Rect inRect)
+        {
+            var viewRect = new Rect(inRect.x, inRect.y, inRect.width, inRect.height);
             float width = viewRect.width - 20f;
 
             // Calculate total content height dynamically from sections
@@ -81,8 +222,8 @@ namespace Rimconemy.Foundation.UI
             y = DrawEventSection(0f, y, width);
 
             Widgets.EndScrollView();
-            RimconemyUi.ResetTextFontAndColor();
         }
+
 
         private float DrawProfileSection(float x, float y, float width)
         {

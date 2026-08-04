@@ -721,5 +721,29 @@ namespace Rimconemy.InfectedAutomation.Story
                 _          => SettingProfile.Survival,
             };
         }
+        /// <summary>
+        /// Dev-mode shortcut: immediately runs one evaluation cycle regardless
+        /// of the normal interval gate. Called from ThreatDashboard in Dev mode.
+        /// </summary>
+        public void EvaluateNow(long currentTick)
+        {
+            // Reset the gate so GameComponentTick's interval check passes.
+            LastEvaluationTick = currentTick - EvaluationIntervalTicks;
+            // Build and store the snapshot immediately so the dashboard can
+            // display it, then invoke the tick path.
+            var snapshot = BuildLiveSnapshotPublic(currentTick);
+            LastSnapshot = snapshot;
+            ThreatHistory.Add(snapshot.ThreatPressure);
+            if (ThreatHistory.Count > 30) ThreatHistory.RemoveAt(0);
+            Log.Message("[Rimconemy.InfectedAutomation] StoryDirector.EvaluateNow triggered from Dev mode.");
+            // Re-run the normal tick path which will now pass the interval gate.
+            GameComponentTick();
+        }
+
+        /// <summary>
+        /// Public wrapper around the private BuildLiveSnapshot so EvaluateNow
+        /// can call it without duplicating logic.
+        /// </summary>
+        private static SituationSnapshot BuildLiveSnapshotPublic(long tick) => BuildLiveSnapshot(tick);
     }
 }

@@ -64,11 +64,19 @@ namespace Rimconemy.InfectedAutomation.UI
             Widgets.Label(anchorRect,
                 "Anchor: AllPlayerColonists - Adult - FreeNonSlave - Consciousness");
             GUI.color = Color.white;
+            RimconemyUi.DrawFeatureStatus(
+                new Rect(anchorRect.x, anchorRect.yMax + 4f, anchorRect.width, RimconemyTheme.RowHeight * 2f + 6f),
+                "READ-ONLY · Regelkatalog",
+                "OPEN · vollständige native Ideology-Verhaltensbindung ist noch nicht aktiv.",
+                StatusLevel.Warn);
 
-            // ScrollView with catalogue rows
+            // ScrollView with catalogue rows. Start below the status banner
+            // so the first rule card cannot overlap the capability explanation.
+            float statusBottom = anchorRect.yMax + 4f
+                + RimconemyTheme.RowHeight * 2f + 6f;
             var scrollOuter = new Rect(
-                inRect.x + 4f, anchorRect.yMax + 8f, inRect.width - 8f,
-                inRect.height - (anchorRect.yMax + 8f - inRect.y));
+                inRect.x + 4f, statusBottom + 8f, inRect.width - 8f,
+                inRect.height - (statusBottom + 8f - inRect.y));
 
             var rules = SettingRulesCatalog.ActiveRules();
             float rowHeight = 92f;

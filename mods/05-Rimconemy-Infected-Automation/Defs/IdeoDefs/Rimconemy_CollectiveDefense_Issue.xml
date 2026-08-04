@@ -25,26 +25,32 @@
     <description>Regel zur Beteiligung an der Verteidigung der Gemeinschaft. Wird im Überlebens-Setting als sichtbare Erwartung geführt.</description>
   </IssueDef>
 
-  <PreceptDef ParentName="PreceptRoleSingleBase">
+  <PreceptDef ParentName="PreceptRoleMultiBase">
     <defName>Rimconemy_Role_Defender</defName>
+    <nameMaker>NamerRoleShooter</nameMaker>
     <issue>Rimconemy_CollectiveDefenseIssue</issue>
-    <preceptClass>Precept_RoleMulti</preceptClass>
+    <certaintyLossFactor>0.5</certaintyLossFactor>
+    <countsTowardsPreceptLimit>false</countsTowardsPreceptLimit>
+    <roleRequirements>
+      <li Class="RoleRequirement_SameIdeo"><labelKey>RoleRequirementLabelSameIdeo</labelKey></li>
+      <li Class="RoleRequirement_SupremeGender"><labelKey>RoleRequirementLabelSupremeGender</labelKey></li>
+    </roleRequirements>
+    <comps>
+      <!-- Vanilla ThoughtDef: resolves fine during XML cross-reference resolution. -->
+      <li Class="PreceptComp_SituationalThought">
+        <thought>IdeoRoleApparelRequirementNotMet</thought>
+      </li>
+      <!-- Rimconemy ThoughtDefs wired programmatically in ThoughtDefs_CollectiveDefense.cs
+           because [StaticConstructorOnStartup] runs after XML cross-reference resolution. -->
+    </comps>
+    <impact>Medium</impact>
+    <activationBelieverCount>3</activationBelieverCount>
+    <deactivationBelieverCount>1</deactivationBelieverCount>
+    <classicExtra>true</classicExtra>
     <label>Verteidiger</label>
     <description>Mitglieder dieser Rolle haben aktiv an der Verteidigung teilgenommen. Sie sind die anerkannten Helden der letzten Auseinandersetzung.</description>
     <iconPath>UI/Roles/Apiarist</iconPath>
     <displayOrderInImpact>110</displayOrderInImpact>
-    <expectsRoleApparelRequirements>false</expectsRoleApparelRequirements>
-    <comps>
-      <li Class="PreceptComp_SituationalThought">
-        <thought>Rimconemy_Thought_ValiantDefense</thought>
-      </li>
-      <li Class="PreceptComp_SituationalThought">
-        <thought>Rimconemy_Thought_DefenseShirking</thought>
-      </li>
-      <li Class="PreceptComp_SituationalThought">
-        <thought>Rimconemy_Thought_UnitedAfterDefense</thought>
-      </li>
-    </comps>
   </PreceptDef>
 
 </Defs>

@@ -6,5 +6,7 @@
     <description>Rimconemy economy hub: wallet, markets and outposts.</description>
     <tabWindowClass>Rimconemy.EconomyTerritory.Wallet.EconomyHub</tabWindowClass>
     <order>57</order>
+    <showInInterface>false</showInInterface>
   </MainButtonDef>
 </Defs>
+

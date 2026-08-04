@@ -92,8 +92,38 @@ namespace Rimconemy.ScavengerInfrastructure.Power
                     result.AddRange(CollectConsumersOfType(map, _pumpDef, PowerUnitType.WaterPump));
                 if (_turretDef != null)
                     result.AddRange(CollectTurrets(map, _turretDef));
+
+                // Fallback: Scan vanilla generators & power traders when custom Rimconemy defs are not present
+                if (map.listerThings.AllThings != null)
+                {
+                    var things = map.listerThings.AllThings;
+                    for (int i = 0; i < things.Count; i++)
+                    {
+                        var t = things[i];
+                        if (t == null) continue;
+                        if (t.def == _solidDef || t.def == _liquidDef || t.def == _pumpDef || t.def == _turretDef) continue;
+
+                        var powerTrader = t.TryGetComp<CompPowerTrader>();
+                        if (powerTrader != null && powerTrader.PowerOutput > 0f)
+
+                        {
+                            result.Add(new PowerUnitState
+                            {
+                                ThingId = t.thingIDNumber,
+                                Type = PowerUnitType.Generator,
+                                FuelClass = FuelClass.SolidFuel,
+                                Position = t.Position,
+                                MapId = map.uniqueID,
+                                DefName = t.def.LabelCap.ToString() ?? t.def.defName,
+                                IsActive = powerTrader.PowerOn,
+                                HasFuel = SampleHasFuel(t, requiresFuel: false),
+                            });
+                        }
+                    }
+                }
             }
             return result;
+
         }
 
         private static IEnumerable<PowerUnitState> CollectGeneratorsOfType(Map map, ThingDef def, FuelClass fc)

@@ -27,7 +27,8 @@ namespace Rimconemy.Foundation.Tests
 
             PackageRegistry.RefreshLoadedFeaturePackages();
             ProfileDetector.ResetForReload();
-            ProfileDetector.DetectProfile();
+            // Canonical public entry point; emits the summary line at most once.
+            ProfileDetector.TryEmitDetection(out _);
 
             AssertTrue(PackageRegistry.RegisteredPackageIds != null,
                 "Profile refresh: package registry remains readable");

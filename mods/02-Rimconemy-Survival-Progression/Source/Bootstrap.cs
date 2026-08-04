@@ -73,6 +73,9 @@ namespace Rimconemy.SurvivalProgression
             BuildingProgressionPersistenceRegressionTests.RunAll();
             // Phase-4.2 Character Setup Save-State: schema + upsert + Get round-trip.
             Tests.CharacterSetupStateRegressionTests.RunAll();
+            // Image-audit (2026-08-04): Bio-Remap + Skill-Budget hardening.
+            // ForceAge18 / ForceResetAllSkills / EnforceHardBudgetCap invariants.
+            Tests.BioRemapHardeningRegressionTests.RunAll();
             Log.Message("[Rimconemy.SurvivalProgression] Building XP adapter available; live construction-output hook remains an interactive A-gate.");
         }
     }

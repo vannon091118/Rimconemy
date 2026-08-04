@@ -18,6 +18,7 @@ namespace Rimconemy.SurvivalProgression.Tests
             TestSchemaVersion();
             TestUpsertAndGet();
             TestEmptyRecordDefaults();
+            TestEmptyRecordAppliedPawnsIsSafe();
             Log.Message("[Rimconemy.SurvivalProgression] CharacterSetupStateRegressionTests PASS");
         }
 
@@ -49,6 +50,35 @@ namespace Rimconemy.SurvivalProgression.Tests
             Assert(fetched.SkillDefNames.Count == 2, "SkillDefNames size = 2");
             Assert(fetched.SkillLevels[0] == 6, "Shooting level = 6");
             Assert(fetched.TraitDefNames.Contains("Rimconemy_Trait_Hardy"), "Hardy trait recorded");
+        }
+
+        private static void TestEmptyRecordAppliedPawnsIsSafe()
+        {
+            var state = new CharacterSetupState(null);
+            Assert(state.RecordAppliedPawns(null) == 0,
+                "Null pawn collection records nothing");
+            Assert(!state.Applied,
+                "Null pawn collection does not claim setup applied");
+            Assert(state.RecordAppliedPawns(new List<Pawn>()) == 0,
+                "Empty pawn collection records nothing");
+            Assert(state.Records.Count == 0,
+                "Empty pawn collection leaves records empty");
+            Assert(state.RecordAppliedPawns(new List<Pawn>(), 1) == 0,
+                "Incomplete expected pawn count records nothing");
+            Assert(!state.Applied,
+                "Incomplete expected pawn count cannot claim completion");
+            state.Applied = true;
+            state.Records[42] = new PawnSetupRecord();
+            Assert(state.RecordAppliedPawns(new List<Pawn>(), 1) == 0,
+                "Failed retry records nothing");
+            Assert(!state.Applied,
+                "Failed retry clears stale completion state");
+            Assert(state.Records.Count == 0,
+                "Failed retry clears stale pawn records");
+            Assert(state.RecordAppliedPawns(new List<Pawn>(), 0) == 0,
+                "Zero-pawn setup records no pawn");
+            Assert(!state.Applied,
+                "Zero-pawn setup cannot claim completion");
         }
 
         private static void TestEmptyRecordDefaults()

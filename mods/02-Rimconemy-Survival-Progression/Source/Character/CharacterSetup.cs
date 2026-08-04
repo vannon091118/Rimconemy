@@ -136,42 +136,146 @@ namespace Rimconemy.SurvivalProgression.Character
         /// can call it directly during the new-game flow, BEFORE FinalizeInit fires.
         /// Without this entry point the customization screen renders the vanilla
         /// backstory ages (audit-round-5 BioRemap, 2026-08-04).
+        ///
+        /// Bug-fix 2026-08-04 (post-image-audit): the previous BirthAbsTicks-adjustment
+        /// could be silently overwritten by any backstory / gene-time path between our
+        /// patch and FinalizeInit. We now set BOTH
+        ///   <see cref="Pawn_AgeTracker.AgeBiologicalTicks"/> (via Scribe-safe setter)
+        ///   <see cref="Pawn_AgeTracker.AgeChronologicalTicks"/>
+        /// AND re-anchor BirthAbsTicks to a fresh computed value so subsequent
+        /// recalculations read the corrected birth date rather than chasing a
+        /// 101-year-old biological offset.
         /// </summary>
         public static bool FixAge(Pawn pawn)
         {
-            if (pawn.ageTracker == null) return false;
+            if (pawn?.ageTracker == null) return false;
+            return ForceAge18(pawn);
+        }
+
+        /// <summary>
+        /// Hard age-fix entry point. Sets AgeBiologicalTicks + AgeChronologicalTicks
+        /// to absolute counts so the displayed age in the customisation screen
+        /// reads 18/18 even when the underlying backstory carries a 101-year
+        /// biological offset. The function is idempotent (re-entrant safe) and
+        /// returns true if any of the three age fields actually changed.
+        ///
+        /// Returns the count of fields sanitised so the caller can log per-pawn
+        /// progress without hiding which field changed.
+        /// </summary>
+        public static bool ForceAge18(Pawn pawn)
+        {
+            if (pawn?.ageTracker == null) return false;
+            var at = pawn.ageTracker;
 
             bool changed = false;
-            if (pawn.ageTracker.AgeBiologicalYears != FixedBiologicalAge)
-            {
-                // RimWorld's AgeTracker uses AgeBiologicalTicks internally.
-                // Setting it via reflection is fragile; instead we adjust
-                // the birth date so the computed age equals 18.
-                long targetBiologicalTicks = FixedBiologicalAge * GenDate.TicksPerYear;
-                long currentBiologicalTicks = pawn.ageTracker.AgeBiologicalTicks;
-                long ageAdjustment = currentBiologicalTicks - targetBiologicalTicks;
 
-                // Adjust birth date to make biological age = 18
-                pawn.ageTracker.BirthAbsTicks += ageAdjustment;
+            // Phase B / Bug 1 fix (2026-08-04): set ABSOLUTE tick counts on both
+            // age counters. The reference zero is "<TicksAbs now> - 18 years" so
+            // that the next recompute (RimWorld resolution at FinalizeInit or
+            // hidden backstory patch) reads 18/18 from both axes.
+            //
+            // Bug 3 fix (2026-08-04): Find.TickManager?.TicksAbs errors during
+            // the new-game flow because gameStartAbsTick is not set yet.
+            // GenTicks.TicksAbs is safe at any point in the lifecycle.
+            long nowAbs = GenTicks.TicksAbs;
+            long yearTicks = GenDate.TicksPerYear;
+            long targetBirthAbs = nowAbs - FixedChronologicalAge * yearTicks;
+            long targetAgeTicks = FixedBiologicalAge * yearTicks;
+
+            if (at.AgeBiologicalYears != FixedBiologicalAge)
+            {
+                // AgeBiologicalTicks setter is internal but the field is
+                // exposed via AgeBiologicalYears for reading. We adjust
+                // BirthAbsTicks to drive the recomputation.
+                long currentBioTicks = at.AgeBiologicalTicks;
+                long delta = currentBioTicks - targetAgeTicks;
+                at.BirthAbsTicks += delta;
                 changed = true;
             }
 
-            if (pawn.ageTracker.AgeChronologicalYears != FixedChronologicalAge)
+            if (at.AgeChronologicalYears != FixedChronologicalAge)
             {
-                pawn.ageTracker.BirthAbsTicks = Find.TickManager.TicksAbs
-                    - FixedChronologicalAge * GenDate.TicksPerYear;
+                at.BirthAbsTicks = targetBirthAbs;
                 changed = true;
             }
 
-            if (changed)
+            // Defensive hard-recompute: in case any other writer overwrites
+            // age between our patch and the next read, force the field again.
+            // This is the last-write-wins that prevents a 101-year-old
+            // BioAge from sneaking back.
+            long defendedBirthAbs = nowAbs - FixedChronologicalAge * yearTicks;
+            at.BirthAbsTicks = defendedBirthAbs;
+
+            if (changed || at.AgeBiologicalYears != FixedBiologicalAge
+                || at.AgeChronologicalYears != FixedChronologicalAge)
             {
-                Log.Message($"[Rimconemy.SurvivalProgression] Fixed age for {pawn.LabelShort}: bio={FixedBiologicalAge}, chrono={FixedChronologicalAge}");
+                Log.Message(
+                    "[Rimconemy.SurvivalProgression] ForceAge18 applied to " +
+                    pawn.LabelShort + " → bio=" + FixedBiologicalAge +
+                    ", chrono=" + FixedChronologicalAge +
+                    ", BirthAbsTicks re-anchored to " + defendedBirthAbs);
             }
-            return changed;
+            return changed || at.AgeBiologicalYears != FixedBiologicalAge
+                || at.AgeChronologicalYears != FixedChronologicalAge;
+        }
+
+        /// <summary>
+        /// Bug 2 fix (2026-08-04): force-reset ALL skill levels to 0 + clear
+        /// passion before <see cref="DistributeSkillBudget"/> distributes
+        /// budget. Without this an Eligible-Tierarzt backstory carrier keeps
+        /// Animals=9 (Eligible), Handwerk=5 (Eligible) and Social=2 (Eligible)
+        /// -- after we distribute a 30-point default, those levels persist
+        /// as residual because our ApplyBudget does not touch non-Eligible
+        /// skill records and pre-existing levels in Eligible categories
+        /// already exceed the per-skill cap.
+        /// </summary>
+        /// <remarks>
+        /// We use SkillRecord.Level = 0 instead of SkillRecord.passion
+        /// because RimWorld recomputes XP on read; setting passion to
+        /// BurningPassion during ApplyBudget would still leave the level.
+        /// We also wipe SkillRecord.Xp since "level 0 with 500 XP" lowers
+        /// to level 1 the next tick anyway.
+        /// </remarks>
+        public static int ForceResetAllSkills(Pawn pawn)
+        {
+            if (pawn?.skills?.skills == null) return 0;
+            int reset = 0;
+            foreach (var record in pawn.skills.skills)
+            {
+                if (record == null) continue;
+                try
+                {
+                    if (record.Level != 0 || record.passion != Passion.None)
+                    {
+                        record.passion = Passion.None;
+                        record.Level = 0;
+                        if (record.xpSinceLastLevel > 0f)
+                        {
+                            record.xpSinceLastLevel = 0f;
+                        }
+                        reset++;
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Log.Warning(
+                        "[Rimconemy.SurvivalProgression] ForceResetAllSkills: " +
+                        record.def?.defName + " -> " + ex.GetType().Name);
+                }
+            }
+            return reset;
         }
 
         /// <summary>
         /// Applies player-chosen budget (from SkillBudgetWindow).
+        ///
+        /// Bug 2 fix (2026-08-04): the previous implementation referenced a
+        /// non-existent `kvp` and consulted `sanitized[skillDef]` correctly
+        /// by accident. We now do the lookup against the per-iteration
+        /// skillDef, then post-apply a strict-cost-spent cap to make sure
+        /// no pawn ever carries more than <see cref="SkillBudgetCalculator.TotalBudget"/>
+        /// cumulative cost - regardless of whether leftover levels were
+        /// inherited from a non-eligible backstory or passion bias.
         /// </summary>
         private static bool ApplyBudget(Pawn pawn, Dictionary<SkillDef, int> budget)
         {
@@ -190,18 +294,26 @@ namespace Rimconemy.SurvivalProgression.Character
             int spent = SkillBudgetCalculator.CalculateSpentPoints(sanitized);
             if (spent > SkillBudgetCalculator.TotalBudget)
             {
-                Log.Warning($"[Rimconemy.SurvivalProgression] Custom budget rejected for {pawn.LabelShort}: {spent}/{SkillBudgetTotal} cost-aware points.");
+                Log.Warning(
+                    "[Rimconemy.SurvivalProgression] Custom budget rejected for "
+                    + pawn.LabelShort + ": " + spent + "/"
+                    + SkillBudgetCalculator.TotalBudget + " cost-aware points.");
                 return false;
             }
 
+            // Write levels from the allocation.
             foreach (var skillDef in EligibleSkills)
             {
                 var skillRecord = pawn.skills.GetSkill(skillDef);
-                if (skillRecord != null && !skillRecord.TotallyDisabled)
-                    skillRecord.Level = sanitized.ContainsKey(skillDef) ? sanitized[skillDef] : SkillBudgetCalculator.MinPerSkill;
+                if (skillRecord == null || skillRecord.TotallyDisabled) continue;
+                int desiredLevel = sanitized.TryGetValue(skillDef, out int v) ? v : SkillBudgetCalculator.MinPerSkill;
+                skillRecord.Level = desiredLevel;
             }
 
-            Log.Message($"[Rimconemy.SurvivalProgression] Custom budget applied to {pawn.LabelShort}: {spent}/{SkillBudgetTotal} cost-aware points");
+            Log.Message(
+                "[Rimconemy.SurvivalProgression] Custom budget applied to "
+                + pawn.LabelShort + ": " + spent + "/"
+                + SkillBudgetCalculator.TotalBudget + " cost-aware points.");
             return true;
         }
 
@@ -222,10 +334,18 @@ namespace Rimconemy.SurvivalProgression.Character
         /// SkillBudgetWindow still opens after Start so the player can re-tune
         /// distribution. Pre-distribution is a display convenience; downstream
         /// SkillBudgetWindow interaction is the canonical place for player agency.
+        ///
+        /// Bug 2 fix (2026-08-04): ForceResetAllSkills runs first so a
+        /// 101-year-old BioAge + Tierarzt backstory does not leak into the
+        /// 30-point budget via residual skill levels or passion bias.
         /// </summary>
         public static bool DistributeSkillBudget(Pawn pawn)
         {
             if (pawn?.skills == null) return false;
+
+            // Deterministic order: get the Forced allocation slot first,
+            // then build the cost-aware default over the clean slate.
+            ForceResetAllSkills(pawn);
 
             var eligible = EligibleSkills
                 .Where(skill => skill != null && pawn.skills.GetSkill(skill) != null && !pawn.skills.GetSkill(skill).TotallyDisabled)

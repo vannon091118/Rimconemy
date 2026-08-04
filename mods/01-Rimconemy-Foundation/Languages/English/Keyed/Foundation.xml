@@ -48,8 +48,51 @@
   <RimconemyUi.Tooltip.CloseWindow>Close this window</RimconemyUi.Tooltip.CloseWindow>
   <RimconemySettings.GlobalTheme.Title>UI Theme Override</RimconemySettings.GlobalTheme.Title>
   <RimconemySettings.GlobalTheme.Help>Applies RimThemes-style overrides when active and supported (opt-in).</RimconemySettings.GlobalTheme.Help>
-  <!-- CategoryHeader and StuffHeader were removed during the P30 simplification
-       (post-fix per-code-review): per-category bucketing was deferred because
-       ThingCategory in 1.6 exposes neither stable label nor defName through
-       the local Assembly-CSharp.dll surface. -->
+
+  <!-- Navigation & Main Hub -->
+  <Rimconemy.Hub.Tab.Colony>🏛️ Colony</Rimconemy.Hub.Tab.Colony>
+  <Rimconemy.Hub.Tab.Survival>🛡️ Survival</Rimconemy.Hub.Tab.Survival>
+  <Rimconemy.Hub.Tab.Infrastructure>⚡ Infrastructure</Rimconemy.Hub.Tab.Infrastructure>
+  <Rimconemy.Hub.Tab.Economy>💰 Economy</Rimconemy.Hub.Tab.Economy>
+  <Rimconemy.Hub.Tab.Threat>☣️ Threat</Rimconemy.Hub.Tab.Threat>
+
+  <!-- Infrastructure -->
+  <Rimconemy.Infrastructure.Power>Power Network</Rimconemy.Infrastructure.Power>
+  <Rimconemy.Infrastructure.Buildings>Buildings Overview</Rimconemy.Infrastructure.Buildings>
+  <Rimconemy.Infrastructure.Farms>Farms &amp; Crops</Rimconemy.Infrastructure.Farms>
+  <Rimconemy.Infrastructure.Storage>Storage &amp; Resources</Rimconemy.Infrastructure.Storage>
+  <Rimconemy.Infrastructure.Signal>Signal &amp; Diagnostics</Rimconemy.Infrastructure.Signal>
+  <Rimconemy.Infrastructure.NoBuildings>No Rimconemy buildings found on map.</Rimconemy.Infrastructure.NoBuildings>
+  <Rimconemy.Infrastructure.NoPlants>No crops tracked.</Rimconemy.Infrastructure.NoPlants>
+  <Rimconemy.Infrastructure.NoStorage>No storage inventory tracked.</Rimconemy.Infrastructure.NoStorage>
+  <Rimconemy.Infrastructure.Unavailable>Infrastructure system unavailable.</Rimconemy.Infrastructure.Unavailable>
+
+  <!-- Economy -->
+  <Rimconemy.Economy.Wallet>Wallet (Credits)</Rimconemy.Economy.Wallet>
+  <Rimconemy.Economy.Transactions>Transaction Log</Rimconemy.Economy.Transactions>
+  <Rimconemy.Economy.NoTransactions>No transactions recorded.</Rimconemy.Economy.NoTransactions>
+  <Rimconemy.Economy.Markets>Markets</Rimconemy.Economy.Markets>
+  <Rimconemy.Economy.NoMarket>No local market available.</Rimconemy.Economy.NoMarket>
+  <Rimconemy.Economy.NoPrices>No market prices loaded.</Rimconemy.Economy.NoPrices>
+  <Rimconemy.Economy.Outposts>Outposts &amp; Logistics</Rimconemy.Economy.Outposts>
+  <Rimconemy.Economy.NoOutposts>No outposts established.</Rimconemy.Economy.NoOutposts>
+  <Rimconemy.Economy.Unavailable>Economy system unavailable.</Rimconemy.Economy.Unavailable>
+
+  <!-- Threat -->
+  <Rimconemy.Infected.SelectionReason>Last Selection Reason</Rimconemy.Infected.SelectionReason>
+  <Rimconemy.Infected.ThreatHistory>Threat History</Rimconemy.Infected.ThreatHistory>
+  <Rimconemy.Infected.NoHistory>No threat history recorded.</Rimconemy.Infected.NoHistory>
+  <Rimconemy.Infected.NoReason>No reason logged.</Rimconemy.Infected.NoReason>
+  <Rimconemy.Infected.Cooldowns>Event Cooldowns</Rimconemy.Infected.Cooldowns>
+  <Rimconemy.Infected.NoCooldowns>No active cooldowns.</Rimconemy.Infected.NoCooldowns>
+  <Rimconemy.Infected.State>Storyteller State</Rimconemy.Infected.State>
+  <Rimconemy.Infected.NextRaid>Next Threat / Raid</Rimconemy.Infected.NextRaid>
+  <Rimconemy.Infected.NoPendingRaid>No pending raid.</Rimconemy.Infected.NoPendingRaid>
+  <Rimconemy.Infected.NoSnapshot>No threat snapshot loaded.</Rimconemy.Infected.NoSnapshot>
+  <Rimconemy.Infected.Unavailable>Threat system unavailable.</Rimconemy.Infected.Unavailable>
+
+  <!-- Survival -->
+  <Rimconemy.Survival.Unavailable>Survival system unavailable.</Rimconemy.Survival.Unavailable>
+  <Rimconemy.Survival.Empty>No colonists tracked.</Rimconemy.Survival.Empty>
 </LanguageData>
+

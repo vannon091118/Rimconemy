@@ -42,6 +42,11 @@ namespace Rimconemy.InfectedAutomation.Ideology
                 DefDatabase<ThoughtDef>.Add(InformedDecision);
                 DefDatabase<ThoughtDef>.Add(UnexplainedDecision);
 
+                // Wire ThoughtDefs into the PreceptDef comps that were
+                // loaded from XML but whose cross-refs couldn't resolve
+                // (ThoughtDefs are registered here, after XML loading).
+                WirePreceptComps();
+
                 Log.Message("[Rimconemy.InfectedAutomation] Transparency ThoughtDefs registered in code.");
             }
             catch (System.Exception ex)
@@ -107,6 +112,33 @@ namespace Rimconemy.InfectedAutomation.Ideology
         {
             if (stage < 0 || stage >= UnexplainedStages.Length) return 0f;
             return UnexplainedStages[stage].Mood;
+        }
+
+        /// <summary>
+        /// Wires the programmatically-registered ThoughtDefs into the
+        /// XML-loaded PreceptDef's comps list. The XML cross-references
+        /// could not resolve at load time because ThoughtDefs are
+        /// registered via [StaticConstructorOnStartup], which runs after
+        /// XML cross-reference resolution.
+        /// </summary>
+        private static void WirePreceptComps()
+        {
+            var preceptDef = DefDatabase<PreceptDef>.GetNamedSilentFail("Rimconemy_Transparency_Precept");
+            if (preceptDef == null) return;
+            if (preceptDef.comps == null) preceptDef.comps = new List<PreceptComp>();
+
+            // Clear any unresolved (null-thought) comps from the XML load
+            // and replace with properly wired ones.
+            preceptDef.comps.RemoveAll(c => c is PreceptComp_SituationalThought s && s.thought == null);
+
+            preceptDef.comps.Add(new PreceptComp_SituationalThought
+            {
+                thought = InformedDecision,
+            });
+            preceptDef.comps.Add(new PreceptComp_SituationalThought
+            {
+                thought = UnexplainedDecision,
+            });
         }
     }
 }

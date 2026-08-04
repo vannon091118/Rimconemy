@@ -31,7 +31,8 @@ namespace Rimconemy.Foundation.UI
             {
                 Text.Font = font;
                 GUI.color = RimconemyTheme.HeaderInk;
-                Widgets.Label(rect, key.Translate());
+                string text = !string.IsNullOrEmpty(key) && key.CanTranslate() ? key.Translate().ToString() : key;
+                Widgets.Label(rect, text);
             }
             finally
             {
@@ -39,6 +40,7 @@ namespace Rimconemy.Foundation.UI
                 Text.Font = GameFont.Small;
             }
         }
+
 
         /// <summary>Two-column row: leftLabel (default ink) + rightValue (semantic, optional).</summary>
         public static void DrawRow(Rect rect, string leftLabel, string rightValue, Color? valueColor = null)
@@ -81,6 +83,37 @@ namespace Rimconemy.Foundation.UI
             }
         }
 
+        /// <summary>
+        /// Draws a truthful capability/status banner. The state is always
+        /// written as text so status does not depend on color perception.
+        /// </summary>
+        public static void DrawFeatureStatus(Rect rect, string state, string detail, StatusLevel level)
+        {
+            try
+            {
+                GUI.color = RimconemyTheme.PanelInk;
+                Widgets.DrawBoxSolid(rect, RimconemyTheme.PanelInk);
+                GUI.color = RimconemyTheme.DividerInk;
+                Widgets.DrawBox(rect);
+
+                Text.Font = GameFont.Small;
+                GUI.color = StatusColor(level);
+                Widgets.Label(new Rect(rect.x + RimconemyTheme.Margin, rect.y + 4f,
+                    rect.width - RimconemyTheme.Margin * 2f, 20f),
+                    state ?? "STATUS");
+
+                Text.Font = GameFont.Tiny;
+                GUI.color = RimconemyTheme.Muted;
+                Widgets.Label(new Rect(rect.x + RimconemyTheme.Margin, rect.y + 24f,
+                    rect.width - RimconemyTheme.Margin * 2f, rect.height - 26f),
+                    detail ?? "");
+            }
+            finally
+            {
+                ResetTextFontAndColor();
+            }
+        }
+
         /// <summary>Horizontal-need/progress-bar with empty-background (Muted) and filled colour.</summary>
         public static void DrawNeedBar(Rect rect, float fillFraction, Color fillColor, string label = null)
         {
@@ -108,7 +141,8 @@ namespace Rimconemy.Foundation.UI
             {
                 GUI.color = RimconemyTheme.Muted;
                 Text.Anchor = TextAnchor.MiddleCenter;
-                Widgets.Label(rect, messageKey.Translate());
+                string text = !string.IsNullOrEmpty(messageKey) && messageKey.CanTranslate() ? messageKey.Translate().ToString() : messageKey;
+                Widgets.Label(rect, text);
             }
             finally
             {
@@ -116,6 +150,7 @@ namespace Rimconemy.Foundation.UI
                 Text.Anchor = TextAnchor.UpperLeft;
             }
         }
+
 
         /// <summary>
         /// Hoverable + clickable rectangle with optional TooltipHandler-TipRegion.
@@ -296,6 +331,7 @@ namespace Rimconemy.Foundation.UI
         {
             GUI.color = Color.white;
             Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.UpperLeft;
         }
     }
 }

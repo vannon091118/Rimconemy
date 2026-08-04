@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Rimconemy.Foundation.UI;
 using RimWorld;
 using UnityEngine;
@@ -45,6 +47,13 @@ namespace Rimconemy.SurvivalProgression.Character
             if (_applied) return;
             StoredBudgetAllocations.Allocations = new Dictionary<SkillDef, int>(_allocations);
             CharacterSetup.ApplyStoredBudget();
+            bool persisted = RecordAppliedStartingPawns();
+            if (!persisted)
+            {
+                Messages.Message(
+                    "Character Setup angewendet, aber noch nicht persistent gespeichert.",
+                    MessageTypeDefOf.RejectInput);
+            }
         }
 
         public override void DoWindowContents(Rect inRect)
@@ -102,6 +111,29 @@ namespace Rimconemy.SurvivalProgression.Character
             Widgets.Label(zoneRect, zoneKey.Translate());
             GUI.color = Color.white;
             y += RimconemyTheme.RowHeight;
+
+            var setupState = CharacterSetupState.Get();
+            // Honest Banner: SkillBudgetWindow ist das einzige Foundation-konsumierende
+            // Fenster mit ECHTER State-Mutation. Apply / Close schreiben über
+            // CharacterSetup.ApplyStoredBudget + CharacterSetupState.RecordAppliedPawns
+            // in die Scribe-Persistenz. Wir deklarieren das explizit als MUTATING,
+            // damit der FoundationHonestBannerAudit die Klasse als MUTATIONS-fähig
+            // erkennt und nicht mit READ-ONLY-Dashboards verwechselt.
+            // OPEN-Hinweis: vollständige Save/Load-Roundtrip-Live-Belegung ist im
+            // Falsifizierungs-Plan status-vs-code-audit-2026-08-04 §B6 noch offen.
+            RimconemyUi.DrawFeatureStatus(
+                new Rect(inRect.x, y, inRect.width, RimconemyTheme.RowHeight * 2f),
+                setupState != null && setupState.Applied
+                    ? "PERSISTENT · MUTATING · Character Setup gespeichert"
+                    : "ENTWURF · MUTATING · noch nicht gespeichert",
+                setupState != null && setupState.Applied
+                    ? "MUTATING · Skillbudget/Alter/Trait-Auswahl sind im aktuellen Save-Scorecard erfasst. " +
+                      "OPEN · vollständiger Save/Load-Live-Gate noch ausstehend (siehe Audit §B6)."
+                    : "MUTATING · Apply oder Fenster-Schließen schreibt Skillbudget/Alter/Trait-Auswahl " +
+                      "über CharacterSetupState.RecordAppliedPawns in die Scribe-Persistenz. " +
+                      "OPEN · vollständiger Save/Load-Live-Gate noch ausstehend (siehe Audit §B6).",
+                setupState != null && setupState.Applied ? StatusLevel.Success : StatusLevel.Warn);
+            y += RimconemyTheme.RowHeight * 2f + RimconemyTheme.SectionSpacing;
 
             y += RimconemyTheme.SectionSpacing;
 
@@ -200,8 +232,75 @@ namespace Rimconemy.SurvivalProgression.Character
             _applied = true;
             StoredBudgetAllocations.Allocations = new Dictionary<SkillDef, int>(_allocations);
             CharacterSetup.ApplyStoredBudget();
-            Messages.Message("Rimconemy.UI.SkillBudget.Message.Applied".Translate(), MessageTypeDefOf.PositiveEvent);
+            bool persisted = RecordAppliedStartingPawns();
+            Messages.Message(
+                persisted
+                    ? "Rimconemy.UI.SkillBudget.Message.Applied".Translate()
+                    : "Character Setup angewendet, aber noch nicht persistent gespeichert."
+                    ,
+                persisted ? MessageTypeDefOf.PositiveEvent : MessageTypeDefOf.RejectInput);
             Close();
+        }
+
+        private static bool RecordAppliedStartingPawns()
+        {
+            var state = CharacterSetupState.Get();
+            if (state == null) return false;
+
+            // The budget window is opened during game initialization, before
+            // maps exist. RimWorld 1.6 exposes the selected starting pawns
+            // through the combined list plus startingPawnCount; the separate
+            // startingPawnsRequired field is a PawnKindCount list, not a Pawn
+            // collection. Persist only the required prefix and fail closed if
+            // that count cannot be resolved.
+            var initData = Find.GameInitData;
+            if (initData == null)
+            {
+                state.Applied = false;
+                return false;
+            }
+
+            var fields = initData.GetType();
+
+            var combinedField = fields.GetField(
+                "startingAndOptionalPawns",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var combined = combinedField?.GetValue(initData) as IList;
+            if (combined == null)
+            {
+                state.Applied = false;
+                return false;
+            }
+
+            // In the local RimWorld 1.6.9371 assembly, startingPawnCount is
+            // the int count of selected pawns, while startingPawnsRequired is
+            // a List<PawnKindCount>. The required pawns precede optional
+            // candidates in startingAndOptionalPawns; use only that prefix.
+            var countField = fields.GetField(
+                "startingPawnCount",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (countField == null || !(countField.GetValue(initData) is int selectedCount)
+                || selectedCount <= 0 || selectedCount > combined.Count)
+            {
+                Log.Warning(
+                    "[Rimconemy.SurvivalProgression] Character Setup persistence skipped: " +
+                    "GameInitData.startingPawnCount is unavailable or invalid; refusing partial completion.");
+                state.Applied = false;
+                return false;
+            }
+
+            var selected = new List<Pawn>(selectedCount);
+            for (int i = 0; i < selectedCount; i++)
+            {
+                var pawn = combined[i] as Pawn;
+                if (pawn != null) selected.Add(pawn);
+            }
+
+            // A null/non-Pawn entry or duplicate ID makes the prefix partial;
+            // RecordAppliedPawns rejects it through the expected-count gate.
+            return selected.Count == selectedCount
+                && state.RecordAppliedPawns(selected, selectedCount) == selectedCount
+                && state.Applied;
         }
 
         private static List<SkillDef> GetEligibleSkills()

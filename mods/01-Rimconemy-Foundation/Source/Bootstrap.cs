@@ -39,6 +39,15 @@ namespace Rimconemy.Foundation
             // PackageRegistry runs first (self-registration), then ProfileDetector reads it.
 
             Log.Message($"[Rimconemy.Foundation] Registry: {PackageRegistry.RegisteredCount} package(s) registered");
+            // Defensive trigger: ensure the canonical "Profile detected" summary
+            // line has been emitted at least once after Foundation's cctor chain
+            // settles. The dedup gate in TryEmitDetection collapses this call
+            // against the static-cctor's earlier emission when state is unchanged,
+            // so this is a no-op in the common path. If a feature package arrived
+            // between the cctor and this point, TryEmitDetection will emit the
+            // state-transition line here.
+            if (ProfileDetector.TryEmitDetection(out string bootstrapSummary))
+                Log.Message(bootstrapSummary);
             Log.Message($"[Rimconemy.Foundation] Profile: {ProfileDetector.CurrentProfile}");
             Log.Message("[Rimconemy.Foundation] UI-Toolkit loaded: RimconemyTheme + RimconemyUi + 3 base classes (Phase 0-A)");
 
@@ -115,9 +124,14 @@ namespace Rimconemy.Foundation
             Tests.FoundationEventLogRegressionTests.RunAll();
             Tests.FoundationColonialReaderTests.RunAll();
             Tests.FoundationProfileRefreshTests.RunAll();
+            Tests.ProfileDetectorDedupTests.RunAll();
             Tests.FoundationBuildingCapabilityTests.RunAll();
             Tests.FoundationTimeConstantsRegressionTests.RunAll();
+            Tests.FoundationWindowFallbackTests.RunAll();
+            Tests.FoundationHonestBannerAudit.RunAll();
+            Tests.FoundationCanonicalLayerTests.RunAll();
             Log.Message("[Rimconemy.Foundation] Building capability gate declared; live construction remains an interactive A-gate.");
+            Log.Message("[Rimconemy.Foundation] Canonical layer active: MaterialIdentity + SettingIdentity + RoomRoleResolver.");
 
             Log.Message("[Rimconemy.Foundation] Bootstrap complete.");
             Log.Message("[Rimconemy.Foundation] ========================================");

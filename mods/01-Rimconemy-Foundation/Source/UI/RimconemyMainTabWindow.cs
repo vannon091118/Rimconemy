@@ -19,10 +19,41 @@ namespace Rimconemy.Foundation.UI
             doCloseX = false;
         }
 
+        // Memo lives in the static-class shared state so both Window variants
+        // agree on the same memo + log identity. See RimconemyWindow._loggedFallbacks.
+        /// <summary>
+        /// Honest fallback when a concrete subclass forgets to override
+        /// <see cref="DoWindowContents"/>. Per the audit-vs-doctrine contract
+        /// (Falsifizierungsbericht status-vs-code-audit-2026-08-04 §A2) we
+        /// NEVER throw <c>NotImplementedException</c>: RimWorld funnels no
+        /// exception handling into the window-draw pass, so a throw leaks
+        /// into the in-game UI thread and corrupts player state. Instead we
+        /// render an honest, text-first banner that the operator can read,
+        /// and log a single diagnostic (memoised per caller) so the failing
+        /// subclass can be located without flooding the log.
+        /// Subclasses remain REQUIRED to override.
+        /// </summary>
         public override void DoWindowContents(Rect inRect)
         {
-            throw new System.NotImplementedException(
-                "RimconemyMainTabWindow.DoWindowContents must be overridden by the concrete subclass.");
+            string callerName = GetType().FullName ?? GetType().Name ?? "(unknown)";
+            try
+            {
+                // Player-facing text is intentionally plain; the crashing
+                // subclass name is reserved for the log (Code-Review finding I3).
+                RimconemyUi.DrawFeatureStatus(
+                    inRect,
+                    "MainTab-Inhalt nicht überschrieben",
+                    "Dieser Tab ist eingerichtet aber sein Inhalt fehlt noch. " +
+                    "Die Rimconemy-Basisklasse schützt vor Absturz, zeigt nur diesen ehrlichen Marker " +
+                    "und schreibt Details in die Spieler-Log.",
+                    StatusLevel.Error);
+
+                RimconemyWindow.LogFallbackOnce("RimconemyMainTabWindow", callerName);
+            }
+            finally
+            {
+                RimconemyUi.ResetTextFontAndColor();
+            }
         }
     }
 }

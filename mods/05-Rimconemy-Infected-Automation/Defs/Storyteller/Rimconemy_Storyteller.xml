@@ -3,9 +3,12 @@
   INERT · Stand 2026-08-04 · Audit-Falsifizierung
   Diese Datei wird von RimWorld geladen (kein Lade-Fehler), wirkt aber NICHT:
    - <storytellerComps> ist leer → keine StorytellerComp-Komponenten.
-   - <portraitLarge>/<portraitTiny> verweisen auf Texture-Pfade, die
-     NICHT vorhanden sind → das StorytellerSymbol wird mit Fallback
-     gezeichnet, aber der Storyteller feuert nichts selbst.
+   - <portraitLarge>/<portraitTiny> verweisen auf die Texturen
+     Textures/UI/HeroArt/Storytellers/RimconemyLarge.png (1024×1024)
+     und RimconemyTiny.png (128×128), erzeugt 2026-08-04 aus dem
+     Gemini-Bild (Center-Crop auf die Figur, Logo unten rechts
+     ausgeschnitten). Das StorytellerSymbol wird damit korrekt gezeichnet,
+     aber der Storyteller feuert selbst nichts.
    - Die Phase-1-Realität benutzt die Vanilla-Storyteller und mappt
      StoryDirector über StoryDirector.ResolveProfileFromDifficulty()
      auf SettingProfile (Refuge/Survival/Collapse).

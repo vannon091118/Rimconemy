@@ -28,22 +28,8 @@
     <description>Entscheidungen der Gruppenführung werden erklärt. Unerklärte Entscheidungen verringern das Vertrauen.</description>
     <impact>Medium</impact>
     <displayOrderInIssue>10</displayOrderInIssue>
-    <descriptionMaker>
-      <patterns>
-        <li>Die Führung erklärt jede Entscheidung.</li>
-        <li>Unerklärte Entscheidungen sind eine Seltenheit.</li>
-      </patterns>
-    </descriptionMaker>
-    <comps>
-      <li Class="PreceptComp_SituationalThought">
-        <thought>Rimconemy_Thought_InformedDecision</thought>
-        <description>Eine erklärte Entscheidung wurde getroffen.</description>
-      </li>
-      <li Class="PreceptComp_SituationalThought">
-        <thought>Rimconemy_Thought_UnexplainedDecision</thought>
-        <description>Eine oder mehrere Entscheidungen wurden nicht erklärt.</description>
-      </li>
-    </comps>
+    <!-- ThoughtDef comps wired programmatically in ThoughtDefs_Transparency.cs
+         because [StaticConstructorOnStartup] runs after XML cross-reference resolution. -->
   </PreceptDef>
 
 </Defs>

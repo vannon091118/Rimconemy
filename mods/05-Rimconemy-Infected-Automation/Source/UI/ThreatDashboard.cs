@@ -32,7 +32,8 @@ namespace Rimconemy.InfectedAutomation.UI
             float width = inRect.width - RimconemyTheme.DefaultScrollbarWidth;
             // Estimate content height: header + pressure + snapshot + sections
             int cooldownCount = director.State?.EventCooldowns?.Count ?? 0;
-            float contentHeight = 34f + 34f + 62f + 56f   // header + badge + pressure + snapshot
+            float contentHeight = 34f + 34f + RimconemyTheme.RowHeight * 2f + 6f + RimconemyTheme.SectionSpacing
+                                + 62f + 56f   // header + badge + capability banner + pressure + snapshot
                                 + 32f + 24f + 24f          // State section rows
                                 + 32f + 30f                // Sparkline section
                                 + 80f                      // Sparkline height
@@ -55,6 +56,22 @@ namespace Rimconemy.InfectedAutomation.UI
                 "Profil: " + (profile?.Label ?? "nicht verfügbar"),
                 profile == SettingProfile.Collapse ? StatusLevel.Error : StatusLevel.Info);
             y += 34f;
+            RimconemyUi.DrawFeatureStatus(
+                new Rect(0f, y, width, RimconemyTheme.RowHeight * 2f + 6f),
+                "READ-ONLY · Story-/Threat-Snapshot",
+                "OPEN · echter Raid-Spawn und vollständige Eventauflösung sind noch nicht belegt.",
+                StatusLevel.Warn);
+            y += RimconemyTheme.RowHeight * 2f + 6f + RimconemyTheme.SectionSpacing;
+
+            if (Prefs.DevMode)
+            {
+                if (Widgets.ButtonText(new Rect(0f, y, width, 26f), "⚡ Dev: Story-Auswertung jetzt ausführen"))
+                {
+                    director.EvaluateNow(Find.TickManager?.TicksGame ?? 0L);
+                }
+                y += 30f;
+            }
+
 
             // ── Threat pressure gauge ────────────────────────────
             var snapshot = director.LastSnapshot;

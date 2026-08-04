@@ -244,6 +244,20 @@ run_game() {
   esac
 }
 
+verify_bootstrap_log_gate() {
+  [[ "$DO_START" == true ]] || { pass "verify_bootstrap_log: skipped (no RimWorld boot)"; return; }
+  local verify_script="$SCRIPT_DIR/verify_bootstrap_log.sh"
+  if [[ ! -x "$verify_script" ]]; then
+    fail "verify_bootstrap_log: script missing or not executable ($verify_script)"
+    return
+  fi
+  if "$verify_script" "$LOG_PATH"; then
+    pass "verify_bootstrap_log: ProfileDetector dedup invariants hold"
+  else
+    fail "verify_bootstrap_log: invariant violation; see diagnostics above"
+  fi
+}
+
 runtime_gates() {
   [[ "$DO_START" == true ]] || { pass "runtime log gates skipped"; return; }
   if [[ ! -f "$LOG_PATH" ]]; then
@@ -282,6 +296,7 @@ runtime_gates() {
     'CrossPackageState tests: [0-9]+ passed, 0 failed'
     'EventLog regression tests: [0-9]+ passed, 0 failed'
     'Profile refresh tests: [0-9]+ passed, 0 failed'
+    'Profile detector dedup tests: [0-9]+ passed, 0 failed'
     'BioRemap tests: [0-9]+ passed, 0 failed'
     'NeedMappingService tests: [0-9]+ passed, 0 failed'
     'CreditsLedger regression tests: [0-9]+ passed, 0 failed'
@@ -331,6 +346,11 @@ runtime_gates() {
   else
     pass "no Rimconemy error/exception/failure markers"
   fi
+
+  # Bootstrap-log dedup invariants (ProfileDetector dedup token must hold).
+  # See scripts/verify_bootstrap_log.sh and
+  # docs/falsification/foundation__BootstrapLogDedup.md for the contract.
+  verify_bootstrap_log_gate
 }
 
 finish_report() {
