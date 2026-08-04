@@ -16,6 +16,32 @@ Bauschutt → Wand/Tür → Nahrung/Hanf → Wasser + Brennstoff → Power → P
 
 Vanilla-Needs und Vanilla-Raids bleiben aktiv, solange die optionalen Pakete fehlen.
 
+## P0 Coal Chain (IMPLEMENTIERT 2026-08-04)
+
+```text
+WoodLog + HempLeafy → Campfire (MakeCoal) → Coal → WoodCoalGenerator (1.5× Effizienz)
+SteelScraps → Campfire (SalvageMachineParts) → MachineParts → Edelstahl/Turm (P1)
+```
+
+Artefakte:
+- `Rimconemy_Coal` ThingDef (ResourceBase, StackCount, GeneratorInputs)
+- `Rimconemy_MachineParts` ThingDef (ResourceBase, StackCount, Scraps)
+- `Rimconemy_CraftingStations` ThingCategoryDef (Buildings parent)
+- `Rimconemy_MakeCoal` Recipe (Campfire, 3 WoodLog + 2 HempLeafy → 4 Coal)
+- `Rimconemy_SalvageMachineParts` Recipe (Campfire, 5 SteelScraps → 1 MachineParts)
+- WoodCoalGenerator: 2× Refuelable (WoodLog/Chemfuel @ 1.0, Coal @ 0.67)
+- Campfire: 3 Rezepte wired
+
+Nicht belegt (Live-Gates): MakeCoal-Durchlauf, Salvage-Ausbeute, Save/Load
+
+## Standalone-Spielwert
+
+```text
+Bauschutt → Wand/Tür → Nahrung/Hanf → Wasser + Brennstoff → Power → Pfeilturm
+```
+
+Vanilla-Needs und Vanilla-Raids bleiben aktiv, solange die optionalen Pakete fehlen.
+
 ## Vanilla-/DLC-Anker
 
 | Bereich | Anker | MVP-Entscheidung | Spike |
@@ -34,6 +60,7 @@ Vanilla-Needs und Vanilla-Raids bleiben aktiv, solange die optionalen Pakete feh
 | Task | Dateien/Artefakte | Test-IDs |
 |---|---|---|
 | I1 | `Defs/ThingDefs/ConstructionDebris.xml`, `Defs/ThingDefs/Hemp.xml`, `Patches/StorageAndTrade.xml`, `Tests/ResourceDefs.md` | `NEW_GAME`, `UI_REASON`, `DLC_SCOPE` |
+| **I1.1 (P0)** | `Defs/ThingDefs/Resources/Coal.xml`, `Defs/ThingDefs/Resources/MachineParts.xml`, `Defs/ThingDefs/Stats/ThingCategories.xml` (CraftingStations), `Defs/RecipeDefs/MakeCoal.xml`, `Defs/RecipeDefs/SalvageMachineParts.xml`, `Defs/BuildingDefs/Campfire.xml`, `Defs/BuildingDefs/PowerPlants.xml` | `NEW_GAME`, `BOOT`, `UI_REASON` |
 | I2 | `Patches/Bauschutt_Remap_Patches.xml` (angelegt 2026-08-04), `Defs/PlantDefs/` | `NEW_GAME`, `UI_REASON`, `DETERMINISM` |
 | I3 | `Defs/ThingDefs/Water.xml`, `Defs/BuildingDefs/`, `Source/Power/` nur falls nötig, `Tests/PowerChain.md` | `NEW_GAME`, `SAVE_LOAD`, `UI_REASON` |
 | I4 | `Defs/BuildingDefs/ArrowTurret.xml`, `Patches/UpgradeCosts.xml`, `Tests/ArrowTurretPower.md` | `SAVE_LOAD`, `UI_REASON`, `DLC_SCOPE` |
@@ -49,6 +76,14 @@ Vanilla-Needs und Vanilla-Raids bleiben aktiv, solange die optionalen Pakete feh
 - Hanf-Output in eigene Kategorie ohne Food-Flags führen.
 
 **Gate:** Bauschutt und Hanf sind sichtbar, lagerbar, transportierbar und semantisch getrennt.
+
+### I1.1 – P0 Coal Chain Resources (ABGESCHLOSSEN 2026-08-04)
+
+- `Rimconemy_Coal` — Pyrolysis-Output, Category `Rimconemy_GeneratorInputs`, Stack 200, MarketValue 6
+- `Rimconemy_MachineParts` — Precision Components, Category `Rimconemy_Scraps`, Stack 150, MarketValue 15
+- `Rimconemy_CraftingStations` — ThingCategoryDef für Campfire UI-Platzierung
+
+**Gate:** Alle drei Defs laden fehlerfrei, Campfire erscheint in CraftingStations-Kategorie.
 
 ### I2 – Bau- und Farmloop
 

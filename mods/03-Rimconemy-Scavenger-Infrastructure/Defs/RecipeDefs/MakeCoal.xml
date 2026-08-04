@@ -16,7 +16,6 @@
     <label>make coal</label>
     <description>Pyrolyse wood and hemp fibre in the campfire to produce coal. The controlled burn drives off volatiles and concentrates carbon, yielding a denser, hotter-burning fuel.</description>
     <jobString>Making coal</jobString>
-    <workerClass>WorkGiver_DoBill</workerClass>
     <workAmount>500</workAmount>
     <ingredients>
       <li>

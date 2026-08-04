@@ -5,7 +5,7 @@
   DLC condition: none
   Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> Scavenger -> later packages
   Vanilla anchor: ThingDef (basic resource, ParentName=ResourceBase).
-  1.6-Fixes: Graphic_Stacked -> Graphic_StackCount; mass authored.
+  1.6-Fixes: Graphic_Stacked -> Graphic_StackCount; ComponentIndustrial texture path; mass authored.
 
   Gameplay: Machine parts are salvaged from ruined machinery and mechanoid remains.
   They are essential for advanced manufacturing (stainless steel, towers).
@@ -17,7 +17,7 @@
     <label>machine parts</label>
     <description>Salvaged gears, actuators, and precision components from pre-collapse machinery and mechanoid chassis. Essential for advanced manufacturing — stainless steel, powered turrets, and automation systems.</description>
     <graphicData>
-      <texPath>Things/Item/Resource/Component</texPath>
+      <texPath>Things/Item/Resource/ComponentIndustrial</texPath>
       <graphicClass>Graphic_StackCount</graphicClass>
       <drawSize>0.85</drawSize>
     </graphicData>

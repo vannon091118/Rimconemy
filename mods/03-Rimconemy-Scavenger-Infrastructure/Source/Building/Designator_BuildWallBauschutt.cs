@@ -1,5 +1,7 @@
+using System;
 using System.Reflection;
 using RimWorld;
+using UnityEngine;
 using Verse;
 
 namespace Rimconemy.ScavengerInfrastructure.Building
@@ -22,14 +24,14 @@ namespace Rimconemy.ScavengerInfrastructure.Building
     /// Vanilla-Healthy-Verification: Designator_Build ist nicht instanziierbar
     /// ohne Map und prüft BuildPhase-State mit vanilla-eigener Logik.
     /// </summary>
-    public class Designator_BuildWallBauschutt : Designator_Build
+    public class Designator_BuildWallBauschutt : Designator
     {
         public Designator_BuildWallBauschutt() : base()
         {
             this.defaultLabel = "Rimconemy · BuildWallBauschutt";
             this.defaultDesc = "Platziert Wall-Blueprints aus Bauschutt-Bestand im Storage.";
-            this.icon = null; // Vanilla-Default-Icon ist Wall; wir lassen es.
-            this.hotKey = HotKeyDefOf.Misc1; // Beispiel-Belegung
+            this.icon = ContentFinder<Texture2D>.Get("Things/Building/Security/TurretMini_Base", false);
+            this.hotKey = KeyBindingDefOf.Misc1; // Beispiel-Belegung
             this.soundSucceeded = SoundDefOf.Designate_ZoneAdd;
         }
 
@@ -38,9 +40,11 @@ namespace Rimconemy.ScavengerInfrastructure.Building
         /// ausgewählt und Enter/LMB gedrückt hat. Wir umgehen den cell-pick-Selector
         /// und rufen direkt <see cref="BauschuttRemapApply.ApplyRemap"/> auf.
         /// </summary>
-        public override void ProcessInput(EventArgs ev)
+        public override void ProcessInput(Event ev)
         {
-            base.ProcessInput(ev);
+            // This is an immediate action designator, not a cell picker. Do not
+            // call Designator.ProcessInput: that would enter vanilla selection
+            // mode instead of applying the remap now.
             var result = BauschuttRemapApply.ApplyRemap();
 
             if (!string.IsNullOrEmpty(result.ReasonBlocked))

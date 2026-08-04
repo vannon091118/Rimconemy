@@ -22,7 +22,7 @@
     <description>A crude fire pit where steel scraps are burned down to reclaim usable steel. The first step in the scavenging loop: ruins yield scraps, the campfire yields building material.</description>
     <thingClass>Building_WorkTable</thingClass>
     <graphicData>
-      <texPath>Things/Building/Campfire/Campfire</texPath>
+      <texPath>Things/Building/Misc/Campfire</texPath>
       <graphicClass>Graphic_Single</graphicClass>
       <drawSize>1.3</drawSize>
     </graphicData>
@@ -44,8 +44,7 @@
       <WorkToBuild>600</WorkToBuild>
       <MarketValue>150</MarketValue>
       <Mass>5</Mass>
-      <WorkTableWorkSpeedBonus>1.0</WorkTableWorkSpeedBonus>
-      <WorkTableCrafterSkillBonus>0</WorkTableCrafterSkillBonus>
+      <WorkTableWorkSpeedFactor>1.0</WorkTableWorkSpeedFactor>
     </statBases>
     <thingCategories>
       <li>Rimconemy_CraftingStations</li>

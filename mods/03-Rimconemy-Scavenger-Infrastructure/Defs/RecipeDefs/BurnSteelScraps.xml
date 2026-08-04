@@ -18,7 +18,6 @@
     <label>burn steel scraps</label>
     <description>Burn down steel scraps in the fire to reclaim usable steel. Not all material survives the process — impurities burn away, yielding roughly two thirds.</description>
     <jobString>Burning steel scraps</jobString>
-    <workerClass>WorkGiver_DoBill</workerClass>
     <workAmount>400</workAmount>
     <ingredients>
       <li>

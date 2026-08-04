@@ -16,7 +16,6 @@
     <label>salvage machine parts</label>
     <description>Carefully extract gears, actuators, and precision components from steel scraps. Most scraps are too damaged, but patient work yields occasional intact machine parts for advanced manufacturing.</description>
     <jobString>Salvaging machine parts</jobString>
-    <workerClass>WorkGiver_DoBill</workerClass>
     <workAmount>800</workAmount>
     <ingredients>
       <li>

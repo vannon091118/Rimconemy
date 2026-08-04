@@ -58,9 +58,13 @@
 - `BuildingSnapshotService` rekonstruiert versionierte, read-only Building-Snapshots mit Bau-, Power-, Fuel-, Damage-, Input- und Owner-Feldern.
 - Der InfrastructureDashboard zeigt Building-/Power-/Storage-Read-Models; Foundation registriert die Capability `rimconemy.scavengerinfrastructure.building`.
 - Construction-Debris-, Hemp-, Water- und Power-Defs/Marker sowie der konditionale Wall-/Door-`Stony`-Patch sind vorhanden.
+- **Neu (P0 Coal Chain):** `Rimconemy_Coal` (ThingDef), `Rimconemy_MachineParts` (ThingDef), `Rimconemy_CraftingStations` (ThingCategoryDef).
+- **Neu (P0 Recipes):** `Rimconemy_MakeCoal` (3 WoodLog + 2 HempLeafy → 4 Coal @ Campfire), `Rimconemy_SalvageMachineParts` (5 SteelScraps → 1 MachineParts @ Campfire).
+- **Neu (P0 Generator):** WoodCoalGenerator besitzt separaten Refuelable für Coal mit `fuelConsumptionRate=0.67` (1.5× Effizienz ggü. WoodLog/Chemfuel 1.0).
+- **Neu (P0 Campfire):** 3 Rezepte wired: BurnSteelScraps, MakeCoal, SalvageMachineParts.
 - Bootstrap führt `BuildingCore`-Regressionstests aus; der frische Runtime-Gate-Lauf enthält den Building-Summary-Marker.
 
-**Nicht belegt:** vollständiger Bau-/Farm-/Wasserverbrauchs-Loop im echten Spiel, tatsächliche Wall-/Door-Materialauswahl, Caravan-/Temporary-Map-Enumeration, echte Fuel-/Power-Transition, echte Turmspielmechanik und Save/Load-Live-Gate.
+**Nicht belegt:** vollständiger Bau-/Farm-/Wasserverbrauchs-Loop im echten Spiel, tatsächliche Wall-/Door-Materialauswahl, Caravan-/Temporary-Map-Enumeration, echte Fuel-/Power-Transition, echte Turmspielmechanik, **Live-Test der Coal-Kette (MakeCoal → Generator-Effizienz, SalvageMachineParts-Ausbeute)** und Save/Load-Live-Gate.
 
 ### 04 — Economy & Territory
 

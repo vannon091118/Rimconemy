@@ -63,6 +63,33 @@ Bauschutt besitzt eine eigene stabile Def-/Ressourcen-ID und darf nicht nur als 
 - Outpost-Investitionen,
 - Preis-/Marktzuordnung.
 
+### SteelScraps
+
+Stahlreste sind das erste Scavenging-Produkt. Sie werden in Ruinen gefunden und im Campfire zu nutzbarem Stahl verarbeitet.
+
+- Quelle: Ruinen-Abbruch, Events
+- Verarbeitung: Campfire → `Rimconemy_BurnSteelScraps` (3 → 2 Steel)
+- Lagerfilter: `Rimconemy_Scraps`
+- Stack: 200
+
+### Coal
+
+Kohle ist der Pyrolysis-Output aus Holz und Hanf. Sie verbrennt im Generator 1.5× effizienter als rohes Holz.
+
+- Quelle: Campfire → `Rimconemy_MakeCoal` (3 WoodLog + 2 HempLeafy → 4 Coal)
+- Verbrauch: WoodCoalGenerator (dedizierter Refuelable, fuelConsumptionRate=0.67)
+- Lagerfilter: `Rimconemy_GeneratorInputs`
+- Stack: 200
+
+### MachineParts
+
+Maschinenteile sind Präzisionskomponenten für fortgeschrittene Fertigung (Edelstahl, Türme, Automation).
+
+- Quelle: Campfire → `Rimconemy_SalvageMachineParts` (5 SteelScraps → 1 MachineParts)
+- Geplante Quellen: Ruinen-Events, Mechanoid-Abbau, Supply Drops
+- Lagerfilter: `Rimconemy_Scraps`
+- Stack: 150
+
 ### Pflanzen
 
 Mindestens zwei funktionale Gruppen:
@@ -137,6 +164,24 @@ Definiere im Standalone-Modus:
 Keine globale Wasserzahl ohne physische Logistik: Der Spieler muss erkennen, wo Wasser entsteht, gelagert und verbraucht wird.
 
 **Exit-Test:** Generator kann ohne Wasser oder Brennstoff nicht dauerhaft laufen; Blockadegrund ist sichtbar.
+
+### Task 3.4.1 – P0 Coal Chain (ABGESCHLOSSEN)
+
+Implementiert: 2026-08-04
+
+- `Rimconemy_Coal` ThingDef: Pyrolysis-Produkt aus Holz + Hanf
+- `Rimconemy_MachineParts` ThingDef: Präzisionskomponenten aus SteelScraps
+- `Rimconemy_CraftingStations` ThingCategoryDef: UI-Kategorie für Campfire
+- `Rimconemy_MakeCoal` Recipe: 3 WoodLog + 2 HempLeafy → 4 Coal @ Campfire
+- `Rimconemy_SalvageMachineParts` Recipe: 5 SteelScraps → 1 MachineParts @ Campfire
+- WoodCoalGenerator: Separater Refuelable für Coal (fuelConsumptionRate=0.67 = 1.5× Effizienz)
+- Campfire: 3 Rezepte wired (BurnSteelScraps, MakeCoal, SalvageMachineParts)
+
+**Nicht belegt (Live-Gates):**
+- MakeCoal → Generator-Effizienz im echten Spiel
+- SalvageMachineParts-Ausbeute aus Ruinen-Abbruch
+- Coal vs. WoodLog Brenndauer-Vergleich
+- Save/Load der neuen Ressourcen
 
 ### Task 3.5 – Stromnetz und Generator
 
