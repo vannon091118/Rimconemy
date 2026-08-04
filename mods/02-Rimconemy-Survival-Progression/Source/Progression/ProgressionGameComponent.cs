@@ -7,6 +7,7 @@ using Rimconemy.Foundation.Registry;
 using Rimconemy.SurvivalProgression.Character;
 using Rimconemy.SurvivalProgression.Needs;
 using RimWorld;
+using UnityEngine;
 using Verse;
 
 namespace Rimconemy.SurvivalProgression.Progression
@@ -363,7 +364,11 @@ namespace Rimconemy.SurvivalProgression.Progression
             }
 
             if (amplifier != null)
-                amplifier.Severity = Hediff_NeedAmplifier.SeverityForPawn(pawn);
+            {
+                float targetSeverity = Hediff_NeedAmplifier.SeverityForPawn(pawn);
+                if (!Mathf.Approximately(amplifier.Severity, targetSeverity))
+                    amplifier.Severity = targetSeverity;
+            }
         }
 
         private static void UpdateWorkEpisode(ProgressionSnapshot snapshot, Pawn pawn)

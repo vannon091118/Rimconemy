@@ -53,6 +53,11 @@ namespace Rimconemy.ScavengerInfrastructure.Building
         /// <summary>Hard-Cap für eine einzelne Apply-Iteration.</summary>
         public const int MaxWallsPerApply = 200;
 
+        // StorageQuery is intentionally read-only. This guard prevents the
+        // immediate designator from allocating the same unchanged snapshot
+        // repeatedly while the physical storage-write gate remains open.
+        private static string _lastAppliedStorageKey;
+
         // ── Test-Seams ───────────────────────────────────────────────
         // Default-Werte: null = Produktivverhalten, 0 = kein Increment.
 
@@ -118,6 +123,7 @@ namespace Rimconemy.ScavengerInfrastructure.Building
             FactionOverride = null;
             BlueprintPlacerOverride = null;
             PlaceAttempts = 0;
+            _lastAppliedStorageKey = null;
         }
 
         /// <summary>
@@ -363,6 +369,18 @@ namespace Rimconemy.ScavengerInfrastructure.Building
                     }
                 }
 
+                string storageKey = (Current.Game.GetHashCode().ToString(System.Globalization.CultureInfo.InvariantCulture))
+                    + ":" + (snapshot?.ContentHash ?? "<empty>");
+                if (_lastAppliedStorageKey == storageKey)
+                {
+                    return new ApplyResult
+                    {
+                        ReasonBlocked = "Unchanged Bauschutt snapshot already allocated; physical storage consumption is OPEN",
+                        PlacedAt = new List<IntVec3>(),
+                        PlacementFailures = new List<string>(),
+                    };
+                }
+
                 var input = new ApplyInput
                 {
                     TargetMap = targetMap,
@@ -371,7 +389,10 @@ namespace Rimconemy.ScavengerInfrastructure.Building
                     BuilderFaction = Faction.OfPlayer,
                 };
 
-                return ApplyRemapCore(input);
+                ApplyResult result = ApplyRemapCore(input);
+                if (result.WallsPlaced > 0)
+                    _lastAppliedStorageKey = storageKey;
+                return result;
             }
             catch (Exception ex)
             {

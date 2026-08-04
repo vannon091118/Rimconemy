@@ -24,8 +24,9 @@
       neutral:  minSeverity 0.45  (Sample 0.5 → Severity 0.50)
       hungry:   minSeverity 0.85  (Sample 0.0 → Severity 1.00)
   -->
-  <HediffDef ParentName="DiseaseBase">
+  <HediffDef>
     <defName>Rimconemy_NeedAmplifier</defName>
+    <label>need amplifier</label>
     <hediffClass>Rimconemy.SurvivalProgression.Needs.Hediff_NeedAmplifier</hediffClass>
     <initialSeverity>0.5</initialSeverity>
     <description>Amplifies the vanilla hunger rate from the survival progression need sample.</description>
