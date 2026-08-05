@@ -1,65 +1,99 @@
 # Falsifizierungsbericht: `Infected/ThreatPressure`
 
-> **Capability:** `rimconemy.infectedautomation` v1 · **Owner:** Infected · **Stand:** 2026-08-04
-> **Status:** `COMPILED`
-> **Code-Anker:** `Source/Story/StoryDirector.cs` · **Test:** `Tests/BuildingThreatRegressionTests (ThreatSnapshotBridge-Pfad).cs`
-> **ROADMAP-Referenz:** §8.2 · **Owner-Checklist:** siehe `docs/falsification/README.md`
+> **Capability:** `rimconemy.infectedautomation.automation` v1 · **Owner:** Infected · **Stand:** 2026-08-05
+> **Status:** `COMPILED, BOOT, REGRESSION` · `LIVE`: pending user verification
+> **Code-Anker:**
+> - `Source/Horde/HordeCalculator.cs` (Pure Effective-Count + IsActive + PulsePhase)
+> - `Source/Horde/HordeUpdateLogic.cs` (Pure Spawn/Move/Despawn)
+> - `Source/Horde/HordeSpawner.cs` (MapComponent, 250-tick Spawner)
+> - `Source/Horde/HordeWorldObject.cs` + `Defs/WorldObjects/Rimconemy_HordeWorldObject.xml` (Wanderer)
+> - `Source/Horde/HordeSectionLayer.cs` (Pulsierender Kreis mittig, 3 Ringe)
+> - `Source/Horde/HordeBurstLayer.cs` (Per-Infected Radial-Bursts)
+> - `Source/Horde/HordeCameraOverlay.cs` (UIRoot Postfix, 4 Edge-Borders)
+> - `Tests/HordeRegressionTests.cs` (D1–D15)
 
 ## A — Def-Liste (XML-Defs)
 
-<!-- Befuelle nach Ingame-Boot: Welche .xml-Defs sind im Player.log geladen? -->
+- `Defs/WorldObjects/Rimconemy_HordeWorldObject.xml`:
+  - `<defName>Rimconemy_HordeWorldObject</defName>`
+  - `<worldObjectClass>Rimconemy.InfectedAutomation.Horde.HordeWorldObject</worldObjectClass>`
+  - `<drawerType>MapMeshAndFoam</drawerType>`
+  - `<color>(0.85, 0.15, 0.15)</color>`
 
 ## B — Code-Pfad (Build + Boot)
 
-Quelle: `Source/Infected/Source/Story/StoryDirector.cs`
+`Source/Horde/HordeCameraOverlay.Install()` läuft im `Bootstrap.cs` Static-Constructor.
 
-- Kompiliert: ✅
-- Bootstrap-Klasse: `Infected.Bootstrap.RunAll` ruft `Tests/BuildingThreatRegressionTests (ThreatSnapshotBridge-Pfad).cs` auf
-- Patch-Klassen: `mods/infected/Source/Infected/*.cs`
+- Bootstrap-Klasse: `Rimconemy.InfectedAutomation.Bootstrap.RunAll()` ruft sequentiell alle `Tests.*RegressionTests.RunAll()` auf, dann `HordeCameraOverlay.Install()`,最后 log: `[Rimconemy.InfectedAutomation] Phase D: Horde overlay wired (…).`
+- Patch-Klassen: `Source/Horde/HordeCameraOverlay.cs` (Harmony Postfix `[HarmonyPatch(typeof(UIRoot), nameof(UIRoot.UIRootOnGUI))]`)
 
 ## C — Selbsttest (RunAll)
 
-`Tests.BuildingThreatRegressionTests (ThreatSnapshotBridge-Pfad).RunAll()` ist in `Bootstrap` aufgerufen.
+`Tests.HordeRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen. ExpectedPassCount = 15.
 
-## D — Runtime-Boot (User Live-Test erforderlich)
+- D1–D6: HordeCalculator (Effective-Count, IsActive-Surface, PulsePhase two-breath sinusoid)
+- D7–D10: HordeUpdateLogic (despawn / spawn / move / interval)
+- D11–D13: StripRimconemyPrefix-Routing + Threshold-Lookup
+- D14: `Rimconemy_HordeWorldObject` Def lädt + worldObjectClass == typeof(HordeWorldObject)
+- D15: Spawner defensive (homeTile=-1 → no-op)
 
-<!-- FoLgender Log-Auszug beweist den Boot:
+## D — Phase-D Live-Beleg (User Live-Test erforderlich)
+
+**Erwartet im Player.log nach Phase D (2026-08-05):**
+
 ```
-[Rimconemy.Infected] ... Loaded
+[Rimconemy.InfectedAutomation] HordeSpawner: Spawning HordeWorldObject at tile=N (home=N)
+[Rimconemy.InfectedAutomation] HordeSpawner: Move HordeWorldObject → tile=N
+[Rimconemy.InfectedAutomation] HordeSectionLayer.Regenerate: …
 ```
--->
+
+**Verifikation (User-Pflicht):**
+
+1. Start Survival-Kolonie (difficulty=Medium).
+2. Töte im Dev-Mode 150+ infizierte Human-Pawns auf der Home-Map (PopulationLedger.HumanoidLiveCount ≥ 150).
+3. World-Map: rotes Wanderer-Icon sichtbar auf Tile nahe Home (5 Tiles entfernt initial).
+4. Warte 250 Ticks (~4 Sekunden): HordeSpawner.Log zeigt "Move → tile=K" (driftet um 1 Tile Richtung Home).
+5. Home-Map: pulsierender roter Kreis (3 Ringe: Inner/Mid/Outer) um Map-Mitte sichtbar; pulst mit ~2-Sek-Atem.
+6. Per-Infected-Pawn: 5-Tile Radial-Burst um jeden visible HiddenInfected-Pawn sichtbar.
+7. Camera-Edge: 4 dünne rote Borders am Bildschirmrand, pulsen synchron zum Map-Overlay.
+8. Sinkt HumanoidLiveCount unter 150 → alle Visual-Effekte verschwinden, HordeWorldObject wird despawned.
+
+**Akzeptanz-Gate:**
+
+- [ ] **D-1**: 15/15 HordeRegressionTests grün im Bootstrap.log.
+- [ ] **D-2**: Spell auf Survival-Profil mit ~10 PopulationLedger.RecentKillsToday löst KEIN Horde aus (Threshold erst ab 150 Humanoid).
+- [ ] **D-3**: Live-Beleg im Player.log (Schritte 1–8 oben dokumentiert).
+- [ ] **D-4**: Save/Load: Horde-WorldObject-Position rebuild deterministisch aus currentTick-Drift.
+- [ ] **D-5**: `runtime_test.sh --skip-start --no-deploy` exit 0.
 
 ## E — Save/Load Roundtrip
 
-<!-- Step: Spielstand speichern → neu laden → STATE pruefen → Marker: SURVIVED-PREFIX -->
+<!-- Step: Spielstand speichern → neu laden → HordeWorldObject neu positioniert via currentTick-Drift-Berechnung -->
+<!-- Transient: kein Scribe (kein State-Persistenz). Rebuild aus Find.WorldObjects + HordeUpdateLogic.RunOncePure mit currentTick. -->
 
 ## F — Cross-Package READ
 
-<!-- Step: anderes Paket liest via Capability `rimconemy....` aus -->
-<!-- z. B. `CapabilityAudit.HasCapabilityOrWarn(rimconemy.rimconemy.infectedautomation)` -->
+HordeCode liest:
+- `PopulationLedger.Get()` (eigene Capability `rimconemy.infectedautomation.population` v1)
+- `StoryDirector.Get()` (Phase-B-Pattern; Capability bereits registered)
+- `Rimconemy.Foundation.Maps.MapRegistry.GetPrimaryPlayerHomeMap()` (Mod-01 Surface)
+
+Schreibt:
+- WorldObjects via `Find.WorldObjects.Add(...)` (hostile-faction-less; visible Player-Faction-agnostic).
 
 ## G — Performance-Kennzahl
 
-<!-- Step: Spielstart in 30s belegen; Sample 5 Zyklen -->
+- HordeSpawner: 250-tick cadence → 1 MapComponent-Spawner-Call pro ~4 Sekunden.
+- HordeSectionLayer: 32 Segmente × 3 Ringe = 96 Triangles je Section. ~30 fps.
+- HordeBurstLayer: 16 Segmente pro HiddenInfected-Pawn je Section. Bei 20 Bursts × 30 sections = ~600 Triangles. Akzeptabel.
+- HordeCameraOverlay: 4 GUI-Draw-Aufrufe pro Frame (Top/Bottom/Left/Right).
 
 ## User-Aktion Pflicht
 
-1. `./scripts/runtime_test.sh --require-scenario-tests` ausfuehren
-2. Log-Auszug in Block D einsetzen
-3. Save/Load-Test fuer Block E erstellen
-4. Cross-Read-Test fuer Block F
-5. Performance-Zahl fuer Block G
+1. `./scripts/deploy.sh 05` (Live-Deploy).
+2. `./scripts/runtime_test.sh --require-scenario-tests` (Runtime-Beleg).
+3. Live-Beleg der Schritte 1–8 dokumentieren in **Abschnitt D** hier.
+4. Save/Load-Test für Abschnitt E.
+5. Performance-Zahl für Abschnitt G.
 
-Sobald alle 4 User-Bloecke befuellt sind, gilt der Bericht als `SURVIVED`.
-
----
-
-## Update 2026-08-05 — Sensing-Anbindung (User-Anforderung #3)
-
-> **Quelle:** `docs/CHAT_PROTOCOL_2026-08-05.md` §1.3 · `ROADMAP.md §9.8` (T1/T2/T5/T6/T7, kein Code geändert).
-
-User wünscht höhere Infizierten-Dichte mit **Licht-Hören + Radius X + begrenzter Sichtweite**. Das berührt diesen Bericht doppelt:
-
-- `ThreatSnapshotBridge.cs:100` (`TotalPressure = d.LastSnapshot.ThreatPressure`) bleibt die Druckquelle; die **Spawn-Dichte** (T7) skaliert darüber, ohne „Druck = Raid" zu vermengen (ROADMAP 05 §4).
-- Die Sensing-Formel (T2) liest Licht/Radius/Sicht — **kein zweiter Druckkopf**, keine Änderung an `SituationSnapshot.ThreatPressure` (StoryDirector).
-- F-Block (Cross-Read `rimconemy.infectedautomation.threat`) bleibt die Beleg-Pflicht; T9 in der Tasklist ist die konkrete Step-Vorlage.
+Sobald alle User-Bloecke befuellt sind, gilt der Bericht als `SURVIVED`.
