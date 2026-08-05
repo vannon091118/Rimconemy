@@ -143,7 +143,7 @@ public bool MarkCompleted(string key)
 
 ## 8. Verweise
 
-- `docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md` §Phase 1.1/1.4 + Phase 8
+- `ROADMAP.md §9.1` §Phase 1.1/1.4 + Phase 8
 - `docs/falsification/survival__SaveMigration.md` (Schwesterbericht, übergreifende Migration)
 - `docs/falsification/foundation__Servicebus.md` (Schwesterbericht, Servicebus-Save)
 - `mods/02-Rimconemy-Survival-Progression/Source/Scenarios/RimconemyStartState.cs`

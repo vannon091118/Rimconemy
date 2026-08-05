@@ -15,7 +15,7 @@
 > - `mods/05/Source/Scenarios/ScenPart_RimconemyStartEnemies.cs`
 > - `mods/05/Defs/Scenarios/Rimconemy_StartEnemiesPart.xml`
 > - `mods/05/Tests/StartEnemiesRegressionTests.cs`
-> **Bezugsverträge:** `docs/vanilla-api-matrix-1.6.md` §3.1, §3.10, §4.1, §4.5, §8 Pflicht-Lücken · `docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md` Phase 1.1, 1.2, 1.4 · `DECISIONS.md` §24 (Anti-Softlock).
+> **Bezugsverträge:** `docs/vanilla-api-matrix-1.6.md` §3.1, §3.10, §4.1, §4.5, §8 Pflicht-Lücken · `ROADMAP.md §9.1` Phase 1.1, 1.2, 1.4 · `DECISIONS.md` §24 (Anti-Softlock).
 > **Owner-Checklist:** siehe `docs/falsification/README.md`.
 
 ## Kontext
@@ -245,7 +245,7 @@ beobachteten Live-Log-Zeilen zu belegen und auf `SURVIVED` zu schalten.
 ## Siehe auch
 
 - `docs/vanilla-api-matrix-1.6.md` §3.1 (ScenPart.PostMapGenerate), §3.10 (PawnGenerator.GeneratePawn), §4.1 (TryStartCastOn/TryCastShot — Phase 1.3 vorgegriffen), §8 Pflicht-Lücken (ScenarioBase renamed).
-- `docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md` Phase 1.1, 1.2, 1.4.
+- `ROADMAP.md §9.1` Phase 1.1, 1.2, 1.4.
 - `DECISIONS.md` §24 (Early-Game-Munition / Anti-Softlock-Basis), §26 (KALT-Severity-Offset — nicht direkt Phase 1, aber Save/Load-relevant).
 - `INTERFACE_CONTRACT.md` §0 + §9.1 (Cross-Package-Owner-Map), §9.5 (Sole-Owner GameOver — Spiegel-Pattern).
 - `docs/falsification/survival__SaveMigration.md` (analoge A-G-Struktur).

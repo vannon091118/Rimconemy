@@ -626,7 +626,7 @@ Stages:
 
 **Bezug zu §24:** §26 folgt der Anti-Softlock-Linie aus §24 (kein garantierter Drop, keine Vanilla-Arbeitstypen-Sperre). KALT ist *zusätzlicher Druck*, kein Ersatz für Vanilla-Hypothermie-Tod oder eine globale Spielersperre. §9 (gestrichener stochastischer Tod-Layer) bleibt bestehen — §26 zitiert §24 als inhaltlichen Bezugspunkt.
 
-**Betroffene Tasks:** Phase 3.1/3.2 aus `docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md`.
+**Betroffene Tasks:** Phase 3.1/3.2 aus `ROADMAP.md §9.1` (integrierte Early-Game-Vertikalscheibe).
 
 **Nicht behauptet:** Diese Entscheidung belegt noch keinen Hediff-Def, keinen bounded Update-Service und keinen Live-Temperaturwert. Die Punkte bleiben CODE/DEF/COMPILES/LIVE-Gates.
 

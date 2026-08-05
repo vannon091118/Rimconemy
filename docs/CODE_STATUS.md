@@ -130,7 +130,7 @@ Der sichere lokale Installationscheck ohne Spielstart ist:
 
 ## 4. Explizit offene Live-Gates
 
-> **Vertikal-Scheibe „Die erste Nacht" (2026-08-04):** Der operative Plan für die nächste geschlossene Spielscheibe steht in `docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md`. Die Vertikal-Scheibe umfasst 12 Phasen mit 37 Subtasks (Phase 0 API/DLC → Phase 12 Research/DLC-Kompatibilität). Ihr `LIVE`-Beleg erfordert den Release-Ablauf aus Phase 0–7.3 inkl. Phase 8.1–8.4 und Phase 9.1–9.4 des Plans: `Single Survivor → Campfire → Tier-1-Barrikade → 1 Nacht → Save/Load ohne Drift`. Erst danach beginnen die Folgesprints Kohle, T2-Energy-Hochofen und Automation.
+> **Vertikal-Scheibe „Die erste Nacht" (2026-08-04):** Der operative Plan für die nächste geschlossene Spielscheibe steht in `ROADMAP.md §9.1` (integriert, Plan-Datei gelöscht). Die Vertikal-Scheibe umfasst 12 Phasen mit 37 Subtasks (Phase 0 API/DLC → Phase 12 Research/DLC-Kompatibilität). Ihr `LIVE`-Beleg erfordert den Release-Ablauf aus Phase 0–7.3 inkl. Phase 8.1–8.4 und Phase 9.1–9.4 des Plans: `Single Survivor → Campfire → Tier-1-Barrikade → 1 Nacht → Save/Load ohne Drift`. Erst danach beginnen die Folgesprints Kohle, T2-Energy-Hochofen und Automation.
 >
 > **Primär-Status der Vertikalscheibe:** Die unten gelisteten Live-Gates sind nach Phasen geordnet. Phase 0–9.4 haben Vorrang vor Phase 10+. Save/Load, vollständiger Raid-Pfad, Idea/Mood-/Need-Snapshots und voller Bau-/Farm-/Wasser-/Turmloop werden erst nach der Vertikalscheibe als vollständiges `LIVE` anerkannt.
 

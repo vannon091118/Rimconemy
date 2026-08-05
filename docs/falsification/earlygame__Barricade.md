@@ -1,7 +1,7 @@
 # Falsifizierungs-Stand-Bericht: Barrikade (Phase 4.1 / 4.2)
 
 **Status:** 🔴 **NICHT BELegt** — Template-Stand, wartet auf `SURVIVED`-Lauf.
-**Gate-Zuordnung:** Vertical-Slice-Plan §Phase 4 (`docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md`).
+**Gate-Zuordnung:** Early-Game-Vertikalscheibe §Phase 4 (`ROADMAP.md §9.1`).
 **Letzter belegter Code-Stand:** siehe unten A–E.
 **Erforderliche Beweise:** siehe §7 Akzeptanz-Gate.
 
@@ -126,7 +126,7 @@ Aktuelle Stubs (Referenz — Vertical-Slice-Plan §Phase 4.1):
 
 ## 8. Verweise
 
-- `docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md` §Phase 4
+- `ROADMAP.md §9.1` §Phase 4
 - `docs/vanilla-api-matrix-1.6.md` §ThingComp
 - `mods/03-Rimconemy-Scavenger-Infrastructure/Tests/BuildingCoreRegressionTests.cs` (Blueprint-Vorbild)
 - `docs/falsification/scavenger__ConstructionDebris.md` (Schwesterbericht, Bauschutt-Remap)

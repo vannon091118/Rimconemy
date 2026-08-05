@@ -10,7 +10,7 @@ Implement the approved Rimconemy Visual Language across toolkit, Survival, Infec
 Die hier gelisteten 6 UI-Phasen beziehen sich ausschließlich auf den
 beauftragten Rimconemy-Visual-Language-Sprint und **nicht** auf die
 Gameplay-Phasen aus dem Vertical-Slice-Plan
-(`docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md`).
+(`ROADMAP.md §9.1`).
 Gameplay-Phasen (insbesondere Vertical-Slice 7+ mit echten Raids,
 Save/Load-LIVE-Belegen, Build-Completions und Mechanic-Vollständigkeit)
 sind weiterhin `OFFEN` per `docs/falsification/audit-fixes-2026-08-04.md`.

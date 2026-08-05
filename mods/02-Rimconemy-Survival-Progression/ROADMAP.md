@@ -161,7 +161,7 @@ Vanilla-`ResearchProjectDef`s bleiben als Kompatibilitäts- und Übersichts­sch
 
 ### Task 2.4 – Erfahrungsbaum und Architektenfreigaben
 
-> **Vertikal-Scheiben-Verankerung (2026-08-04):** Die operative Sub-task-Struktur zu diesem Task steht in `docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md` Phase 8.1–8.4 (Domain-XP, ActionResult-Vertrag, Bauabschluss-Hook, Rezeptabschluss-Hook) und Phase 9.1–9.4 (UnlockExtension, UnlockService, Architect-Gate, erster Lernpfad). Die zugehörige Designentscheidung ist `DECISIONS.md §25`. Der vorliegende Task bleibt als Ausgangspunkt im Paket-Roadmap stehen.
+> **Vertikal-Scheiben-Verankerung (2026-08-04):** Die operative Sub-task-Struktur zu diesem Task steht in `ROADMAP.md §9.1` Phase 8.1–8.4 (Domain-XP, ActionResult-Vertrag, Bauabschluss-Hook, Rezeptabschluss-Hook) und Phase 9.1–9.4 (UnlockExtension, UnlockService, Architect-Gate, erster Lernpfad). Die zugehörige Designentscheidung ist `DECISIONS.md §25`. Der vorliegende Task bleibt als Ausgangspunkt im Paket-Roadmap stehen.
 
 
 

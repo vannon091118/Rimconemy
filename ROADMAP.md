@@ -1,7 +1,7 @@
 # Rimconemy — Root Roadmap
 
 > **SSOT-Owner für:** Master-Plan, 5-Paket-Übersicht, Sole-Owner-Map, Phase-Hierarchie P0–P8, Paket-Identitäten. Wer ein Topic aus [docs/INDEX.md §1](INDEX.md) hier behandelt, hält eine SSOT-Verletzung fest.
-> **Stand:** 2026-08-04 (Dokument-Konsolidierung: Handoffs/Audits/Tasklisten in §§1–8 integriert, alte MD-Dateien archiviert in `docs/archive-md-2026-08-04.tar.gz`)
+> **Stand:** 2026-08-05 (Plan-Konsolidierung: Implementierungspläne aus `docs/superpowers/plans/` in §9 integriert und gelöscht — git-History behält die Originale; alte MD-Dateien archiviert in `docs/archive-md-2026-08-04.tar.gz`)
 > **Zielplattform:** RimWorld 1.6.4566; Royalty, Ideology, Biotech, Anomaly, Odyssey
 > **Status:** Phase 1 Coding-Cut mit Runtime-Boot-Gates belegt. Alle 5 Mods laden, Foundation erkennt FullOverhaul, alle Bootstraps und Regression-Summaries laufen; `scripts/runtime_test.sh` erzwingt frischen Log sowie Need-/Sandbox-/Patch-/Market-Gates. Save/Load, Kartenwechsel und vollständige Event-/Raid-Ausführung bleiben offen. Code-nahe Statusreferenz: `docs/CODE_STATUS.md`.
 > **SSOT-Landkarte:** Die vollständige Topic-Tabelle *welche Datei was final besitzt* liegt in [docs/INDEX.md §1](docs/INDEX.md). Wer ein Topic dupliziert, hält eine SSOT-Verletzung fest.
@@ -170,7 +170,7 @@ Vanilla-`ResearchProjectDef`s bleiben als DLC-/Mod-Kompatibilitätsschicht beste
 
 ### 2.7 Vertikalscheiben-Plan „Die erste Nacht" (operativ)
 
-Die operative Umsetzung von §2.5 und §2.6 ist im Plan-Dokument `docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md` strukturiert. Der Plan führt die nächsten 37 Subtasks in 12 Phasen (Phase 0 API/DLC → Phase 12 Research/DLC-Kompatibilität) mit Vanilla-API-Ankern, Datei-Pfaden, Owner-Paket und Akzeptanz-Gate pro Task auf. Er übernimmt die Architekturleitlinie **Defs/Game-/Map-Components/Harmony/Architect-Gates**, lässt Vanilla-`ResearchProjectDef` als Kompatibilitätsschicht bestehen und definiert das Vertikal-Scheiben-Release-Gate (`Single Survivor → Campfire → Tier-1-Barrikade → 1 Nacht → Save/Load`).
+Die operative Umsetzung von §2.5 und §2.6 ist in **§9.1** dieser Roadmap integriert (früher eigenständiges Plan-Dokument, gelöscht). Der Plan führt die nächsten 37 Subtasks in 12 Phasen (Phase 0 API/DLC → Phase 12 Research/DLC-Kompatibilität) mit Vanilla-API-Ankern, Datei-Pfaden, Owner-Paket und Akzeptanz-Gate pro Task auf. Er übernimmt die Architekturleitlinie **Defs/Game-/Map-Components/Harmony/Architect-Gates**, lässt Vanilla-`ResearchProjectDef` als Kompatibilitätsschicht bestehen und definiert das Vertikal-Scheiben-Release-Gate (`Single Survivor → Campfire → Tier-1-Barrikade → 1 Nacht → Save/Load`).
 
 Der Plan reflektiert den aktuellen Code-Stand und markiert vorhandene Vorstufen (z.B. `BuildingProgressionAdapter`, `InfectedRaidSpawnService` mit 1-Pawn-Bridge, P0 Coal Chain) sowie offene `LIVE`-Aufgaben (SingleSurvivor-Szenario, eigener Ammo-Tank, Stahlreste ThingDef, `IncidentWorker_NightInfected` mit echtem Spawn, organische Architektenfreigaben).
 
@@ -556,3 +556,117 @@ Ohne `SURVIVED`-Berichte mit A–G-Belegen gilt keine Übergabe:
 2. Storage-Bridge und `AnyResourceCritical` gegen einen echten Save-/Event-Lauf belegen; danach Phase-1-Gate offiziell schließen.
 3. Bauschutt→Wand/Tür-Remap end-to-end verifizieren: lokaler Arbeitsstand enthält Blueprint-Platzierung, Dashboard-Aktion und best-effort Storage-Write; `mods/03/Patches/Bauschutt_Remap_Patches.xml` bleibt mit Falsifizierungs-/Runtime-Gate abzusichern.
 4. Danach vertikale Full-Profile-Kette statt horizontales Fertigstellen einzelner Pakete.
+
+## 9. Integrierte Implementierungspläne (Stand 2026-08-05)
+
+> **Konsolidierung:** Die eigenständigen Implementierungspläne unter `docs/superpowers/plans/` wurden am 2026-08-05 in diese Roadmap integriert und die Dateien gelöscht. Die git-History behält die Originale; Querverweise in Doku, Falsifikations-Berichten und Tests zeigen auf §9.x. Neue Implementierungs-Tasklisten gehören ab sofort in diese Sektion statt in Einzeldateien.
+
+### 9.1 Early-Game-Vertikalscheibe „Die erste Nacht" (2026-08-04)
+
+> **Ehemalige Datei:** `2026-08-04-early-game-vertical-slice.md` (gelöscht) · **Status:** Plan; Phase 0–7.3 + 8.1–8.4 + 9.1–9.4 warten auf den `LIVE`-Save/Load-Beleg · **Verwandte Sektionen:** §2.5, §2.6, §2.7, §8.6, `docs/falsification/earlygame__*`.
+
+**Release-Gate:** `Single Survivor → Campfire (Wärme+Licht) → KALT-Hediff → Tier-1-Barrikade (1 Holz + 1 Stahlrest) → 1 kontrollierter Nachtspawn → XP für echte Abschlüsse → Save/Load ohne Drift`.
+
+**12 Phasen / 37 Subtasks (Owner):**
+
+| Phase | Inhalt | Owner | Status |
+|---|---|---|---|
+| 0 | Vanilla-API-Matrix (0.1) + DLC-Policy (0.2) | Foundation | ✅ `docs/vanilla-api-matrix-1.6.md` + DLCFilter |
+| 1 | Single-Survivor-Szenario (1.1), Notwaffe (1.2), Ammo-State (1.3), Startgegner getrennt vom Nachtspawn (1.4) | 02/05 | ⬜ LIVE offen |
+| 2 | Stahlreste ThingDef (2.1), Startressourcen (2.2), Campfire (2.3), Campfire-Rezepte (2.4) | 03 | ⬜ LIVE offen (P0-Coal-Chain-Code vorhanden) |
+| 3 | KALT-Hediff (3.1) + Temperatur-Update (3.2, **SPIKE BLOCKED**) | 02 | ⬜ |
+| 4 | Tier-1-Barrikade Mischkosten (4.1) + Rimconemy-Architect-Kategorie (4.2) | 03 | ⬜ |
+| 5 | `ShelterSnapshot` (5.1) + Feuer-Signatur (5.2) | 03 | ⬜ |
+| 6 | `WatchRadiusSnapshot` (6.1) + Gefahrenwarnung LOS (6.2) | 02/05 | ⬜ |
+| 7 | Nacht-Scheduler MapComponent (7.1), pure Spawnformel (7.2), `IncidentWorker_NightInfected` (7.3) | 05 | ⬜ (Stubs; siehe §9.8) |
+| 8 | Domain-XP (8.1), ActionResult-Vertrag (8.2), Bauabschluss-Hook (8.3, SPIKE geschlossen: `Frame.CompleteConstruction`), Rezeptabschluss (8.4) | 02/03 | ~ (`BuildingProgressionAdapter` vorhanden) |
+| 9 | UnlockExtension (9.1), `UnlockService` (9.2), Architect-Gate (9.3), erster Lernpfad (9.4) | 02 | ⬜ |
+| 10 | Kohlekette (10.1), Machine-Parts (10.2), Power-Gate (10.3), erste Automation (10.4) | 03/05 | ~ P0-Coal-Chain-Code vorhanden, LIVE offen |
+| 11 | Outpost-Gate (11.1), Kosten (11.2), Proxy-Graph (11.3), 4X-Bedrohung (11.4) | 04 | ⬜ |
+| 12 | Vanilla-Research nicht zerstören (12.1), DLC-Fallbacks (12.2) | 01 | ⬜ |
+
+**Wichtige Vertragspunkte (übernommen aus dem Plan):**
+- Startgegner werden **nicht** als Nachtspawn gezählt (Task 1.4).
+- Drei getrennte Nacht-Pfade: `StoryDirector` (Story-Events), `InfectedRaidSpawnService/InfectedRaidWorker` (Raid+Letter), `RimconemyNightComponent` (bounded Nacht-Auswertung, max. 1 Spawn/Nacht).
+- Eigene Defs sind begründungspflichtig; Stuff-/Patch-Strategie (`ConstructionDebris` + `Stony`) hat Vorrang vor Listen-Replace (Drift-Acknowledgement, siehe §8 des Domain-Map).
+
+### 9.2 Phase-First Gameplay-Implementierung (2026-08-05)
+
+> **Ehemalige Datei:** `2026-08-05-phase-first-gameplay-implementation-plan.md` (gelöscht) · **Status:** Plan · **Scope-Slice (verbindlich zuerst):** Task 0 → 10 (`Early Survival → kontrollierte Stahlreste-Verarbeitung → Automation`); DLC-Adapter (11–14) danach.
+
+**Kernregeln:** Ressourcen-SSO (SteelScraps genau ein Owner: Mod 03); Early = Visible/Lootable, nicht Producible; ein `CompProperties_Refuelable` pro Gebäude; keine erfundenen StuffCategories (`Stony`/`Metallic`/`Woody` genügen); Vanilla-/DLC-Anker vor Eigenbauten; kein MiningGate-Save-State; `DefModExtension` ist Daten, kein Verhalten.
+
+**Task-DAG (0–18):** 0 Baseline → 1 Phasen-Vertrag → 2 SteelScraps-SSO → 3 Early-Scatter → 4 Vanilla-Blueprint-Audit → 5 Campfire-Parität → 6 Rezept-Phasen-Gates (BurnSteelScraps 5:1 Steel, MakeCoal Cooking≥3) → 7 Konservative Vanilla-Patches (Stufe 1/2/3-Rubrik) → 8 Mining≥8-API-Spike → 9 Generator-/Fuel-Modell → 10 Core-only-Vertikalscheibe → 11–14 DLC-Adapter (Ideology/Biotech/Anomaly+Odyssey/Royalty) → 15 Economy-Boundary-Refactor (`BuildingInputAdapter` liest Defs statt hartkodierter Tabelle) → 16 Tests/Falsifikation → 17 Validierungs-Matrix → 18 Doku-Crosswalk.
+
+**Verifikations-Vokabular:** `CODE`/`DEF`/`COMPILES`/`BOOT` = Implementierungs-Beleg; `LIVE` = echter Gameplay-Beleg; Phase erst ab bestandenem LIVE-Gate abgeschlossen.
+
+### 9.3 Building-Core Meilenstein A (2026-08-04)
+
+> **Ehemalige Datei:** `2026-08-04-building-core-implementation-plan.md` (gelöscht) · **Status:** überwiegend implementiert (A-Gate: Code/Def/Compiles; interaktive Bau-/Strom-/Save-Load-Gates bleiben Runtime-Beleg).
+
+**Ziel:** Physische ConstructionDebris-Wand/Tür, Storage-Readback, befeuerte Stromerzeugung, Turm-Zustand, Capability-Read-Models über alle 5 Pakete — ohne zweite Wahrheit für Credits/Ressourcen.
+
+**Tasks (1–8):** 1 API-Lock + rote A-Gate-Tests → 2 Bauschutt-Wand/Tür-Kostenpfad (PatchOperationAdd `Stony` auf Wall/Door) → 3 `BuildingSnapshot`/`BuildingSnapshotService` + ehrlicher `PowerChainService`-Zustand → 4 Foundation-Capability `rimconemy.scavengerinfrastructure.building` v1 → 5 `BuildingProgressionAdapter` (idempotente XP-Awards) → 6 `BuildingInputAdapter` (physisch vs. Credits) → 7 `BuildingThreatAdapter` (`ComputePressure` gedeckelt `[0,1]`) → 8 Build/Deploy + Static-Gates + interaktive A-Gates.
+
+### 9.4 UI P0–P4 (2026-08-04)
+
+> **Ehemalige Datei:** `2026-08-04-rimconemy-ui-p0-p4.md` (gelöscht) · **Status:** überwiegend implementiert (Shared Toolkit + Foundation-Dashboard + Survival/Threat/Economy/Scavenger-Screens; in-game-Rendering bleibt Runtime-Gate).
+
+**Ziel:** Gemeinsame Visual Language (Tokens + Helpers in `RimconemyTheme`/`RimconemyUi`), ehrliche Empty-/Error-States, UI read-only über Read-Models, keine Simulations-Mutation durch UI.
+
+**Tasks (1–8):** 1 UI-Kontrakte/Runtime-Read-Models mappen (✅) → 2 Shared Toolkit (`DrawStatCard`/`DrawSparkline`/`DrawTabs`/`DrawCountdown`/`DrawPressureGauge`, DangerSoft/PanelInk/DividerInk) → 3 Survival-P0-Dashboard → 4 Infected-Threat-Screen → 5 Economy-Hub → 6 Scavenger-Infrastructure-Tab → 7 Foundation-Dashboard-Polish → 8 Build-Gates + Review.
+
+### 9.5 UI Honest Character Vertical Slice (2026-08-04)
+
+> **Ehemalige Datei:** `2026-08-04-ui-honest-character-vertical-slice.md` (gelöscht) · **Status:** implementiert (Bootstrap-Befund A3 im Audit bestätigt: `DrawFeatureStatus` in `RimconemyUi.cs:64-88`).
+
+**Ziel:** `RimconemyUi.DrawFeatureStatus(state, detail, StatusLevel)` (textbasiert, try/finally GUI-Reset); `CharacterSetupState.RecordAppliedPawns` null-sicher/idempotent; ehrliche Capability-Banner (`LIVE`/`READ-ONLY`/`PARTIAL`/`OPEN`) auf allen 5 Dashboards. Kein Fake-Gameplay durch UI.
+
+### 9.6 Runtime-Test-Erweiterung (2026-08-04)
+
+> **Ehemalige Datei:** `2026-08-04-runtime-test-extension.md` (gelöscht) · **Status:** implementiert (`scripts/runtime_test.sh`; frischer Player.log, deploy-first-Ordering, `--require-scenario-tests` optional).
+
+**Kernverträge:** `scripts/deploy.sh` als einzige Deploy-Implementierung; alter Log zählt nie als frischer Beleg; Exit-non-zero bei verfehlten Pflicht-Gates; Save/Load-/FinalizeInit-Gates bleiben explizit optional (Boot-only kann sie nicht beweisen).
+
+### 9.7 GitHub-Presence (2026-08-04)
+
+> **Ehemalige Datei:** `2026-08-04-github-presence.md` (gelöscht) · **Status:** implementiert (`README.md` player-first, `CONTRIBUTING.md`, `banner.html`/`banner.svg`).
+
+**Regeln:** Deutsch als Primärsprache; trockener ironischer Ton ohne das Verstecken von Limits; keine erfundenen Releases/Workshop-Links/Lizenzen; `CODE`/`DEF`/`COMPILES`/`BOOT`/`LIVE` klar getrennt; kein Code-/Def-/Gameplay-Eingriff durch Doku-Tasks.
+
+### 9.8 Infizierten-Sensorik (2026-08-05)
+
+> **Ehemalige Datei:** `2026-08-05-infected-sensing-tasklist.md` (gelöscht) · **Status:** Plan (Analyse abgeschlossen, kein Code geändert) · **Quelle:** `docs/CHAT_PROTOCOL_2026-08-05.md` §1.3 · **User-Anforderung:** höhere Dichte, die auf Licht „hört", Radius X, begrenzte Sichtweite.
+
+**Kernbefund:** Sensorik ist in §9.1 Phase 5–7 dokumentiert, aber **nicht als zellbasiertes Sensing** und nicht implementiert (`Source/Night/` existiert nicht; `GlowGrid`-API 0 Treffer in Matrix/Code).
+
+**Tasklist (priorisiert):**
+- **T1 [SPIKE] Licht-Level pro Zelle** (`Map.glowGrid`, `GlowGrid.GameGlowAt/GlowAt/PsychGlowAt`) → Blocker vor T2/T4.
+- **T2** Pure `NightSensingFormula` (`ComputeDetectLevel(light, lightRadius, hearingRadiusX, sightRange, pawnCount, nightIndex, protection)`) — verschärft die §9.1-Phase-7.2-Formel um Licht/Radius/Sicht; Tests deterministisch ohne RimWorld.
+- **T3** `RimconemyNightComponent` (MapComponent; max. 1 Auswertung/Nacht, savebarer `lastEvaluatedNight`).
+- **T4** `IncidentWorker_NightInfected` + `Rimconemy_NightInfected` IncidentDef; echter Pawn-Spawn; ⚠️ nicht zu Startgegnern (Task 1.4) addieren.
+- **T5** „Radius X Tiles": zellbasiertes Radius-Scan um Lichtquellen (`CompGlower.Glows && ShouldBeLitNow`, Matrix §3.9); Default ~20 Tiles.
+- **T6** „Begrenzte Sichtweite": `GenSight.LineOfSight(3-arg)` als AI-Gate; Default ~15 Tiles; kein Combat-LOS-Override.
+- **T7** „Höhere Dichte": `ComputeSpawnCount`-Skalierung (0..3 → formelgesteuert) + Threat-Pressure-Kopplung; keine exponentielle Druck-Schleife.
+- **T8/T9** FirstNight-SURVIVED-Pfad (Gate A–H aus `docs/falsification/earlygame__FirstNight.md`) + Cross-Read `rimconemy.infectedautomation.threat`.
+- **T-B1/T-B2** Bauschutt-Platzierungs-Bug (#6): Diagnose Kartenrand-Platzierung + Campfire-Icon (falsches `graphicData`/`uiIconPath`-Erbe, falsche ScenPart-Zielzelle) + Fix.
+
+**Offene Design-Fragen (an den User, nächste Runde):**
+1. Radius X / Sichtweite Defaults: X = 20 Tiles Hör-Radius, 15 Tiles Sichtweite — als Startwert ok?
+2. Soll das „Hören" NUR auf Licht (Campfire/Glower) oder auch auf Geräusche (Bauen, Schüsse, Arbeit) reagieren? (Bisher: Licht-only gemäß User-Aussage.)
+3. Dichte-Kurve: lineare Steigerung mit Licht-Exposition oder Stufen (Ruhe → erhöht → Hochalarm)?
+
+**Gegengeprüfte Vanilla-Fakten:** `GenSight.LineOfSight` §3.7/§4.4 ✅ · `FogGrid.IsFogged` §4.6 ✅ · `CompGlower.Glows/ShouldBeLitNow` §3.9 ✅ · Anomaly-Shambler = PawnKind-Basis (DECISIONS §19, `DLCContentPolicy.cs:96`) · Anomaly + Odyssey Hard-Requires (DECISIONS §16/§18).
+
+### 9.9 Design-Specs (konsolidiert 2026-08-05, Artefakte gelöscht)
+
+> Die eigenständigen Design-Specs unter `docs/superpowers/specs/` wurden am 2026-08-05 in die jeweiligen SSOT-Homes integriert und gelöscht (git-History behält die Originale). Die Specs waren im Hauptbaum verwaist (nur eine interne Spec→Spec-Referenz, keine ROADMAP-/INDEX-/DECISIONS-Referenz). Neue Design-Spezifikationen gehören ab sofort direkt in das angegebene Home statt in Einzeldateien. **Wiederherstellung eines gelöschten Originals:** `git show HEAD:docs/superpowers/specs/<dateiname>.md` (bzw. `docs/superpowers/plans/<dateiname>.md` für §9.1–9.8).
+
+| Ehemalige Spec (gelöscht) | Kern-Inhalt | SSOT-Home | Status der Inhalte |
+|---|---|---|---|
+| `2026-08-04-architecture-boundaries.md` | Capability-Owner-Map (F-V1..F-V5): `ColonialReader`-Zentralisierung, GameOver-Sole-Owner 02, Storage-Bridge, Ideology-Grenze, Capability-Gates | `docs/INTERFACE_CONTRACT.md` §9 (Capabilities/Owner-Map), `docs/DECISIONS.md` §21–23 | ✅ umgesetzt (CapabilityAudit, ColonialReader, StoryState.MarkGameOverPending) |
+| `2026-08-04-building-feature-full-design.md` | Meilensteine A→B→C: Building-Core, Outposts/Automation, World-Map/Infected-Raids; Snapshot-/Transfer-/Idempotenz-Verträge | ROADMAP §9.3 (Building-Core), §8.6 Paket-03, `docs/SAVE_CONTRACT.md` | ~ Meilenstein A statisch/BOOT umgesetzt; interaktive A-Gates offen |
+| `2026-08-04-github-presence-design.md` | README-2-Stufen-Landingpage, CONTRIBUTING, Banner-Kopie; Ton/Statuswahrheit | ROADMAP §9.7 (GitHub-Presence) | ✅ implementiert (`README.md`, `CONTRIBUTING.md`, `banner.html`/`.svg`) |
+| `2026-08-04-ui-foundation-toolkit-design.md` | `RimconemyTheme`-Tokens, `RimconemyWindow`/`RimconemyMainTabWindow`/`RimconemyInspectTab`, `RimconemyUi`-Helper, RimThemes opt-in | `mods/01/Source/UI/` (Code ist SSOT), ROADMAP §9.4 | ✅ implementiert (`RimconemyTheme.cs`, `RimconemyUi.cs`, Base-Klassen) |
+| `2026-08-04-track-a-character-design.md` | Track A: Startalter 18/18, Skillbudget 30, Neutralzone, Trait-Pools, Bio-Override, Spawn-Hook-Kette | `docs/H5-character-setup-formula.md`, ROADMAP Phase 4 / §8.4, `mods/02/Source/Character/` | ~ Kern umgesetzt (SkillBudgetCalculator, TraitAssigner, CharacterSetupState); Bio-Override + Generator-Hook offen |
+| `2026-08-04-character-setup-hybrid-design.md` | Hybrid-Schnitt: Pure Budgetlogik + deterministische Trait-Auswahl, Seed-Vertrag, Runtime-Kompatibilitätsgrenze | `docs/H5-character-setup-formula.md` (Abschnitt „Erledigter Hybrid-Schnitt"), `mods/02/Source/Character/` | ✅ umgesetzt (Pure-Auswahl, FNV-1a-Seed, kein globaler Rand) |

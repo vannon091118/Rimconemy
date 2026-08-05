@@ -2,7 +2,7 @@
 
 ## 2026-08-04 (early)
 
-- Persisted implementation plan in `docs/superpowers/plans/2026-08-04-rimconemy-ui-p0-p4.md`.
+- Persisted implementation plan in `ROADMAP.md §9.4` (integriert, Plan-Datei gelöscht).
 - Added shared tokens: `DangerSoft`, `PanelInk`, `DividerInk`.
 - Added toolkit helpers: stat cards, sparklines, inline tabs, countdowns, pressure gauges.
 - Migrated Survival dashboard and ProgressionPawnTab to Foundation UI bases/tokens.

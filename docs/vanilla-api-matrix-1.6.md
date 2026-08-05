@@ -4,7 +4,7 @@
 > **Stand:** 2026-08-04 · **Spike-Tool:** `tools/inspect/` (Mono.Cecil-Reflection)
 > **Quelle:** `/home/vannon/GOG Games/RimWorld/game/RimWorldLinux_Data/Managed/Assembly-CSharp.dll`
 > **Identitäts-Hash (SHA-256):** `A0AF57EF9162B569D3B052818BA3A29FCCCC8610F355F2BB9B08FAD5882982D3` · Größe: 15.746.048 Bytes
-> **Bezugsvertrag:** Diese Matrix ist die kanonische Verbindlichkeit für jeden späteren Code-Task aus `docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md`. Tasks mit Status `⚠ SPIKE-PFLICHT NICHT GESCHLOSSEN` dürfen vor einem weiteren Spike nicht implementiert werden.
+> **Bezugsvertrag:** Diese Matrix ist die kanonische Verbindlichkeit für jeden späteren Code-Task aus `ROADMAP.md §9.1` (integrierte Early-Game-Vertikalscheibe). Tasks mit Status `⚠ SPIKE-PFLICHT NICHT GESCHLOSSEN` dürfen vor einem weiteren Spike nicht implementiert werden.
 > **Rohdaten:** `tools/inspect/api-matrix.raw.md` (34.231 Zeichen, vollständige Konstruktoren-/Methoden-/Properties-Listen je Anker).
 
 ## 1. Belegstufen

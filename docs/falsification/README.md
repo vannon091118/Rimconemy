@@ -70,7 +70,7 @@ mit jeder Patch-Stage zusammen aktualisiert.
 ### Vertical Slice — Early Game (5)
 
 Diese Berichte bündeln die 5 Phasen-Gates aus
-`docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md` (Survivor → Campfire → Barrikade → 1. Nacht → Save/Load). Sie sind **Stand-Berichte vor dem LIVE-Lauf**: A–C-Stubs pre-LIVE, D–G warten auf `runtime_test.sh`. Erst nach vollständigem A–G darf der Phase-Übergang freigegeben werden.
+`ROADMAP.md §9.1` (Survivor → Campfire → Barrikade → 1. Nacht → Save/Load). Sie sind **Stand-Berichte vor dem LIVE-Lauf**: A–C-Stubs pre-LIVE, D–G warten auf `runtime_test.sh`. Erst nach vollständigem A–G darf der Phase-Übergang freigegeben werden.
 
 | # | Bericht | Datei | Code-Anker | Status |
 |---|---|---|---|---|

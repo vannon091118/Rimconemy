@@ -11,7 +11,7 @@
 > - `mods/03/Defs/ThingDefs/Stats/ThingCategories.xml` (`Rimconemy_CraftingStations` UI-Kategorie)
 > - `mods/03/Tests/CampfireScrapsRegressionTests.cs` (Phase-2.3-Tests)
 > - `mods/03/Tests/CoalChainRegressionTests.cs` (Phase-2.4 MakeCoal-Test)
-> **Bezugsverträge:** `docs/vanilla-api-matrix-1.6.md` §3.8 (CompRefuelable.ConsumeFuel/Refuel), §3.9 (CompGlower.Glows/ShouldBeLitNow) · `docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md` Phase 2.3, 2.4 · `DECISIONS.md` §24 (kein garantierter Drop, kein blockierter Arbeitstyp).
+> **Bezugsverträge:** `docs/vanilla-api-matrix-1.6.md` §3.8 (CompRefuelable.ConsumeFuel/Refuel), §3.9 (CompGlower.Glows/ShouldBeLitNow) · `ROADMAP.md §9.1` Phase 2.3, 2.4 · `DECISIONS.md` §24 (kein garantierter Drop, kein blockierter Arbeitstyp).
 > **Owner-Checklist:** siehe `docs/falsification/README.md`.
 
 ## Kontext
@@ -198,7 +198,7 @@ erfolgreichem Live-Boot wird der Bericht auf `SURVIVED` gehoben.
 ## Siehe auch
 
 - `docs/vanilla-api-matrix-1.6.md` §3.8 (CompRefuelable), §3.9 (CompGlower), §4.5 (Bill_Production.Notify_IterationCompleted).
-- `docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md` Phase 2.3, 2.4.
+- `ROADMAP.md §9.1` Phase 2.3, 2.4.
 - `DECISIONS.md` §24.
 - `docs/falsification/earlygame__Survivor.md` (Single-Survivor-Voraussetzung).
 - `docs/falsification/earlygame__Barricade.md` (nächste Stufe: Tier-1-Barrikade mit gemischter Holz+Stahlrest-Kosten).

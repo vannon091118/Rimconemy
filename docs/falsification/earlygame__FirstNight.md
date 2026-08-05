@@ -1,7 +1,7 @@
 # Falsifizierungs-Stand-Bericht: Erste Nacht (Phase 7.1 / 7.2 / 7.3)
 
 **Status:** 🔴 **NICHT BELegt** — Template-Stand, wartet auf `SURVIVED`-Lauf.
-**Gate-Zuordnung:** Vertical-Slice-Plan §Phase 7 (`docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md`).
+**Gate-Zuordnung:** Early-Game-Vertikalscheibe §Phase 7 (`ROADMAP.md §9.1`).
 **Letzter belegter Code-Stand:** siehe unten A–H.
 **Erforderliche Beweise:** siehe §7 Akzeptanz-Gate.
 
@@ -143,7 +143,19 @@ public sealed class IncidentWorker_NightInfected : IncidentWorker
 
 ## 8. Verweise
 
-- `docs/superpowers/plans/2026-08-04-early-game-vertical-slice.md` §Phase 7
+- `ROADMAP.md §9.1` §Phase 7
 - `docs/vanilla-api-matrix-1.6.md` §IncidentWorker §MapComponent
 - `docs/falsification/infected__InfectedRaid.md` (Schwesterbericht, Raid-Skalierung)
 - `docs/falsification/infected__AutoResolve.md` (Auflösungs-Pfad)
+
+---
+
+## 9. Update 2026-08-05 — User-Sensorik-Anforderung + Tasklist
+
+> **Quelle:** `docs/CHAT_PROTOCOL_2026-08-05.md` §1.3 · `ROADMAP.md §9.8` (T1–T9, kein Code geändert).
+
+**User (2026-08-05):** „höhrere infizierten dichte die auf licht und im radius von X tiles hören + sichtweitee beschränken." — betrifft direkt dieses Gate (Phase 7).
+
+- Die dokumentierte `NightSpawnFormula` (0.6 + exposure*1.4 + fireSignature*1.2 + threat*0.8) wird durch die neue pure `NightSensingFormula` (Tasklist T2) verschärft: zellbasiertes **Licht-Level** (T1-Spike, `Map.glowGrid`), **Hör-Radius X** (T5), **Sichtweite** (T6, `GenSight.LineOfSight`), **Dichte-Skalierung** (T7).
+- Stubs aus §3/§4 (RimconemyNightComponent, IncidentWorker_NightInfected, NightSpawnFormulaTests) sind weiterhin **offen** — Tasklist T3/T4 sind die konkreten Implementierungs-Schritte.
+- Akzeptanz-Punkte A–H bleiben gültig; A/D/F pre-LIVE beweisbar, B/C/E/G/H LIVE.

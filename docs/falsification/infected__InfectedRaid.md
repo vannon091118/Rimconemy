@@ -53,3 +53,15 @@ Die im aktuellen Bootstrap registrierten Regressionstests decken Story-Auswahl/-
 5. Performance-Zahl fuer Block G
 
 Sobald alle 4 User-Bloecke befuellt sind, gilt der Bericht als `SURVIVED`.
+
+---
+
+## Update 2026-08-05 — Dichte-/Sensing-Verschärfung (User-Anforderung #3)
+
+> **Quelle:** `docs/CHAT_PROTOCOL_2026-08-05.md` §1.3 · `ROADMAP.md §9.8` (T2/T4/T5/T6/T7).
+
+User wünscht **höhere Infizierten-Dichte** mit Licht-Hören + Radius X + Sichtweite — betrifft den Spawn-Pfad dieses Berichts:
+
+- `InfectedRaidSpawnService.ComputeSpawnCount` (aktuell 0..3, `InfectedRaidWorker.cs:228` koppelt `ThreatPressure = Clamp01(points/1000)`) wird durch die pure `NightSensingFormula` (T2) ergänzt; Dichte-Skalierung läuft über T7.
+- Der komplette Night-Spawn-Pfad (`RimconemyNightComponent` + `IncidentWorker_NightInfected`, dokumentiert in `earlygame__FirstNight.md`) bleibt **UNVERIFIED** — T3/T4 der Tasklist sind die konkreten Implementierungs-/Beleg-Schritte.
+- Shambler-Basis (Anomaly) bleibt der PawnKind-Weg (DECISIONS §19, `InfectedRavager.xml`); ohne Anomaly: eigener PawnKind-Fallback (Vertical-Slice Task 12.2).

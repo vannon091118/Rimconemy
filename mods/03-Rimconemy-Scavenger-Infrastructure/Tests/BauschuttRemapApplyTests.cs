@@ -296,7 +296,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
         // plant einen `IThingListProvider`-Stub als seam-2.
         // Die SplitOff/Destroy-Logik selbst wird durch das
         // runtime-test-live-Profil dreifach abgesichert (siehe
-        // docs/superpowers/plans/2026-08-04-runtime-test-extension.md).
+        // ROADMAP.md §9.6).
         public static bool TestStorageWriteSeamContract()
         {
             try

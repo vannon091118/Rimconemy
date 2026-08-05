@@ -51,3 +51,15 @@ Quelle: `Source/Infected/Source/Story/StoryDirector.cs`
 5. Performance-Zahl fuer Block G
 
 Sobald alle 4 User-Bloecke befuellt sind, gilt der Bericht als `SURVIVED`.
+
+---
+
+## Update 2026-08-05 — Sensing-Anbindung (User-Anforderung #3)
+
+> **Quelle:** `docs/CHAT_PROTOCOL_2026-08-05.md` §1.3 · `ROADMAP.md §9.8` (T1/T2/T5/T6/T7, kein Code geändert).
+
+User wünscht höhere Infizierten-Dichte mit **Licht-Hören + Radius X + begrenzter Sichtweite**. Das berührt diesen Bericht doppelt:
+
+- `ThreatSnapshotBridge.cs:100` (`TotalPressure = d.LastSnapshot.ThreatPressure`) bleibt die Druckquelle; die **Spawn-Dichte** (T7) skaliert darüber, ohne „Druck = Raid" zu vermengen (ROADMAP 05 §4).
+- Die Sensing-Formel (T2) liest Licht/Radius/Sicht — **kein zweiter Druckkopf**, keine Änderung an `SituationSnapshot.ThreatPressure` (StoryDirector).
+- F-Block (Cross-Read `rimconemy.infectedautomation.threat`) bleibt die Beleg-Pflicht; T9 in der Tasklist ist die konkrete Step-Vorlage.

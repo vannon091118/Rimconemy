@@ -30,7 +30,7 @@
 | Cross-Package Boundaries | [docs/INTERFACE_CONTRACT.md](INTERFACE_CONTRACT.md) | All |
 | Save-Schema + Migration | [docs/SAVE_CONTRACT.md](SAVE_CONTRACT.md) | Mod 01 (ISchemaMigratable) |
 | Architecture SSOT-Orient | [docs/ARCHITECTURE.md](ARCHITECTURE.md) | Mod 01 |
-| Implementation Plan | [docs/superpowers/plans/2026-08-05-phase-first-gameplay-implementation-plan.md](superpowers/plans/2026-08-05-phase-first-gameplay-implementation-plan.md) | Mod 03 |
+| Implementation Plan (Phase-First) | [../ROADMAP.md §9.2](../ROADMAP.md#92-phase-first-gameplay-implementierung-2026-08-05) | Mod 03 |
 | Live-Status Vocabulary | [docs/CODE_STATUS.md](CODE_STATUS.md) | Mod 01 |
 
 ## §4 Decisions & Compatibility
