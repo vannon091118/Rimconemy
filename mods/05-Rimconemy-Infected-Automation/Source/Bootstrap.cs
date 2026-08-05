@@ -37,8 +37,9 @@ namespace Rimconemy.InfectedAutomation
 
             // P2/H3 §2: CollectiveDefense tracker is a GameComponent subclass -
             // RimWorld auto-registers any GameComponent subclass on mod load.
-            // We log a one-shot marker so the operator sees the ThoughtDef
-            // registration succeeded before the post-combat patch takes over.
+            // The PostApplyDamage postfix must be installed explicitly (Package
+            // 05 has no PatchAll; cf. DarknessSectionLayerLifecycle/HordeCameraOverlay).
+            Ideology.Pawn_PostApplyDamage_CollectiveDefense.Install();
             Log.Message(
                 "[Rimconemy.InfectedAutomation] CollectiveDefense setting rule (H3 §2): " +
                 "thoughts=" + (Ideology.ThoughtDefs_CollectiveDefense.ValiantDefense != null) +
@@ -115,7 +116,13 @@ namespace Rimconemy.InfectedAutomation
             Tests.AnimalInfectionRegressionTests.RunAll();
             Tests.AnimalInfectionLedgerFieldsTests.RunAll();
             Tests.AnimalInfectionServiceLimitTests.RunAll();
-            Log.Message("[Rimconemy.InfectedAutomation] Phase E: AnimalInfection pipeline wired (Profile-Chance, Ledger, Service).");
+            // Driver-Seam (AnimalInfectionDriver.TryFireOnce + ResetForTests)
+            // and Overlay-Predikat (ShouldShowInfectionMarker) deterministisch
+            // ohne RimWorld-Map-Setup testbar — schließt die Lücke aus
+            // Falsification §G Anmerkung C-1.
+            Tests.AnimalInfectionDriverTests.RunAll();
+            Tests.AnimalInfectionAiOverlayTests.RunAll();
+            Log.Message("[Rimconemy.InfectedAutomation] Phase E: AnimalInfection pipeline wired (Profile-Chance, Ledger, Service, Driver-Seam, Overlay-Predikat).");
             Log.Message("[Rimconemy.InfectedAutomation] Phase B: Daily-Growth+Reset+Revenge coupling wired.");
             Log.Message("[Rimconemy.InfectedAutomation] Building threat adapter available; Mechadroid job contracts are gated for Milestone B; no incident or raid is spawned.");
 

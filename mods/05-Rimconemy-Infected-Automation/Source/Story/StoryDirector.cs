@@ -1031,7 +1031,21 @@ namespace Rimconemy.InfectedAutomation.Story
 
             int actually = Inoculation.RandomInoculationService.TryInfectWildAnimals(count, currentTick);
             if (actually > 0)
+            {
                 ledger.RegisterAnimalInfection(actually, currentTick);
+                // Falsification §G Anmerkung D-2 (2026-08-05): zentrale
+                // Erfolgs-Log-Zeile fuer den Live-Beleg. Vorher war der
+                // Erfolgs-Pfad still; nur Skip-Logs (gated auf godMode) im
+                // RandomInoculationService-Layer. Mit dieser Zeile kann der
+                // User im Player.log direkt pruefen, dass der Day-Tick
+                // tatsaechlich gefeuert hat — unabhaengig von godMode.
+                Log.Message("[Rimconemy.InfectedAutomation] StoryDirector.TryFireProfileInfection: "
+                    + actually + " wild animals infected at tick=" + currentTick
+                    + " profile=" + ActiveProfile.ProfileId
+                    + " hordeCount=" + hordeCount
+                    + " ledger.AnimalInfectionCountToday="
+                    + ledger.AnimalInfectionCountToday);
+            }
         }
     }
 }
