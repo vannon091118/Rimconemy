@@ -2,7 +2,7 @@
 
 > **SSOT-Hinweis:** Detail-Topic dieser Datei ist im Orient-Index [ARCHITECTURE.md §3](ARCHITECTURE.md). Topic-Landkarte: [INDEX.md §1](INDEX.md).
 > **Owner:** Research/Design (kein Code)
-> **Status:** `COMPILED` — 3 Setting-Regeln spezifiziert; Regel 2 (CollectiveDefense) Code-implementiert mit Harmony-Postfix-Fix (2026-08-04)
+> **Status:** `COMPILED` — 3 Setting-Regeln spezifiziert; Regel 2 (CollectiveDefense) Code-implementiert mit Harmony-Postfix-Fix (2026-08-04; explizit via `Pawn_PostApplyDamage_CollectiveDefense.Install()` am 2026-08-05 verdrahtet — Package 05 hat kein PatchAll)
 > **Referenz:** [ROADMAP.md §2.4](../ROADMAP.md#24-setting-ideologie), [ROADMAP.md §8.3](../ROADMAP.md#83-phase-12--story-writer--setting-ideologie-offen)
 
 ## Zweck

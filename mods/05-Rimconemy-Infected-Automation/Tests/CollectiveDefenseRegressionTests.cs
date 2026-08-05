@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using HarmonyLib;
 using Rimconemy.InfectedAutomation.Ideology;
 using RimWorld;
 using Verse;
@@ -11,17 +13,41 @@ namespace Rimconemy.InfectedAutomation.Tests
     ///   - ThoughtDefs registered with correct defName, mood, duration
     ///   - Tracker aggregates participation into participants + shirkers
     ///   - Scribe roundtrip preserves counters
+    ///   - PostApplyDamage postfix actually registered (Package 05 has no
+    ///     PatchAll, so the explicit Install() must be verified at runtime)
     /// Spec: docs/H3-ideology-influence-matrix.md §2.
     /// </summary>
     public static class CollectiveDefenseRegressionTests
     {
         public static void RunAll()
         {
+            TestPostfixInstalled();
             TestThoughtDefsShape();
             TestTrackerEmptyRound();
             TestTrackerAggregator();
             TestTrackerScribeRoundtrip();
             Log.Message("[Rimconemy.InfectedAutomation] CollectiveDefenseRegressionTests PASS");
+        }
+
+        /// <summary>
+        /// Asserts OUR PostApplyDamage postfix is attached to the vanilla
+        /// method. A bare [HarmonyPatch] attribute would be inert here
+        /// (no PatchAll), so this guards the explicit Install() wiring.
+        /// The owner + declaring-type check distinguishes our patch from
+        /// any postfix another mod might register on the same method.
+        /// </summary>
+        private static void TestPostfixInstalled()
+        {
+            var method = AccessTools.Method(typeof(Pawn), nameof(Pawn.PostApplyDamage));
+            Assert(method != null, "Pawn.PostApplyDamage resolvable");
+            var info = Harmony.GetPatchInfo(method);
+            Assert(info != null && info.Postfixes != null && info.Postfixes.Count > 0,
+                "PostApplyDamage postfix registered");
+            var ours = info.Postfixes.FirstOrDefault(p =>
+                p.owner == "rimconemy.infectedautomation.collective-defense"
+                && p.PatchMethod != null
+                && p.PatchMethod.DeclaringType == typeof(Pawn_PostApplyDamage_CollectiveDefense));
+            Assert(ours != null, "Our CollectiveDefense postfix registered");
         }
 
         private static void TestThoughtDefsShape()
