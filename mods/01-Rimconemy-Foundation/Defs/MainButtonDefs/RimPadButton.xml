@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <!--
+    Owner: Foundation (Package 01)
+    Stable defName: RimconemyRimPad
+    DLC condition: none; Foundation is Core-compatible.
+    Provides toolbar button for RimPad floating dashboard.
+  -->
+  <MainButtonDef>
+    <defName>RimconemyRimPad</defName>
+    <label>RimPad</label>
+    <description>Floating dashboard – survival status, infrastructure, economy, threat analysis, diagnostics.</description>
+    <tabWindowClass>Rimconemy.Foundation.UI.RimPadWindow</tabWindowClass>
+    <order>60</order>
+    <defaultHotKey>Keypad8</defaultHotKey>
+  </MainButtonDef>
+</Defs>
