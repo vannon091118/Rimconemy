@@ -54,11 +54,6 @@
     </Reference>
   </ItemGroup>
 
-  <!--
-    Phase F (2026-08-05): HordeManifestTests references HordeMaterializationService
-    and HordeMigrationDriver (substrates landed in T5+T6). Tests run during Bootstrap.
-  -->
-
   <Target Name="ValidateReferencePaths" BeforeTargets="ResolveReferences">
     <Error Condition="'$(RimWorldManagedPath)' == ''" Text="RimWorldManagedPath is required. Pass -p:RimWorldManagedPath=.../RimWorldLinux_Data/Managed" />
     <Error Condition="!Exists('$(RimWorldManagedPath)/Assembly-CSharp.dll')" Text="Assembly-CSharp.dll not found under $(RimWorldManagedPath)" />

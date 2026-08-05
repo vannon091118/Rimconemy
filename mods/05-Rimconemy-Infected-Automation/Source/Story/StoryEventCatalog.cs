@@ -87,6 +87,8 @@ namespace Rimconemy.InfectedAutomation.Story
 
             // ── Phase F — Horde Migration (2026-08-05) ─────────────
             Register(HordeMigrationLetter);
+            // ── Phase 1.5 — Sturmgut Tower (Supply family) ───────
+            Register(SturmgutTower);
         }
 
         /// <summary>
@@ -1546,17 +1548,13 @@ namespace Rimconemy.InfectedAutomation.Story
         // ═══════════════════════════════════════════════════════
 
         /// <summary>
-        /// Wandering-Horde Letter — fired by HordeStorySelector.SelectHordeMigrationLetter
-        /// when ThreatPressure ≥ ProfileThreshold AND effective count is active
-        /// AND no HordeManifest is currently active AND cooldown elapsed.
-        ///
-        /// The actual Manifest-spawn is triggered by Choice "Mobilize" via
-        /// HordeStorySelector.ProcessTriggerHordeMigrationEffect.
-        /// Letter-only Outcome = player has agency to accept/reject the migration.
+        /// Wandering-Horde Letter — part of the regular weighted catalog
+        /// (Raid family). The manifest spawn itself is driven by the
+        /// HordeMigrationDriver tick-loop once the horde is active.
         /// </summary>
         public static readonly StoryEventSpec HordeMigrationLetter = new StoryEventSpec
         {
-            EventId = Rimconemy.InfectedAutomation.Horde.HordeStorySelector.HordeMigrationLetterId,
+            EventId = "rimconemy.raid.infected_horde_migration",
             EventVersion = 1,
             EventFamily = "Raid",
             Label = "Wandernde Horde",
@@ -1615,6 +1613,75 @@ namespace Rimconemy.InfectedAutomation.Story
 
             FollowUpIds = new List<string>(),
             DeterminismKeyTemplate = "{ProfileId}+{EventId}+{GameTickDay}+{HordeEffective}",
+        };
+
+        // ═══════════════════════════════════════════════════════
+        // PHASE 1.5 — STURMGUT EVENT FOR STAINLESS STEEL TOWER
+        // ═══════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Sturmgut (Storm Loot) — Supply family event that spawns
+        /// a StainlessSteelTower as rare storm loot. Rewards the player
+        /// with an advanced defensive turret for surviving a storm.
+        /// 
+        /// EventId: rimconemy_supply_sturmgut_tower
+        /// </summary>
+        public static readonly StoryEventSpec SturmgutTower = new StoryEventSpec
+        {
+            EventId = "rimconemy_supply_sturmgut_tower",
+            EventVersion = 1,
+            EventFamily = "Supply",
+            Label = "Sturmgut: Edelstahlturm",
+            Description = "Nach einem heftigen Sturm wurde ein intakter Edelstahlturm in der Nähe entdeckt.",
+
+            Prerequisites = new List<EventCondition>
+            {
+                EventCondition.MaxActiveEventsReached(),
+                EventCondition.ActiveEvent("Supply"),
+            },
+            Exclusions = new List<EventCondition>
+            {
+                EventCondition.ActiveRecoveryEvent(),
+            },
+
+            Weights = new Dictionary<string, float>
+            {
+                { "Rimconemy_Refuge", 0.5f },
+                { "Rimconemy_Survival", 1.0f },
+                { "Rimconemy_Collapse", 0.7f },
+            },
+            CooldownsDays = new Dictionary<string, float>
+            {
+                { "Rimconemy_Refuge", 30.0f },
+                { "Rimconemy_Survival", 20.0f },
+                { "Rimconemy_Collapse", 15.0f },
+            },
+
+            EscalationBand = 2,
+            EscalationModifier = 0.1f,
+
+            LetterLabel = "Sturmgut entdeckt!",
+            LetterText = "Ein gewaltiger Sturm hat sich gelegt — und dabei etwas Seltenes freigegeben: einen intakten Edelstahlturm, bereit zur Inbetriebnahme. Ein Glücksfall für jede Siedlung.",
+            TextKey = "Rimconemy_SturmgutTower_Letter",
+
+            Choices = new List<EventChoice>
+            {
+                new EventChoice
+                {
+                    ChoiceId = "Claim",
+                    Label = "Turm bergen",
+                    Effects = new List<string> { "SpawnThing:StainlessSteelTower+1", "DefenseBonus:+0.15 for 5 days" },
+                },
+                new EventChoice
+                {
+                    ChoiceId = "Scavenge",
+                    Label = "Ausschlachten",
+                    Effects = new List<string> { "ResourceBoost:StainlessSteel+30", "ResourceBoost:WeaponComponent+4", "ResourceBoost:Steel+20" },
+                },
+            },
+
+            FollowUpIds = new List<string>(),
+            DeterminismKeyTemplate = "{ProfileId}+{EventId}+{GameTickDay}",
         };
     }
 }

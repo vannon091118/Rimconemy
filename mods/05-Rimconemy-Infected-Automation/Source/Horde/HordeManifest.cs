@@ -10,23 +10,14 @@
 using System.Collections.Generic;
 using Rimconemy.Foundation.Save;
 using Rimconemy.InfectedAutomation.Population;
-using RimWorld;
+using Rimconemy.InfectedAutomation.Story;
 using Verse;
 
 namespace Rimconemy.InfectedAutomation.Horde
 {
     public sealed class HordeManifest : IExposable, ISchemaMigratable
     {
-        /// <summary>Tile-Distance vom Player-Home, ab der Pawns materialisiert
-        /// werden. Re-exportiert aus <see cref="PopulationProfileMultipliers.HordeRevealRadiusTiles"/> —
-        /// Single Source of Truth. Hier als <c>static readonly</c> statt <c>const</c>,
-        /// weil C# const zur Compile-Zeit keine externen Referenzen auflösen kann.
-        /// Bevorzugt: Aufrufer <c>PopulationProfileMultipliers.HordeRevealRadiusTiles</c> direkt.</summary>
-        public static readonly int HordeRevealRadiusTiles =
-            PopulationProfileMultipliers.HordeRevealRadiusTiles;
-
         public int LeaderTile;
-        public int EffectiveSize;
         public string Profile;
         public long SpawnedAtTick;
         public List<HiddenPawnStamp> Stamps = new List<HiddenPawnStamp>();
@@ -53,10 +44,7 @@ namespace Rimconemy.InfectedAutomation.Horde
             get
             {
                 if (_cachedSteps != null) return _cachedSteps;
-                _cachedSteps = new List<SchemaStep>
-                {
-                    // Phase F first version — no migration steps yet.
-                };
+                _cachedSteps = new List<SchemaStep>();
                 return _cachedSteps;
             }
         }
@@ -69,68 +57,30 @@ namespace Rimconemy.InfectedAutomation.Horde
 
         /// <summary>
         /// Create-or-Expand. Initial Manifest or add Profile-Capacity Balance.
-        /// Stamp-IDs deterministisch via Fnv-1a(SpawnedAtTick + index).
+        /// Stamp-IDs deterministisch via FNV-1a (DeterministicRng.GetStableHashCode).
         /// </summary>
-        public static HordeManifest CreateOrExpand(string profileId, long currentTick, int? overrideCapacity = null)
+        public static HordeManifest CreateOrExpand(string profileId, long currentTick)
         {
             _active ??= new HordeManifest();
-            int newCapacity = overrideCapacity ?? PopulationProfileMultipliers.GetHordeCapacity(profileId);
+            int newCapacity = PopulationProfileMultipliers.GetHordeCapacity(profileId);
             int delta = newCapacity - _active.Stamps.Count;
             _active.Profile = profileId;
             _active.Capacity = newCapacity;
             if (_active.SpawnedAtTick == 0L) _active.SpawnedAtTick = currentTick;
+            int seed = DeterministicRng.GetStableHashCode(profileId ?? "");
             for (int i = 0; i < delta; i++)
             {
                 _active.Stamps.Add(new HiddenPawnStamp
                 {
-                    ThingID = $"Rimconemy_HiddenPawn_{Fnv1aHashLong(currentTick + i):X8}",
+                    ThingID = $"Rimconemy_HiddenPawn_{DeterministicRng.GetStableHashCode((currentTick + i).ToString()):X8}",
                     KindDefName = "Rimconemy_InfectedRavager",
                     FactionDefName = "Rimconemy_HiddenInfectedFaction",
                     HealthPercent = 1.0f,
-                    EquipmentSeedOffset = i * 7 + (profileId?.GetHashCode() ?? 0),
-                    SpawnedAtTick = currentTick,
-                    SourceCellHashHint = 0
+                    EquipmentSeedOffset = i * 7 + seed,
+                    SpawnedAtTick = currentTick
                 });
             }
-            _active.EffectiveSize = _active.Stamps.Count;
             return _active;
-        }
-
-        private static uint Fnv1aHashLong(long n)
-        {
-            unchecked
-            {
-                uint h = 2166136261u;
-                h ^= (byte)(n & 0xFF); h *= 16777619u;
-                h ^= (byte)((n >> 8) & 0xFF); h *= 16777619u;
-                h ^= (byte)((n >> 16) & 0xFF); h *= 16777619u;
-                h ^= (byte)((n >> 24) & 0xFF); h *= 16777619u;
-                h ^= (byte)((n >> 32) & 0xFF); h *= 16777619u;
-                h ^= (byte)((n >> 40) & 0xFF); h *= 16777619u;
-                h ^= (byte)((n >> 48) & 0xFF); h *= 16777619u;
-                h ^= (byte)((n >> 56) & 0xFF); h *= 16777619u;
-                return h;
-            }
-        }
-
-        public void AddStamp(HiddenPawnStamp stamp)
-        {
-            if (Stamps.Count < Capacity) Stamps.Add(stamp);
-            EffectiveSize = Stamps.Count;
-        }
-
-        public bool RemoveStamp(string thingId)
-        {
-            for (int i = Stamps.Count - 1; i >= 0; i--)
-            {
-                if (Stamps[i].ThingID == thingId)
-                {
-                    Stamps.RemoveAt(i);
-                    EffectiveSize = Stamps.Count;
-                    return true;
-                }
-            }
-            return false;
         }
 
         // ── Materialization-Bitmap (Tile → bool via HashSet<int>) ─────
@@ -147,7 +97,6 @@ namespace Rimconemy.InfectedAutomation.Horde
         public void ExposeData()
         {
             Scribe_Values.Look(ref LeaderTile, "hordeLeaderTile", 0);
-            Scribe_Values.Look(ref EffectiveSize, "hordeEffectiveSize", 0);
             Scribe_Values.Look(ref Profile, "hordeProfile", "");
             Scribe_Values.Look(ref SpawnedAtTick, "hordeSpawnedAtTick", 0L);
             Scribe_Values.Look(ref Capacity, "hordeCapacity", 0);

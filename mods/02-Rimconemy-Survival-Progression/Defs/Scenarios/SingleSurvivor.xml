@@ -5,12 +5,13 @@
   Stable defName: Rimconemy_SingleSurvivor
   DLC condition: none
   
-  Phase 1.1 / Phase 1.2 / Phase 1.4 / Phase 2.1 / Phase 2.2 (Vertical-Slice).
+  Phase 1.1 / Phase 1.2 / Phase 1.4 / Phase 1.5 / Phase 2.1 / Phase 2.2 (Vertical-Slice).
   
   Single survivor via ConfigureStartingPawns (pawnCount=1, pick from 8).
   Drop-pod arrival via PlayerPawnsArriveMethod.
   Rimconemy_SingleSurvivorStartPart (Paket 02): weapon + steel-scraps drop.
-  Rimconemy_StartEnemiesPart (Paket 05): exactly one weak starter infected.
+  Rimconemy_StartEnemiesPart (Paket 05): starter infected scaled by difficulty/map size.
+  ScenPart_StartingWoodPiles (Paket 05): starting wood piles for early survival.
   Vanilla storyteller remains authoritative.
   
   Notes:
@@ -25,9 +26,9 @@
   <ScenarioDef Name="Rimconemy_SingleSurvivor" ParentName="ScenarioBase">
     <defName>Rimconemy_SingleSurvivor</defName>
     <label>Rimconemy Single Survivor</label>
-    <description>One controllable colonist, Vanilla storyteller, no scripted chronicles. Game-over triggers only via Rimconemy's GameOver detector, never via vanilla wealth-zero panic. Phase-1 Vertical Slice: knappe Stammmunition, garantierter schwacher Drucktest, Stahlreste zuf\u00e4llig.</description>
+    <description>One controllable colonist, Vanilla storyteller, no scripted chronicles. Game-over triggers only via Rimconemy's GameOver detector, never via vanilla wealth-zero panic. Phase-1 Vertical Slice: knappe Stammmunition, garantierter schwacher Drucktest, Stahlreste zufällig, Start-Holzhaufen für erstes Überleben.</description>
     <scenario>
-      <summary>One Rimconemy survivor, arrives by drop pod. Vanilla storyteller retained; Rimconemy adds a single starter weapon, a small scatter of steel scraps near the landing site, and exactly one weak infected opponent for the first night.</summary>
+      <summary>One Rimconemy survivor, arrives by drop pod. Vanilla storyteller retained; Rimconemy adds a single starter weapon, a small scatter of steel scraps near the landing site, starting wood piles, and starter infected scaled by difficulty and map size.</summary>
       <playerFaction>
         <def>PlayerFaction</def>
         <factionDef>PlayerColony</factionDef>
@@ -61,8 +62,14 @@
           <def>Rimconemy_SingleSurvivorStartPart</def>
         </li>
 
-        <!-- Phase 1.4: exactly one weak starter infected.
-             Provided by Package 05 (Infected &amp; Automation). The scenario
+        <!-- Phase 1.5: starting wood piles for basic resources before axe is crafted.
+             Provided by Package 05 (Infected & Automation). -->
+        <li Class="Rimconemy.InfectedAutomation.Scenarios.ScenPart_StartingWoodPiles">
+          <def>Rimconemy_StartingWoodPilesPart</def>
+        </li>
+
+        <!-- Phase 1.4+1.5: starter infected scaled by difficulty and map size.
+             Provided by Package 05 (Infected & Automation). The scenario
              def-stream cannot resolve ScenPart subclasses via the <def>
              pointer alone (RimWorld looks for parameterless .ctor of
              ScenPart base, which it does not have). We therefore bind

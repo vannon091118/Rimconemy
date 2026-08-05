@@ -68,7 +68,7 @@ namespace Rimconemy.InfectedAutomation.Tests
 
         private static bool T12_StaticDespawnMethodExists()
         {
-            return typeof(HordeMigrationDriver).GetMethod("DespawnManifestAndWorldObjects",
+            return typeof(HordeMigrationDriver).GetMethod("DespawnWorldObjects",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static) != null;
         }
 

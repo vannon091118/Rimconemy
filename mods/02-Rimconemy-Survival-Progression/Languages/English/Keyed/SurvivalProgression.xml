@@ -68,4 +68,7 @@
   <Rimconemy.UI.SkillBudget.Button.Apply>Apply</Rimconemy.UI.SkillBudget.Button.Apply>
   <Rimconemy.UI.SkillBudget.Warning.OverBudget>Over budget — reduce by one or more skills before applying.</Rimconemy.UI.SkillBudget.Warning.OverBudget>
   <Rimconemy.UI.SkillBudget.Message.Applied>Skill budget applied. Good luck out there!</Rimconemy.UI.SkillBudget.Message.Applied>
+
+  <!-- Tree Cutting Gate (Phase 1.5) -->
+  <Rimconemy.TreeCutting.RequiresAxe>You need a Schrott-Axt to cut trees. Craft one at a Campfire or Fueled Smithy from Steel and Wood.</Rimconemy.TreeCutting.RequiresAxe>
 </LanguageData>

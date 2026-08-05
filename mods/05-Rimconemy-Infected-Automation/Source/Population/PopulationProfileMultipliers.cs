@@ -44,12 +44,7 @@ namespace Rimconemy.InfectedAutomation.Population
                 { ProfileCollapse, 0.9f },
             };
 
-        // Population-Count-Threshold: Horde overlay activates (Phase D).
-        // ⚠ PHASE-F NAMING ALERT: this is an *int count* (how many infected
-        // exist). do NOT confuse with the float fraction HordeActivationThreshold
-        // below (Phase F). Call-sites that need the count gate use
-        // GetHordeThreshold(); call-sites that need the letter-firing fraction
-        // gate use GetHordeActivationThreshold().
+        // Population at which the Horde overlay activates (Phase D).
         public static readonly IReadOnlyDictionary<string, int> HordeThreshold =
             new Dictionary<string, int>
             {
@@ -98,12 +93,9 @@ namespace Rimconemy.InfectedAutomation.Population
 
         // ────────────────────────────────────────────────────────────────────
         // Phase F — Wandering-Horde Profile-Drivers.
-        // Per-Profile Multiplier, die das Wander-Verhalten + Manifest-Spawn
-        // der Phase-F-Horde deterministisch aus dem aktiven Profile ableiten.
         //   - Capacity       = Anzahl der HiddenPawnStamps pro Profil
-        //   - ActivationThr  = ThreatPressure-Schwelle ab der die Horde aktiv wird
-        //   - LetterCooldown = Mindestabstand (Sim-Tage) zwischen zwei Horde-Letters
         //   - StagingTicks   = Dauer des "Staging"-FSM-States, bevor Attack feuert
+        //   - RevealRadius   = Tile-Distanz ab der Pawns materialisieren
         // Spec: docs/superpowers/specs/2026-08-05-horde-migration-design.md §4.4+§4.5.
         // ────────────────────────────────────────────────────────────────────
         public static readonly IReadOnlyDictionary<string, int> HordeCapacity =
@@ -112,22 +104,6 @@ namespace Rimconemy.InfectedAutomation.Population
                 { ProfileRefuge,   50  },
                 { ProfileSurvival, 100 },
                 { ProfileCollapse, 200 },
-            };
-
-        public static readonly IReadOnlyDictionary<string, float> HordeActivationThreshold =
-            new Dictionary<string, float>
-            {
-                { ProfileRefuge,   0.85f },
-                { ProfileSurvival, 0.70f },
-                { ProfileCollapse, 0.50f },
-            };
-
-        public static readonly IReadOnlyDictionary<string, float> HordeLetterCooldownDays =
-            new Dictionary<string, float>
-            {
-                { ProfileRefuge,   30f },
-                { ProfileSurvival, 14f },
-                { ProfileCollapse, 5f  },
             };
 
         public static readonly IReadOnlyDictionary<string, int> HordeStagingDurationTicks =
@@ -151,22 +127,6 @@ namespace Rimconemy.InfectedAutomation.Population
             if (HordeCapacity.TryGetValue(p, out int v)) return v;
             LogWarnFallback(p, "HordeCapacity");
             return HordeCapacity[FallbackProfile];
-        }
-
-        public static float GetHordeActivationThreshold(string profileId)
-        {
-            string p = profileId ?? FallbackProfile;
-            if (HordeActivationThreshold.TryGetValue(p, out float v)) return v;
-            LogWarnFallback(p, "HordeActivationThreshold");
-            return HordeActivationThreshold[FallbackProfile];
-        }
-
-        public static float GetHordeLetterCooldownDays(string profileId)
-        {
-            string p = profileId ?? FallbackProfile;
-            if (HordeLetterCooldownDays.TryGetValue(p, out float v)) return v;
-            LogWarnFallback(p, "HordeLetterCooldownDays");
-            return HordeLetterCooldownDays[FallbackProfile];
         }
 
         public static int GetHordeStagingDurationTicks(string profileId)
