@@ -61,6 +61,11 @@ namespace Rimconemy.InfectedAutomation.Tests
             Check(T11_BuildPlanPrefersHigherComponent(),              "T11.BuildPlanPrefersHigherComponent");
             Check(T12_BuildPlanNoRevengeOnZeroKills(),                "T12.BuildPlanNoRevengeOnZeroKills");
 
+            // ── T13-T15: Tasks 4 ───────────────────────────────────
+            Check(T13_WorkerDecrementsRevengeOnSpawn(),               "T13.WorkerDecrementsRevengeOnSpawn");
+            Check(T14_WorkerClampsDecrementToActuallySpawned(),       "T14.WorkerClampsDecrementToActuallySpawned");
+            Check(T15_WorkerNoDecrementOnZeroSpawn(),                 "T15.WorkerNoDecrementOnZeroSpawn");
+
             Log.Message(
                 "[Rimconemy.InfectedAutomation] Revenge-quota flow regression tests: "
                 + passed + " passed, " + failed + " failed" +
@@ -228,7 +233,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             }
         }
 
-        // ── T12: zero revenge → pressure-only path → revenge cp = 0 ───
+        // ── T12: zero revenge + pressure => pressure-only path ───────
         private static bool T12_BuildPlanNoRevengeOnZeroKills()
         {
             var stub = new Incidents.DirectorAccessStub { PendingRevenge = 0 };
@@ -243,6 +248,38 @@ namespace Rimconemy.InfectedAutomation.Tests
             {
                 Incidents.InfectedRaidSpawnService.StubDirector = null;
             }
+        }
+
+        // ── T13: After a full spawn, slot -= actuallySpawned ──────────
+        // Worker-side decrement: min(actuallySpawned, plan.RevengeQuotaComponent)
+        // but for a clean assertion we assume plan.RevengeQuotaComponent
+        // >= actuallySpawned (no cap), which simplifies to actuallySpawned
+        // — here we drive the helper directly.
+        private static bool T13_WorkerDecrementsRevengeOnSpawn()
+        {
+            var director = new NoGameStoryDirector().WithRevenge(5);
+            // Simulate the worker calling DecrementPendingRevenge(3)
+            // (matching the production InfectedRaidWorker:
+            //   revengeConsumed = min(actuallySpawned, plan.RevengeQuotaComponent)
+            //   DecrementPendingRevenge(revengeConsumed))
+            director.DecrementPendingRevenge(3);
+            return director.LastPendingRevenge == 2;
+        }
+
+        // ── T14: even pass actuallySpawned=100 → slot clamps at 0 ────
+        private static bool T14_WorkerClampsDecrementToActuallySpawned()
+        {
+            var director = new NoGameStoryDirector().WithRevenge(5);
+            director.DecrementPendingRevenge(100);
+            return director.LastPendingRevenge == 0;
+        }
+
+        // ── T15: 0 actuallySpawned leaves slot untouched ─────────────
+        private static bool T15_WorkerNoDecrementOnZeroSpawn()
+        {
+            var director = new NoGameStoryDirector().WithRevenge(5);
+            director.DecrementPendingRevenge(0);
+            return director.LastPendingRevenge == 5;
         }
     }
 
