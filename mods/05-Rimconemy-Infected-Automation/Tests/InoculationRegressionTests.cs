@@ -41,6 +41,15 @@ namespace Rimconemy.InfectedAutomation.Tests
             Check(TestSelectorExcludesAlreadyInfected(),              "I4.SelectorExcludesAlreadyInfected");
             Check(TestSelectorRankingStableForSameInput(),            "I5.SelectorRankingStableForSameInput");
 
+            // I6-I9: Converter pure-logic.
+            Check(TestConverterMapsWolfToBrandedKind(),               "I6.ConverterMapsWolfToBrandedKind");
+            Check(TestConverterFactionSwitch(),                       "I7.ConverterFactionSwitch");
+            Check(TestConverterNoMappingFallback(),                   "I8.ConverterNoMappingFallback");
+            Check(TestConverterHalfCapDelta(),                        "I9.ConverterHalfCapDelta");
+
+            // I10: GetTotalCapBudget AnimalHalfCap.
+            Check(TestGetTotalCapBudgetTwoTierHalved(),              "I10.GetTotalCapBudgetTwoTierHalved");
+
             Log.Message(
                 "[Rimconemy.InfectedAutomation] Inoculation regression tests (Phase C subset): "
                 + _passed + " passed, " + _failed + " failed."
@@ -136,6 +145,54 @@ namespace Rimconemy.InfectedAutomation.Tests
                 IsDead = !alive,
                 MapCell = new IntVec3(10, 0, 10),
             };
+        }
+
+        // ── I6: Converter maps Wolf → Branded kind ────────────────────
+        private static bool TestConverterMapsWolfToBrandedKind()
+        {
+            var cand = Cand("wild-01", true, true, false, "WildFaction");
+            var outcome = InoculationConverter.Convert(cand, kindMappingTableHit: true, "selected");
+            return outcome.ConvertedKindDefName == "Rimconemy_InfectedWildlife";
+        }
+
+        // ── I7: Faction switches to Hidden-Infected ────────────────────
+        private static bool TestConverterFactionSwitch()
+        {
+            var cand = Cand("wild-02", true, true, false, "WildFaction");
+            var outcome = InoculationConverter.Convert(cand, kindMappingTableHit: true, "selected");
+            return outcome.ConvertedFactionDef == "Rimconemy_HiddenInfectedFaction";
+        }
+
+        // ── I8: No-Mapping Fallback keeps original Kind ────────────────
+        private static bool TestConverterNoMappingFallback()
+        {
+            var cand = Cand("wild-03", true, true, false, "WildFaction");
+            var outcome = InoculationConverter.Convert(cand, kindMappingTableHit: false, "selected");
+            // Faction switches; Kind falls back to "Wolf" (original).
+            return outcome.ConvertedFactionDef == "Rimconemy_HiddenInfectedFaction"
+                && outcome.ConvertedKindDefName == "Wolf";
+        }
+
+        // ── I9: Converter Half-Cap Delta ────────────────────────────────
+        private static bool TestConverterHalfCapDelta()
+        {
+            int deltaUp = InoculationConverter.ComputeAnimalHalfCapDelta(0, 1);
+            int deltaEqual = InoculationConverter.ComputeAnimalHalfCapDelta(3, 3);
+            int deltaDown = InoculationConverter.ComputeAnimalHalfCapDelta(5, 4);
+            return deltaUp == 1 && deltaEqual == 0 && deltaDown == 0;
+        }
+
+        // ── I10: GetTotalCapBudget AnimalHalfCap rule ────────────────
+        private static bool TestGetTotalCapBudgetTwoTierHalved()
+        {
+            var ledger = new Population.PopulationLedger
+            {
+                Cap = 10,
+                HumanoidLiveCount = 4,
+                AnimalLiveCount = 4,
+            };
+            // floor(4/2) = 2; consumed = 4 + 2 = 6; budget = 10 - 6 = 4.
+            return ledger.GetTotalCapBudget() == 4;
         }
     }
 }

@@ -132,6 +132,23 @@ namespace Rimconemy.InfectedAutomation.Population
         public long GetLastInoculationTick() => LastInoculationTick;
         public int GetCumulativeInoculations() => CumulativeInoculations;
 
+        /// <summary>
+        /// Effective free-budget after the AnimalHalfCap rule. Each
+        /// humanoid head consumes 1 cap-unit; each tier head consumes
+        /// 0.5 cap-unit (floored). Caller uses this for StorySelection
+        /// quota and SpawnService to gate new arrivals.
+        ///
+        /// Spec §7: AnimalHalfCap means a tier is "cheaper" than a
+        /// humanoid but still contributes to pressure. Cap stays
+        /// integral; only the consumption rule applies.
+        /// </summary>
+        public int GetTotalCapBudget()
+        {
+            long consumed = (long)HumanoidLiveCount
+                + (long)System.Math.Floor((double)AnimalLiveCount / 2.0);
+            return System.Math.Max(0, Cap - (int)System.Math.Min(consumed, int.MaxValue));
+        }
+
         // ── Write-API: Kill-Tracking (Task 3) ────────────────
         /// <summary>
         /// Increment the cumulative kill counter and decrement the matching
