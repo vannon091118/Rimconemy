@@ -1,7 +1,5 @@
 using Verse;
 using RimWorld;
-using System.Collections.Generic;
-
 namespace Rimconemy.InfectedAutomation.Scenarios
 {
     /// <summary>
@@ -9,16 +7,23 @@ namespace Rimconemy.InfectedAutomation.Scenarios
     /// </summary>
     public class ScenPart_IntroSequence : ScenPart
     {
+        private bool introShown;
+
         public override void ExposeData()
         {
             base.ExposeData();
-            // No data to expose for now
+            Scribe_Values.Look(ref introShown, "introShown", false);
         }
-        
+
         public override void PostMapGenerate(Map map)
         {
             base.PostMapGenerate(map);
-            // Add the intro window - this will pause the game and show our sequence
+            if (map == null || !map.IsPlayerHome || introShown)
+                return;
+
+            // Set the marker before opening the window so repeated map-generation
+            // callbacks cannot enqueue the intro twice.
+            introShown = true;
             Find.WindowStack.Add(new Rimconemy.InfectedAutomation.UI.IntroFlowWindow());
         }
         

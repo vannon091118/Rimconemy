@@ -7,34 +7,38 @@ using Rimconemy.InfectedAutomation.Scenarios;
 namespace Rimconemy.InfectedAutomation.UI
 {
     /// <summary>
-    /// IntroFlowWindow - Cinematic intro sequence with black screen, flow text, camera cuts, and zombie horde flash.
-    /// Force pauses the game and prevents camera motion during the intro.
+    /// Cinematic intro sequence with flow text, deterministic camera cuts, and a
+    /// short visual-only infected flash. Real time is used because the window
+    /// pauses the game and game ticks may therefore stop advancing.
     /// </summary>
     public class IntroFlowWindow : Window
     {
+        private const float TextPhaseSeconds = 10f;
+        private const float CameraPhaseSeconds = 6.666f;
+        private const float ZombieFlashSeconds = 3f;
+
         public override Vector2 InitialSize => new Vector2(1920f, 1080f);
-        
-        private int startTick;
-        private List<string> flowTexts;
-        private List<IntVec3> cameraPositions;
-        private List<int> phaseDurations; // ticks per phase
-        
-        private bool zombieFlashStarted = false;
-        private int zombieFlashStartTick = 0;
-        private bool zombieFlashCompleted = false;
-        private List<Pawn> spawnedZombies = new List<Pawn>();
-        
+
+        private readonly List<string> flowTexts;
+        private readonly List<float> phaseDurations;
+        private readonly List<IntVec3> cameraPositions = new List<IntVec3>();
+        private readonly List<Pawn> spawnedZombies = new List<Pawn>();
+
+        private float startTime;
+        private float zombieFlashStartTime;
+        private int lastPhaseIndex = -1;
+        private bool zombieFlashStarted;
+        private bool zombieFlashCompleted;
+
         public IntroFlowWindow()
         {
-            // Set base Window fields for cinematic intro
             forcePause = true;
             doCloseButton = false;
             doCloseX = false;
             closeOnAccept = false;
             absorbInputAroundWindow = true;
             draggable = false;
-            
-            // Initialize flow text (ISS return story)
+
             flowTexts = new List<string>
             {
                 "Nach 5 Jahren außerhalb der Erdatmosphäre...",
@@ -48,215 +52,172 @@ namespace Rimconemy.InfectedAutomation.UI
                 "Aber du bist bereit. Dein RimPad aktiviert sich.",
                 "Es ist Zeit zu überleben."
             };
-            
-            // Initialize camera positions (will be set after map generation)
-            cameraPositions = new List<IntVec3>();
-            phaseDurations = new List<int>();
-            
-            // Calculate phases: text blocks + camera cuts + zombie flash
-            int textBlockTicks = 300; // ~10 seconds per text block at 30 ticks/sec
-            int cameraCutInterval = 200; // ~6.5 seconds between cuts
-            int zombieFlashTicks = 180; // 3 seconds
-            
-            // Each text block gets time, with camera cuts interspersed
+
+            phaseDurations = new List<float>();
             for (int i = 0; i < flowTexts.Count; i++)
             {
-                phaseDurations.Add(textBlockTicks); // Text display phase
-                
-                // Add camera cut phases between text blocks (except after last)
+                phaseDurations.Add(TextPhaseSeconds);
                 if (i < flowTexts.Count - 1)
-                {
-                    phaseDurations.Add(cameraCutInterval); // Camera cut phase
-                }
+                    phaseDurations.Add(CameraPhaseSeconds);
             }
-            
-            // Add zombie flash phase at the end
-            phaseDurations.Add(zombieFlashTicks);
+            phaseDurations.Add(ZombieFlashSeconds);
         }
-        
+
         public override void PostOpen()
         {
             base.PostOpen();
-            startTick = Find.TickManager.TicksGame;
-            
-            // Initialize camera positions after map is ready
-            LongEventHandler.ExecuteWhenFinished(() => 
+            startTime = Time.realtimeSinceStartup;
+
+            LongEventHandler.ExecuteWhenFinished(() =>
             {
                 if (Find.CurrentMap != null)
-                {
                     InitializeCameraPositions(Find.CurrentMap);
-                }
             });
         }
-        
+
         private void InitializeCameraPositions(Map map)
         {
-            // Clear and recalculate interesting points
             cameraPositions.Clear();
-            
-            // Add map center
             cameraPositions.Add(map.Center);
-            
-            // Add some edge points for variety
-            int edgePadding = 10;
-            cameraPositions.Add(new IntVec3(edgePadding, 0, edgePadding)); // Southwest
-            cameraPositions.Add(new IntVec3(map.Size.x - edgePadding, 0, edgePadding)); // Southeast
-            cameraPositions.Add(new IntVec3(edgePadding, 0, map.Size.z - edgePadding)); // Northwest
-            cameraPositions.Add(new IntVec3(map.Size.x - edgePadding, 0, map.Size.z - edgePadding)); // Northeast
-            
-            // Add a few random points
-            for (int i = 0; i < 3; i++)
-            {
-                cameraPositions.Add(CellFinder.RandomCell(map));
-            }
+
+            int padding = 10;
+            int maxX = Mathf.Max(0, map.Size.x - padding - 1);
+            int maxZ = Mathf.Max(0, map.Size.z - padding - 1);
+            int minX = Mathf.Min(padding, maxX);
+            int minZ = Mathf.Min(padding, maxZ);
+
+            cameraPositions.Add(new IntVec3(minX, 0, minZ));
+            cameraPositions.Add(new IntVec3(maxX, 0, minZ));
+            cameraPositions.Add(new IntVec3(minX, 0, maxZ));
+            cameraPositions.Add(new IntVec3(maxX, 0, maxZ));
         }
-        
+
         public override void DoWindowContents(Rect inRect)
         {
-            // Draw black background
             Widgets.DrawBoxSolid(inRect, Color.black);
-            
-            // Calculate current phase based on elapsed time
-            int elapsed = Find.TickManager.TicksGame - startTick;
-            int accumulatedTicks = 0;
-            int phaseIndex = 0;
-            
+
+            float elapsed = Mathf.Max(0f, Time.realtimeSinceStartup - startTime);
+            int phaseIndex = GetPhaseIndex(elapsed);
+            EnterPhaseIfNeeded(phaseIndex);
+
+            int textPhaseCount = flowTexts.Count * 2 - 1;
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.UpperLeft;
+
+            if (phaseIndex < textPhaseCount && phaseIndex % 2 == 0)
+            {
+                int textIndex = phaseIndex / 2;
+                Widgets.Label(
+                    new Rect(20f, 20f, inRect.width - 40f, inRect.height - 40f),
+                    flowTexts[textIndex]);
+            }
+            else if (phaseIndex == phaseDurations.Count - 1)
+            {
+                Widgets.Label(
+                    new Rect(20f, 20f, inRect.width - 40f, inRect.height - 40f),
+                    "Die Infizierten zeigen sich...");
+            }
+
+            Text.Anchor = TextAnchor.UpperLeft;
+        }
+
+        private int GetPhaseIndex(float elapsed)
+        {
+            float accumulated = 0f;
             for (int i = 0; i < phaseDurations.Count; i++)
             {
-                if (elapsed < accumulatedTicks + phaseDurations[i])
-                {
-                    phaseIndex = i;
-                    break;
-                }
-                accumulatedTicks += phaseDurations[i];
+                accumulated += phaseDurations[i];
+                if (elapsed < accumulated)
+                    return i;
             }
-            
-            // Handle different phases
-            int totalTextAndCameraPhases = flowTexts.Count * 2 - 1; // Text phases + camera cut phases
-            
-            if (phaseIndex < totalTextAndCameraPhases) // Text and camera cut phases
-            {
-                bool isTextPhase = (phaseIndex % 2 == 0);
-                int textIndex = phaseIndex / 2;
-                
-                if (isTextPhase && textIndex < flowTexts.Count)
-                {
-                    // Draw flow text
-                    Text.Font = GameFont.Small;
-                    Text.Anchor = TextAnchor.UpperLeft;
-                    Widgets.Label(new Rect(20f, 20f, inRect.width - 40f, inRect.height - 40f), 
-                                 flowTexts[textIndex]);
-                    Text.Anchor = TextAnchor.UpperLeft;
-                }
-                else
-                {
-                    // Camera cut phase - jump to next position
-                    if (cameraPositions.Count > 0)
-                    {
-                        int camIndex = (phaseIndex / 2) % cameraPositions.Count;
-                        Find.CameraDriver.JumpToCurrentMapLoc(cameraPositions[camIndex]);
-                    }
-                }
-            }
-            else if (phaseIndex == totalTextAndCameraPhases) // Zombie flash phase
-            {
-                // Draw hint text
-                Text.Font = GameFont.Small;
-                Text.Anchor = TextAnchor.UpperLeft;
-                Widgets.Label(new Rect(20f, 20f, inRect.width - 40f, inRect.height - 40f), 
-                             "Die Infizierten zeigen sich...");
-                Text.Anchor = TextAnchor.UpperLeft;
-                
-                // Trigger zombie flash on first frame of this phase
-                if (!zombieFlashStarted && elapsed >= accumulatedTicks)
-                {
-                    StartZombieFlashSequence();
-                }
-            }
-            else
-            {
-                // Sequence complete - close window and signal tutorial start
-                if (Find.TickManager.TicksGame - startTick >= accumulatedTicks + phaseDurations[phaseIndex])
-                {
-                    // Trigger zombie flash sequence if not already done
-                    if (!zombieFlashCompleted)
-                    {
-                        StartZombieFlashSequence();
-                    }
-                }
-            }
+
+            return phaseDurations.Count - 1;
         }
-        
+
+        private void EnterPhaseIfNeeded(int phaseIndex)
+        {
+            if (phaseIndex == lastPhaseIndex)
+                return;
+
+            lastPhaseIndex = phaseIndex;
+            int textPhaseCount = flowTexts.Count * 2 - 1;
+            if (phaseIndex < textPhaseCount && phaseIndex % 2 == 1 && cameraPositions.Count > 0)
+            {
+                int cameraIndex = (phaseIndex / 2) % cameraPositions.Count;
+                Find.CameraDriver.JumpToCurrentMapLoc(cameraPositions[cameraIndex]);
+            }
+
+            if (phaseIndex == phaseDurations.Count - 1)
+                StartZombieFlashSequence();
+        }
+
         private void StartZombieFlashSequence()
         {
-            if (zombieFlashStarted) return;
-            
+            if (zombieFlashStarted)
+                return;
+
             zombieFlashStarted = true;
-            zombieFlashStartTick = Find.TickManager.TicksGame;
+            zombieFlashStartTime = Time.realtimeSinceStartup;
+            SpawnZombieHorde();
         }
-        
+
         public override void WindowUpdate()
         {
             base.WindowUpdate();
-            
-            if (zombieFlashStarted && !zombieFlashCompleted)
-            {
-                int elapsed = Find.TickManager.TicksGame - zombieFlashStartTick;
-                if (elapsed == 0) // First update after start - spawn zombies
-                {
-                    SpawnZombieHorde();
-                }
-                else if (elapsed >= 180) // 3 seconds passed (60 ticks/sec * 3 = 180)
-                {
-                    DespawnZombieHorde();
-                    zombieFlashCompleted = true;
-                    // Signal completion to tutorial director (will be implemented in Task 6)
-                    // var tutorialDirector = Current.Game.GetComponent<Rimconemy.InfectedAutomation.Tutorial.TutorialDirector>();
-                    // if (tutorialDirector != null)
-                    // {
-                    //     tutorialDirector.NotifyIntroCompleted();
-                    // }
-                    // Close this window
-                    Close();
-                }
-            }
+
+            if (!zombieFlashStarted || zombieFlashCompleted)
+                return;
+
+            if (Time.realtimeSinceStartup - zombieFlashStartTime < ZombieFlashSeconds)
+                return;
+
+            DespawnZombieHorde();
+            zombieFlashCompleted = true;
+            Close();
         }
-        
+
         private void SpawnZombieHorde()
         {
-            if (Find.CurrentMap == null) return;
-            
-            var faction = InfectedFactionUtility.EnsureHiddenInfectedFaction();
-            var kind = DefDatabase<PawnKindDef>.GetNamed("Rimconemy_InfectedRavager", true);
-            
+            Map map = Find.CurrentMap;
+            if (map == null)
+                return;
+
+            Faction faction = InfectedFactionUtility.EnsureHiddenInfectedFaction();
+            PawnKindDef kind = DefDatabase<PawnKindDef>.GetNamedSilentFail("Rimconemy_InfectedRavager");
+            if (faction == null || kind == null)
+            {
+                Log.Warning("[Rimconemy.InfectedAutomation] IntroFlowWindow: infected flash skipped because faction or pawn kind is missing.");
+                return;
+            }
+
             for (int i = 0; i < 4; i++)
             {
-                var cell = CellFinder.RandomEdgeCell(Find.CurrentMap);
-                var pawn = PawnGenerator.GeneratePawn(kind, faction);
-                GenSpawn.Spawn(pawn, cell, Find.CurrentMap);
+                IntVec3 cell = CellFinder.RandomEdgeCell(map);
+                Pawn pawn = PawnGenerator.GeneratePawn(kind, faction);
+                pawn.mindState.duty = null;
+                GenSpawn.Spawn(pawn, cell, map);
                 spawnedZombies.Add(pawn);
             }
-            
-            // Camera jumps to first zombie
+
             if (spawnedZombies.Count > 0)
                 Find.CameraDriver.JumpToCurrentMapLoc(spawnedZombies[0].Position);
         }
-        
+
         private void DespawnZombieHorde()
         {
-            foreach (var pawn in spawnedZombies)
+            foreach (Pawn pawn in spawnedZombies)
             {
-                if (pawn.Spawned)
+                if (pawn != null && pawn.Spawned)
                     pawn.Destroy(DestroyMode.Vanish);
             }
+
             spawnedZombies.Clear();
         }
-        
+
         public override void PreClose()
         {
-            base.PreClose();
-            // Ensure cleanup if window closed early
             DespawnZombieHorde();
+            base.PreClose();
         }
     }
 }
