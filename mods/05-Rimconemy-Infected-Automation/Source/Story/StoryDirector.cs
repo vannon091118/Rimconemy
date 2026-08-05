@@ -257,6 +257,13 @@ namespace Rimconemy.InfectedAutomation.Story
             {
                 Inoculation.RandomInoculationService.TryInfectRandom(
                     playerHomeForInoculation, currentTick);
+
+                // Phase E — Driver-Pfad (Random-Encounter-Tiersym-Infektion).
+                // Erweitert Phase C um eine recurring Trigger-Logik. Profil-
+                // gesteuert + Horde-Cap-getrieben. Bei gleicher Map-Reference,
+                // weil TierInokulation nur auf der HomeMap Sinn macht.
+                Inoculation.AnimalInfectionDriver.TryFireOnce(
+                    playerHomeForInoculation, currentTick);
             }
         }
 
