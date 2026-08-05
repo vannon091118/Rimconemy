@@ -96,7 +96,7 @@
 - `InfectedRaidWorker` ist eine Letter-/Incident-Pfad mit echter Spawn-Bridge (Audit-Bündel C / F-09, 2026-08-04): `HiddenInfected`-Fraktion und `InfectedRavager`-PawnKind sind als DEF vorhanden; der Worker spawnt jetzt bis zu `MaxSpawnsPerWorkerRun=3` Pawns aus einem threat-basierten `SpawnPlan` auf Edge-Zellen der Zielkarte. Der Live-Runtime-Beleg (echter Save → echter Spawn → echter Load) ist nicht durch automatisierte Tests abgedeckt; er ist explizit User-Live-Test-Verantwortung über `scripts/runtime_test.sh`.
 - `WorldRaidCoordinator` plant druckabhängige Raid-Fenster für Weltkarten-Tiles; WorldObject-Erzeugung, Ankunft, Auflösung und Save/Load-Lifecycle bleiben offen.
 - `StoryState` implementiert `ISchemaMigratable` (Foundation/Source/Save/) — Schema-Version via `Scribe_Values.Look`, Migration via `this.RunMigration()`, `Tests/StoryStateSchemaBumpTests` mit T1–T6-Assertions.
-- `MechadroidUnit`, Threat-/Automation-Record-Typen und Ideology-ResourceFairness-Adapter sind vorhanden.
+- `MechadroidJobLedger` (State-Machine für Mechadroid-Aufträge), Threat-/Automation-Record-Typen und Ideology-ResourceFairness-Adapter sind vorhanden. (`MechadroidUnit`/`MechadroidJobRegistry`-Stubs entfernt 2026-08-05, siehe `docs/falsification/deadcode-audit-2026-08-05.md`.)
 - Bootstrap führt StorySelector-, StoryState- und Building-Threat-Regressionstests aus; der Threat-Adapter ist bounded/deterministisch und erzeugt in A weder Incident noch Raid.
 
 **Nicht belegt:** vollständige Raid-Skalierung und -Auflösung (der Arbeitsstand ist auf maximal einen Pawn begrenzt), eigener `StorytellerDef`/`StorytellerComp`, vollständiger World-Map-Raid-Lifecycle, Mechadroid-Aufträge und interaktiver Save/Load-/Event-Fire-Live-Test.

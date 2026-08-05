@@ -2,7 +2,7 @@
 
 > **Capability:** `rimconemy.infectedautomation` v1 · **Owner:** Infected · **Stand:** 2026-08-04
 > **Status:** `COMPILED`
-> **Code-Anker:** `Source/Mechadroids/MechadroidJobRegistry.cs` · **Test:** `Tests/MechadroidJobRegressionTests.cs`
+> **Code-Anker:** `Source/Mechadroids/MechadroidJobs.cs` (`MechadroidJobLedger`; `MechadroidJobRegistry`-Stub entfernt 2026-08-05) · **Test:** `Tests/MechadroidJobRegressionTests.cs`
 > **ROADMAP-Referenz:** §8.2 · **Owner-Checklist:** siehe `docs/falsification/README.md`
 
 ## A — Def-Liste (XML-Defs)
@@ -11,7 +11,7 @@
 
 ## B — Code-Pfad (Build + Boot)
 
-Quelle: `Source/Infected/Source/Mechadroids/MechadroidJobRegistry.cs`
+Quelle: `mods/05-Rimconemy-Infected-Automation/Source/Mechadroids/MechadroidJobs.cs`
 
 - Kompiliert: ✅
 - Bootstrap-Klasse: `Infected.Bootstrap.RunAll` ruft `Tests/MechadroidJobRegressionTests.cs` auf
