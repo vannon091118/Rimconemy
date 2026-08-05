@@ -1,11 +1,10 @@
 // Source/Horde/HordeUpdateLogic.cs
 //
 // Phase D — Pure Spawn/Move/Despawn state-machine for the wandering
-// HordeWorldObject. Mirrors PopulationLedgerReconciler.ReconciliationLogic:
-// no IO, no Verse.* types, no DefDatabase read — a test seam for the
-// production Spawner. Pure-API design lets regression tests cover
-// "spawn at threshold", "drift toward home", "despawn below threshold"
-// without spinning up a GameComponent.
+// HordeWorldObject. No IO, no Verse.* types, no DefDatabase read — a
+// test seam for the production Spawner. Pure-API design lets regression
+// tests cover "spawn at threshold", "drift toward home", "despawn below
+// threshold" without spinning up a GameComponent.
 
 using System.Collections.Generic;
 
@@ -24,36 +23,22 @@ namespace Rimconemy.InfectedAutomation.Horde
         /// placement; the tests inspect the list directly.
         /// </summary>
         public static void RunOncePure(
-            int effective, bool active, int homeTile, long currentTick,
-            List<int> hordeTiles)
+            bool active, int homeTile, long currentTick, List<int> hordeTiles)
         {
-            if (hordeTiles == null) return;
             if (!active)
             {
                 hordeTiles.Clear();
                 return;
             }
-            if (homeTile < 0) return; // defensive: no player home → no spawn.
-
             // First spawn: place at homeTile + InitialDistanceFromHome.
             if (hordeTiles.Count == 0)
             {
                 hordeTiles.Add(homeTile + InitialDistanceFromHome);
                 return;
             }
-
             // Drift: each TickInterval, move 1 tile toward home.
-            int moves = (int)(currentTick / TickInterval);
-            if (moves < 1) return;
-            int slotIndex = hordeTiles[0] - homeTile;
-            if (slotIndex <= 0)
-            {
-                // Already at home — clamp to home so subsequent runs panick-free.
-                hordeTiles[0] = homeTile;
-                return;
-            }
-            int newSlot = System.Math.Max(0, slotIndex - moves);
-            hordeTiles[0] = homeTile + newSlot;
+            hordeTiles[0] = homeTile + System.Math.Max(0,
+                hordeTiles[0] - homeTile - (int)(currentTick / TickInterval));
         }
     }
 }
