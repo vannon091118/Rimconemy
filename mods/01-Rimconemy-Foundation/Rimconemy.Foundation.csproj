@@ -37,17 +37,24 @@
       <HintPath>$(HarmonyAssembliesPath)/0Harmony.dll</HintPath>
       <Private>false</Private>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
     <!--
-      Phase 8.6 (2026-08-05): Mono.Cecil reference for FoundationHonestBannerAudit.
-      Replaces raw IL-Byte-Pattern-Scan with a proper Cecil MethodDefinition walker.
-      The HintPath is set to the local-only NuGet cache so the build needs no
-      network round-trip (Mono.Cecil 0.11.5 ships netstandard2.0-only).
-      Path is overridable via -p:MonoCecilHintPath=... on the command line.
-      <Private>true</Private> ⇒ Mono.Cecil.dll is copied to Assemblies/ and
-      shipped with the mod (RimWorld's mod loader will pick it up).
+      Audit-fix K2 (2026-08-05, corrected): Mono.Cecil must be shipped as a
+      COPY-LOCAL Reference, not a PackageReference. Verified 2026-08-05:
+      (a) RimWorldLinux_Data/Managed and the Harmony mod folder ship NO
+      Mono.Cecil.dll on this install — FoundationHonestBannerAudit runs in
+      Bootstrap (StaticConstructorOnStartup) and needs the DLL at boot.
+      (b) A PackageReference (even without ExcludeAssets=runtime) does NOT
+      copy Mono.Cecil.dll into OutputPath=Assemblies/ in this SDK setup — the
+      boot would TypeLoadException. <Private>true</Private> on the Reference
+      is the proven copy-local form (matches the originally deployed mod).
+      DebugType=none already suppresses the .pdb. The NuGet cache path is
+      overridable via -p:MonoCecilHintPath=... on the command line.
     -->
     <Reference Include="Mono.Cecil">
-      <HintPath Condition="'$(MonoCecilHintPath)' == ''">/home/vannon/.nuget/packages/mono.cecil/0.11.5/lib/netstandard2.0/Mono.Cecil.dll</HintPath>
+      <HintPath Condition="'$(MonoCecilHintPath)' == ''">$(HOME)/.nuget/packages/mono.cecil/0.11.5/lib/netstandard2.0/Mono.Cecil.dll</HintPath>
       <HintPath Condition="'$(MonoCecilHintPath)' != ''">$(MonoCecilHintPath)</HintPath>
       <Private>true</Private>
     </Reference>

@@ -5,6 +5,37 @@
   Prefix convention: Rimconemy.Survival.*
 -->
 <LanguageData>
+  <!-- Phase-First Progress overlay (PHASE_PROGRESSION_CONTRACT §10). Symmetrisch zur EN-Datei. -->
+  <Rimconemy.PhaseProgress.Title>Phasenfortschritt</Rimconemy.PhaseProgress.Title>
+  <Rimconemy.PhaseProgress.Empty.Title>Keine Karte geladen</Rimconemy.PhaseProgress.Empty.Title>
+  <Rimconemy.PhaseProgress.Empty.Detail>Der Phasenfortschritt liest die aktuelle Karte. Starte eine Kolonie, um den Meilenstein-Tracker zu füllen.</Rimconemy.PhaseProgress.Empty.Detail>
+  <Rimconemy.PhaseProgress.NextMilestone>Nächster Meilenstein →</Rimconemy.PhaseProgress.NextMilestone>
+  <Rimconemy.PhaseProgress.PhaseCompleteTitle>Phase abgeschlossen</Rimconemy.PhaseProgress.PhaseCompleteTitle>
+  <Rimconemy.PhaseProgress.PhaseCompleteDetail>Alle Meilensteine dieser Phase sind erfüllt. Neue Phasen schalten sich beim Wachsen der Kolonie frei.</Rimconemy.PhaseProgress.PhaseCompleteDetail>
+  <Rimconemy.PhaseProgress.Overall>Gesamtfortschritt</Rimconemy.PhaseProgress.Overall>
+  <Rimconemy.PhaseProgress.TipShort>Hover für Zusammenfassung</Rimconemy.PhaseProgress.TipShort>
+  <Rimconemy.PhaseProgress.Tip>Erfüllte Meilensteine: {0}/{1} ({2}% über alle Phasen). Quelle: RimconemyStartState + Vanilla-Recherche/Gebäude/Bill-Zustand.</Rimconemy.PhaseProgress.Tip>
+  <Rimconemy.PhaseProgress.Phase.EarlySurvival>Phase 1 — Frühes Überleben</Rimconemy.PhaseProgress.Phase.EarlySurvival>
+  <Rimconemy.PhaseProgress.Phase.Production>Phase 2 — Produktion</Rimconemy.PhaseProgress.Phase.Production>
+  <Rimconemy.PhaseProgress.Phase.Automation>Phase 3 — Automatisierung</Rimconemy.PhaseProgress.Phase.Automation>
+  <Rimconemy.PhaseProgress.Phase.Expansion>Phase 4 — Expansion</Rimconemy.PhaseProgress.Phase.Expansion>
+  <Rimconemy.PhaseProgress.Phase.Trade>Phase 5 — Handel</Rimconemy.PhaseProgress.Phase.Trade>
+  <Rimconemy.PhaseProgress.Phase.Empire>Phase 6 — Imperium</Rimconemy.PhaseProgress.Phase.Empire>
+  <Rimconemy.PhaseProgress.Milestone.single-survivor-start>Einzelner Überlebender gestartet</Rimconemy.PhaseProgress.Milestone.single-survivor-start>
+  <Rimconemy.PhaseProgress.Milestone.first-cooked-meal>Erste Mahlzeit gekocht</Rimconemy.PhaseProgress.Milestone.first-cooked-meal>
+  <Rimconemy.PhaseProgress.Milestone.campfire-built>Lagerfeuer gebaut</Rimconemy.PhaseProgress.Milestone.campfire-built>
+  <Rimconemy.PhaseProgress.Milestone.three-buildings-built>Drei Gebäude errichtet</Rimconemy.PhaseProgress.Milestone.three-buildings-built>
+  <Rimconemy.PhaseProgress.Milestone.first-coal-produced>Erste Kohle produziert</Rimconemy.PhaseProgress.Milestone.first-coal-produced>
+  <Rimconemy.PhaseProgress.Milestone.smelting-research-finished>Schmelz-Forschung abgeschlossen</Rimconemy.PhaseProgress.Milestone.smelting-research-finished>
+  <Rimconemy.PhaseProgress.Milestone.first-steel-smelted>Stahl geschmolzen</Rimconemy.PhaseProgress.Milestone.first-steel-smelted>
+  <Rimconemy.PhaseProgress.Milestone.smithy-built>Schmiede gebaut</Rimconemy.PhaseProgress.Milestone.smithy-built>
+  <Rimconemy.PhaseProgress.Milestone.machine-parts-built>Maschinenteile gefertigt</Rimconemy.PhaseProgress.Milestone.machine-parts-built>
+  <Rimconemy.PhaseProgress.Milestone.stainless-smelted>Edelstahl geschmolzen</Rimconemy.PhaseProgress.Milestone.stainless-smelted>
+  <Rimconemy.PhaseProgress.Milestone.stainless-tower-built>Edelstahlturm gebaut</Rimconemy.PhaseProgress.Milestone.stainless-tower-built>
+  <Rimconemy.PhaseProgress.Milestone.power-grid-online>Stromnetz online</Rimconemy.PhaseProgress.Milestone.power-grid-online>
+  <Rimconemy.PhaseProgress.Milestone.outpost-constructed>Außenposten errichtet</Rimconemy.PhaseProgress.Milestone.outpost-constructed>
+  <Rimconemy.PhaseProgress.Milestone.credits-wallet-initialised>Kredit-Börse initialisiert</Rimconemy.PhaseProgress.Milestone.credits-wallet-initialised>
+  <Rimconemy.PhaseProgress.Milestone.empire-tribute-paid>Tribut an das Imperium gezahlt</Rimconemy.PhaseProgress.Milestone.empire-tribute-paid>
   <Rimconemy.Survival.Title>Überleben</Rimconemy.Survival.Title>
   <Rimconemy.Survival.Profile.Standalone>Überleben eigenständig</Rimconemy.Survival.Profile.Standalone>
   <Rimconemy.Survival.Needs.Food>Nahrung</Rimconemy.Survival.Needs.Food>

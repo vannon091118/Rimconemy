@@ -78,17 +78,4 @@
     </scenario>
   </ScenarioDef>
 
-  <!-- Phase 1.2: starting-weapon item, consumed via the inplace-XML
-       ScenPart_StartingThing_Defined pattern. The def of the weapon
-       is loaded from Rimconemy_ScrapRifle.xml (same package). -->
-  <ScenPartDef>
-    <defName>Rimconemy_StartingWeapon_DefinedPart</defName>
-    <label>Rimconemy starting weapon</label>
-    <category>StartingItem</category>
-    <scenPartClass>ScenPart_StartingThing_Defined</scenPartClass>
-    <thingDef>Rimconemy_ScrapRifle</thingDef>
-    <count>1</count>
-    <summaryPriority>10</summaryPriority>
-  </ScenPartDef>
-
 </Defs>

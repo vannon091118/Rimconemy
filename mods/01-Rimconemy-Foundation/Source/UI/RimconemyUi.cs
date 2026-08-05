@@ -24,6 +24,10 @@ namespace Rimconemy.Foundation.UI
     /// </summary>
     public static class RimconemyUi
     {
+        /// <summary>Translates a key, falling back to the raw key when missing.</summary>
+        public static string T(string key) =>
+            !string.IsNullOrEmpty(key) && key.CanTranslate() ? key.Translate().ToString() : key;
+
         /// <summary>Section-title row. Default Medium font, HeaderInk.</summary>
         public static void DrawSectionTitle(Rect rect, string key, GameFont font = GameFont.Medium)
         {
@@ -31,8 +35,7 @@ namespace Rimconemy.Foundation.UI
             {
                 Text.Font = font;
                 GUI.color = RimconemyTheme.HeaderInk;
-                string text = !string.IsNullOrEmpty(key) && key.CanTranslate() ? key.Translate().ToString() : key;
-                Widgets.Label(rect, text);
+                Widgets.Label(rect, T(key));
             }
             finally
             {
@@ -141,8 +144,7 @@ namespace Rimconemy.Foundation.UI
             {
                 GUI.color = RimconemyTheme.Muted;
                 Text.Anchor = TextAnchor.MiddleCenter;
-                string text = !string.IsNullOrEmpty(messageKey) && messageKey.CanTranslate() ? messageKey.Translate().ToString() : messageKey;
-                Widgets.Label(rect, text);
+                Widgets.Label(rect, T(messageKey));
             }
             finally
             {

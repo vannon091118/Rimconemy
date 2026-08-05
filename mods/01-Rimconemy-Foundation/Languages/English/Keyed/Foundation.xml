@@ -55,6 +55,8 @@
   <Rimconemy.Hub.Tab.Infrastructure>⚡ Infrastructure</Rimconemy.Hub.Tab.Infrastructure>
   <Rimconemy.Hub.Tab.Economy>💰 Economy</Rimconemy.Hub.Tab.Economy>
   <Rimconemy.Hub.Tab.Threat>☣️ Threat</Rimconemy.Hub.Tab.Threat>
+  <!-- Phase-First Progress overlay (PHASE_PROGRESSION_CONTRACT §10). -->
+  <Rimconemy.Hub.Tab.Phase>📈 Phase Progress</Rimconemy.Hub.Tab.Phase>
 
   <!-- Infrastructure -->
   <Rimconemy.Infrastructure.Power>Power Network</Rimconemy.Infrastructure.Power>

@@ -73,6 +73,8 @@ namespace Rimconemy.SurvivalProgression
             BuildingProgressionPersistenceRegressionTests.RunAll();
             // Phase-1.1 (2026-08-04): deterministic dedup for single-survivor setup.
             RimconemyStartStateRegressionTests.RunAll();
+            // Phase-Progress overlay (PHASE_PROGRESSION_CONTRACT §10) regression gate.
+            PhaseProgressResolverTests.RunAll();
             // Phase-8 (2026-08-04): organic XP tree — Domain, Unlock, Bridge.
             DomainXpStateTests.RunAll();
             UnlockServiceTests.RunAll();

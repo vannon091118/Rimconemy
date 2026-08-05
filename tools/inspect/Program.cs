@@ -166,6 +166,63 @@ internal static class Program
             }
         }
 
+        // PhaseProgress-Reach (2026-08-05): Probe für IsFinished/Cost auf ResearchProjectDef
+        if (false) // (kept disabled — primary sweep below is non-conditional)
+        {
+        }
+        SweepHeuristic(md, assembly,
+            "PhaseProgress-ResearchProbe",
+            new[] { "IsFinished", "TotalCost", "CostAmount", "BaseCost", "totalCost" });
+
+        // PhaseProgress-Reach: dump ResearchProjectDef class full surface.
+        md.AppendLine("## PhaseProgress-Reach — ResearchProjectDef direct");
+        md.AppendLine();
+        var rpd = assembly.MainModule.Types.FirstOrDefault(t => t.FullName == "Verse.ResearchProjectDef");
+        if (rpd == null) rpd = assembly.MainModule.Types.FirstOrDefault(t => t.Name == "ResearchProjectDef" && t.Namespace == "Verse");
+        if (rpd == null) rpd = assembly.MainModule.Types.FirstOrDefault(t => t.Name == "ResearchProjectDef");
+        if (rpd == null)
+        {
+            md.AppendLine("**STATUS: NICHT GEFUNDEN**");
+        }
+        else
+        {
+            md.AppendLine($"BaseType: `{rpd.BaseType?.FullName ?? "<none>"}` - Sealed: {rpd.IsSealed} - Abstract: {rpd.IsAbstract}");
+            md.AppendLine();
+            md.AppendLine("### Public/Protected Methods (filtered to 'Finished/Cost/Progress')");
+            md.AppendLine();
+            md.AppendLine("| Return | Name | Params | Static | Notes |");
+            md.AppendLine("|---|---|---|---|---|");
+            foreach (var m in rpd.Methods.Where(m => !m.IsConstructor && (m.IsPublic || m.IsFamily) && (m.Name.Contains("Cost") || m.Name.Contains("Finished") || m.Name.Contains("Progress") || m.Name.Contains("Complete"))).Take(40))
+            {
+                var ret = m.ReturnType.FullName;
+                var parms = string.Join(", ", m.Parameters.Select(p => $"{p.ParameterType.Name} {p.Name}"));
+                var notes = new List<string>();
+                if (m.IsStatic) notes.Add("static");
+                if (m.IsVirtual) notes.Add("virtual");
+                if (m.IsAbstract) notes.Add("abstract");
+                if (m.IsFinal) notes.Add("final");
+                md.AppendLine($"| `{ret}` | `{m.Name}` | `{parms}` | {(m.IsStatic ? "X" : "")} | {string.Join(" · ", notes)} |");
+            }
+            md.AppendLine();
+            md.AppendLine("### Public Properties (filtered)");
+            md.AppendLine("| Type | Name | Get | Set |");
+            md.AppendLine("|---|---|---|---|");
+            foreach (var p in rpd.Properties.Where(p => (p.Name.Contains("Cost") || p.Name.Contains("Finished") || p.Name.Contains("Total")) && (p.GetMethod?.IsPublic == true || p.GetMethod?.IsFamily == true)).Take(20))
+            {
+                var g = p.GetMethod?.IsPublic == true;
+                var s = p.SetMethod?.IsPublic == true;
+                md.AppendLine($"| `{p.PropertyType.FullName}` | `{p.Name}` | {(g ? "x" : "")} | {(s ? "x" : "")} |");
+            }
+            md.AppendLine();
+            md.AppendLine("### Public Fields (filtered)");
+            md.AppendLine("| Type | Name |");
+            md.AppendLine("|---|---|");
+            foreach (var f in rpd.Fields.Where(f => f.IsPublic && (f.Name.Contains("Cost") || f.Name.Contains("Finished") || f.Name.Contains("Total"))).Take(20))
+            {
+                md.AppendLine($"| `{f.FieldType.FullName}` | `{f.Name}` |");
+            }
+        }
+
         // 2) Heuristik-Sweeps für zentrale Spike-Pflicht-Methoden (Phase 1.3 / 3.2 / 5.2 / 6.2)
         md.AppendLine("## Spike-Pflicht-Heuristik-Sweeps");
         md.AppendLine();
@@ -184,6 +241,60 @@ internal static class Program
         SweepHeuristic(md, assembly,
             "Pawn-Bauabschluss-Hooks",
             new[] { "FrameCompleted", "FinishBlueprint", "InstallBlueprint", "Notify_IterationCompleted" });
+
+        // API-MINING-02 (2026-08-05): Mineable.Yield spawn hooks for the
+        // AI-side Mining-Gate Postfix (PHASE_PROGRESSION_CONTRACT §7.1 OPEN
+        // → closing).
+        SweepHeuristic(md, assembly,
+            "Mineable.Yield-Hooks (API-MINING-02)",
+            new[] { "DestroyMined", "TrySpawnYield", "TrySpawnYieldFromDamage", "YieldNow", "SpawnYield", "SpawnYieldAt", "SpawnItems", "YieldCount" });
+
+        // API-MINING-02: explicit Mineable class enumeration (full dump capped
+        // to first relevant non-private methods so the Postfix signature is
+        // verified one-shot, not by string-sweep luck).
+        md.AppendLine("## API-MINING-02 — Mineable-class direct enumeration");
+        md.AppendLine();
+        var mineable = assembly.MainModule.Types.FirstOrDefault(t => t.FullName == "Verse.Mineable");
+        if (mineable == null) mineable = assembly.MainModule.Types.FirstOrDefault(t => t.Name == "Mineable");
+        if (mineable == null)
+        {
+            md.AppendLine("**STATUS: NICHT GEFUNDEN** — `Verse.Mineable` fehlt in der lokalen 1.6-Assembly.");
+        }
+        else
+        {
+            md.AppendLine($"BaseType: `{mineable.BaseType?.FullName ?? "<none>"}` · Sealed: {mineable.IsSealed} · Abstract: {mineable.IsAbstract}");
+            md.AppendLine();
+            md.AppendLine("### Public/Protected Methods (filtered to Mineable.Yield-bearing)");
+            md.AppendLine();
+            md.AppendLine("| Return | Name | Params | Static | Notes |");
+            md.AppendLine("|---|---|---|---|---|");
+            foreach (var m in mineable.Methods
+                .Where(m => !m.IsConstructor && (m.IsPublic || m.IsFamily))
+                .OrderBy(m => m.Name).Take(40))
+            {
+                var ret = m.ReturnType.FullName;
+                var parms = string.Join(", ", m.Parameters.Select(p => $"{p.ParameterType.Name} {p.Name}"));
+                var notes = new List<string>();
+                if (m.IsStatic) notes.Add("static");
+                if (m.IsVirtual) notes.Add("virtual");
+                if (m.IsAbstract) notes.Add("abstract");
+                if (m.IsFinal) notes.Add("final");
+                md.AppendLine($"| `{ret}` | `{m.Name}` | `{parms}` | {(m.IsStatic ? "✅" : "")} | {string.Join(" · ", notes)} |");
+            }
+            md.AppendLine();
+            var nestedAndDerived = assembly.MainModule.Types
+                .Where(t => t.BaseType != null && t.BaseType.FullName == mineable.FullName)
+                .Take(8)
+                .Select(t => t.FullName)
+                .ToList();
+            if (nestedAndDerived.Count > 0)
+            {
+                md.AppendLine($"### Derived Types (sample of {nestedAndDerived.Count})");
+                md.AppendLine();
+                foreach (var n in nestedAndDerived) md.AppendLine($"- `{n}`");
+                md.AppendLine();
+            }
+        }
 
         // 3) Identitäts-Verifikation: RimWorld-Version + DLL-Hash
         var asmBytes = File.ReadAllBytes(AsmPath);

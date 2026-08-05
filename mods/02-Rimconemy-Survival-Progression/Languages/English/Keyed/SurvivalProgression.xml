@@ -5,13 +5,46 @@
   Prefix convention: Rimconemy.Survival.* (short, matches Rimconemy.Scavenger/Economy/Infected siblings).
 -->
 <LanguageData>
+  <!-- Phase-First Progress overlay (PHASE_PROGRESSION_CONTRACT §10). -->
+  <Rimconemy.PhaseProgress.Title>Phase Progress</Rimconemy.PhaseProgress.Title>
+  <Rimconemy.PhaseProgress.Empty.Title>No map loaded</Rimconemy.PhaseProgress.Empty.Title>
+  <Rimconemy.PhaseProgress.Empty.Detail>The Phase Progress overlay reads the current map. Start a colony to populate the milestone tracker.</Rimconemy.PhaseProgress.Empty.Detail>
+  <Rimconemy.PhaseProgress.NextMilestone>Next milestone →</Rimconemy.PhaseProgress.NextMilestone>
+  <Rimconemy.PhaseProgress.PhaseCompleteTitle>Phase complete</Rimconemy.PhaseProgress.PhaseCompleteTitle>
+  <Rimconemy.PhaseProgress.PhaseCompleteDetail>All current-phase milestones are met. New phases unlock as the colony expands.</Rimconemy.PhaseProgress.PhaseCompleteDetail>
+  <Rimconemy.PhaseProgress.Overall>Overall progress</Rimconemy.PhaseProgress.Overall>
+  <Rimconemy.PhaseProgress.TipShort>Hover for milestone summary</Rimconemy.PhaseProgress.TipShort>
+  <Rimconemy.PhaseProgress.Tip>Milestones met: {0}/{1} ({2}% across all phases). Source: RimconemyStartState + Vanilla research/building/bill state (PHASE_PROGRESSION_CONTRACT §10).</Rimconemy.PhaseProgress.Tip>
+  <Rimconemy.PhaseProgress.Phase.EarlySurvival>Phase 1 — Early Survival</Rimconemy.PhaseProgress.Phase.EarlySurvival>
+  <Rimconemy.PhaseProgress.Phase.Production>Phase 2 — Production</Rimconemy.PhaseProgress.Phase.Production>
+  <Rimconemy.PhaseProgress.Phase.Automation>Phase 3 — Automation</Rimconemy.PhaseProgress.Phase.Automation>
+  <Rimconemy.PhaseProgress.Phase.Expansion>Phase 4 — Expansion</Rimconemy.PhaseProgress.Phase.Expansion>
+  <Rimconemy.PhaseProgress.Phase.Trade>Phase 5 — Trade</Rimconemy.PhaseProgress.Phase.Trade>
+  <Rimconemy.PhaseProgress.Phase.Empire>Phase 6 — Empire</Rimconemy.PhaseProgress.Phase.Empire>
+  <Rimconemy.PhaseProgress.Milestone.single-survivor-start>Single survivor started</Rimconemy.PhaseProgress.Milestone.single-survivor-start>
+  <Rimconemy.PhaseProgress.Milestone.first-cooked-meal>First cooked meal produced</Rimconemy.PhaseProgress.Milestone.first-cooked-meal>
+  <Rimconemy.PhaseProgress.Milestone.campfire-built>Campfire built</Rimconemy.PhaseProgress.Milestone.campfire-built>
+  <Rimconemy.PhaseProgress.Milestone.three-buildings-built>Three buildings constructed</Rimconemy.PhaseProgress.Milestone.three-buildings-built>
+  <Rimconemy.PhaseProgress.Milestone.first-coal-produced>First coal produced</Rimconemy.PhaseProgress.Milestone.first-coal-produced>
+  <Rimconemy.PhaseProgress.Milestone.smelting-research-finished>Smelting research finished</Rimconemy.PhaseProgress.Milestone.smelting-research-finished>
+  <Rimconemy.PhaseProgress.Milestone.first-steel-smelted>Steel smelted</Rimconemy.PhaseProgress.Milestone.first-steel-smelted>
+  <Rimconemy.PhaseProgress.Milestone.smithy-built>Smithy built</Rimconemy.PhaseProgress.Milestone.smithy-built>
+  <Rimconemy.PhaseProgress.Milestone.machine-parts-built>Machine parts fabricated</Rimconemy.PhaseProgress.Milestone.machine-parts-built>
+  <Rimconemy.PhaseProgress.Milestone.stainless-smelted>Stainless steel smelted</Rimconemy.PhaseProgress.Milestone.stainless-smelted>
+  <Rimconemy.PhaseProgress.Milestone.stainless-tower-built>Stainless steel tower built</Rimconemy.PhaseProgress.Milestone.stainless-tower-built>
+  <Rimconemy.PhaseProgress.Milestone.power-grid-online>Power grid online</Rimconemy.PhaseProgress.Milestone.power-grid-online>
+  <Rimconemy.PhaseProgress.Milestone.outpost-constructed>Outpost constructed</Rimconemy.PhaseProgress.Milestone.outpost-constructed>
+  <Rimconemy.PhaseProgress.Milestone.credits-wallet-initialised>Credits wallet initialised</Rimconemy.PhaseProgress.Milestone.credits-wallet-initialised>
+  <Rimconemy.PhaseProgress.Milestone.empire-tribute-paid>Empire tribute paid</Rimconemy.PhaseProgress.Milestone.empire-tribute-paid>
+
+  <!-- Original base Survival keys preserved verbatim (16 base keys). -->
   <Rimconemy.Survival.Title>Survival</Rimconemy.Survival.Title>
   <Rimconemy.Survival.Profile.Standalone>Survival Standalone</Rimconemy.Survival.Profile.Standalone>
   <Rimconemy.Survival.Needs.Food>Food</Rimconemy.Survival.Needs.Food>
   <Rimconemy.Survival.Needs.Safety>Safety</Rimconemy.Survival.Needs.Safety>
   <Rimconemy.Survival.Needs.Social>Social</Rimconemy.Survival.Needs.Social>
 
-  <!-- Setting Needdef descriptions (Track 2-C / S-T1) -->
+  <!-- Setting Needdef descriptions (Track 2-C / S-T1). -->
   <Rimconemy.Survival.NeedDef.Rimconemy_Need_Food>Survival-Food (projection of vanilla Food)</Rimconemy.Survival.NeedDef.Rimconemy_Need_Food>
   <Rimconemy.Survival.NeedDef.Rimconemy_Need_Food.Description>Composite map of nutrition. 1.0 = well fed, 0.0 = starving. Sourced from vanilla Food.</Rimconemy.Survival.NeedDef.Rimconemy_Need_Food.Description>
   <Rimconemy.Survival.NeedDef.Rimconemy_Need_Safety>Survival-Safety (projection of vanilla Health + Rest)</Rimconemy.Survival.NeedDef.Rimconemy_Need_Safety>
@@ -24,7 +57,7 @@
   <Rimconemy.Survival.GameOver.Reason.LastPawn>All player-controlled colonists have died.</Rimconemy.Survival.GameOver.Reason.LastPawn>
   <Rimconemy.Survival.Scenario.SingleSurvivor>Rimconemy Single Survivor</Rimconemy.Survival.Scenario.SingleSurvivor>
 
-  <!-- SkillBudget Window (Phase A-1, H5 §3) -->
+  <!-- SkillBudget Window (Phase A-1, H5 §3). -->
   <Rimconemy.UI.SkillBudget.Window.Title>Skill Budget</Rimconemy.UI.SkillBudget.Window.Title>
   <Rimconemy.UI.SkillBudget.Budget.Label>Spent: {0} of {1} points</Rimconemy.UI.SkillBudget.Budget.Label>
   <Rimconemy.UI.SkillBudget.Zone.Buffer>Buffer zone — no trait modifier</Rimconemy.UI.SkillBudget.Zone.Buffer>

@@ -44,11 +44,13 @@
     <value><designationCategory>Structure</designationCategory></value>
   </Operation>
 
-  <!-- ── TurbineWaterPump ────────────────────────────────────── -->
-  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.scavengerinfrastructure">
-    <xpath>Defs/ThingDef[defName="Rimconemy_TurbineWaterPump"][not(designationCategory)]</xpath>
-    <value><designationCategory>Structure</designationCategory></value>
-  </Operation>
+  <!--
+    Audit-fix G3 follow-up (2026-08-05): the TurbineWaterPump def was removed
+    in PowerPlants.xml because it was a dead power-sinker with no production
+    source. Its designationCategory patch would now trigger an
+    "XML error: ... doesn't correspond" violation on every boot — exactly the
+    bug class AUDIT-B1 attempted to ban. Removed safely; surviving defs below.
+  -->
 
   <!-- ── ArrowTurret_Power ───────────────────────────────────── -->
   <Operation Class="PatchOperationAdd" MayRequire="rimconemy.scavengerinfrastructure">

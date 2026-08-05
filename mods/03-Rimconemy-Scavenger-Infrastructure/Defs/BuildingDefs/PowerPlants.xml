@@ -61,9 +61,17 @@
   </ThingDef>
 
   <ThingDef ParentName="BuildingBase">
+    <!-- Audit-fix G3 (2026-08-05): Rimconemy_WaterTurbineGenerator was a dead
+         end — only Rimconemy_DistilledWater was in fuelFilter, but no
+         RecipeDef produces DistilledWater. PHASE_PROGRESSION_CONTRACT.md
+         does not list DistilledWater in any phase, and Rimconemy_DistilledWater
+         was never in the canon matrix. Refactored the building to a generic
+         mid-tier generator that accepts the Phase-3 automation fuel set
+         (which is also what Phase-1 Campfire accepts), making it
+         thematically consistent with Rimconemy_WoodCoalGenerator. -->
     <defName>Rimconemy_WaterTurbineGenerator</defName>
-    <label>water turbine generator</label>
-    <description>Burns distilled water in a closed steam cycle to produce mid-tier power. No water supply -> offline.</description>
+    <label>water-pressurized generator</label>
+    <description>A repurposed high-output pressure generator. Burning wood, chemfuel, or coal drives a sealed steam cycle; produces more power than the wood-coal generator at the cost of higher fuel consumption. Phase-3 automation-tier.</description>
     <graphicData>
       <texPath>Things/Building/Production/LampSun</texPath>
       <graphicClass>Graphic_Single</graphicClass>
@@ -80,7 +88,9 @@
       <li Class="CompProperties_Refuelable">
         <fuelFilter>
           <thingDefs>
-            <li>Rimconemy_DistilledWater</li>
+            <li>WoodLog</li>
+            <li>Chemfuel</li>
+            <li>Rimconemy_Coal</li>
           </thingDefs>
         </fuelFilter>
         <fuelCapacity>60</fuelCapacity>
@@ -91,34 +101,6 @@
       <MaxHitPoints>220</MaxHitPoints>
       <WorkToBuild>2200</WorkToBuild>
       <MarketValue>850</MarketValue>
-      <Mass>8</Mass>
-    </statBases>
-    <thingCategories>
-      <li>Rimconemy_PowerProduction</li>
-    </thingCategories>
-  </ThingDef>
-
-  <ThingDef ParentName="BuildingBase">
-    <defName>Rimconemy_TurbineWaterPump</defName>
-    <label>turbine water pump</label>
-    <description>Pumps distilled water from flat rivers into storage. Required for fuel pre-processing.</description>
-    <graphicData>
-      <texPath>Things/Building/Production/LampSun</texPath>
-      <graphicClass>Graphic_Single</graphicClass>
-      <drawSize>1.5</drawSize>
-    </graphicData>
-    <tickerType>Normal</tickerType>
-    <minifiedDef>MinifiedThing</minifiedDef>
-    <comps>
-      <li Class="CompProperties_Power">
-        <compClass>CompPowerTrader</compClass>
-        <basePowerConsumption>200</basePowerConsumption>
-      </li>
-    </comps>
-    <statBases>
-      <MaxHitPoints>150</MaxHitPoints>
-      <WorkToBuild>900</WorkToBuild>
-      <MarketValue>400</MarketValue>
       <Mass>8</Mass>
     </statBases>
     <thingCategories>

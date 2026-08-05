@@ -55,6 +55,7 @@
   <Rimconemy.Hub.Tab.Infrastructure>⚡ Infrastruktur</Rimconemy.Hub.Tab.Infrastructure>
   <Rimconemy.Hub.Tab.Economy>💰 Wirtschaft</Rimconemy.Hub.Tab.Economy>
   <Rimconemy.Hub.Tab.Threat>☣️ Bedrohung</Rimconemy.Hub.Tab.Threat>
+  <Rimconemy.Hub.Tab.Phase>📈 Phasenfortschritt</Rimconemy.Hub.Tab.Phase>
 
   <!-- Infrastructure -->
   <Rimconemy.Infrastructure.Power>Stromnetz</Rimconemy.Infrastructure.Power>

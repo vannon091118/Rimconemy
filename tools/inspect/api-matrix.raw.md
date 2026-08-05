@@ -627,6 +627,46 @@ new CompGlower();
 | `System.Boolean` | `Glows` | ✓ |  |  |
 | `System.Boolean` | `HasGlowColorOverride` | ✓ |  |  |
 
+### PhaseProgress-ResearchProbe
+
+- `IsFinished`: 0 Treffer
+- `TotalCost`: 0 Treffer
+- `CostAmount`: 0 Treffer
+- `BaseCost`: 0 Treffer
+- `totalCost`: 0 Treffer
+
+## PhaseProgress-Reach — ResearchProjectDef direct
+
+BaseType: `Verse.Def` - Sealed: False - Abstract: False
+
+### Public/Protected Methods (filtered to 'Finished/Cost/Progress')
+
+| Return | Name | Params | Static | Notes |
+|---|---|---|---|---|
+| `System.Single` | `get_CostApparent` | `` |  |  |
+| `System.Single` | `get_ProgressReal` | `` |  |  |
+| `System.Single` | `get_ProgressApparent` | `` |  |  |
+| `System.String` | `get_ProgressApparentString` | `` |  |  |
+| `System.Single` | `get_ProgressPercent` | `` |  |  |
+| `System.Boolean` | `get_IsFinished` | `` |  |  |
+| `System.Single` | `get_Cost` | `` |  |  |
+| `System.Boolean` | `get_PrerequisitesCompleted` | `` |  |  |
+| `System.Int32` | `get_AnalyzedThingsCompleted` | `` |  |  |
+| `System.Single` | `CostFactor` | `TechLevel researcherTechLevel` |  |  |
+| `System.Boolean` | `AnyOtherVisiblePrerequisitesCompleted` | `ResearchProjectDef prerequisite` |  |  |
+
+### Public Properties (filtered)
+| Type | Name | Get | Set |
+|---|---|---|---|
+| `System.Single` | `CostApparent` | x |  |
+| `System.Boolean` | `IsFinished` | x |  |
+| `System.Single` | `Cost` | x |  |
+
+### Public Fields (filtered)
+| Type | Name |
+|---|---|
+| `System.Single` | `baseCost` |
+| `System.Single` | `knowledgeCost` |
 ## Spike-Pflicht-Heuristik-Sweeps
 
 ### TryStartCastOn / TryCastShot / Launch
@@ -695,10 +735,38 @@ new CompGlower();
   - `RimWorld.Bill_Production.Notify_IterationCompleted(Pawn billDoer, List`1 ingredients) -> Void`
   - `RimWorld.Bill_ProductionWithUft.Notify_IterationCompleted(Pawn billDoer, List`1 ingredients) -> Void`
 
+### Mineable.Yield-Hooks (API-MINING-02)
+
+- `DestroyMined`: 1 Treffer
+  - `RimWorld.Mineable.DestroyMined(Pawn pawn) -> Void`
+- `TrySpawnYield`: 0 Treffer
+- `TrySpawnYieldFromDamage`: 0 Treffer
+- `YieldNow`: 1 Treffer
+  - `RimWorld.Plant.YieldNow() -> Int32`
+- `SpawnYield`: 0 Treffer
+- `SpawnYieldAt`: 0 Treffer
+- `SpawnItems`: 0 Treffer
+- `YieldCount`: 0 Treffer
+
+## API-MINING-02 — Mineable-class direct enumeration
+
+BaseType: `Verse.Building` · Sealed: False · Abstract: False
+
+### Public/Protected Methods (filtered to Mineable.Yield-bearing)
+
+| Return | Name | Params | Static | Notes |
+|---|---|---|---|---|
+| `System.Void` | `Destroy` | `DestroyMode mode` |  | virtual |
+| `System.Void` | `DestroyMined` | `Pawn pawn` |  |  |
+| `System.Void` | `ExposeData` | `` |  | virtual |
+| `System.Void` | `Kill` | `Nullable`1 dinfo, Hediff exactCulprit` |  | virtual |
+| `System.Void` | `Notify_TookMiningDamage` | `Int32 amount, Pawn miner` |  |  |
+| `System.Void` | `PreApplyDamage` | `DamageInfo& dinfo, Boolean& absorbed` |  | virtual |
+
 ## Identität
 
 - Datei: `/home/vannon/GOG Games/RimWorld/game/RimWorldLinux_Data/Managed/Assembly-CSharp.dll`
 - Größe: 15.746.048 Bytes
 - SHA-256: `A0AF57EF9162B569D3B052818BA3A29FCCCC8610F355F2BB9B08FAD5882982D3`
-- Erfasst am: 2026-08-04T20:36:37Z
+- Erfasst am: 2026-08-04T23:35:18Z
 

@@ -38,6 +38,7 @@ namespace Rimconemy.Foundation.UI
         private MainTabWindow _infrastructureWindow;
         private MainTabWindow _economyWindow;
         private MainTabWindow _threatWindow;
+        private MainTabWindow _phaseProgressWindow;
 
         public override Vector2 InitialSize => new Vector2(720f, 620f);
 
@@ -88,6 +89,14 @@ namespace Rimconemy.Foundation.UI
                         if (t != null) _threatWindow = (MainTabWindow)System.Activator.CreateInstance(t);
                     }
                     return _threatWindow;
+                case 5:
+                    // Phase-Progress overlay (Mod-02 surface owner; reflection-routed, PHASE_PROGRESSION_CONTRACT §10).
+                    if (_phaseProgressWindow == null)
+                    {
+                        var t = FindType("Rimconemy.SurvivalProgression.Phase.PhaseProgressWindow");
+                        if (t != null) _phaseProgressWindow = (MainTabWindow)System.Activator.CreateInstance(t);
+                    }
+                    return _phaseProgressWindow;
                 default:
                     return null;
             }
@@ -101,11 +110,13 @@ namespace Rimconemy.Foundation.UI
             // ── Top Navigation Tabs ───────────────────────────────────
             var tabLabels = new List<string>
             {
-                T("Rimconemy.Hub.Tab.Colony"),
-                T("Rimconemy.Hub.Tab.Survival"),
-                T("Rimconemy.Hub.Tab.Infrastructure"),
-                T("Rimconemy.Hub.Tab.Economy"),
-                T("Rimconemy.Hub.Tab.Threat")
+                RimconemyUi.T("Rimconemy.Hub.Tab.Colony"),
+                RimconemyUi.T("Rimconemy.Hub.Tab.Survival"),
+                RimconemyUi.T("Rimconemy.Hub.Tab.Infrastructure"),
+                RimconemyUi.T("Rimconemy.Hub.Tab.Economy"),
+                RimconemyUi.T("Rimconemy.Hub.Tab.Threat"),
+                // Phase-Progress overlay (PHASE_PROGRESSION_CONTRACT §10), routed via GetSubWindow(5).
+                RimconemyUi.T("Rimconemy.Hub.Tab.Phase")
             };
 
             int newTab = RimconemyUi.DrawTabs(new Rect(inRect.x, y, inRect.width, 32f), tabLabels, _selectedHubTab);
@@ -135,7 +146,7 @@ namespace Rimconemy.Foundation.UI
                 }
                 else
                 {
-                    RimconemyUi.DrawEmptyState(contentRect, T("RimconemyFoundation.Status.NotInstalled"));
+                    RimconemyUi.DrawEmptyState(contentRect, RimconemyUi.T("RimconemyFoundation.Status.NotInstalled"));
                 }
             }
             RimconemyUi.ResetTextFontAndColor();
@@ -227,7 +238,7 @@ namespace Rimconemy.Foundation.UI
 
         private float DrawProfileSection(float x, float y, float width)
         {
-            if (DrawCollapsibleHeader(new Rect(x, y, width, 30f), T("RimconemyFoundation.Title"), _profileExpanded))
+            if (DrawCollapsibleHeader(new Rect(x, y, width, 30f), RimconemyUi.T("RimconemyFoundation.Title"), _profileExpanded))
                 _profileExpanded = !_profileExpanded;
             if (!_profileExpanded)
                 return y + 30f;
@@ -238,10 +249,10 @@ namespace Rimconemy.Foundation.UI
             var profile = ProfileDetector.CurrentProfile;
             string profileText = profile switch
             {
-                ProfileStatus.Standalone => T("RimconemyFoundation.Profile.Standalone"),
-                ProfileStatus.Partial => T("RimconemyFoundation.Profile.Partial"),
-                ProfileStatus.FullOverhaul => T("RimconemyFoundation.Profile.Full"),
-                _ => T("RimconemyFoundation.Profile.Unknown")
+                ProfileStatus.Standalone => RimconemyUi.T("RimconemyFoundation.Profile.Standalone"),
+                ProfileStatus.Partial => RimconemyUi.T("RimconemyFoundation.Profile.Partial"),
+                ProfileStatus.FullOverhaul => RimconemyUi.T("RimconemyFoundation.Profile.Full"),
+                _ => RimconemyUi.T("RimconemyFoundation.Profile.Unknown")
             };
 
             Color profileColor = profile switch
@@ -254,21 +265,21 @@ namespace Rimconemy.Foundation.UI
 
             GUI.color = profileColor;
             Widgets.Label(new Rect(x, y, width, 22f),
-                $"{T("RimconemyFoundation.Profile.Label")}: {profileText}");
+                $"{RimconemyUi.T("RimconemyFoundation.Profile.Label")}: {profileText}");
             GUI.color = Color.white;
             y += 22f;
 
             Widgets.Label(new Rect(x, y, width, 22f),
-                $"{T("RimconemyFoundation.Profile.Packages")}: {PackageRegistry.RegisteredCount} " +
-                $"{T("RimconemyFoundation.Profile.Loaded")}, " +
-                $"{ProfileDetector.MissingPackageIds.Count} {T("RimconemyFoundation.Profile.Missing")}");
+                $"{RimconemyUi.T("RimconemyFoundation.Profile.Packages")}: {PackageRegistry.RegisteredCount} " +
+                $"{RimconemyUi.T("RimconemyFoundation.Profile.Loaded")}, " +
+                $"{ProfileDetector.MissingPackageIds.Count} {RimconemyUi.T("RimconemyFoundation.Profile.Missing")}");
             y += 22f;
 
             if (profile != ProfileStatus.FullOverhaul)
             {
                 GUI.color = RimconemyTheme.Warn;
                 Widgets.Label(new Rect(x, y, width, 40f),
-                    T("RimconemyFoundation.Profile.IntegrationUnavailable"));
+                    RimconemyUi.T("RimconemyFoundation.Profile.IntegrationUnavailable"));
                 GUI.color = Color.white;
                 y += 42f;
             }
@@ -278,7 +289,7 @@ namespace Rimconemy.Foundation.UI
 
         private float DrawDlcSection(float x, float y, float width)
         {
-            if (DrawCollapsibleHeader(new Rect(x, y, width, 28f), T("RimconemyFoundation.Dlc.Title"), _dlcExpanded))
+            if (DrawCollapsibleHeader(new Rect(x, y, width, 28f), RimconemyUi.T("RimconemyFoundation.Dlc.Title"), _dlcExpanded))
                 _dlcExpanded = !_dlcExpanded;
             if (!_dlcExpanded)
                 return y + 28f;
@@ -290,7 +301,7 @@ namespace Rimconemy.Foundation.UI
             {
                 GUI.color = dlc.IsLoaded ? RimconemyTheme.Success : RimconemyTheme.Error;
                 Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
-                    $"{dlc.DlcName}: {(dlc.IsLoaded ? T("RimconemyFoundation.Status.Active") : T("RimconemyFoundation.Status.NotInstalled"))}");
+                    $"{dlc.DlcName}: {(dlc.IsLoaded ? RimconemyUi.T("RimconemyFoundation.Status.Active") : RimconemyUi.T("RimconemyFoundation.Status.NotInstalled"))}");
                 y += 20f;
             }
             GUI.color = Color.white;
@@ -300,7 +311,7 @@ namespace Rimconemy.Foundation.UI
 
         private float DrawPackageSection(float x, float y, float width)
         {
-            if (DrawCollapsibleHeader(new Rect(x, y, width, 28f), T("RimconemyFoundation.Packages.Title"), _packagesExpanded))
+            if (DrawCollapsibleHeader(new Rect(x, y, width, 28f), RimconemyUi.T("RimconemyFoundation.Packages.Title"), _packagesExpanded))
                 _packagesExpanded = !_packagesExpanded;
             if (!_packagesExpanded)
                 return y + 28f;
@@ -328,9 +339,9 @@ namespace Rimconemy.Foundation.UI
                     : "";
                 string status = loaded
                     ? (descriptor != null && descriptor.ProfileCompatibility == ProfileCompatibility.StandaloneAndFull
-                        ? T("RimconemyFoundation.Packages.ActiveFull")
-                        : T("RimconemyFoundation.Packages.ActiveStandalone"))
-                    : T("RimconemyFoundation.Status.NotInstalled");
+                        ? RimconemyUi.T("RimconemyFoundation.Packages.ActiveFull")
+                        : RimconemyUi.T("RimconemyFoundation.Packages.ActiveStandalone"))
+                    : RimconemyUi.T("RimconemyFoundation.Status.NotInstalled");
 
                 Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
                     $"{id}  {version}  [{status}]");
@@ -343,7 +354,7 @@ namespace Rimconemy.Foundation.UI
 
         private float DrawSaveSection(float x, float y, float width)
         {
-            if (DrawCollapsibleHeader(new Rect(x, y, width, 28f), T("RimconemyFoundation.Save.Title"), _saveExpanded))
+            if (DrawCollapsibleHeader(new Rect(x, y, width, 28f), RimconemyUi.T("RimconemyFoundation.Save.Title"), _saveExpanded))
                 _saveExpanded = !_saveExpanded;
             if (!_saveExpanded)
                 return y + 28f;
@@ -355,22 +366,22 @@ namespace Rimconemy.Foundation.UI
             if (saveData != null)
             {
                 Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
-                    $"{T("RimconemyFoundation.Save.Schema")}: v{saveData.SchemaVersion} " +
-                    $"({T("RimconemyFoundation.Save.Current")}: v{FoundationSaveData.CurrentSchemaVersion})");
+                    $"{RimconemyUi.T("RimconemyFoundation.Save.Schema")}: v{saveData.SchemaVersion} " +
+                    $"({RimconemyUi.T("RimconemyFoundation.Save.Current")}: v{FoundationSaveData.CurrentSchemaVersion})");
                 y += 20f;
 
                 if (saveData.WasMigrated)
                 {
                     GUI.color = RimconemyTheme.Warn;
                     Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 40f),
-                        $"{T("RimconemyFoundation.Save.MigrationApplied")}: {saveData.MigrationDetail}");
+                        $"{RimconemyUi.T("RimconemyFoundation.Save.MigrationApplied")}: {saveData.MigrationDetail}");
                     GUI.color = Color.white;
                     y += 42f;
                 }
                 else
                 {
                     Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
-                        T("RimconemyFoundation.Save.NoMigration"));
+                        RimconemyUi.T("RimconemyFoundation.Save.NoMigration"));
                     y += 20f;
                 }
             }
@@ -378,7 +389,7 @@ namespace Rimconemy.Foundation.UI
             {
                 GUI.color = RimconemyTheme.Muted;
                 Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
-                    T("RimconemyFoundation.Save.NotLoaded"));
+                    RimconemyUi.T("RimconemyFoundation.Save.NotLoaded"));
                 GUI.color = Color.white;
                 y += 20f;
             }
@@ -390,7 +401,7 @@ namespace Rimconemy.Foundation.UI
         // through FoundationDefInventory; no reflection.
         private float DrawInventorySection(float x, float y, float width)
         {
-            if (DrawCollapsibleHeader(new Rect(x, y, width, 28f), T("RimconemyFoundation.Inventory.Title"), _inventoryExpanded))
+            if (DrawCollapsibleHeader(new Rect(x, y, width, 28f), RimconemyUi.T("RimconemyFoundation.Inventory.Title"), _inventoryExpanded))
                 _inventoryExpanded = !_inventoryExpanded;
             if (!_inventoryExpanded)
                 return y + 28f;
@@ -410,22 +421,22 @@ namespace Rimconemy.Foundation.UI
             {
                 GUI.color = RimconemyTheme.Muted;
                 Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
-                    T("RimconemyFoundation.Inventory.NotLoaded"));
+                    RimconemyUi.T("RimconemyFoundation.Inventory.NotLoaded"));
                 GUI.color = Color.white;
                 y += 22f;
                 return y;
             }
 
             Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
-                $"{totalOwners} {T("RimconemyFoundation.Inventory.TotalOwners")}, " +
-                $"{totalDefs} {T("RimconemyFoundation.Inventory.TotalDefs")}");
+                $"{totalOwners} {RimconemyUi.T("RimconemyFoundation.Inventory.TotalOwners")}, " +
+                $"{totalDefs} {RimconemyUi.T("RimconemyFoundation.Inventory.TotalDefs")}");
             y += 22f;
 
             if (totalOwners == 0)
             {
                 GUI.color = RimconemyTheme.Muted;
                 Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
-                    T("RimconemyFoundation.Inventory.Empty"));
+                    RimconemyUi.T("RimconemyFoundation.Inventory.Empty"));
                 GUI.color = Color.white;
                 y += 22f;
                 return y;
@@ -476,7 +487,7 @@ namespace Rimconemy.Foundation.UI
         // out of scope here on purpose.
         private float DrawVanillaSection(float x, float y, float width)
         {
-            if (DrawCollapsibleHeader(new Rect(x, y, width, 28f), T("RimconemyFoundation.VanillaInventory.Title"), _vanillaExpanded))
+            if (DrawCollapsibleHeader(new Rect(x, y, width, 28f), RimconemyUi.T("RimconemyFoundation.VanillaInventory.Title"), _vanillaExpanded))
                 _vanillaExpanded = !_vanillaExpanded;
             if (!_vanillaExpanded)
                 return y + 28f;
@@ -491,7 +502,7 @@ namespace Rimconemy.Foundation.UI
             {
                 GUI.color = RimconemyTheme.Muted;
                 Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
-                    T("RimconemyFoundation.VanillaInventory.NotLoaded"));
+                    RimconemyUi.T("RimconemyFoundation.VanillaInventory.NotLoaded"));
                 GUI.color = Color.white;
                 y += 22f;
                 return y;
@@ -502,7 +513,7 @@ namespace Rimconemy.Foundation.UI
             int nonRimconemyOwners = FoundationVanillaInventory.TotalTrackedDlcIds;
 
             Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 38f),
-                string.Format(T("RimconemyFoundation.VanillaInventory.Summary"),
+                string.Format(RimconemyUi.T("RimconemyFoundation.VanillaInventory.Summary"),
                     totalThings, totalStuff, nonRimconemyOwners));
             y += 40f;
 
@@ -510,7 +521,7 @@ namespace Rimconemy.Foundation.UI
             {
                 GUI.color = RimconemyTheme.Muted;
                 Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
-                    T("RimconemyFoundation.VanillaInventory.Empty"));
+                    RimconemyUi.T("RimconemyFoundation.VanillaInventory.Empty"));
                 GUI.color = Color.white;
                 y += 22f;
                 return y;
@@ -518,7 +529,7 @@ namespace Rimconemy.Foundation.UI
 
             GUI.color = RimconemyTheme.Warn;
             Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 36f),
-                T("RimconemyFoundation.VanillaInventory.MissingPower"));
+                RimconemyUi.T("RimconemyFoundation.VanillaInventory.MissingPower"));
             GUI.color = Color.white;
             y += 38f;
 
@@ -527,7 +538,7 @@ namespace Rimconemy.Foundation.UI
 
         private float DrawEventSection(float x, float y, float width)
         {
-            string eventTitle = $"{T("RimconemyFoundation.Events.Title")} ({EventLog.StoredCount} {T("RimconemyFoundation.Events.Entries")})";
+            string eventTitle = $"{RimconemyUi.T("RimconemyFoundation.Events.Title")} ({EventLog.StoredCount} {RimconemyUi.T("RimconemyFoundation.Events.Entries")})";
             if (DrawCollapsibleHeader(new Rect(x, y, width, 28f), eventTitle, _eventsExpanded))
                 _eventsExpanded = !_eventsExpanded;
             if (!_eventsExpanded)
@@ -539,7 +550,7 @@ namespace Rimconemy.Foundation.UI
             if (EventLog.StoredCount == 0)
             {
                 Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
-                    T("RimconemyFoundation.Events.Empty"));
+                    RimconemyUi.T("RimconemyFoundation.Events.Empty"));
                 y += 20f;
             }
             else
@@ -572,7 +583,7 @@ namespace Rimconemy.Foundation.UI
                 {
                     GUI.color = RimconemyTheme.Muted;
                     Widgets.Label(new Rect(x + IndentSize, y, width - IndentSize, 20f),
-                        $"{T("RimconemyFoundation.Events.More")}: {EventLog.StoredCount - maxShown}");
+                        $"{RimconemyUi.T("RimconemyFoundation.Events.More")}: {EventLog.StoredCount - maxShown}");
                     GUI.color = Color.white;
                     y += 22f;
                 }

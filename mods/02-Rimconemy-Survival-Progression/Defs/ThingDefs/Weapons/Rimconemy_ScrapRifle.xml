@@ -16,7 +16,11 @@
     <label>Schrottkarabiner</label>
     <description>Eine zusammengeschwei\u00dfte Notwaffe. Funktioniert als Standard-Vanilla-Bolt-Action-Gewehr, aber Zuverl\u00e4ssigkeit und Genauigkeit sind geringer als bei einer industriell gefertigten Waffe.</description>
     <thingClass>ThingWithComps</thingClass>
-    <category>Weapon</category>
+    <!-- Audit-fix G1 (2026-08-05): RimWorld 1.6 ThingCategory has no "Weapon"
+         enum value. Vanilla ParentName "BaseWeapon" already inherits category=Item.
+         The redundant explicit field caused "Invalid value 'Weapon' for Verse.ThingCategory"
+         at Def-load, silently dropping the rifle from DefDatabase. Removing
+         the field lets BaseWeapon inheritance apply, restoring the rifle. -->
     <techLevel>Neolithic</techLevel>
     <generateCommonality>0.0</generateCommonality>
 

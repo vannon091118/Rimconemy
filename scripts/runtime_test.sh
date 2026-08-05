@@ -40,6 +40,8 @@ RUN_ID="$(date +%Y%m%d-%H%M%S)"
 REPORT_PATH=""
 FAILURES=0
 WARNINGS=0
+FAIL_DETAILS=()
+WARN_DETAILS=()
 
 usage() {
   cat <<'EOF'
@@ -64,11 +66,13 @@ EOF
 
 fail() {
   echo "FAIL: $*" >&2
+  FAIL_DETAILS+=("$*")
   FAILURES=$((FAILURES + 1))
 }
 
 warn() {
   echo "WARN: $*" >&2
+  WARN_DETAILS+=("$*")
   WARNINGS=$((WARNINGS + 1))
 }
 
@@ -274,10 +278,14 @@ runtime_gates() {
   fi
 
   local forbidden_pattern='CA9011A3|Cannot create an instance of RimWorld\.Need'
-  forbidden_pattern+='|Error while determining if .* should have Need .*abstract class'
-  forbidden_pattern+='|Config error in Rimconemy_SandboxScenario|no playerFaction|no surfaceLayer|scenario has null part|ScenPart_StartInSandbox has null def'
-  forbidden_pattern+='|XML error: .*PatchOperationTest|doesn.t correspond to any field in type PatchOperationTest|<case Class='
-  forbidden_pattern+='|Exception.*marketSnapshot|marketSnapshot.*(Scribe|IExposable|LookDeep)'
+    forbidden_pattern+='|Error while determining if .* should have Need .*abstract class'
+    forbidden_pattern+='|Config error in Rimconemy_SandboxScenario|no playerFaction|no surfaceLayer|scenario has null part|ScenPart_StartInSandbox has null def'
+    forbidden_pattern+='|XML error: .*PatchOperationTest|doesn.t correspond to any field in type PatchOperationTest|<case Class='
+    forbidden_pattern+='|is not a valid value for Verse\.ThingCategory'
+    forbidden_pattern+='|Exception loading def from file '
+    forbidden_pattern+='|XML error: .*thingDef.*doesn.t correspond'
+    forbidden_pattern+='|XML error: .*count.*doesn.t correspond'
+    forbidden_pattern+='|Exception.*marketSnapshot|marketSnapshot.*(Scribe|IExposable|LookDeep)'
   if has_match "$forbidden_pattern" "$LOG_PATH"; then
     fail "forbidden runtime errors found in Player.log"
     log_matches "$forbidden_pattern" "$LOG_PATH"
@@ -289,7 +297,6 @@ runtime_gates() {
   if has_match '\[Rimconemy\.Foundation\] Bootstrap complete\.' "$LOG_PATH"; then pass "Foundation bootstrap complete"; else fail "Foundation bootstrap marker missing"; fi
   if has_match 'Profile detected: FullOverhaul' "$LOG_PATH"; then pass "FullOverhaul profile"; else fail "FullOverhaul profile missing"; fi
   if has_match 'Registry: 5 package\(s\) registered' "$LOG_PATH"; then pass "five packages registered"; else fail "registry did not report five packages"; fi
-
   local required_summaries=(
       'CapabilityGate tests: [0-9]+ passed, 0 failed'
       'ColonialReader tests: [0-9]+ passed, 0 failed'
@@ -299,6 +306,14 @@ runtime_gates() {
       'Profile detector dedup tests: [0-9]+ passed, 0 failed'
       'BioRemap tests: [0-9]+ passed, 0 failed'
       'NeedMappingService tests: [0-9]+ passed, 0 failed'
+      'DomainXpState tests: [0-9]+ passed, 0 failed'
+      'UnlockService tests: [0-9]+ passed, 0 failed'
+      'BuildingCompletionBridge tests: [0-9]+ passed, 0 failed'
+      'SchemaBump tests: [0-9]+ passed, 0 failed'
+      'ThreatSnapshotBridge regression tests: [0-9]+ passed, 0 failed'
+      'StartEnemies regression tests: [0-9]+ passed, 0 failed'
+      'Canonical layer tests: [0-9]+ passed, 0 failed'
+      'Honest-Banner-Audit tests: [0-9]+/[0-9]+ passed, 0 failed'
       'CreditsLedger regression tests: [0-9]+ passed, 0 failed'
       'Market persistence tests: [0-9]+ passed, 0 failed'
       'StorySelector tests: [0-9]+ passed, 0 failed'
@@ -317,6 +332,7 @@ runtime_gates() {
       'ArrowTurretBlock tests: [0-9]+ passed, 0 failed'
       'CoalChain regression tests: [0-9]+ passed, 0 failed'
       'StainlessSteelChain regression tests: [0-9]+ passed, 0 failed'
+      'PhaseProgress regression tests: [0-9]+ passed, 0 failed'
     )
     local summary
     for summary in "${required_summaries[@]}"; do
@@ -394,6 +410,7 @@ runtime_gates() {
   verify_bootstrap_log_gate
 }
 
+RESULT="${RESULT:-PASS}"
 finish_report() {
   [[ -n "$REPORT_PATH" ]] || return
   {

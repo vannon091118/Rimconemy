@@ -240,3 +240,10 @@ Owner jeder Änderung: Foundation + User-Approval. Keine `PO`-Änderung ohne Aud
 | Honest-Banner-Audit (Test) | `mods/01-Rimconemy-Foundation/Tests/FoundationHonestBannerAudit.cs` | 217 Z. |
 
 **Was diese Seite NICHT macht:** sie codifiziert *was Rimconemy meint*, nicht *was Rimconemy tut*. Der nächste Sprint muss §8 in Code umsetzen — die Drift-Liste ist der handfeste Migrations-Fahrplan.
+
+---
+
+## §12 — Operating Pipeline (Cross-Link)
+
+- **Runtime-Gate / Player.log-Pinning:** siehe [`scripts/README.md`](../scripts/README.md) — Player.log-Rotation, Pinning-Gate und `verify_bootstrap_log.sh`-Pinning (LIVE-only). SSOT für jede `runtime_test.sh`-Wertung.
+- **Stale-Log-Blindspot:** jeder `runtime_test.sh`-Run misst die LIVE-Marke (`Player.log`), nie `Player-prev.log`. `verify_bootstrap_log.sh` ist hart auf den LIVE-Log gepinnt; jede Annahme über „vorigen Run" wäre Drift → Failure.

@@ -16,6 +16,8 @@ Dieses Dokument sammelt Eingangs- und Nachweispunkte für die P6-Multi-Task-Stre
 | 13 | Mechadroids (Grundsystem) | 05 | `Source/Mechadroids/{MechadroidUnit,MechadroidJobRegistry}.cs` | Mechadroid RNG spawnt + Job |
 | 14 | Outposts & Proxy-Graph (3-Tages-Countdown) | 04 | `Source/Outposts/{OutpostService,ProxyGraph}.cs` | Outpost-Gründung + 60.000·3 Tick-Countdown |
 | 15 | Weltkarten-Endgame (World-Map-Overlay + World-Raids) | 05 | `Source/World/{WorldRaidCoordinator,WorldMapOverlay}.cs` | World-Raid-Event auf Tile-Coordinate |
+| 16 | **Predicate Truthfulness Hardening** (Phase Contract v2) | 02 | `Source/Phase/PhaseProgressResolver.cs` + `Phase/PhaseContractGate.cs` | PhaseProgress-Overlay zeigt echte Phase-Progression, keine Trader-False-Positives. Truthfulness Doctrine in §10 |
+
 
 ## Erforderliche User-Live-Tests je Task
 
@@ -36,6 +38,15 @@ Vorgehen pro Task:
 Wir haben 20 Berichte (`docs/superpowers/...` Vorlagen siehe frühere Archiv-Tar).
 Pro Task wird EIN Bericht autopopulated mit dem kleinen Setup-Stand.
 Die SURVIVED-Markierung erfolgt jeweils nach deinem Live-Run.
+
+## Truthfulness-Hardening-Lockstep (2026-08-05)
+
+Predicate-SSOT-Update in `docs/PHASE_PROGRESSION_CONTRACT.md §10` + `PhaseProgressResolver.cs`:
+- `first-cooked-meal` — Counter × Building-OR-Campfire-Stove-Electric (kein Trader-False-Positive; Campfire als Phase-1-Kochstation muss gezählt werden)
+- `first-steel-smelted` — Research × Building × Counter Triple-Conjunction (engstmögliche Wahrhaftigkeit ohne RecipeWorker-Postfix)
+- `machine-parts-built` — Counter × Building-OR-Smithy-Table-Machining (kein Trader-Dump-Trigger)
+- Build-Fix: `ResearchProjectDef.CostAmount` (1.6-fremd) → `bool IsFinished` (kanonisch)
+- `runtime_test.sh` verifiziert die SSOT-Indices weiterhin über `PhaseProgressResolverTests.RunAll()`.
 
 ## Owner-Notizen
 
