@@ -323,15 +323,24 @@ Pakete 03–05 können das gleiche Pattern bei Bedarf übernehmen.
             (Economy 04: late-bound reflection only, no DLL-Ref)
 ```
 
-**Kein inter-Paket-Cycle.** Mod 02 hat Ref auf 01. Mod 05 hat Ref auf 01+03. Mod 03 hat Ref auf 01.
+**Kein inter-Paket-Cycle (Code UND About.xml).** Mod 02 hat Ref auf 01. Mod 05 hat Ref auf 01+03. Mod 03 hat Ref auf 01.
 Mod 04 hat Ref auf 01 alleine.
+
+**About.xml-Disziplin (DECISION-D-001 2026-08-05):** Pakete 02–05 listen in `<loadAfter>` ausschliesslich
+`rimconemy.foundation`. Cross-Package-Crossings (02↔05 GameOver-Bridge, 05↔04 Wallet-Bridge, 05↔03
+Storage-Bridge) gehen zur Laufzeit durch `Foundation.CrossPackage.CrossPackageState` mit
+Capability-Gate — sie brauchen KEINE Reihenfolge-Garantie und erzeugen sonst einen
+About.xml-Edge-Cycle (passiert wenn man naiv “load_after=peer” setzt: 02 ↔ 05 zyklisch).
+Der Code ist heute schon cycle-free (kein direkter DLL-Ref Peers untereinander); DECISION-D-001
+aligniert About.xml mit dieser Realität.
 
 **Audit-Bündel B / F-01 (2026-08-04):** Mod 05 → Mod 04 Wallet-balance lookup war ein
 direkter Compile-Ref auf `Rimconemy.EconomyTerritory.Wallet`. INTERFACE_CONTRACT §0
 verbietet non-adjacent Compile-Refs; der Ref wurde entfernt und durch
 `Rimconemy.Foundation.CrossPackage.CrossPackageState.TryReadWalletBalance` ersetzt,
-Capability-gate `rimconemy.economyterritory.wallet`. About.xml `loadAfter="rimconemy.economyterritory"`
-bleibt unverändert (Runtime-Lade-Reihenfolge).
+Capability-gate `rimconemy.economyterritory.wallet`. **DECISION-D-001 (2026-08-05):**
+Der frühere `<loadAfter>rimconemy.economyterritory</loadAfter>` in 05/About.xml wurde
+gleichermassen entfernt (Bridge lesen den State zur Tick-Zeit, nicht zum Mod-Load-Zeit).
 
 ### 9.4 Capability-Audit (Foundation-Mirror für Cross-Package-Reads)
 

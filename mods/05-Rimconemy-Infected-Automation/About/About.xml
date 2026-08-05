@@ -13,11 +13,17 @@
       <downloadUrl>https://steamcommunity.com/workshop/filedetails/?id=2009463077</downloadUrl>
     </li>
   </modDependencies>
+  <!--
+    DECISION-D-001 (cycle-break 2026-08-05): All cross-package reads use
+    Foundation.CrossPackageState (late-bound reflection bridge, audit-bundle B /
+    F-01). Only Foundation needs to be loadAfter-listed because every other mod
+    is reached at runtime through the Bridge, not via direct DLL ref.
+    Listing rimconemy.survivalprogression here created a 02↔05 cycle in the
+    About.xml graph; the runtime reads (GameOver, StoryReason, WalletBalance)
+    flow through Foundation regardless of load-order across siblings.
+  -->
   <loadAfter>
     <li>rimconemy.foundation</li>
-    <li>rimconemy.survivalprogression</li>
-    <li>rimconemy.scavengerinfrastructure</li>
-    <li>rimconemy.economyterritory</li>
   </loadAfter>
   <description>Rimconemy Infected &amp; Automation ist allein eine spielbare Infizierten-Survival- und Automationskampagne mit eigenem Storyteller, Bedrohungsdruck, Mechadroids, Silber-Upgrades und sichtbaren Raidentscheidungen.</description>
 </ModMetaData>
