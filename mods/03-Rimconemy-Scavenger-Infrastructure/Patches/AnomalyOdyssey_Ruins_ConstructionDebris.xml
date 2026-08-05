@@ -12,7 +12,7 @@
 <Patch>
 
   <Operation Class="PatchOperationFindMod">
-    <mods><li>Anomaly</li></mods>
+    <mods><li>Ludeon.RimWorld.Anomaly</li></mods>
     <match Class="PatchOperationSequence">
       <success>Normal</success>
       <operations>
@@ -34,7 +34,7 @@
   </Operation>
 
   <Operation Class="PatchOperationFindMod">
-    <mods><li>Odyssey</li></mods>
+    <mods><li>Ludeon.RimWorld.Odyssey</li></mods>
     <match Class="PatchOperationSequence">
       <success>Normal</success>
       <operations>

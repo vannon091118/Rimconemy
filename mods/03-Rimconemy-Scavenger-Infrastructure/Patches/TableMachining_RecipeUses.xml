@@ -13,10 +13,8 @@
 -->
 <Patch>
 
-  <Operation Class="PatchOperationFindMod">
-    <mods><li>Core</li></mods>
-    <match Class="PatchOperationSequence">
-      <success>Normal</success>
+  <Operation Class="PatchOperationSequence">
+      <success>Always</success>
       <operations>
 
         <li Class="PatchOperationTest">
@@ -39,8 +37,7 @@
           </value>
         </li>
 
-      </operations>
-    </match>
+    </operations>
   </Operation>
 
 </Patch>

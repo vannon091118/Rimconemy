@@ -16,15 +16,13 @@
 -->
 <Patch>
 
-  <Operation Class="PatchOperationFindMod">
-    <mods><li>Core</li></mods>
-    <match Class="PatchOperationSequence">
-      <success>Normal</success>
-      <operations>
+  <Operation Class="PatchOperationSequence">
+    <success>Always</success>
+    <operations>
 
-        <!-- CompactMineableSteel: src Def may exist under different file paths
-             across RimWorld releases. The locate via defName is robust. -->
-        <li Class="PatchOperationAdd">
+      <!-- CompactMineableSteel: src Def may exist under different file paths
+           across RimWorld releases. The locate via defName is robust. -->
+      <li Class="PatchOperationAdd">
           <xpath>/Defs/ThingDef[defName="CompactMineableSteel"]
                 [not(modExtensions/li[@Class="Rimconemy.SurvivalProgression.Mining.MiningGateExt"])]
                 /modExtensions</xpath>
@@ -51,8 +49,7 @@
           </value>
         </li>
 
-      </operations>
-    </match>
+    </operations>
   </Operation>
 
 </Patch>
