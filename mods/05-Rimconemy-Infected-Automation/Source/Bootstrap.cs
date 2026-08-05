@@ -88,6 +88,13 @@ namespace Rimconemy.InfectedAutomation
             // tick integration) and Phase C (RandomInoculationService).
             Tests.PopulationProfileMultipliersRegressionTests.RunAll();
             Tests.PopulationLedgerRegressionTests.RunAll();
+            // Phase C (2026-08-05) — Tier-Inokulation service + pack behavior.
+            // The deterministic selector, branded KindDef
+            // ("Rimconemy_InfectedWildlife"), and AnimalHalfCap accounting
+            // must all pass before the StoryDirector Day-Tick fires its
+            // first wild-animal conversion.
+            Tests.InoculationRegressionTests.RunAll();
+            Tests.InfectedPackBehaviorRegressionTests.RunAll();
             Log.Message("[Rimconemy.InfectedAutomation] Building threat adapter available; Mechadroid job contracts are gated for Milestone B; no incident or raid is spawned.");
 
             // Phase-5 (2026-08-05) — IncidentClassifier summary log. Validates the

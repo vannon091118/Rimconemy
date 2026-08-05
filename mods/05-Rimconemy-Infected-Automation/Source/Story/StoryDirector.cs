@@ -195,6 +195,18 @@ namespace Rimconemy.InfectedAutomation.Story
             // Don't evaluate if threat is below profile minimum
             var snapshot = BuildLiveSnapshot(currentTick, State);
             EvaluateWithSnapshot(snapshot, currentTick);
+
+            // Phase C — Tier-Inokulation Day-Tick Hook (2026-08-05).
+            // Independent of StorySelector: animal-inoculation runs once
+            // per day if Profile allows + cooldown gate is open. Profile
+            // – 'Refuge' disables it; 'Survival' once per week; 'Collapse'
+            // three per week. Failure modes log and remain no-op.
+            Map playerHomeForInoculation = ResolveCanonicalPlayerMap();
+            if (playerHomeForInoculation != null)
+            {
+                Inoculation.RandomInoculationService.TryInfectRandom(
+                    playerHomeForInoculation, currentTick);
+            }
         }
 
         /// <summary>
