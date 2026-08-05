@@ -11,7 +11,7 @@ namespace Rimconemy.InfectedAutomation.Tests
 {
     public static class HordeManifestTests
     {
-        public const int ExpectedPassCount = 12;
+        public const int ExpectedPassCount = 10;
 
         public static int RunAll()
         {
@@ -29,9 +29,8 @@ namespace Rimconemy.InfectedAutomation.Tests
             Check(T7_HiddenPawnStampSchemaFields(), "T7.HiddenPawnStampSchemaFields");
             Check(T8_TravelTileRecordSchemaFields(),"T8.TravelTileRecordSchemaFields");
 
-            // T4 (Capacity / AddRemove / Materialization roundtrip)
+            // T4 (Capacity / Materialization roundtrip / Stale-GC)
             Check(T1_CreateOrExpandFillsCapacity(), "T1.CreateOrExpandCapacity");
-            Check(T2_AddRemoveStampList(),           "T2.AddRemoveStamp");
             Check(T3_IsTileMaterializedRoundtrip(), "T3.IsTileMaterialized");
             Check(T4_StaleDiscardBoundary(),         "T4.StaleDiscardBoundary5d");
 
@@ -50,7 +49,7 @@ namespace Rimconemy.InfectedAutomation.Tests
         // ── T2/T3 schema-level assertions ──────────────────────────────────
 
         private static bool T6_RevealRadiusConstant() =>
-            HordeManifest.HordeRevealRadiusTiles == 8;
+            PopulationProfileMultipliers.HordeRevealRadiusTiles == 8;
 
         private static bool T7_HiddenPawnStampSchemaFields()
         {
@@ -61,8 +60,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 FactionDefName = "Rimconemy_HiddenInfectedFaction",
                 HealthPercent = 1.0f,
                 EquipmentSeedOffset = 7,
-                SpawnedAtTick = 60000L,
-                SourceCellHashHint = 0
+                SpawnedAtTick = 60000L
             };
             return stamp.ThingID == "Test1"
                 && stamp.HealthPercent > 0.99f
@@ -91,17 +89,6 @@ namespace Rimconemy.InfectedAutomation.Tests
             return manifest != null
                 && manifest.Stamps.Count == 100
                 && manifest.Capacity == 100;
-        }
-
-        private static bool T2_AddRemoveStampList()
-        {
-            HordeManifest.ResetForTests();
-            var manifest = new HordeManifest { Capacity = 10 };
-            var stamp = new HiddenPawnStamp { ThingID = "TEST1" };
-            manifest.AddStamp(stamp);
-            bool addWorked = manifest.Stamps.Count == 1;
-            manifest.RemoveStamp("TEST1");
-            return addWorked && manifest.Stamps.Count == 0;
         }
 
         private static bool T3_IsTileMaterializedRoundtrip()

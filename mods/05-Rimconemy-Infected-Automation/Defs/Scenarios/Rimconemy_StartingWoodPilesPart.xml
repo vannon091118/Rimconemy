@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Infected & Automation (Package 05)
+  Phase 1.5 — ScenPartDef for ScenPart_StartingWoodPiles.
+  Vanilla anchor: ScenPartDef -> RimWorld.ScenPart (vanilla-api-matrix §3.1).
+  Stable defName: Rimconemy_StartingWoodPilesPart
+-->
+<Defs>
+
+  <ScenPartDef>
+    <defName>Rimconemy_StartingWoodPilesPart</defName>
+    <label>Rimconemy starting wood piles</label>
+    <category>Fixed</category>
+    <scenPartClass>Rimconemy.InfectedAutomation.Scenarios.ScenPart_StartingWoodPiles</scenPartClass>
+    <summaryPriority>850</summaryPriority>
+  </ScenPartDef>
+
+</Defs>

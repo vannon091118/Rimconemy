@@ -19,7 +19,6 @@ namespace Rimconemy.InfectedAutomation.Horde
         public float HealthPercent;
         public int EquipmentSeedOffset;
         public long SpawnedAtTick;
-        public int SourceCellHashHint;
 
         public void ExposeData()
         {
@@ -29,7 +28,6 @@ namespace Rimconemy.InfectedAutomation.Horde
             Scribe_Values.Look(ref HealthPercent, "healthPercent", 1.0f);
             Scribe_Values.Look(ref EquipmentSeedOffset, "equipmentSeedOffset", 0);
             Scribe_Values.Look(ref SpawnedAtTick, "spawnedAtTick", 0L);
-            Scribe_Values.Look(ref SourceCellHashHint, "sourceCellHashHint", 0);
         }
     }
 }

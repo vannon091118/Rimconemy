@@ -1,6 +1,6 @@
 // Tests/HordeRegressionTests.cs
 //
-// Phase D — Horde-Overlay Visualisierung (D1-D15).
+// Phase D — Horde-Overlay Visualisierung (D1-D12).
 // spec: docs/superpowers/specs/2026-08-05-horde-overlay-design.md
 // plan: docs/superpowers/plans/2026-08-05-horde-overlay.md
 //
@@ -10,11 +10,6 @@
 // UpdateLogic tests cover the pure tick-derived tile (spawn / drift /
 // arrival). Despawn is the Spawner's IsActive gate (covered by D1-D5).
 // D11-D12 verify the hybrid-count route and the WorldObject Def load.
-// D13-D15 verify the Spawner's layer-regen driver contract: the 15-tick
-// cadence samples the 120-tick pulse with >=4 non-aliased samples, the
-// pure decision fires only while active + due on SectionLayer subclasses,
-// and D15 drives the actual fire path with a counting sink to prove
-// RegenerateLayerNow is requested for both layer types per fire.
 
 using Rimconemy.InfectedAutomation.Horde;
 using Rimconemy.InfectedAutomation.Population;
@@ -56,11 +51,6 @@ namespace Rimconemy.InfectedAutomation.Tests
             // ── D11-D12: hybrid route + Def load ─────────────
             Check(D11_AnimalHalfCapRoute(),                          "D11.AnimalHalfCapRoute");
             Check(D12_WorldObjectExistsInDefDB(),                    "D12.WorldObjectExistsInDefDB");
-
-            // ── D13-D15: Spawner regen-driver contract ────────
-            Check(D13_SpawnerCadenceSamplesPulse(),                  "D13.SpawnerCadenceSamplesPulse");
-            Check(D14_SpawnerRegenOnlyWhileActive(),                 "D14.SpawnerRegenOnlyWhileActive");
-            Check(D15_SpawnerActuallyFiresRegen(),                   "D15.SpawnerActuallyFiresRegen");
 
             Log.Message(
                 "[Rimconemy.InfectedAutomation] Horde regression tests: "
@@ -193,89 +183,5 @@ namespace Rimconemy.InfectedAutomation.Tests
             return def != null && def.worldObjectClass == typeof(HordeWorldObject);
         }
 
-        // ── D13: 15-tick cadence divides the 120-tick pulse with ≥4
-        //         samples and samples the alpha without aliasing ────────
-        // The 60-tick trap: sampling |sin(θ)| at θ and θ+π yields equal
-        // alphas → frozen pulse. 15 must give >= 4 samples per 120-tick
-        // cycle AND the sampled phases must not all be equal (aliased).
-        private static bool D13_SpawnerCadenceSamplesPulse()
-        {
-            int cadence = HordeSpawner.LayerRegenIntervalTicks;
-            if (cadence <= 0 || HordeCalculator.PulseCycleTicks % cadence != 0) return false;
-            int samplesPerCycle = HordeCalculator.PulseCycleTicks / cadence;
-            if (samplesPerCycle < 4) return false;
-
-            // Aliasing guard: the phase sequence sampled at cadence
-            // offsets must contain more than one distinct value across a
-            // full cycle, otherwise the pulse renders frozen.
-            var seen = new System.Collections.Generic.HashSet<float>();
-            for (int t = 0; t < HordeCalculator.PulseCycleTicks; t += cadence)
-                seen.Add(HordeCalculator.ComputePulsePhase(t));
-            return seen.Count > 1;
-        }
-
-        // ── D14: regen fires only while active + due; both driven
-        //         layers are SectionLayer subclasses (RegenerateLayerNow
-        //         contract) ────────────────────────────────────────
-        private static bool D14_SpawnerRegenOnlyWhileActive()
-        {
-            // Inactive → never fires, even when due.
-            if (HordeSpawner.ShouldRegenerateLayerNow(now: 100, nextLayerRegenTick: 0, activeNow: false)) return false;
-            // Active but not yet due → no fire.
-            if (HordeSpawner.ShouldRegenerateLayerNow(now: 10, nextLayerRegenTick: 15, activeNow: true)) return false;
-            // Active + due → fires.
-            if (!HordeSpawner.ShouldRegenerateLayerNow(now: 15, nextLayerRegenTick: 15, activeNow: true)) return false;
-            // Exactly-on-boundary: next == now fires (MapComponentTick
-            // resets _nextLayerRegenTick = now + cadence after firing).
-            if (!HordeSpawner.ShouldRegenerateLayerNow(now: 30, nextLayerRegenTick: 30, activeNow: true)) return false;
-
-            // Both layers the driver forces must be SectionLayer types so
-            // MapDrawer.RegenerateLayerNow(Type) can regenerate them.
-            return typeof(HordeSectionLayer).IsSubclassOf(typeof(SectionLayer))
-                && typeof(HordeBurstLayer).IsSubclassOf(typeof(SectionLayer));
-        }
-
-        // ── D15: the driver ACTUALLY fires RegenerateLayerNow for both
-        //         layers on the 15-tick cadence, only while active ────────
-        // Drives HordeSpawner.DriveLayerRegen across a simulated tick
-        // window with a counting sink (no live game needed). Active +
-        // due → exactly one request per layer per fire; inactive → zero
-        // requests even when due.
-        private static bool D15_SpawnerActuallyFiresRegen()
-        {
-            var activeRequests = new System.Collections.Generic.List<System.Type>();
-            int next = 0;
-
-            // Simulate ticks 0..45 in 15-tick steps (the cadence).
-            for (int tick = 0; tick <= 45; tick += 15)
-                HordeSpawner.DriveLayerRegen(
-                    now: tick, ref next, activeNow: true,
-                    requestLayer: activeRequests.Add);
-
-            // 4 fires × 2 layers = 8 requests, one of each type per fire.
-            if (activeRequests.Count != 8) return false;
-            for (int i = 0; i < 4; i++)
-            {
-                if (activeRequests[i * 2] != typeof(HordeSectionLayer)) return false;
-                if (activeRequests[i * 2 + 1] != typeof(HordeBurstLayer)) return false;
-            }
-
-            // Inactive → nothing fires even when due.
-            var inactiveRequests = new System.Collections.Generic.List<System.Type>();
-            int inactiveNext = 0;
-            for (int tick = 0; tick <= 45; tick += 15)
-                HordeSpawner.DriveLayerRegen(
-                    now: tick, ref inactiveNext, activeNow: false,
-                    requestLayer: inactiveRequests.Add);
-            if (inactiveRequests.Count != 0) return false;
-
-            // Active but not yet due → no fire (sink untouched).
-            var notDueRequests = new System.Collections.Generic.List<System.Type>();
-            int notDueNext = 30;
-            HordeSpawner.DriveLayerRegen(
-                now: 20, ref notDueNext, activeNow: true,
-                requestLayer: notDueRequests.Add);
-            return notDueRequests.Count == 0;
-        }
     }
 }

@@ -66,4 +66,7 @@
   <Rimconemy.UI.SkillBudget.Button.Apply>Übernehmen</Rimconemy.UI.SkillBudget.Button.Apply>
   <Rimconemy.UI.SkillBudget.Warning.OverBudget>Budget überschritten — vor dem Übernehmen mindestens 1 Skill reduzieren.</Rimconemy.UI.SkillBudget.Warning.OverBudget>
   <Rimconemy.UI.SkillBudget.Message.Applied>Skillbudget übernommen. Viel Glück da draußen!</Rimconemy.UI.SkillBudget.Message.Applied>
+
+  <!-- Tree Cutting Gate (Phase 1.5) -->
+  <Rimconemy.TreeCutting.RequiresAxe>Du brauchst eine Schrott-Axt, um Bäume zu fällen. Stelle eine an einem Lagerfeuer oder einer befeuerten Schmiede aus Stahl und Holz her.</Rimconemy.TreeCutting.RequiresAxe>
 </LanguageData>

@@ -25,4 +25,10 @@
   <Rimconemy.Infected.AutoResolve.Cost>Kosten der automatischen Auflösung</Rimconemy.Infected.AutoResolve.Cost>
   <Rimconemy.Infected.AutoResolve.Risk>Risiko der automatischen Auflösung</Rimconemy.Infected.AutoResolve.Risk>
   <Rimconemy_Sturmloot_Letter>Sturmgut</Rimconemy_Sturmloot_Letter>
+
+  <!-- Sturmgut Tower Event (Phase 1.5) -->
+  <Rimconemy_SturmgutTower_Letter>Sturmgut: Edelstahlturm</Rimconemy_SturmgutTower_Letter>
+
+  <!-- Phase F — Wandernde Horde (Raid-Familie) -->
+  <Rimconemy_HordeMigrationLetter>Auf den Wegen rings um die Siedlung zieht eine massive Horde Infizierter ihre Bahn. Sie sind noch weit — aber sie kommen näher. Die Horde wird alles niedermachen, was sich ihr in den Weg stellt.</Rimconemy_HordeMigrationLetter>
 </LanguageData>

@@ -25,4 +25,10 @@
   <Rimconemy.Infected.AutoResolve.Cost>Auto-resolve cost</Rimconemy.Infected.AutoResolve.Cost>
   <Rimconemy.Infected.AutoResolve.Risk>Auto-resolve risk</Rimconemy.Infected.AutoResolve.Risk>
   <Rimconemy_Sturmloot_Letter>Storm Loot</Rimconemy_Sturmloot_Letter>
+
+  <!-- Sturmgut Tower Event (Phase 1.5) -->
+  <Rimconemy_SturmgutTower_Letter>Storm Loot: Stainless Steel Tower</Rimconemy_SturmgutTower_Letter>
+
+  <!-- Phase F — Wandering Horde migration letter (Raid family) -->
+  <Rimconemy_HordeMigrationLetter>On the roads around your settlement, a massive horde of infected makes its way. They are still far away — but they are coming closer. The horde will tear down anything that stands in its path.</Rimconemy_HordeMigrationLetter>
 </LanguageData>

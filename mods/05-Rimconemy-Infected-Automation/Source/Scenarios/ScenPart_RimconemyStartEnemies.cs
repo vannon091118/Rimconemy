@@ -1,26 +1,24 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using RimWorld;
 using Verse;
 
 namespace Rimconemy.InfectedAutomation.Scenarios
 {
     /// <summary>
-    /// Owner: Infected &amp; Automation (Package 05).
-    /// Phase 1.4 — ScenPart that spawns exactly one weak starter-infected on the
-    /// freshly generated home map. Hook: <see cref="ScenPart.PostMapGenerate(Map)"/>
-    /// (vanilla-api-matrix §3.1 confirmed: RimWorld.ScenPart exposes this method).
+    /// Owner: Infected & Automation (Package 05).
+    /// Phase 1.4+1.5 — ScenPart that spawns starter-infected on the
+    /// freshly generated home map, scaled by difficulty and map size.
     ///
-    /// Constraints (DECISIONS §24):
-    ///   - Exactly one pawn on Normal profile; max two on Hard profile.
-    ///   - Drops are NOT guaranteed loot sources — the survivor may or may not
-    ///     see scrap/munition drop from this pawn.
+    /// Hook: <see cref="ScenPart.PostMapGenerate(Map)"/>
+    ///
+    /// Constraints:
+    ///   - Spawn count scales with difficulty (Refuge < Survival < Collapse)
+    ///   - Spawn count scales with map size (Small < Medium < Large)
+    ///   - Drops are NOT guaranteed loot sources
     ///   - Idempotent across MapRemoved and save-load via
     ///     <see cref="RimconemyStartEnemiesLedger"/>.
-    ///
-    /// Cross-package safety: this ScenPart only ever reads its own ledger. It is
-    /// registered in mods/02/Defs/Scenarios/SingleSurvivor.xml with a class-attribute
-    /// reference. Compilation requires Package-05 to expose the namespace; Package-02
-    /// needs the class to be present at runtime via About.xml load-order.
     /// </summary>
     public class ScenPart_RimconemyStartEnemies : ScenPart
     {
@@ -28,10 +26,32 @@ namespace Rimconemy.InfectedAutomation.Scenarios
         public const string DefName_HiddenFaction  = "Rimconemy_HiddenInfectedFaction";
         public const string DefName_PawnKind       = "Rimconemy_InfectedRavager";
 
-        // Phase-1.4 fixed count: Normal=1, Hard=2. Anti-Softlock: Hard is optional
-        // and only if the difficulty flag is honoured — out of scope for this
-        // MVP; we always commit Normal here.
-        private const int NormalProfile_StarterCount = 1;
+        // Phase-1.5: Difficulty multipliers keyed by DifficultyDef.defName.
+        // Keys mirror StoryDirector.ResolveProfileFromDifficulty (the SSOT for
+        // 1.6 difficulty defNames: Peaceful/Easy/Medium/Rough/Hard/Extreme);
+        // unknown defNames fall back to 1.0.
+        private static readonly Dictionary<string, float> DifficultyMultipliers = new Dictionary<string, float>
+        {
+            { "Peaceful", 0.5f },
+            { "Easy", 0.5f },
+            { "Medium", 1.0f },
+            { "Rough", 1.5f },
+            { "Hard", 2.0f },
+            { "Extreme", 3.0f },
+        };
+
+        // Phase-1.5: Map size multipliers (based on map width)
+        private static readonly Dictionary<int, float> MapSizeMultipliers = new Dictionary<int, float>
+        {
+            { 150, 0.7f },   // Small (~150x150)
+            { 200, 1.0f },   // Medium (~200x200)
+            { 250, 1.3f },   // Large (~250x250)
+            { 300, 1.5f },   // Huge (~300x300)
+            { 400, 2.0f },   // Massive
+        };
+
+        // Base starter count (Normal/Adventure Story difficulty, Medium map)
+        private const int BaseStarterCount = 1;
 
         public override void PostMapGenerate(Map map)
         {
@@ -56,12 +76,13 @@ namespace Rimconemy.InfectedAutomation.Scenarios
                     return;
                 }
 
-                int spawned = SpawnStarterInfected(map, NormalProfile_StarterCount);
+                int count = CalculateStarterCount(map);
+                int spawned = SpawnStarterInfected(map, count);
                 if (spawned > 0)
                 {
                     ledger.MarkSpawnCompleted(map);
                     Log.Message(
-                        $"[Rimconemy.InfectedAutomation] ScenPart_RimconemyStartEnemies: spawned {spawned} starter infected on map={map.uniqueID}.");
+                        $"[Rimconemy.InfectedAutomation] ScenPart_RimconemyStartEnemies: spawned {spawned} starter infected on map={map.uniqueID} (difficulty={GetCurrentDifficultyDefName() ?? "unknown"}, mapSize={map.Size.x}x{map.Size.z}).");
                 }
                 else
                 {
@@ -75,6 +96,53 @@ namespace Rimconemy.InfectedAutomation.Scenarios
                 Log.Warning(
                     $"[Rimconemy.InfectedAutomation] ScenPart_RimconemyStartEnemies.PostMapGenerate caught: {ex.GetType().Name}: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Calculates the number of starter infected based on:
+        /// - Current difficulty setting
+        /// - Map size
+        /// </summary>
+        private static int CalculateStarterCount(Map map)
+        {
+            float multiplier = 1.0f;
+
+            // Apply difficulty multiplier
+            string difficulty = GetCurrentDifficultyDefName();
+            if (difficulty != null && DifficultyMultipliers.TryGetValue(difficulty, out float diffMult))
+            {
+                multiplier *= diffMult;
+            }
+
+            // Apply map size multiplier (based on map width)
+            int mapWidth = map.Size.x;
+            float sizeMult = 1.0f;
+            foreach (var kvp in MapSizeMultipliers.OrderBy(k => k.Key))
+            {
+                if (mapWidth <= kvp.Key)
+                {
+                    sizeMult = kvp.Value;
+                    break;
+                }
+            }
+            // If larger than all defined sizes, use the largest multiplier
+            if (mapWidth > MapSizeMultipliers.Keys.Max())
+            {
+                sizeMult = MapSizeMultipliers.Values.Max();
+            }
+            multiplier *= sizeMult;
+
+            int count = (int)Math.Ceiling(BaseStarterCount * multiplier);
+            
+            // Clamp to reasonable bounds
+            count = Math.Max(1, Math.Min(count, 8)); // At least 1, at most 8
+
+            return count;
+        }
+
+        private static string GetCurrentDifficultyDefName()
+        {
+            return Find.Storyteller?.difficultyDef?.defName;
         }
 
         private static int SpawnStarterInfected(Map map, int count)
@@ -115,7 +183,8 @@ namespace Rimconemy.InfectedAutomation.Scenarios
                 IntVec3 cell;
                 try
                 {
-                    cell = CellFinder.RandomClosewalkCellNear(map.Center, map, 20);
+                    // Spread spawns around the map, not all at center
+                    cell = CellFinder.RandomClosewalkCellNear(map.Center, map, 25 + i * 10);
                 }
                 catch (Exception ex)
                 {
@@ -140,15 +209,7 @@ namespace Rimconemy.InfectedAutomation.Scenarios
 
         /// <summary>
         /// Scenario diagnostic: logs a warning if this ScenPart runs outside
-        /// the Rimconemy Single Survivor scenario. Helps players understand
-        /// why no starter infected appears when using a vanilla scenario.
-        ///
-        /// RimWorld 1.6.4566 rev579 Scenario accessor drift: the public
-        /// field name has moved between <c>parts</c> (1.5) and the public
-        /// <c>ScenParts</c> property (1.6). Rather than pick a winner and
-        /// break on the next point-release, we reflectively probe both
-        /// candidates in priority order. If neither is found, we stay
-        /// quiet rather than spam the log on an unrecognised API.
+        /// the Rimconemy Single Survivor scenario.
         /// </summary>
         private static void LogScenarioMismatchIfNeeded()
         {
@@ -161,12 +222,7 @@ namespace Rimconemy.InfectedAutomation.Scenarios
         }
 
         /// <summary>
-        /// Reflective marker check for <see cref="RimWorld.Scenario"/>:
-        /// walks the scenario's <c>parts</c> (1.5) or <c>ScenParts</c> (1.6)
-        /// collection and looks for any <see cref="ScenPart"/> whose runtime
-        /// type name matches the Rimconemy single-survivor marker. Defensive
-        /// against both null scenario and reflection failures (returns false
-        /// in either case; the caller logs the warning, never throws).
+        /// Reflective marker check for <see cref="RimWorld.Scenario"/>.
         /// </summary>
         private static bool IsRimconemySingleSurvivorScenario(RimWorld.Scenario scenario)
         {
