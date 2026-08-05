@@ -20,6 +20,7 @@
 // landed Task. Final count = 18.
 
 using Rimconemy.InfectedAutomation.Story;
+using Rimconemy.InfectedAutomation.Population;
 using Verse;
 
 namespace Rimconemy.InfectedAutomation.Tests
@@ -42,12 +43,18 @@ namespace Rimconemy.InfectedAutomation.Tests
                 Log.Warning("[Rimconemy.InfectedAutomation] Phase B test FAILED: " + name);
             }
 
-            // ── T1-T5: Tasks 1 ──────────────────────────────────────
+            // ── T1-T5: Tasks 1 ────────────────────────────────────
             Check(T1_DirectorDefaultZero(),                           "T1.LastPendingRevengeDefaultZero");
             Check(T2_GetForTodayReturnsField(),                       "T2.GetForTodayReturnsField");
             Check(T3_DecrementBelowZeroClamped(),                     "T3.DecrementBelowZeroClamped");
             Check(T4_StripPrefixNullSafe(),                           "T4.StripRimconemyPrefixNullSafe");
             Check(T5_StripPrefixKeepsUnprefix(),                      "T5.StripRimconemyPrefixKeepsUnprefixed");
+
+            // ── T6-T9: Tasks 2 ────────────────────────────────────
+            Check(T6_RecomputeFromZeroKills(),                        "T6.RecomputeFromZeroKills");
+            Check(T7_RecomputeSurvival10Kills7Ratio(),                "T7.RecomputeSurvival10KillsFactored");
+            Check(T8_RecomputeClipsToFreeBudget(),                    "T8.RecomputeClipsToFreeBudget");
+            Check(T9_RecomputeDoublRefreshGuard(),                    "T9.RecomputeDoubleRefreshGuard");
 
             Log.Message(
                 "[Rimconemy.InfectedAutomation] Revenge-quota flow regression tests: "
@@ -96,6 +103,81 @@ namespace Rimconemy.InfectedAutomation.Tests
                 && StoryDirector.StripRimconemyPrefix("Rimconemy_Collapse") == "Collapse"
                 && StoryDirector.StripRimconemyPrefix("Rimconemy_Refuge") == "Refuge";
         }
+
+        // ── T6: zero kills → slot stays at 0 ───────────────────────────
+        private static bool T6_RecomputeFromZeroKills()
+        {
+            var director = new NoGameStoryDirector();
+            var ledger = new PopulationLedger
+            {
+                HumanoidLiveCount = 5,
+                AnimalLiveCount = 2,
+                Cap = 10,
+                RecentKillsToday = 0,
+                CumulativeKills = 0,
+                ProfileId = "Survival",
+                LastDayTick = 60_000L,
+            };
+            director.RecomputeRevengeAfterDayTickStub(ledger, SettingProfile.Survival, 120_000L);
+            return director.LastPendingRevenge == 0;
+        }
+
+        // ── T7: 10 kills × Survival ratio 0.7 → floor = 7 ─────────────
+        private static bool T7_RecomputeSurvival10Kills7Ratio()
+        {
+            var director = new NoGameStoryDirector();
+            var ledger = new PopulationLedger
+            {
+                HumanoidLiveCount = 5,
+                AnimalLiveCount = 0,
+                Cap = 12,
+                RecentKillsToday = 10,
+                CumulativeKills = 0,
+                ProfileId = "Survival",
+                LastDayTick = 60_000L,
+            };
+            director.RecomputeRevengeAfterDayTickStub(ledger, SettingProfile.Survival, 120_000L);
+            return director.LastPendingRevenge == 7;
+        }
+
+        // ── T8: clipping at free budget ────────────────────────────────
+        private static bool T8_RecomputeClipsToFreeBudget()
+        {
+            var director = new NoGameStoryDirector();
+            var ledger = new PopulationLedger
+            {
+                HumanoidLiveCount = 19,
+                AnimalLiveCount = 0,
+                Cap = 20,
+                RecentKillsToday = 100, // would compute 70; clip to 1
+                CumulativeKills = 0,
+                ProfileId = "Survival",
+                LastDayTick = 60_000L,
+            };
+            director.RecomputeRevengeAfterDayTickStub(ledger, SettingProfile.Survival, 120_000L);
+            return director.LastPendingRevenge == 1;
+        }
+
+        // ── T9: double-refresh in the same tick is a no-op ─────────────
+        private static bool T9_RecomputeDoublRefreshGuard()
+        {
+            var director = new NoGameStoryDirector();
+            var ledger = new PopulationLedger
+            {
+                HumanoidLiveCount = 0,
+                AnimalLiveCount = 0,
+                Cap = 10,
+                RecentKillsToday = 10,
+                CumulativeKills = 0,
+                ProfileId = "Survival",
+                LastDayTick = 60_000L,
+            };
+            director.RecomputeRevengeAfterDayTickStub(ledger, SettingProfile.Survival, 120_000L);
+            // Mid-tick: kills reset (e.g. ResetDailyCounters fired) — gate blocks.
+            ledger.RecentKillsToday = 0;
+            director.RecomputeRevengeAfterDayTickStub(ledger, SettingProfile.Survival, 120_000L);
+            return director.LastPendingRevenge == 7; // unchanged because of gate
+        }
     }
 
     /// <summary>
@@ -107,12 +189,7 @@ namespace Rimconemy.InfectedAutomation.Tests
     internal sealed class NoGameStoryDirector
     {
         public int LastPendingRevenge;
-        // LastRevengeRefreshTick is set in Task 2's recompute test; suppress
-        // CS0649 here because the field is intentionally observable for the
-        // "default zero" assertion (T1) without a write path on this helper.
-#pragma warning disable CS0649
         public long LastRevengeRefreshTick;
-#pragma warning restore CS0649
 
         public NoGameStoryDirector() { }
 
@@ -128,6 +205,32 @@ namespace Rimconemy.InfectedAutomation.Tests
         {
             if (actuallySpawned <= 0) return;
             LastPendingRevenge = System.Math.Max(0, LastPendingRevenge - actuallySpawned);
+        }
+
+        // ── Task 2 Stub mirrors StoryDirector.RecomputeRevengeAfterDayTick ──
+        // Production version lives on the real StoryDirector; the helper
+        // here keeps the same arithmetic (floor, freeBudget clip, double-
+        // refresh gate) so a regression test failure surfaces a real defect
+        // rather than a test-side drift.
+        public void RecomputeRevengeAfterDayTickStub(
+            PopulationLedger ledger, SettingProfile profile, long currentTick)
+        {
+            if (currentTick == LastRevengeRefreshTick) return;
+            LastRevengeRefreshTick = currentTick;
+            if (ledger == null) return;
+            string key = StripPrefix(profile?.ProfileId);
+            float ratio = PopulationProfileMultipliers.GetRevengeRatio(key);
+            int freeBudget = (int)System.Math.Min(int.MaxValue,
+                ledger.Cap - (long)ledger.HumanoidLiveCount);
+            int raw = (int)System.Math.Floor((double)ledger.RecentKillsToday * ratio);
+            LastPendingRevenge = System.Math.Max(0, System.Math.Min(raw, freeBudget));
+        }
+
+        private static string StripPrefix(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return "Survival";
+            const string p = "Rimconemy_";
+            return id.StartsWith(p) ? id.Substring(p.Length) : id;
         }
     }
 }

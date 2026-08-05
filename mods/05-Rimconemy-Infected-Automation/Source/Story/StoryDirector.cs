@@ -4,6 +4,7 @@ using System.Linq;
 using Rimconemy.Foundation.Colonials;
 using Rimconemy.Foundation.Maps;
 using Rimconemy.Foundation.Registry;
+using Rimconemy.InfectedAutomation.Population;
 using Rimconemy.ScavengerInfrastructure.Storage;
 using RimWorld;
 using Verse;
@@ -909,12 +910,52 @@ namespace Rimconemy.InfectedAutomation.Story
         ///
         /// Defensive: returns "Survival" on null/empty rather than throwing
         /// — same shape as PopulationProfileMultipliers' own fallback.
+        /// Whitespace-only inputs are trimmed before the lookup so a
+        /// stray "  " cannot leak into the multiplier table (minor
+        /// review-finding from Task 1).
         /// </summary>
         public static string StripRimconemyPrefix(string id)
         {
-            if (string.IsNullOrEmpty(id)) return "Survival";
+            if (id == null) return "Survival";
+            string trimmed = id.Trim();
+            if (trimmed.Length == 0) return "Survival";
             const string prefix = "Rimconemy_";
-            return id.StartsWith(prefix) ? id.Substring(prefix.Length) : id;
+            return trimmed.StartsWith(prefix) ? trimmed.Substring(prefix.Length) : trimmed;
+        }
+
+        /// <summary>
+        /// Phase B — recompute the revenge quota at end of day-tick.
+        /// Called from <see cref="GameComponentTick"/> AFTER the
+        /// StorySelector eval block and AFTER
+        /// <see cref="PopulationLedger.ApplyDailyGrowthTick"/> +
+        /// <c>ResetDailyCounters</c> (per user-override of the
+        /// Phase-A-spec ordering).
+        ///
+        /// Reads ledger.RecentKillsToday, multiplies by the profile
+        /// RevengeRatio (SettingProfile.ProfileId "Rimconemy_<x>" prefix
+        /// stripped so it matches PopulationProfileMultipliers keys), clips
+        /// to the available free-budget (Cap − HumanoidLiveCount).
+        ///
+        /// Idempotent within a tick: a refresh invoked twice with the same
+        /// currentTick is a no-op (LastRevengeRefreshTick gate). The
+        /// day-tick pipeline is allowed to call this method from any future
+        /// rewire without producing fractional drops.
+        ///
+        /// Defensive: null ledger → no-op (no log); null profile → "
+        /// Survival" fallback via StripRimconemyPrefix.
+        /// </summary>
+        public void RecomputeRevengeAfterDayTick(
+            PopulationLedger ledger, SettingProfile profile, long currentTick)
+        {
+            if (currentTick == LastRevengeRefreshTick) return;
+            LastRevengeRefreshTick = currentTick;
+            if (ledger == null) return;
+            string key = StripRimconemyPrefix(profile?.ProfileId);
+            float ratio = PopulationProfileMultipliers.GetRevengeRatio(key);
+            int freeBudget = (int)System.Math.Min(int.MaxValue,
+                ledger.Cap - (long)ledger.HumanoidLiveCount);
+            int raw = (int)System.Math.Floor((double)ledger.RecentKillsToday * ratio);
+            LastPendingRevenge = System.Math.Max(0, System.Math.Min(raw, freeBudget));
         }
     }
 }
