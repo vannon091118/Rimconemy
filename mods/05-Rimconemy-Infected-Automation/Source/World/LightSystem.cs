@@ -26,10 +26,10 @@ namespace Rimconemy.InfectedAutomation.World
     /// </summary>
     public static class LightSystem
     {
-        private const int DawnStartHour = 5;
-        private const int DayStartHour = 7;
-        private const int DuskStartHour = 18;
-        private const int NightStartHour = 20;
+        public const int DawnStartHour = 5;
+        public const int DayStartHour = 7;
+        public const int DuskStartHour = 18;
+        public const int NightStartHour = 20;
 
         /// <summary>How strongly a full-radius glower contributes to
         /// its chunk's light. Conservative — a single torch doesn't
@@ -95,7 +95,7 @@ namespace Rimconemy.InfectedAutomation.World
 
         // ── daylight curve ────────────────────────────────────
 
-        private static float DaylightCurve(float hour)
+public static float DaylightCurve(float hour)
         {
             if (hour < DawnStartHour || hour >= NightStartHour)
                 return 0.0f;
@@ -106,7 +106,7 @@ namespace Rimconemy.InfectedAutomation.World
             return 1.0f - (hour - DuskStartHour) / (NightStartHour - DuskStartHour);
         }
 
-        private static float HourOfDay(long tick)
+public static float HourOfDay(long tick)
         {
             float dayProgress = (tick % (long)TimeConstants.TicksPerDay) / TimeConstants.TicksPerDay;
             return dayProgress * 24f;
@@ -114,7 +114,7 @@ namespace Rimconemy.InfectedAutomation.World
 
         // ── weather ───────────────────────────────────────────
 
-        private static float WeatherAttenuation(Map map)
+public static float WeatherAttenuation(Map map)
         {
             if (map?.weatherManager?.curWeather == null) return 0.8f;
             string w = map.weatherManager.curWeather.defName;
