@@ -213,7 +213,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.SurvivalProgression",
                 packageId: "rimconemy.survivalprogression",
-                packageVersion: "0.1.37",
+                packageVersion: "0.1.38",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.survivalprogression.needs", 1),
@@ -223,7 +223,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.ScavengerInfrastructure",
                 packageId: "rimconemy.scavengerinfrastructure",
-                packageVersion: "0.0.27",
+                packageVersion: "0.0.28",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.scavengerinfrastructure.resources", 1),
@@ -246,7 +246,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.InfectedAutomation",
                 packageId: "rimconemy.infectedautomation",
-                packageVersion: "0.0.58",
+                packageVersion: "0.0.61",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.infectedautomation.threat", 1),

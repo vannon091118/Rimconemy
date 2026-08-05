@@ -67,7 +67,10 @@
              rimconemy.survivalprogression ordering guarantees that
              Rimconemy.InfectedAutomation.dll is loaded by the time
              the scenario parts are instantiated. -->
-        <li Class="Rimconemy.InfectedAutomation.Scenarios.ScenPart_RimconemyStartEnemies">
+        <!-- Phase 1.4: exactly one weak starter infected.
+             No Class attribute — type resolved via ScenPartDef.scenPartClass
+             (Package 05) to avoid cross-package assembly-load-order issues. -->
+        <li>
           <def>Rimconemy_StartEnemiesPart</def>
         </li>
 

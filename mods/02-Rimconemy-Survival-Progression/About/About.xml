@@ -15,6 +15,7 @@
   </modDependencies>
   <loadAfter>
     <li>rimconemy.foundation</li>
+    <li>rimconemy.infectedautomation</li>
   </loadAfter>
   <description>Rimconemy Survival &amp; Progression ist allein ein spielbares Survival-RPG mit Nahrung, Sicherheit, Sozialem, Arbeitserfahrung, Spezialisierung, Forschung und eigener Niederlagenlogik. Mit den übrigen Paketen bildet es die Progressionsschicht des vollständigen Overhauls.</description>
 </ModMetaData>

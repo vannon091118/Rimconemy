@@ -1,0 +1,38 @@
+<Defs>
+  <ThingDef Name="Rimconemy_Axe" ParentName="BaseWeapon">
+    <defName>Rimconemy_Axe</defName>
+    <label>Schrott-Axt</label>
+    <thingClass>ThingWithComps</thingClass>
+    <techLevel>Neolithic</techLevel>
+    <thingTags>
+      <li>Rimconemy_ChoppingTool</li>
+    </thingTags>
+    <statBases>
+      <MarketValue>50</MarketValue>
+      <Mass>3.0</Mass>
+      <WorkToMake>8000</WorkToMake>
+    </statBases>
+    <verbs>
+      <li Class="VerbProperties">
+        <verbClass>Verb_MeleeAttack</verbClass>
+        <label>Hauen</label>
+        <meleeDamageBaseAmount>8</meleeDamageBaseAmount>
+        <armorPenetrationBase>0.15</armorPenetrationBase>
+        <range>2.1</range>
+      </li>
+    </verbs>
+    <tools>
+      <li Class="Tool">
+        <label>sharp</label>
+        <capacities>
+          <li>Cut</li>
+        </capacities>
+        <power>1.5</power>
+        <cooldownTime>1.3</cooldownTime>
+      </li>
+    </tools>
+    <comps>
+      <li Class="Rimconemy.SurvivalProgression.Character.Tools.CompProperties_AxeDurability" />
+    </comps>
+  </ThingDef>
+</Defs>

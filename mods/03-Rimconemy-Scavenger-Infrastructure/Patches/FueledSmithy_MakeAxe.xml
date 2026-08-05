@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Phase-First Vanilla Patch (Task 7 — Vanilla-Patches Stufe 1).
+
+  Purpose:
+    Additive Stufe-1-PatchOperationAdd on Vanilla `FueledSmithy`. Two anchors:
+      - <recipes>         (modern RimWorld on the building def)
+      - <recipeUsers>     (security fallback in case <recipes> is missing)
+    Rimconemy_MakeAxe joins both lists so Vanilla recipe registration
+    is robust against schema drift.
+
+  Patch risk tier: STUFE 1 (Add only).
+  Idempotence: explicit `not(... li[...Rimconemy_MakeAxe])` guard
+    so re-load/save-modState-ReSync does not duplicate the entry.
+
+  Vanilla anchor: game/Data/Core/Defs/ThingDefs_Buildings/Buildings_Production.xml (FueledSmithy).
+-->
+<Patch>
+
+  <Operation Class="PatchOperationFindMod">
+    <mods><li>Ludeon.RimWorld</li></mods>
+    <match Class="PatchOperationSequence">
+      <success>Normal</success>
+      <operations>
+
+        <li Class="PatchOperationTest">
+          <xpath>/Defs/ThingDef[defName="FueledSmithy"]</xpath>
+        </li>
+
+        <!-- Patch <recipes> on the building def. Idempotent via the not() guard. -->
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/ThingDef[defName="FueledSmithy"][not(recipes/li[text()="Rimconemy_MakeAxe"])]/recipes</xpath>
+          <order>Prepend</order>
+          <value>
+            <li>Rimconemy_MakeAxe</li>
+          </value>
+        </li>
+
+        <!--
+          Belt-and-braces: if the building def carries <recipeUsers> (legacy 1.0/1.1
+          schema), keep that field in sync. Rimconemy_WoodCoalGenerator-style
+          additive-anchor pattern. Idempotent: only adds when missing.
+        -->
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/ThingDef[defName="FueledSmithy"][not(recipeUsers/li[text()="Rimconemy_MakeAxe"])]/recipeUsers</xpath>
+          <order>Prepend</order>
+          <value>
+            <li>Rimconemy_MakeAxe</li>
+          </value>
+        </li>
+
+      </operations>
+    </match>
+  </Operation>
+
+</Patch>

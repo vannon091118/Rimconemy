@@ -1,0 +1,35 @@
+<RecipeDef>
+  <defName>Rimconemy_MakeAxe</defName>
+  <label>Make Axe</label>
+  <jobString>crafting crude axe from scrap and wood</jobString>
+  <workAmount>800</workAmount>
+  <workSkill>Crafting</workSkill>
+  <researchPrerequisites>
+    <li>Smithing</li>
+  </researchPrerequisites>
+  <ingredients>
+    <li>
+      <filter>
+        <thingDefs>
+          <li>Steel</li>
+        </thingDefs>
+      </filter>
+      <count>25</count>
+    </li>
+    <li>
+      <filter>
+        <thingDefs>
+          <li>WoodLog</li>
+        </thingDefs>
+      </filter>
+      <count>15</count>
+    </li>
+  </ingredients>
+  <products>
+    <Rimconemy_Axe>1</Rimconemy_Axe>
+  </products>
+  <recipeUsers>
+    <li>Rimconemy_Campfire</li>
+    <li>FueledSmithy</li>
+  </recipeUsers>
+</RecipeDef>
