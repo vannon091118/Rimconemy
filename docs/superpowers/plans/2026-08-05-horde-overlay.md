@@ -776,11 +776,10 @@ git commit -m "feat(05/horde): HordeSectionLayer (pulsierender Kreis mittig, Pha
 // Source/Horde/HordeBurstLayer.cs
 //
 // Phase D — Per-Infected-Pawn Radial-Burst on the Home-Map.
-// Iterates map.mapPawns.AllPawnsSpawned once per Regenerate. Filters by
-// hidden-infected faction and adds a 5-Tile radius red glow per match.
+// Iterates section.map.mapPawns.AllPawnsSpawned once per Regenerate,
+// filters by hidden-infected faction + section rect, and adds a 5-Tile
+// radius red glow per match. Regeneration driven by HordeSpawner.
 
-using Rimconemy.InfectedAutomation.Population;
-using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -796,96 +795,58 @@ namespace Rimconemy.InfectedAutomation.Horde
 
         public HordeBurstLayer(Section section) : base(section)
         {
-            visible = true;
         }
 
-        public override bool Visible
-        {
-            get
-            {
-                if (!base.Visible) return false;
-                var ledger = PopulationLedger.Get();
-                if (ledger == null) return false;
-                int effective = HordeCalculator.GetEffectiveCount(ledger);
-                var director = Story.StoryDirector.Get();
-                var profile = director?.ActiveProfile ?? SettingProfile.Survival;
-                return HordeCalculator.IsActive(effective, profile);
-            }
-        }
+        public override bool Visible => base.Visible && HordeCalculator.IsActiveNow();
 
         public override void Regenerate()
         {
-            try
+            ClearSubMeshes(MeshParts.All);
+            if (section?.map == null || section.map.mapPawns == null) return;
+
+            float phase = HordeCalculator.ComputePulsePhase(Find.TickManager?.TicksGame ?? 0L);
+            float alpha = BurstAlphaMax * phase;
+
+            // Only draw bursts inside this section (Regenerate runs per
+            // visible section, so pawns elsewhere are filtered out).
+            CellRect sectionRect = section.CellRect;
+
+            foreach (var p in section.map.mapPawns.AllPawnsSpawned)
             {
-                ClearSubMeshes();
-                if (map == null || map.mapPawns == null) return;
-
-                long currentTick = Find.TickManager?.TicksGame ?? 0L;
-                float phase = HordeCalculator.ComputePulsePhase(currentTick);
-                float alpha = BurstAlphaMax * phase;
-
-                foreach (var p in map.mapPawns.AllPawnsSpawned)
-                {
-                    if (p == null) continue;
-                    if (p.Faction == null || p.Faction.def == null) continue;
-                    if (p.Faction.def.defName != HiddenInfectedFactionDef) continue;
-
-                    Vector3 center = p.Position.ToVector3();
-                    AddBurst(center, alpha);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                Log.Warning("[Rimconemy.InfectedAutomation] HordeBurstLayer.Regenerate: "
-                    + ex.GetType().Name + ": " + ex.Message);
+                if (p.Faction?.def == null) continue;
+                if (p.Faction.def.defName != HiddenInfectedFactionDef) continue;
+                if (!sectionRect.Contains(p.Position)) continue;
+                AddBurst(p.Position.ToVector3(), alpha);
             }
         }
 
         private void AddBurst(Vector3 center, float alpha)
         {
+            LayerSubMesh subMesh = GetSubMesh(MatBases.Darkness);
+            Color32 color = new Color32(220, 30, 30, (byte)Mathf.Clamp(Mathf.RoundToInt(alpha * 255f), 0, 255));
             for (int i = 0; i < Segments; i++)
             {
                 float angle = (float)i / Segments * 2f * Mathf.PI;
                 Vector3 a = center + new Vector3(Mathf.Cos(angle) * BurstRadius, 0f, Mathf.Sin(angle) * BurstRadius);
                 Vector3 b = center + new Vector3(Mathf.Cos(angle + (2f * Mathf.PI / Segments)) * BurstRadius, 0f, Mathf.Sin(angle + (2f * Mathf.PI / Segments)) * BurstRadius);
-                LayerSubMesh subMesh = GetSubMesh(MatLoader);
                 subMesh.verts.Add(a);
                 subMesh.verts.Add(b);
                 subMesh.verts.Add(center);
-                Color32 color = new Color32(220, 30, 30, (byte)Mathf.Clamp(Mathf.RoundToInt(alpha * 255f), 0, 255));
                 subMesh.colors.Add(color);
                 subMesh.colors.Add(color);
                 subMesh.colors.Add(color);
             }
         }
-
-        private Material MatLoader => base.Material;
     }
 }
 ```
 
-- [ ] **Step 2: Update HordeSpawner to mark sections dirty when phase changes**
+- [ ] **Step 2: Regen driver already in HordeSpawner (skip — no extra hook)**
 
-Append to `HordeSpawner.cs` (replace `Regenerate()` call coherence):
-
-```csharp
-                int now2 = Find.TickManager?.TicksGame ?? 0;
-                if (map?.mapDrawer != null && map.mapDrawer.MapMeshFinite())
-                {
-                    int oldPhase = (int)((now2 - HordeUpdateLogic.TickInterval) % 60L);
-                    int newPhase = (int)(now2 % 60L);
-                    if (oldPhase != newPhase)
-                    {
-                        map.mapDrawer.MapMeshDirty(
-                            map.Center,
-                            (ulong)RimWorld.MapMeshFlagDefOf.GroundGlow,
-                            regenAdjacentCells: false,
-                            regenAdjacentSections: false);
-                    }
-                }
-```
-
-(Actually keep this optional — Phase D spec keeps regenerate auto via SectionLayer. Skip this step.)
+`MapMeshDirty` with a vanilla flag would NOT regenerate custom layers: `MapMeshDirty`
+maps vanilla `MapMeshFlag`s to vanilla layer types only. The correct driver is
+`MapDrawer.RegenerateLayerNow(Type)` (verifiziert an Assembly-CSharp 1.6.4566),
+already implemented in HordeSpawner Task 2 Step 5. No further step needed here.
 
 - [ ] **Step 3: Run build**
 
@@ -917,14 +878,17 @@ git commit -m "feat(05/horde): HordeBurstLayer (per-infected radial-bursts, Phas
 ```csharp
 // Source/Horde/HordeCameraOverlay.cs
 //
-// Phase D — Camera-Edge-Frame pulse renderer. Subscribes a Harmony
-// Postfix on CameraDriver.Update so each frame draws four alpha-driven
-// thin borders (top/bottom/left/right) when the horde is active. The
-// Pure alpha-calculation reuses HordeCalculator.ComputePulsePhase so
-// Player-Home-Map and Camera-Edge pulse together.
+// Phase D — Camera-Edge-Frame pulse renderer. Package 05 has no
+// Harmony PatchAll (Bootstrap registers patches explicitly, cf.
+// DarknessSectionLayerLifecycle), so the postfix must be installed with
+// an explicit harmony.Patch call — a bare [HarmonyPatch] attribute
+// would be inert. Each frame draws four alpha-driven thin borders
+// (top/bottom/left/right) when the horde is active. The Pure
+// alpha-calculation reuses HordeCalculator.ComputePulsePhase so the
+// Home-Map circle and the Camera-Edge pulse together.
 
+using System;
 using HarmonyLib;
-using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -932,67 +896,49 @@ namespace Rimconemy.InfectedAutomation.Horde
 {
     public static class HordeCameraOverlay
     {
-        private const string CameraMethodName = "CameraDriver_Update";
+        private const string HarmonyId = "rimconemy.infectedautomation.horde-camera-overlay";
         private const float EdgeThickness = 8f;
         private const float EdgeAlphaMax = 0.4f;
-        public const int PulseCycleTicks = HordeCalculator.PulseCycleTicks;
 
-        public static bool Installed { get; private set; }
+        private static bool _installed;
 
+        /// <summary>Installs the UIRootOnGUI postfix once during Package 05 bootstrap.</summary>
         public static void Install()
         {
-            if (Installed) return;
+            if (_installed) return;
+            _installed = true;
+
             try
             {
-                var method = AccessTools.Method(typeof(CameraDriver), nameof(CameraDriver.CameraDriverTick));
-                if (method == null)
+                var target = AccessTools.Method(typeof(UIRoot), nameof(UIRoot.UIRootOnGUI));
+                if (target == null)
                 {
-                    Log.Warning("[Rimconemy.InfectedAutomation] HordeCameraOverlay: CameraDriver.CameraDriverTick not resolved; overlay disabled.");
+                    Log.Warning("[Rimconemy.InfectedAutomation] HordeCameraOverlay: UIRoot.UIRootOnGUI missing; edge pulse disabled.");
                     return;
                 }
-                var harmony = new HarmonyLib.Harmony("rimconemy.infectedautomation.horde.overlay");
-                harmony.Patch(
-                    original: method,
-                    postfix: new HarmonyLib.HarmonyMethod(typeof(HordeCameraOverlay), nameof(CameraDriverUpdatePostfix)));
-                Installed = true;
-                Log.Message("[Rimconemy.InfectedAutomation] HordeCameraOverlay installed.");
+
+                var harmony = new Harmony(HarmonyId);
+                harmony.Patch(target, postfix: new HarmonyMethod(typeof(HordeCameraOverlay), nameof(Postfix)));
+                Log.Message("[Rimconemy.InfectedAutomation] HordeCameraOverlay: edge-frame postfix installed.");
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                Log.Warning("[Rimconemy.InfectedAutomation] HordeCameraOverlay.Install failed: "
+                // Fail closed: a missing hook must not break the UI loop.
+                Log.Warning("[Rimconemy.InfectedAutomation] HordeCameraOverlay install failed; edge pulse disabled: "
                     + ex.GetType().Name + ": " + ex.Message);
             }
         }
 
-        public static void CameraDriverUpdatePostfix(CameraDriver __instance)
+        // Postfix — runs at end of UIRoot.UIRootOnGUI per frame.
+        public static void Postfix()
         {
-            try
-            {
-                if (!IsHordeActive()) return;
-                if (__instance == null) return;
-                DrawEdgeFrame();
-            }
-            catch (System.Exception ex)
-            {
-                Log.Warning("[Rimconemy.InfectedAutomation] HordeCameraOverlay.OnGUI: "
-                    + ex.GetType().Name + ": " + ex.Message);
-            }
-        }
-
-        private static bool IsHordeActive()
-        {
-            var ledger = Population.PopulationLedger.Get();
-            if (ledger == null) return false;
-            int effective = HordeCalculator.GetEffectiveCount(ledger);
-            var director = Story.StoryDirector.Get();
-            var profile = director?.ActiveProfile ?? SettingProfile.Survival;
-            return HordeCalculator.IsActive(effective, profile);
+            if (!HordeCalculator.IsActiveNow()) return;
+            DrawEdgeFrame();
         }
 
         private static void DrawEdgeFrame()
         {
-            long currentTick = Find.TickManager?.TicksGame ?? 0L;
-            float phase = HordeCalculator.ComputePulsePhase(currentTick);
+            float phase = HordeCalculator.ComputePulsePhase(Find.TickManager?.TicksGame ?? 0L);
             float alpha = EdgeAlphaMax * phase;
 
             int width = Screen.width;
@@ -1000,13 +946,9 @@ namespace Rimconemy.InfectedAutomation.Horde
             var prev = GUI.color;
             GUI.color = new Color(0.85f, 0.15f, 0.15f, alpha);
 
-            // Top border
             GUI.DrawTexture(new Rect(0f, 0f, width, EdgeThickness), Texture2D.whiteTexture);
-            // Bottom border
             GUI.DrawTexture(new Rect(0f, height - EdgeThickness, width, EdgeThickness), Texture2D.whiteTexture);
-            // Left border
             GUI.DrawTexture(new Rect(0f, 0f, EdgeThickness, height), Texture2D.whiteTexture);
-            // Right border
             GUI.DrawTexture(new Rect(width - EdgeThickness, 0f, EdgeThickness, height), Texture2D.whiteTexture);
 
             GUI.color = prev;
@@ -1020,7 +962,9 @@ namespace Rimconemy.InfectedAutomation.Horde
 Append to `Bootstrap.cs` (above the existing Phase-D RunAll block):
 
 ```csharp
-            // Phase D — install the Camera-Edge overlay hook.
+            // Phase D — install the Camera-Edge overlay hook (expliziter
+            // harmony.Patch — Package 05 hat kein PatchAll, ein nacktes
+            // [HarmonyPatch]-Attribut wäre inert).
             Horde.HordeCameraOverlay.Install();
 ```
 
@@ -1047,7 +991,7 @@ git commit -m "feat(05/horde): HordeCameraOverlay (Edge-Frame-Pulse via OnGUI Po
 ### Task 6: Falsification §F + Bump Version + runtime_test
 
 **Files:**
-- Modify: `mods/05-Rimconemy-Infected-Automation/VERSION` (`0.0.60` → `0.0.61`)
+- Modify: `mods/05-Rimconemy-Infected-Automation/VERSION` (`0.0.62` → `0.0.63`)
 - Modify: `docs/falsification/infected__ThreatPressure.md` (new §F Live-Beleg for Phase D)
 
 - [ ] **Step 1: Update Falsification §F**
@@ -1060,10 +1004,12 @@ In `docs/falsification/infected__ThreatPressure.md`, append new section §F:
 **Erwartet im Player.log nach Phase D (2026-08-05):**
 
 ```
+[Rimconemy.InfectedAutomation] HordeCameraOverlay: edge-frame postfix installed.
 [Rimconemy.InfectedAutomation] HordeSpawner: Spawning HordeWorldObject at tile=N (home=N)
-[Rimconemy.InfectedAutomation] HordeSectionLayer: Regenerate at section (X,Z) alpha=0.X..0.35 pulse-phase=0.X
-[Rimconemy.InfectedAutomation] HordeSpawner: Move HordeWorldObject → tile=N
 ```
+
+(Der Spawn-Marker ist der einzige Horde-WorldObject-Log; Drift ist über die World-Map-
+Icon-Position beobachtbar — tile = home + max(0, 5 − floor(tick/250)), keine Log-Zeilen.)
 
 **Akzeptanz-Gate:**
 
@@ -1087,20 +1033,20 @@ In `docs/falsification/infected__ThreatPressure.md`, append new section §F:
 cat mods/05-Rimconemy-Infected-Automation/VERSION
 ```
 
-Expected: `0.0.61`
+Expected: `0.0.63`
 
 If the bump script doesn't run to timeout, manually edit VERSION file:
 
 ```bash
-echo "0.0.61" > mods/05-Rimconemy-Infected-Automation/VERSION
+echo "0.0.63" > mods/05-Rimconemy-Infected-Automation/VERSION
 ```
 
 - [ ] **Step 3: Update Foundation-Registry for new version**
 
 Modify `mods/01-Rimconemy-Foundation/Source/Registry/PackageRegistry.cs`:
 
-Find: `packageVersion: "0.0.60",` in the `rimconemy.infectedautomation` registration block
-Replace with: `packageVersion: "0.0.61",`
+Find: `packageVersion: "0.0.62",` in the `rimconemy.infectedautomation` registration block
+Replace with: `packageVersion: "0.0.63",`
 
 - [ ] **Step 4: Run full static-runtime_test**
 
@@ -1108,7 +1054,7 @@ Replace with: `packageVersion: "0.0.61",`
 ./scripts/runtime_test.sh --skip-start --no-deploy 2>&1 | tail -30
 ```
 
-Expected: exit 0, all 5 packages detected with `0.0.61`.
+Expected: exit 0, all 5 packages detected with `0.0.63`.
 
 - [ ] **Step 5: Commit (combined)**
 
@@ -1116,7 +1062,7 @@ Expected: exit 0, all 5 packages detected with `0.0.61`.
 git add mods/05-Rimconemy-Infected-Automation/VERSION \
         mods/01-Rimconemy-Foundation/Source/Registry/PackageRegistry.cs \
         docs/falsification/infected__ThreatPressure.md
-git commit -m "chore: Bump 0.0.60 -> 0.0.61 + Phase D Live-Beleg §F (Phase D T6)"
+git commit -m "chore: Bump 0.0.62 -> 0.0.63 + Phase D Live-Beleg §F (Phase D T6)"
 ```
 
 ---
@@ -1128,10 +1074,10 @@ git commit -m "chore: Bump 0.0.60 -> 0.0.61 + Phase D Live-Beleg §F (Phase D T6
 | Spec § | Requirement | Implementation Task |
 |---|---|---|
 | §3 Components | 6 Components | T1-T5 (Calculator, WorldObject, Spawner, SectionLayer, BurstLayer, CameraOverlay) |
-| §4 Datenfluss | 250/60/frame tick loops | T2 (Spawner), T3/T4 (SectionLayer Regenerate), T5 (CameraOverlay) |
+| §4 Datenfluss | 250/15/frame tick loops | T2 (Spawner 250-Tick-Sync + 15-Tick-Regen-Driver), T3/T4 (SectionLayer Regenerate), T5 (CameraOverlay) |
 | §5 API | HordeCalculator/IsActive/ComputePulsePhase + WorldObject + Spawner + UpdateLogic | T1-T2 |
-| §6 Determinismus | Pure APIs, transient state | T1 (Pure), T2 (transient LastMoveTick) |
-| §7 Edge Cases | null ledger/profile/map/home | T1 (defensive), T2 (defensive), D15 tests |
+| §6 Determinismus | Pure APIs, transient state | T1 (Pure), T2 (tick-derived, kein State) |
+| §7 Edge Cases | null ledger/profile/map/home | T1 (defensive), D1-D5 (null-gates), D12 (Def-Null) |
 | §8 Tests D1-D12 | 12 tests | T1 (7), T2 (5) — covers all |
 | §10 Bootstrap+Logging | Tests + Install hook | T3/T5 Bootstrap updates, T6 Bump |
 | §11 Akzeptanz-Gate D1-D8 | 8 gates | T1-T6 (WIP), D7 Bump, D8 Live-Beleg |
@@ -1145,17 +1091,18 @@ Zero TBD/TODO markers. All code complete and runnable.
 ### 3. Type consistency:
 
 - `HordeCalculator.GetEffectiveCount(PopulationLedger)` → int used everywhere.
-- `HordeCalculator.IsActive(int, SettingProfile)` → bool, called in SectionLayer.Visible/Regenerate + BurstLayer.Visible + CameraOverlay.IsHordeActive.
+- `HordeCalculator.IsActive(int, SettingProfile)` → bool, Pure-Route. Render-Gate ist `IsActiveNow()` in allen 3 Render-Paths (SectionLayer/BurstLayer `Visible`, CameraOverlay `Postfix`).
 - `HordeCalculator.ComputePulsePhase(long)` → float[0..1], called in all 3 Render-Paths.
-- `HordeUpdateLogic.RunOncePure(int, bool, int, long, List<int>)` modifies in-place; signature identical to test invocation.
-- `HordeWorldObject : WorldObject` with `LastMoveTick long`.
+- `HordeUpdateLogic.ComputeHordeTile(int homeTile, long currentTick)` → int; pure, kein State; identisch in Test + Spawner.
+- `HordeWorldObject : WorldObject` (Marker ohne State; Tile setzt HordeSpawner).
 - `HordeSpawner : MapComponent`; constructor signature matches §5 API.
+- Render-Gate: alle 3 Render-Paths nutzen `HordeCalculator.IsActiveNow()` (live Ledger + Profile).
 
 ### 4. Critical risks:
 
 - **SectionLayer.Refenerate base-class resolution**: RimWorld's SectionLayer is a real abstract class; mine `extends SectionLayer` will compile. SectionLayer.Refenerate is part of the base class. `Visible` is also a property in base. **Mitigation:** build-test confirms compilation.
-- **DefDatabase.GetNamedSilentFail("Rimconemy_HordeWorldObject")** in HordeSpawner: relies on the Def XML loading correctly under `<Defs>/WorldObjects/`. **Mitigation:** Add D14 test that asserts `Def != null` and `worldObjectClass == typeof(HordeWorldObject)`.
-- **5 Render-Paths simultaneous**: 3 SectionLayers + 1 CameraOverlay + 1 WorldObject icon could become overdraw-heavy on slow GPUs. **Mitigation:** HordeSectionLayer visibility check (HideWhenInactive) + alphaMax caps (0.55/0.35/0.15/0.4/0.5) all reasonable.
+- **DefDatabase.GetNamedSilentFail("Rimconemy_HordeWorldObject")** in HordeSpawner: relies on the Def XML loading correctly under `<Defs>/WorldObjects/`. **Mitigation:** Add D12 test that asserts `Def != null` and `worldObjectClass == typeof(HordeWorldObject)`.
+- **5 Render-Paths simultaneous**: 3 SectionLayers + 1 CameraOverlay + 1 WorldObject icon could become overdraw-heavy on slow GPUs. **Mitigation:** `Visible`-Override (IsActiveNow → leeres Layer wenn inactive), Kreis nur aus EINER Section (map.Center), alphaMax caps (0.55/0.35/0.15/0.4/0.5) all reasonable.
 
 ### 5. Foundation compatibility:
 
@@ -1172,10 +1119,10 @@ Zero TBD/TODO markers. All code complete and runnable.
 - D1 12/12 tests PASS — ✓ (covered T1-T2).
 - D2 Confguration-sample determinism — ✓ (D2 test asserts Survival 150).
 - D3 Spawner sync with Reconciler — ✓ (T2).
-- D4 HordeWorldObject Def loads — ✓ (T2 + D14 test).
+- D4 HordeWorldObject Def loads — ✓ (T2 + D12 test).
 - D5 SectionLayer empty when inactive — ✓ (T3 + Visible-Override).
 - D6 CameraOverlay Postfix-install — ✓ (T5 + Harmony-Patch).
-- D7 runtime_test PASS Bump 0.0.61 — ✓ (T6).
+- D7 runtime_test PASS Bump 0.0.63 — ✓ (T6).
 - D8 Live-Beleg im Player.log — ⚠ User-Pflicht (§F).
 
 ---
