@@ -124,6 +124,23 @@ namespace Rimconemy.InfectedAutomation.Story
                     continue;
                 }
 
+                // A1c (Phase B 2026-08-05): Revenge-family events are only
+                // eligible when StoryDirector has a non-zero revenge-pending
+                // slot. The selector does not see the per-tick ledger, so a
+                // hard gate here keeps revenge events OFF the candidate list
+                // on day 1 of a save/load even before the day-tick block
+                // recomputes the slot. Mirrors the prerequisite gate but
+                // runs first so we don't waste IMO weight math on events
+                // that will always be filtered downstream.
+                if (evt.EventFamily == "Revenge")
+                {
+                    var director = Story.StoryDirector.Get();
+                    if (director == null || director.LastPendingRevenge <= 0)
+                    {
+                        continue;
+                    }
+                }
+
                 // A2: Escalation band within profile limit?
                 if (evt.EscalationBand > profile.MaxEscalationBand)
                 {
@@ -464,6 +481,19 @@ namespace Rimconemy.InfectedAutomation.Story
                         if (int.TryParse(cond.Parameter, out int fAbove))
                         {
                             if (snapshot.HostileFactionCount <= fAbove)
+                                return false;
+                        }
+                        break;
+
+                    case "RevengePending":
+                        // Phase B: parameter is the minimum revenge-pending
+                        // quota required. Read live from the (transient) director
+                        // state so a save/load mid-day rebuild matches the
+                        // post-tick recompute exactly.
+                        if (int.TryParse(cond.Parameter, out int rThreshold))
+                        {
+                            var director = Story.StoryDirector.Get();
+                            if (director == null || director.LastPendingRevenge < rThreshold)
                                 return false;
                         }
                         break;

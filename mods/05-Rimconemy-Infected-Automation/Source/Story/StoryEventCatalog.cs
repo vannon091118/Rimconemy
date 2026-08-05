@@ -80,6 +80,9 @@ namespace Rimconemy.InfectedAutomation.Story
             Register(MechSwarm);
             Register(Epidemic);
             Register(Betrayal);
+            // ── Phase B — Revenge family (2026-08-05) ────────────────
+            Register(LesserRevenge);
+            Register(GreaterRevenge);
         }
 
         /// <summary>
@@ -1370,5 +1373,119 @@ namespace Rimconemy.InfectedAutomation.Story
             FollowUpIds = new List<string>(),
             DeterminismKeyTemplate = "{ProfileId}+{EventId}+{IdeologyTension}+{PawnId}+{GameTickDay}",
         };
+        // ═══════════════════════════════════════════════════════
+        // PHASE B — REVENGE FAMILY (transient, daily-decay)
+        // ═══════════════════════════════════════════════════════
+
+        public static readonly StoryEventSpec LesserRevenge = new StoryEventSpec
+        {
+            EventId = "rimconemy.revenge.lesser",
+            EventVersion = 1,
+            EventFamily = "Revenge",
+            Label = "Rache-Schwarm",
+            Description = "Kleiner Schwarm Infizierter rächt die gestrigen Verluste.",
+
+            Prerequisites = new List<EventCondition>
+            {
+                EventCondition.MaxActiveEventsReached(),
+                EventCondition.RevengePendingAtLeast(1),
+            },
+            Exclusions = new List<EventCondition>
+            {
+                EventCondition.ActiveRaidOrThreat(),
+            },
+
+            Weights = new Dictionary<string, float>
+            {
+                { "Rimconemy_Survival", 0.7f },
+                { "Rimconemy_Collapse", 0.9f },
+            },
+            CooldownsDays = new Dictionary<string, float>
+            {
+                { "Rimconemy_Survival", 14.0f },
+                { "Rimconemy_Collapse", 7.0f },
+            },
+
+            EscalationBand = 2,
+            EscalationModifier = 0.06f,
+
+            LetterLabel = "Rache-Schwarm",
+            LetterText = "Kleine Infiziertengruppen reagieren auf die gestrigen Verluste. Sie nähern sich der Siedlung.",
+            TextKey = "Rimconemy_LesserRevenge_Letter",
+
+            Choices = new List<EventChoice>
+            {
+                new EventChoice
+                {
+                    ChoiceId = "Defend",
+                    Label = "Verteidigen",
+                    Effects = new List<string> { "DefenseBonus:+0.20 for 1 day", "ResourceCost:10%" },
+                },
+            },
+
+            FollowUpIds = new List<string>(),
+            DeterminismKeyTemplate = "{ProfileId}+{EventId}+{GameTickDay}",
+        };
+
+        public static readonly StoryEventSpec GreaterRevenge = new StoryEventSpec
+        {
+            EventId = "rimconemy.revenge.greater",
+            EventVersion = 1,
+            EventFamily = "Revenge",
+            Label = "Rache-Welle",
+            Description = "Eine große Welle Infizierter rächt mit aller Wucht.",
+
+            Prerequisites = new List<EventCondition>
+            {
+                EventCondition.MaxActiveEventsReached(),
+                EventCondition.RevengePendingAtLeast(MinGreaterRevenge),
+            },
+            Exclusions = new List<EventCondition>
+            {
+                EventCondition.ActiveRaidOrThreat(),
+            },
+
+            Weights = new Dictionary<string, float>
+            {
+                { "Rimconemy_Survival", 0.4f },
+                { "Rimconemy_Collapse", 0.7f },
+            },
+            CooldownsDays = new Dictionary<string, float>
+            {
+                { "Rimconemy_Survival", 21.0f },
+                { "Rimconemy_Collapse", 10.0f },
+            },
+
+            EscalationBand = 3,
+            EscalationModifier = 0.12f,
+
+            LetterLabel = "Rache-Welle!",
+            LetterText = "Eine massive Welle Infizierter greift als Vergeltung für die vielen Verluste an. Die Wut ist spürbar.",
+            TextKey = "Rimconemy_GreaterRevenge_Letter",
+
+            Choices = new List<EventChoice>
+            {
+                new EventChoice
+                {
+                    ChoiceId = "FullDefense",
+                    Label = "Volle Verteidigung",
+                    Effects = new List<string> { "DefenseBonus:+0.40 for 2 days", "ResourceCost:25%" },
+                },
+                new EventChoice
+                {
+                    ChoiceId = "Evacuate",
+                    Label = "Vorrang-Rückzug",
+                    Effects = new List<string> { "EvacuateCivilians", "StorageBlocked:60%", "IdeologyTension:+0.10" },
+                },
+            },
+
+            FollowUpIds = new List<string>(),
+            DeterminismKeyTemplate = "{ProfileId}+{EventId}+{GameTickDay}",
+        };
+
+        /// <summary>Threshold above which the greater-revenge event unlocks.
+        /// 8 minted-spawns is mid-tier: well above the daily Survival baseline
+        /// but comfortably below Collapse proportions.</summary>
+        public const int MinGreaterRevenge = 8;
     }
 }

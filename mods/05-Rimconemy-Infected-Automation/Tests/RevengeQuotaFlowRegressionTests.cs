@@ -66,6 +66,10 @@ namespace Rimconemy.InfectedAutomation.Tests
             Check(T14_WorkerClampsDecrementToActuallySpawned(),       "T14.WorkerClampsDecrementToActuallySpawned");
             Check(T15_WorkerNoDecrementOnZeroSpawn(),                 "T15.WorkerNoDecrementOnZeroSpawn");
 
+            // ── T16-T17: Tasks 5 ───────────────────────────────────
+            Check(T16_CatalogContainsRevengeFamily(),                 "T16.CatalogContainsRevengeFamily");
+            Check(T17_RevengeEventsHaveRevengePrereq(),               "T17.RevengeEventsHaveRevengePrereq");
+
             Log.Message(
                 "[Rimconemy.InfectedAutomation] Revenge-quota flow regression tests: "
                 + passed + " passed, " + failed + " failed" +
@@ -280,6 +284,47 @@ namespace Rimconemy.InfectedAutomation.Tests
             var director = new NoGameStoryDirector().WithRevenge(5);
             director.DecrementPendingRevenge(0);
             return director.LastPendingRevenge == 5;
+        }
+
+        // ── T16: catalog contains ≥ 2 Revenge events ────────────────
+        private static bool T16_CatalogContainsRevengeFamily()
+        {
+            var cat = new StoryEventCatalog();
+            int revengeCount = 0;
+            foreach (var e in cat.All())
+            {
+                if (e != null && e.EventFamily == "Revenge")
+                    revengeCount++;
+            }
+            return revengeCount >= 2;
+        }
+
+        // ── T17: each Revenge event has at least one RevengePending
+        //          prerequisite (the gate StorySelector relies on). ────
+        private static bool T17_RevengeEventsHaveRevengePrereq()
+        {
+            var cat = new StoryEventCatalog();
+            int checkedCount = 0;
+            foreach (var e in cat.All())
+            {
+                if (e == null || e.EventFamily != "Revenge") continue;
+                bool hasRevenge = false;
+                if (e.Prerequisites != null)
+                {
+                    foreach (var c in e.Prerequisites)
+                    {
+                        if (c == null) continue;
+                        if (c.ConditionId == "RevengePending")
+                        {
+                            hasRevenge = true;
+                            break;
+                        }
+                    }
+                }
+                if (!hasRevenge) return false; // fail on first offender
+                checkedCount++;
+            }
+            return checkedCount >= 2;
         }
     }
 
