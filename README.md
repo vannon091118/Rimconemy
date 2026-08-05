@@ -111,29 +111,17 @@ flowchart LR
     SS -->|"Crafting"| TOWER["🏹 ArrowTurret"]
 ```
 
-### Bauschutt → Bauen
+### Bauschutt → Waffen-Komponente
 
 ```mermaid
 flowchart LR
     DEBRIS["🧱 ConstructionDebris<br/>aus Ruinen"] -->|"Salvage"| WCOMP["🔫 WeaponComponent"]
-    DEBRIS -->|"Blueprint"| WALL["🧱 Wall / Door / Barricade"]
-    WCOMP -->|"Crafting"| TURRET["🏹 Turret"]
-```
-
-### Crafting → Verteidigung (geplant)
-
-```mermaid
-flowchart LR
-    IRON["⛏️ Iron"] -->|"Hochofen T2<br/>⬜ geplant"| AMMO["💥 Munition"]
-    COAL3["🪨 Coal"] -->|"Hochofen T2<br/>⬜ geplant"| AMMO
-    AMMO -->|"ScrapRifle"| DEFEND2["🛡️ Verteidigung"]
+    WCOMP -->|"T3-Crafting"| TURRET["🏹 Turret"]
 ```
 
 ---
 
 ## 🎮 Das Hub-Dashboard
-
-Das **Rimconemy Hub-Fenster** ersetzt 5 separate Bottom-Bar-Buttons durch **einen einzigen Einstiegspunkt**:
 
 - **🏛️ Kolonie** — Foundation-Status, DLC-Erkennung, Log, Paketübersicht
 - **🛡️ Überleben** — Progression, Bedürfnisse, Ressourcen-Snapshot
@@ -168,7 +156,8 @@ Das **Rimconemy Hub-Fenster** ersetzt 5 separate Bottom-Bar-Buttons durch **eine
 | Save/Load-Roundtrip (Logic-Tests) | ✅ T1–T6 in 4 Paketen |
 | Save/Load-Roundtrip (Runtime) | 🔄 offen |
 | Vollständige Gameplay-Loops | ⬜ in Arbeit |
-| Raid-Auflösung live | ⬜ in Arbeit |
+| Fog-of-War (Sprint 2) | 🔄 ChunkController + InfectedBehavior (Dormant→Roaming→Investigating→Assault) |
+| Raid-Auflösung live | 🔄 Sprint 2 — ChunkController, Fog-of-War, Infected-Behavior-State-Machine |
 
 → **[Vollständige Beleggrenze](docs/CODE_STATUS.md)** · **[Falsifikations-Berichte](docs/falsification/README.md)**
 

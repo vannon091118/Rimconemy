@@ -143,7 +143,8 @@ Startcharakter + knappes Inventar
   → Schwacher Drucktest (kein garantierter Loot)
   → Schutzraum, Licht, erste Verteidigung
   → Stahl als Rezeptinput; Kohle als physischer Brennstoff
-  → T2-Strom: elektrischer Hochofen
+  → Kohle als physischer Brennstoff
+  → Strom: Generator → PowerNet
   → Eigene Munitionsproduktion
 ```
 
@@ -224,7 +225,7 @@ Startcharakter + knappes Inventar
 - Outposts + Proxy-Graph
 - Wirtschaft/Wallet-Transaktionen
 - Bauschutt-Baukosten
-- Produktionsketten (Hochofen T2, Munition)
+- Produktionsketten (Munition, Waffen)
 - World-Map-Endgame
 
 ---
@@ -360,7 +361,7 @@ Ohne `SURVIVED`-Berichte mit A–G-Belegen gilt keine Übergabe:
 
 ## 9. Empfohlener Nächster Sprint
 
-1. **Save/Load-Roundtrip** via Runtime-Save-File (manueller Test: Start → Save → Quit → Reload → Konsistenz)
-2. **Bauschutt→Wand/Tür** End-to-End (Blueprint-Platzierung → Storage-Abzug → Baufortschritt → Save/Load)
-3. **Story-Event-Feuerung** live: Auswahl → Queue → Letter → Spawn (1-Pawn) → Save/Load
+1. **Fog-of-War (Sprint 2)** — ChunkController + InfectedBehavior (Dormant→Roaming→Investigating→Assault), Scribe-persisted, 8 Test-Blöcke
+2. **Save/Load-Roundtrip** via Runtime-Save-File
+3. **Story-Event-Feuerung** live: Auswahl → Queue → Letter → Spawn → Save/Load
 4. Danach: **Vertikale Full-Profile-Kette** statt horizontalem Fertigstellen einzelner Pakete

@@ -69,6 +69,10 @@ namespace Rimconemy.InfectedAutomation
             // ChunkState Scribe roundtrip, LightSystem daylight curve,
             // NoiseSystem falloff, PerceptionMath formulas.
             Tests.Sprint1PerceptionRegressionTests.RunAll();
+            // Sprint 2 (2026-08-05) — Infected behavior state machine:
+            // Dormant→Roaming→Investigating→Assault transitions,
+            // InfectedPawnState Scribe roundtrip, determinism verification.
+            Tests.Sprint2BehaviorRegressionTests.RunAll();
             Log.Message("[Rimconemy.InfectedAutomation] Building threat adapter available; Mechadroid job contracts are gated for Milestone B; no incident or raid is spawned.");
 
             // Phase-5 (2026-08-05) — IncidentClassifier summary log. Validates the
