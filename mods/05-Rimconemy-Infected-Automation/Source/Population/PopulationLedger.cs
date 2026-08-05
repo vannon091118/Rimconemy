@@ -74,6 +74,11 @@ namespace Rimconemy.InfectedAutomation.Population
         public int CumulativeInoculations;
         public long LastInoculationTick;
 
+        // Phase E — Animal-Infection via Random-Encounter. Phase E Driver
+        // schreibt Tick + Tageszähler hier rein.
+        public long LastAnimalInfectionTick;
+        public int AnimalInfectionCountToday;
+
         // ── Non-persisted state (Task 3+) ────────────────────
         /// <summary>
         /// Tracks recently-killed pawn IDs so RegisterKill is idempotent
@@ -250,6 +255,32 @@ namespace Rimconemy.InfectedAutomation.Population
         public void ResetDailyCounters()
         {
             RecentKillsToday = 0;
+            // Phase E: parallel reset for the animal-infection driver.
+            // LastAnimalInfectionTick bleibt — der Counter ist ein Tagesmarker.
+            AnimalInfectionCountToday = 0;
+        }
+
+        /// <summary>
+        /// Phase E — Driver-Hook für Tages-Reset, falls aufrufer den
+        /// Day-Bucket selbst trackt. Identisch zu ResetDailyCounters für
+        /// AnimalInfectionCountToday. Nutze ResetDailyCounters für den StoryDirector.
+        /// </summary>
+        public void ResetAnimalInfectionDailyCounters()
+        {
+            AnimalInfectionCountToday = 0;
+        }
+
+        /// <summary>
+        /// Phase E — Driver ruft nach erfolgreichem TryInfectWildAnimals auf.
+        /// Inkrementiert Tageszähler + stempelt Tick. count ≤ 0 ist no-op.
+        /// Idempotent im Sinne "Aufruf ohne Effekt bei count=0"; nicht idempotent
+        /// über mehrere Aufrufe (jeder summiert).
+        /// </summary>
+        public void RegisterAnimalInfection(int count, long currentTick)
+        {
+            if (count <= 0) return;
+            AnimalInfectionCountToday += count;
+            LastAnimalInfectionTick = currentTick;
         }
 
         /// <summary>
@@ -349,6 +380,9 @@ namespace Rimconemy.InfectedAutomation.Population
             Scribe_Values.Look(ref AnimalLiveCount, "rimconemyILedgerAnimalLiveCount", 0);
             Scribe_Values.Look(ref CumulativeInoculations, "rimconemyILedgerInocCount", 0);
             Scribe_Values.Look(ref LastInoculationTick, "rimconemyILedgerLastInocTick", 0L);
+            // Phase E — AnimalInfection Driver-Felder.
+            Scribe_Values.Look(ref LastAnimalInfectionTick, "rimconemyILedgerLastAnimalInfectTick", 0L);
+            Scribe_Values.Look(ref AnimalInfectionCountToday, "rimconemyILedgerAnimalInfectCountToday", 0);
 
             // After Scribe finished loading, run migration.
             // Foundation reference pattern: clear the shared
