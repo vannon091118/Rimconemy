@@ -30,10 +30,21 @@ namespace Rimconemy.InfectedAutomation.Horde
         public override void Regenerate()
         {
             ClearSubMeshes(MeshParts.All);
-            float phase = HordeCalculator.ComputePulsePhase(Find.TickManager?.TicksGame ?? 0L);
+            Map map = section.map;
+            if (map == null) return;
 
-            Vector3 center = new Vector3(
-                section.botLeft.x + 17f, 0f, section.botLeft.z + 17f);
+            // Spec: "pulsierender Kreis um die Home-Map-Mitte" — one circle
+            // around the map center, not a ring lattice at every section
+            // corner. Only sections within reach of the outer ring draw
+            // geometry; the rest stay empty.
+            Vector3 center = map.Center.ToVector3();
+            CellRect rect = section.CellRect;
+            float reach = OuterRadius + 1f;
+            if (center.x < rect.minX - reach || center.x > rect.maxX + reach
+                || center.z < rect.minZ - reach || center.z > rect.maxZ + reach)
+                return;
+
+            float phase = HordeCalculator.ComputePulsePhase(Find.TickManager?.TicksGame ?? 0L);
 
             AddRadialRing(center, InnerRadius, InnerAlphaMax, phase);
             AddRadialRing(center, MidRadius, MidAlphaMax, phase);

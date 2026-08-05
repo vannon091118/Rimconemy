@@ -42,16 +42,17 @@
 
 ```
 [Rimconemy.InfectedAutomation] HordeSpawner: Spawning HordeWorldObject at tile=N (home=N)
-[Rimconemy.InfectedAutomation] HordeSpawner: Move HordeWorldObject → tile=N
-[Rimconemy.InfectedAutomation] HordeSectionLayer.Regenerate: …
 ```
+
+(Der Spawn-Marker ist der einzige Horde-Log; Drift ist über die World-Map-
+Icon-Position beobachtbar, nicht über Log-Zeilen.)
 
 **Verifikation (User-Pflicht):**
 
 1. Start Survival-Kolonie (difficulty=Medium).
 2. Töte im Dev-Mode 150+ infizierte Human-Pawns auf der Home-Map (PopulationLedger.HumanoidLiveCount ≥ 150).
 3. World-Map: rotes Wanderer-Icon sichtbar auf Tile nahe Home (5 Tiles entfernt initial).
-4. Warte 250 Ticks (~4 Sekunden): HordeSpawner.Log zeigt "Move → tile=K" (driftet um 1 Tile Richtung Home).
+4. Warte einige 250-Tick-Intervalle: das Icon driftet deterministisch Richtung Home (floor(currentTick/250) Tiles).
 5. Home-Map: pulsierender roter Kreis (3 Ringe: Inner/Mid/Outer) um Map-Mitte sichtbar; pulst mit ~2-Sek-Atem.
 6. Per-Infected-Pawn: 5-Tile Radial-Burst um jeden visible HiddenInfected-Pawn sichtbar.
 7. Camera-Edge: 4 dünne rote Borders am Bildschirmrand, pulsen synchron zum Map-Overlay.
@@ -59,7 +60,7 @@
 
 **Akzeptanz-Gate:**
 
-- [ ] **D-1**: 15/15 HordeRegressionTests grün im Bootstrap.log.
+- [ ] **D-1**: 12/12 HordeRegressionTests grün im Bootstrap.log.
 - [ ] **D-2**: Spell auf Survival-Profil mit ~10 PopulationLedger.RecentKillsToday löst KEIN Horde aus (Threshold erst ab 150 Humanoid).
 - [ ] **D-3**: Live-Beleg im Player.log (Schritte 1–8 oben dokumentiert).
 - [ ] **D-4**: Save/Load: Horde-WorldObject-Position rebuild deterministisch aus currentTick-Drift.
@@ -83,7 +84,7 @@ Schreibt:
 ## G — Performance-Kennzahl
 
 - HordeSpawner: 250-tick cadence → 1 MapComponent-Spawner-Call pro ~4 Sekunden.
-- HordeSectionLayer: 32 Segmente × 3 Ringe = 96 Triangles je Section. ~30 fps.
+- HordeSectionLayer: 32 Segmente × 3 Ringe = 96 Triangles, nur in Sections innerhalb des äußersten Rings (um Map-Mitte) gezeichnet. ~30 fps.
 - HordeBurstLayer: 16 Segmente pro HiddenInfected-Pawn je Section. Bei 20 Bursts × 30 sections = ~600 Triangles. Akzeptabel.
 - HordeCameraOverlay: 4 GUI-Draw-Aufrufe pro Frame (Top/Bottom/Left/Right).
 

@@ -20,6 +20,11 @@ namespace Rimconemy.InfectedAutomation.Horde
 
         private int _lastTick = -HordeUpdateLogic.TickInterval;
 
+        // Drift state externalized into a list so the Pure logic can be
+        // unit-tested; it MUST persist across ticks or the horde would
+        // re-spawn at homeTile+5 on every interval instead of drifting.
+        private readonly List<int> _hordeTiles = new List<int>();
+
         public override void MapComponentTick()
         {
             base.MapComponentTick();
@@ -35,6 +40,7 @@ namespace Rimconemy.InfectedAutomation.Horde
             var profile = StoryDirector.Get()?.ActiveProfile ?? SettingProfile.Survival;
             if (!HordeCalculator.IsActive(effective, profile))
             {
+                _hordeTiles.Clear();
                 DespawnAllHordes();
                 return;
             }
@@ -43,10 +49,9 @@ namespace Rimconemy.InfectedAutomation.Horde
             if (homeMap == null) return;
             int homeTile = homeMap.Tile;
 
-            var tileList = new List<int>();
-            HordeUpdateLogic.RunOncePure(true, homeTile, now, tileList);
-            if (tileList.Count > 0)
-                SyncHordeAtTile(tileList[0], homeTile);
+            HordeUpdateLogic.RunOncePure(true, homeTile, now, _hordeTiles);
+            if (_hordeTiles.Count > 0)
+                SyncHordeAtTile(_hordeTiles[0], homeTile);
         }
 
         private static void DespawnAllHordes()
