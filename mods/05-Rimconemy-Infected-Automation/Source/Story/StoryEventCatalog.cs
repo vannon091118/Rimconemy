@@ -72,6 +72,7 @@ namespace Rimconemy.InfectedAutomation.Story
             Register(PowerStruggle);
             Register(LastCache);
             // ── new events (event pool expansion) ──────────
+            Register(Sturmloot);
             Register(BountifulHarvest);
             Register(ResourceSpoilage);
             Register(WandererArrives);
@@ -902,9 +903,58 @@ namespace Rimconemy.InfectedAutomation.Story
 
         // ═══════════════════════════════════════════════════════
         // NEW EVENTS — event pool expansion (2026-08-05)
-        // ═══════════════════════════════════════════════════════
+        // ═══════════════════════════════════════════════════════            // ── Band 1 — Refuge: positive supply event ──────────
+        public static readonly StoryEventSpec Sturmloot = new StoryEventSpec
+        {
+            EventId = "rimconemy_supply_sturmloot",
+            EventVersion = 1,
+            EventFamily = "Supply",
+            Label = "Sturmgut",
+            Description = "Ein Unwetter hat Holz und Vorräte herbeigespült.",
 
-        // ── Band 1 — Refuge: positive supply event ──────────
+            Prerequisites = new List<EventCondition>
+            {
+                EventCondition.MaxActiveEventsReached(),
+                EventCondition.ActiveEvent("Supply"),
+            },
+            Exclusions = new List<EventCondition>
+            {
+                EventCondition.ActiveRecoveryEvent(),
+                EventCondition.ExcludeWhenDaysSinceLastEventBelow(3.0f),
+            },
+
+            Weights = new Dictionary<string, float>
+            {
+                { "Rimconemy_Refuge", 15f },
+                { "Rimconemy_Survival", 25f },
+            },
+            CooldownsDays = new Dictionary<string, float>
+            {
+                { "Rimconemy_Refuge", 8.0f },
+                { "Rimconemy_Survival", 5.0f },
+            },
+
+            EscalationBand = 1,
+            EscalationModifier = 0f,
+
+            LetterLabel = "Sturmgut",
+            LetterText = "Ein Unwetter hat Holzstämme und Vorräte herbeigespült. Die Gruppe kann sie einsammeln.",
+            TextKey = "Rimconemy_Sturmloot_Letter",
+
+            Choices = new List<EventChoice>
+            {
+                new EventChoice
+                {
+                    ChoiceId = "Collect",
+                    Label = "Sammeln",
+                    Effects = new List<string> { "ResourceBoost:Wood+150", "ResourceBoost:Food+50" },
+                },
+            },
+
+            FollowUpIds = new List<string>(),
+            DeterminismKeyTemplate = "{ProfileId}+{EventId}+{StorageHash}+{GameTickDay}",
+        };
+
         public static readonly StoryEventSpec BountifulHarvest = new StoryEventSpec
         {
             EventId = "rimconemy_supply_bountiful_harvest",
