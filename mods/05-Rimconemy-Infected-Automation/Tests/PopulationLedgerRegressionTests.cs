@@ -44,6 +44,19 @@ namespace Rimconemy.InfectedAutomation.Tests
             Check(TestAnimalOnlyCount(),                                "T15c.AnimalOnlyCount");
             Check(TestEmptyLedgerHasZeroTotalLiveCount(),               "T15d.EmptyLedgerHasZeroTotalLiveCount");
 
+            // T3-T5 RegisterKill (Task 3)
+            Check(TestRegisterKillNullPawnNoOp(),                        "T3.RegisterKillNullPawnNoOp");
+            Check(TestRegisterKillHumanoidPawnDecrementsHumanoid(),     "T4.RegisterKillHumanoidPawnDecrementsHumanoid");
+            Check(TestRegisterKillAnimalPawnDecrementsAnimal(),         "T5.RegisterKillAnimalPawnDecrementsAnimal");
+            Check(TestRegisterKillTwiceSameIdIsIdempotent(),            "T4b.RegisterKillTwiceSameIdIsIdempotent");
+
+            // T6-T9 Daily-Growth + Revenge-Quote + Reset (Task 4)
+            Check(TestApplyDailyGrowthTickSurvivalBaseline(),           "T6.ApplyDailyGrowthTickSurvivalBaseline");
+            Check(TestApplyDailyGrowthTickProfileVariance30Days(),      "T7.ApplyDailyGrowthTickProfileVariance30Days");
+            Check(TestGetRevengeQuotaSurvival(),                        "T8.GetRevengeQuotaSurvival");
+            Check(TestGetRevengeQuotaClippedByFreeBudget(),             "T9.GetRevengeQuotaClippedByFreeBudget");
+            Check(TestResetDailyCountersResetsRecentOnly(),             "T9b.ResetDailyCountersResetsRecentOnly");
+
             Log.Message(
                 "[Rimconemy.InfectedAutomation] PopulationLedger regression tests (Phase A subset): "
                 + _passed + " passed, " + _failed + " failed."
@@ -140,6 +153,150 @@ namespace Rimconemy.InfectedAutomation.Tests
             return ledger.GetTotalLiveCount() == 0
                 && ledger.GetHumanoidLiveCount() == 0
                 && ledger.GetAnimalLiveCount() == 0;
+        }
+
+        // ── T3 RegisterKill null-Pawn (Task 3) ─────────────────────
+        private static bool TestRegisterKillNullPawnNoOp()
+        {
+            var ledger = new Population.PopulationLedger
+            {
+                HumanoidLiveCount = 5,
+                CumulativeKills = 3,
+                RecentKillsToday = 3,
+            };
+            ledger.RegisterKill(null);
+            // All counters must remain unchanged.
+            return ledger.HumanoidLiveCount == 5
+                && ledger.AnimalLiveCount == 0
+                && ledger.GetCumulativeKills() == 3
+                && ledger.GetRecentKillsToday() == 3;
+        }
+
+        // ── T4 RegisterKill human Pawn decrements Humanoid ─────────
+        private static bool TestRegisterKillHumanoidPawnDecrementsHumanoid()
+        {
+            var ledger = new Population.PopulationLedger
+            {
+                HumanoidLiveCount = 5,
+                AnimalLiveCount = 2,
+                RecentKillsToday = 0,
+            };
+            ledger.RegisterKillForTest("humanoid-pawn-1", isHumanlike: true);
+            return ledger.HumanoidLiveCount == 4
+                && ledger.AnimalLiveCount == 2
+                && ledger.GetCumulativeKills() == 1
+                && ledger.GetRecentKillsToday() == 1;
+        }
+
+        // ── T5 RegisterKill animal Pawn decrements Animal ───────────
+        private static bool TestRegisterKillAnimalPawnDecrementsAnimal()
+        {
+            var ledger = new Population.PopulationLedger
+            {
+                HumanoidLiveCount = 5,
+                AnimalLiveCount = 3,
+                RecentKillsToday = 0,
+            };
+            ledger.RegisterKillForTest("animal-pawn-1", isHumanlike: false);
+            return ledger.HumanoidLiveCount == 5      // human untouched
+                && ledger.AnimalLiveCount == 2         // animal decremented
+                && ledger.GetCumulativeKills() == 1
+                && ledger.GetRecentKillsToday() == 1;
+        }
+
+        // ── T4b Idempotency ─────────────────────────────────────────
+        private static bool TestRegisterKillTwiceSameIdIsIdempotent()
+        {
+            var ledger = new Population.PopulationLedger
+            {
+                HumanoidLiveCount = 5,
+                AnimalLiveCount = 0,
+            };
+            ledger.RegisterKillForTest("repeat-id", isHumanlike: true);
+            ledger.RegisterKillForTest("repeat-id", isHumanlike: true);
+            return ledger.HumanoidLiveCount == 4      // decremented only once
+                && ledger.GetCumulativeKills() == 1
+                && ledger.GetRecentKillsToday() == 1;
+        }
+
+        // ── T6 ApplyDailyGrowthTick Survival baseline ──────────────
+        private static bool TestApplyDailyGrowthTickSurvivalBaseline()
+        {
+            var ledger = new Population.PopulationLedger
+            {
+                Cap = 10,
+                DayIndexSinceStart = 0,
+                ProfileId = Population.PopulationProfileMultipliers.ProfileSurvival,
+            };
+            int newCap = ledger.ApplyDailyGrowthTick();
+            // floor(10 * 1.15) = 11; DayIndex++ = 1.
+            return newCap == 11
+                && ledger.Cap == 11
+                && ledger.DayIndexSinceStart == 1;
+        }
+
+        // ── T7 30-Day Profile-Variance ──────────────────────────────
+        private static bool TestApplyDailyGrowthTickProfileVariance30Days()
+        {
+            int refuge = SimulateGrowth("Refuge");
+            int survival = SimulateGrowth("Survival");
+            int collapse = SimulateGrowth("Collapse");
+            // Harder profile grows faster → Collapse > Survival > Refuge.
+            return refuge < survival && survival < collapse;
+        }
+
+        private static int SimulateGrowth(string profileId)
+        {
+            var ledger = new Population.PopulationLedger
+            {
+                Cap = 5,
+                ProfileId = profileId,
+            };
+            for (int i = 0; i < 30; i++) ledger.ApplyDailyGrowthTick();
+            return ledger.Cap;
+        }
+
+        // ── T8 GetRevengeQuota Survival baseline ───────────────────
+        private static bool TestGetRevengeQuotaSurvival()
+        {
+            var ledger = new Population.PopulationLedger
+            {
+                RecentKillsToday = 10,
+                Cap = 100,
+                HumanoidLiveCount = 90,
+                ProfileId = Population.PopulationProfileMultipliers.ProfileSurvival,
+            };
+            // floor(10 * 0.7) = 7; freeBudget = 100-90 = 10. min(10,7) = 7.
+            return ledger.GetRevengeQuota(100) == 7;
+        }
+
+        // ── T9 GetRevengeQuota clipped by free budget ──────────────
+        private static bool TestGetRevengeQuotaClippedByFreeBudget()
+        {
+            var ledger = new Population.PopulationLedger
+            {
+                RecentKillsToday = 100,
+                Cap = 5,
+                HumanoidLiveCount = 5,
+                ProfileId = Population.PopulationProfileMultipliers.ProfileCollapse,
+            };
+            // floor(100 * 0.9) = 90; freeBudget = 5-5 = 0. min(90,0) = 0.
+            return ledger.GetRevengeQuota(5) == 0;
+        }
+
+        // ── T9b ResetDailyCounters resets Recent only ───────────────
+        private static bool TestResetDailyCountersResetsRecentOnly()
+        {
+            var ledger = new Population.PopulationLedger
+            {
+                RecentKillsToday = 5,
+                CumulativeKills = 12,
+                HumanoidLiveCount = 8,
+            };
+            ledger.ResetDailyCounters();
+            return ledger.RecentKillsToday == 0
+                && ledger.CumulativeKills == 12
+                && ledger.HumanoidLiveCount == 8;
         }
     }
 }

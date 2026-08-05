@@ -74,6 +74,17 @@ namespace Rimconemy.InfectedAutomation.Population
         public int CumulativeInoculations;
         public long LastInoculationTick;
 
+        // ── Non-persisted state (Task 3+) ────────────────────
+        /// <summary>
+        /// Tracks recently-killed pawn IDs so RegisterKill is idempotent
+        /// across multiple callers (CombatResolve, NightInfectedWorker,
+        /// InfectedRaidWorker). Cleared when the GameComponent is loaded
+        /// — see ExposeData() LoadingVars branch. This is intentional:
+        /// killing a pawn that survives a save/load cycle would otherwise
+        /// inflate the cumulative counter.
+        /// </summary>
+        private readonly HashSet<string> _killedIds = new HashSet<string>();
+
         // ── Constructors ────────────────────────────────────
         public PopulationLedger(Game game) : this()
         {
@@ -111,7 +122,7 @@ namespace Rimconemy.InfectedAutomation.Population
             // point.
         }
 
-        // ── Lese-API ────────────────────────────────────────
+        // ── Lese-API ──────────────────────────────────────
         public int GetHumanoidLiveCount() => HumanoidLiveCount;
         public int GetAnimalLiveCount() => AnimalLiveCount;
         public int GetTotalLiveCount() => HumanoidLiveCount + AnimalLiveCount;
@@ -120,6 +131,128 @@ namespace Rimconemy.InfectedAutomation.Population
         public int GetRecentKillsToday() => RecentKillsToday;
         public long GetLastInoculationTick() => LastInoculationTick;
         public int GetCumulativeInoculations() => CumulativeInoculations;
+
+        // ── Write-API: Kill-Tracking (Task 3) ────────────────
+        /// <summary>
+        /// Increment the cumulative kill counter and decrement the matching
+        /// LiveCount (Humanoid or Animal). Idempotent per <c>pawn.ThingID</c>
+        /// so multiple callers (CombatResolve, RaidWorker, NightWorker) can
+        /// fire on the same death without double-counting.
+        ///
+        /// Rule of thumb for callers: pass the dying pawn once from the
+        /// winning side; the ledger handles dedup. If you are unsure whether
+        /// you already counted this pawn, just call <c>RegisterKill</c> — the
+        /// idempotency set guarantees correctness.
+        ///
+        /// Edge cases:
+        ///   pawn == null → no-op + Warning
+        ///   pawn already counted → no-op
+        ///   pawn.RaceProps null → no-op (defensive)
+        /// </summary>
+        public void RegisterKill(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                Log.Warning("[Rimconemy.InfectedAutomation] PopulationLedger.RegisterKill(null); ignored.");
+                return;
+            }
+
+            string id = pawn.ThingID ?? "<no-id>";
+            bool isHumanlike = pawn.RaceProps != null && pawn.RaceProps.Humanlike;
+            ApplyKill(id, isHumanlike);
+        }
+
+        /// <summary>
+        /// Internal Test-Hook: same kill-registration logic as the
+        /// production <see cref="RegisterKill(Pawn)"/> but with the
+        /// pawn-properties passed in directly. Enables unit tests without
+        /// a real <c>Pawn</c> instance.
+        /// </summary>
+        internal void RegisterKillForTest(string thingId, bool isHumanlike)
+        {
+            if (string.IsNullOrEmpty(thingId))
+            {
+                Log.Warning("[Rimconemy.InfectedAutomation] PopulationLedger.RegisterKillForTest(<empty>); ignored.");
+                return;
+            }
+            ApplyKill(thingId, isHumanlike);
+        }
+
+        /// <summary>
+        /// Core kill-routing: idempotency + counter increment + LiveCount
+        /// decrement. Centralised here so test- and production-paths share
+        /// the same logic.
+        /// </summary>
+        private void ApplyKill(string thingId, bool isHumanlike)
+        {
+            if (!_killedIds.Add(thingId))
+            {
+                // re-entry; idempotent.
+                return;
+            }
+            CumulativeKills += 1;
+            RecentKillsToday += 1;
+            if (isHumanlike)
+            {
+                HumanoidLiveCount = System.Math.Max(0, HumanoidLiveCount - 1);
+            }
+            else
+            {
+                AnimalLiveCount = System.Math.Max(0, AnimalLiveCount - 1);
+            }
+        }
+
+        // ── Write-API: Daily-Growth + Revenge-Quote (Task 4) ──
+        /// <summary>
+        /// Apply the profile-driven daily growth multiplier to <c>Cap</c>,
+        /// floored. Increments <c>DayIndexSinceStart</c>. Returns the new
+        /// Cap. This is the StoryDirector's primary daily escalation hook.
+        ///
+        /// Overflow guard (spec §7): <c>Cap</c> is floored at
+        /// <c>int.MaxValue / 1000</c> so a Collapse-profile, multi-year
+        /// run cannot overflow into a Log.Error inside a GameComponent.
+        /// Once sat, the multiplier becomes a no-op for the field.
+        /// </summary>
+        public int ApplyDailyGrowthTick()
+        {
+            float m = PopulationProfileMultipliers.GetDailyGrowth(ProfileId);
+            int newCap = (int)System.Math.Floor((double)Cap * (double)m);
+            const int CapCeiling = int.MaxValue / 1000;
+            if (newCap > CapCeiling) newCap = CapCeiling;
+            if (newCap < Cap) newCap = Cap;  // never shrink Cap (defensive)
+            Cap = newCap;
+            DayIndexSinceStart += 1;
+            return Cap;
+        }
+
+        /// <summary>
+        /// Resets <c>RecentKillsToday</c> to zero. Called at the start of
+        /// each Day-Tick so the Revenge-Quote metric reflects the current
+        /// day's kills only.
+        /// </summary>
+        public void ResetDailyCounters()
+        {
+            RecentKillsToday = 0;
+        }
+
+        /// <summary>
+        /// Returns the night-spawn quota driven by today's kill count.
+        /// Clipped by the free budget (Cap minus current total live).
+        ///
+        /// The original-spec "always &lt; kills" property falls out
+        /// naturally because <c>maxCap</c> is the free budget — the caller
+        /// can never receive a Revenge-Quote greater than what would fit in
+        /// the cap. Combined with the profile multiplier (0.4 / 0.7 /
+        /// 0.9) the result always stays &lt; RecentKillsToday.
+        /// </summary>
+        public int GetRevengeQuota(int maxCap)
+        {
+            if (maxCap <= 0) return 0;
+            float ratio = PopulationProfileMultipliers.GetRevengeRatio(ProfileId);
+            int raw = (int)System.Math.Floor((double)RecentKillsToday * (double)ratio);
+            int freeBudget = System.Math.Max(0, maxCap - GetTotalLiveCount());
+            return System.Math.Min(freeBudget, raw);
+        }
 
         // ── Migration ───────────────────────────────────────
         public void MigrateIfNeeded()
@@ -166,6 +299,11 @@ namespace Rimconemy.InfectedAutomation.Population
             // not leak across the load boundary.
             if (Scribe.mode == LoadSaveMode.LoadingVars)
             {
+                // Reset the non-persisted kill-idempotency set so a pawn
+                // that survived a save can be counted again if it dies
+                // after the load. CumulativeKills is persisted, so the
+                // total remains stable across reload.
+                _killedIds.Clear();
                 Rimconemy.Foundation.Save.MigrationRegistry.Clear();
                 if (SchemaVersion < CurrentSchemaVersion)
                     MigrateIfNeeded();
