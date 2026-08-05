@@ -33,7 +33,7 @@
 | `Source/Horde/HordeCameraOverlay.cs` | Static Postfix auf `UIRoot.UIRootOnGUI`, explizit via `Install()`: Edge-Frame-Pulse |
 | `Defs/WorldObjects/Rimconemy_HordeWorldObject.xml` | Def für WorldObject-Class |
 | `Source/Bootstrap.cs` | RunAll-Hook für Tests |
-| `Tests/HordeRegressionTests.cs` | 12 Tests (D1-D12) |
+| `Tests/HordeRegressionTests.cs` | 15 Tests (D1-D15) |
 | `docs/falsification/infected__ThreatPressure.md` | §F Phase-D Live-Beleg Stub |
 
 ---
@@ -58,7 +58,7 @@ Create `Tests/HordeRegressionTests.cs`:
 ```csharp
 // Tests/HordeRegressionTests.cs
 //
-// Phase D — Horde-Overlay Visualisierung (D1-D12).
+// Phase D — Horde-Overlay Visualisierung (D1-D14).
 // spec: docs/superpowers/specs/2026-08-05-horde-overlay-design.md
 // plan: docs/superpowers/plans/2026-08-05-horde-overlay.md
 //
@@ -604,7 +604,7 @@ using System.Linq;
 
 `Bootstrap.cs` already Lazy-<cctor>-driven; XML Defs load via DefDatabase at first access. No change needed.
 
-- [ ] **Step 9: Run test to verify all 12 pass**
+- [ ] **Step 9: Run test to verify all 15 pass**
 
 ```bash
 RimWorldManagedPath="/home/vannon/GOG Games/RimWorld/game/RimWorldLinux_Data/Managed" \
@@ -1078,7 +1078,7 @@ git commit -m "chore: Bump 0.0.62 -> 0.0.63 + Phase D Live-Beleg §F (Phase D T6
 | §5 API | HordeCalculator/IsActive/ComputePulsePhase + WorldObject + Spawner + UpdateLogic | T1-T2 |
 | §6 Determinismus | Pure APIs, transient state | T1 (Pure), T2 (tick-derived, kein State) |
 | §7 Edge Cases | null ledger/profile/map/home | T1 (defensive), D1-D5 (null-gates), D12 (Def-Null) |
-| §8 Tests D1-D12 | 12 tests | T1 (7), T2 (5) — covers all |
+| §8 Tests D1-D15 | 15 tests | T1 (7), T2 (5), T3 (3: D13-D15) — covers all |
 | §10 Bootstrap+Logging | Tests + Install hook | T3/T5 Bootstrap updates, T6 Bump |
 | §11 Akzeptanz-Gate D1-D8 | 8 gates | T1-T6 (WIP), D7 Bump, D8 Live-Beleg |
 | §12 Nicht-Ziele | YAGNI | doc-only |
@@ -1116,7 +1116,7 @@ Zero TBD/TODO markers. All code complete and runnable.
 
 ### 7. Acceptance-Gate:
 
-- D1 12/12 tests PASS — ✓ (covered T1-T2).
+- D1 15/15 tests PASS — ✓ (covered T1-T3).
 - D2 Confguration-sample determinism — ✓ (D2 test asserts Survival 150).
 - D3 Spawner sync with Reconciler — ✓ (T2).
 - D4 HordeWorldObject Def loads — ✓ (T2 + D12 test).

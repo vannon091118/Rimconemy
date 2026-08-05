@@ -247,6 +247,9 @@ public static class HordeUpdateLogic
 | D10 | UpdatePureDeterministicFromTick | gleiche (tile,tick) → gleiches Ergebnis; home=7,tick=250 → 11 |
 | D11 | CalculatorAnimalHalfCapRoute | Hybrid count at Refuge threshold (100+0.5×100=150 < 220) |
 | D12 | WorldObjectExistsInDefDB | Rimconemy_HordeWorldObject XML loads successfully |
+| D13 | SpawnerCadenceSamplesPulse | 15-Tick-Cadence teilt 120 mit ≥4 Samples, keine Aliasing |
+| D14 | SpawnerRegenOnlyWhileActive | Regen feuert nur bei aktiv + fällig; Layers sind SectionLayer |
+| D15 | SpawnerActuallyFiresRegen | Driver feuert RegenerateLayerNow je Layer pro Fire, nur bei aktiv (Counting-Sink) |
 
 (D11-D12 duplicates and D15 impossible-input test were cut in the 2026-08-05 scope-cleanup;
 D2/D5 already cover prefix-strip routing and null-profile fallback.)
@@ -280,7 +283,7 @@ Logging-Hooks (alle Debug-Level):
 
 ## 11. Akzeptanz-Gate (Phase D)
 
-- [ ] D1 — `HordeRegressionTests.RunAll()` = 12/12 PASS.
+- [ ] D1 — `HordeRegressionTests.RunAll()` = 15/15 PASS.
 - [ ] D2 — `HordeCalculator.GetEffectiveCount` deterministisch-tests bei 5 Config-Samples.
 - [ ] D3 — `HordeSpawner.MapComponentTick` läuft syncron mit PopulationLedger-Reconciler (kein Race).
 - [ ] D4 — `Rimconemy_HordeWorldObject` Def lädt via DefDatabase XML.

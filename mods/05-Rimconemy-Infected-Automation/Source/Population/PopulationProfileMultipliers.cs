@@ -44,7 +44,12 @@ namespace Rimconemy.InfectedAutomation.Population
                 { ProfileCollapse, 0.9f },
             };
 
-        // Population at which the Horde overlay activates (Phase D).
+        // Population-Count-Threshold: Horde overlay activates (Phase D).
+        // ⚠ PHASE-F NAMING ALERT: this is an *int count* (how many infected
+        // exist). do NOT confuse with the float fraction HordeActivationThreshold
+        // below (Phase F). Call-sites that need the count gate use
+        // GetHordeThreshold(); call-sites that need the letter-firing fraction
+        // gate use GetHordeActivationThreshold().
         public static readonly IReadOnlyDictionary<string, int> HordeThreshold =
             new Dictionary<string, int>
             {

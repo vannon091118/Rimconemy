@@ -246,7 +246,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.InfectedAutomation",
                 packageId: "rimconemy.infectedautomation",
-                packageVersion: "0.0.64",
+                packageVersion: "0.0.68",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.infectedautomation.threat", 1),

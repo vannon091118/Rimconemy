@@ -497,7 +497,7 @@ Sektion in `docs/falsification/infected__HordeMigration.md` (zu erstellen).
 
 | Package | Version | Neue Capability |
 |---|---|---|
-| 05 (InfectedAutomation) | 0.0.64 → **0.0.65** | `rimconemy.infectedautomation.horde_migration` v1 |
+| 05 (InfectedAutomation) | 0.0.64 → **0.0.68** (current; Phase F Substrate V1 in 0.0.68, weitere Substrate-Folgeschritte je nach Plan) | `rimconemy.infectedautomation.horde_migration` v1 |
 
 INTERFACE_CONTRACT.md §9.1 Eintrag:
 > `rimconemy.infectedautomation.horde_migration` v1 — Owner: Infected. Sole-Owner `HordeManifest`/`HordeMigrationDriver`. Lese-Surface für Mod 04 (Economy/Territory) via Bridge nur falls Outpost-Threat-Coupling gewünscht (§33 Outpost-Ökonomie).

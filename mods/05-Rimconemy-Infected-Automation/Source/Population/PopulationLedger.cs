@@ -336,7 +336,37 @@ namespace Rimconemy.InfectedAutomation.Population
                 return;
             }
             CumulativeInoculations += 1;
-            LastInoculationTick = Find.TickManager?.TicksGame ?? 0L;
+
+            // Defensive accessor chain. `Find.TickManager` is a property whose
+            // getter dereferences `Current.Game.tickManager` directly; if
+            // `Current.Game == null` (e.g. when this method is called from a
+            // static-ctor regression test before the game is initialised), the
+            // getter throws NullReferenceException BEFORE the `?.` operator
+            // gets a chance to short-circuit. We therefore go via
+            // `Current.Game?.tickManager?.TicksGame` so the bootstrap-time
+            // call path returns 0L without crashing and wraps the cctor in a
+            // TypeInitializationException. See DECISIONS §24 (Runtime
+            // Defensive-Accessor contract) and docs/falsification 2026-08-05.
+            long nowAbs = 0L;
+            try
+            {
+                var game = Current.Game;
+                if (game != null && game.tickManager != null)
+                {
+                    nowAbs = game.tickManager.TicksGame;
+                }
+            }
+            catch (System.Exception ex)
+            {
+                // Never escalate the bootstrap: tickManager access is
+                // best-effort and the absence of a timestamp is acceptable
+                // when called outside an active game session.
+                Log.Warning(
+                    "[Rimconemy.InfectedAutomation] PopulationLedger.NoteInoculation: "
+                    + "tick access failed (" + ex.GetType().Name + ": " + ex.Message
+                    + "); stamping 0L.");
+            }
+            LastInoculationTick = nowAbs;
         }
 
         /// <summary>
@@ -349,7 +379,20 @@ namespace Rimconemy.InfectedAutomation.Population
         {
             long interval = PopulationProfileMultipliers.GetInoculationMinInterval(ProfileId);
             if (interval <= 0L) return true;  // safety, never on an unconfigured profile
-            long now = Find.TickManager?.TicksGame ?? 0L;
+            long now = 0L;
+            try
+            {
+                var game = Current.Game;
+                if (game != null && game.tickManager != null)
+                {
+                    now = game.tickManager.TicksGame;
+                }
+            }
+            catch (System.Exception)
+            {
+                // Lack of tick info acts as "cooldown elapsed" — defensive
+                // for bootstrap-time calls. Mirrors NoteInoculation rationale.
+            }
             if (LastInoculationTick == 0L) return true;  // never inoculated yet
             return (now - LastInoculationTick) >= interval;
         }

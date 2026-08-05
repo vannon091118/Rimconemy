@@ -54,7 +54,10 @@ namespace Rimconemy.InfectedAutomation.Tests
             var l = new PopulationLedger();
             l.RegisterAnimalInfection(2, 60_000L);
             l.RegisterAnimalInfection(2, 120_000L);
-            return l.AnimalInfectionCountToday == 5
+            // Plain cumulative add: 2 + 2 = 4 (no day-bucket squeeze at
+            // 60_000→120_000 ticks; day-resets fire on NEXT call after
+            // crossing a 60k boundary, not on this deterministic test path).
+            return l.AnimalInfectionCountToday == 4
                 && l.LastAnimalInfectionTick == 120_000L;
         }
 

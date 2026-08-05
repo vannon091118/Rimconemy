@@ -15,6 +15,7 @@
 // Vanilla Wealth Raids remain independently operational
 // (Vanilla Policy, H2 §6).
 
+using Rimconemy.InfectedAutomation.Scenarios;
 using Rimconemy.InfectedAutomation.Story;
 using RimWorld;
 using Verse;
@@ -201,12 +202,11 @@ namespace Rimconemy.InfectedAutomation.Incidents
                     return 0;
                 }
 
-                Faction faction = Find.FactionManager?.FirstFactionOfDef(factionDef);
+                // Use shared utility to ensure hidden faction exists (materializes on demand)
+                Faction faction = InfectedFactionUtility.EnsureHiddenInfectedFaction();
                 if (faction == null)
                 {
-                    // No live faction instance yet (cold-start race). Skip
-                    // the spawn; the next tick will try again.
-                    Log.Warning("[Rimconemy.InfectedAutomation] Spawn-bridge: live faction missing; skipping spawn.");
+                    Log.Warning("[Rimconemy.InfectedAutomation] Spawn-bridge: live faction missing even after materialize; skipping spawn.");
                     return 0;
                 }
 

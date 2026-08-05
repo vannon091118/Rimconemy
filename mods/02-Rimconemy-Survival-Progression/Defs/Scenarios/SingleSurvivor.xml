@@ -62,15 +62,14 @@
         </li>
 
         <!-- Phase 1.4: exactly one weak starter infected.
-             Provided by Package 05 (Infected &amp; Automation). The
-             class reference crosses package boundaries; the loadAfter
-             rimconemy.survivalprogression ordering guarantees that
-             Rimconemy.InfectedAutomation.dll is loaded by the time
-             the scenario parts are instantiated. -->
-        <!-- Phase 1.4: exactly one weak starter infected.
-             No Class attribute — type resolved via ScenPartDef.scenPartClass
-             (Package 05) to avoid cross-package assembly-load-order issues. -->
-        <li>
+             Provided by Package 05 (Infected &amp; Automation). The scenario
+             def-stream cannot resolve ScenPart subclasses via the <def>
+             pointer alone (RimWorld looks for parameterless .ctor of
+             ScenPart base, which it does not have). We therefore bind
+             the Class= attribute explicitly to the concrete subclass
+             in Package 05. Assembly load-order is enforced via
+             About.xml <loadAfter> rimconemy.survivalprogression. -->
+        <li Class="Rimconemy.InfectedAutomation.Scenarios.ScenPart_RimconemyStartEnemies">
           <def>Rimconemy_StartEnemiesPart</def>
         </li>
 

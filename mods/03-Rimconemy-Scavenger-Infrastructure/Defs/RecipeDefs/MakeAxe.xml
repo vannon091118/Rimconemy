@@ -1,5 +1,7 @@
-<RecipeDef>
-  <defName>Rimconemy_MakeAxe</defName>
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <RecipeDef>
+    <defName>Rimconemy_MakeAxe</defName>
   <label>Make Axe</label>
   <jobString>crafting crude axe from scrap and wood</jobString>
   <workAmount>800</workAmount>
@@ -32,4 +34,5 @@
     <li>Rimconemy_Campfire</li>
     <li>FueledSmithy</li>
   </recipeUsers>
-</RecipeDef>
+  </RecipeDef>
+</Defs>

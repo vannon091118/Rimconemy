@@ -38,8 +38,15 @@ namespace Rimconemy.InfectedAutomation.Inoculation
             double baseChance = PopulationProfileMultipliers.GetAnimalInfectionBaseChance(key);
             double scalingFactor = PopulationProfileMultipliers.GetAnimalInfectionHordeScalingFactor(key);
             int threshold = PopulationProfileMultipliers.GetHordeThreshold(key);
-            double above = System.Math.Max(0, hordeCount - threshold);
-            double ratio = threshold > 0 ? above / threshold : 0.0;
+            // Phase E T2 — Linear scale from 0 (not from threshold). Tests:
+            // T2 Survival horde=100  → 0.05*(1+1.0*100/150) == 0.0833
+            // T3 Survival horde=200  → 0.05*(1+1.0*200/150) == 0.1167
+            // T4 Collapse horde=50   → 0.15*(1+1.5*50/80)  == 0.2906
+            // T6 (Collapse horde=0 / -10) must NOT decay below baseChance:
+            // defensive clamp keeps negative horde math bounded at base.
+            double ratio = threshold > 0
+                ? System.Math.Max(0.0, (double)hordeCount / threshold)
+                : 0.0;
             return System.Math.Min(HardCap, baseChance * (1.0 + scalingFactor * ratio));
         }
 

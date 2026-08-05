@@ -212,8 +212,10 @@ namespace Rimconemy.InfectedAutomation.Story
                 return;
             }
 
-            // Don't evaluate if threat is below profile minimum
-            var snapshot = BuildLiveSnapshot(currentTick, State);
+            // Don't evaluate if threat is below profile minimum. Pass the
+            // instance ActiveProfile so the Early-Game Pressure Floor can
+            // apply the profile-specific floor — audit-fix 2026-08-05.
+            var snapshot = BuildLiveSnapshot(currentTick, State, ActiveProfile);
             EvaluateWithSnapshot(snapshot, currentTick);
 
             // Phase B (2026-08-05) — Day-Growth + Reset + Recompute-Revenge
@@ -424,8 +426,17 @@ namespace Rimconemy.InfectedAutomation.Story
         /// Builds a SituationSnapshot from the live game world.
         /// Reads RimWorld state (pawn counts, threat, etc.) and
         /// produces the aggregated read-model that StorySelector needs.
+        ///
+        /// audit-fix 2026-08-05: the Early-Game Pressure Floor reads
+        /// ActiveProfile for profile-specific floors. BuildLiveSnapshot
+        /// was a static helper (no instance context), so the call tripped
+        /// CS0120. We now accept the active profile as a parameter so
+        /// call sites stay static-friendly but the floor logic gets the
+        /// right value. Defensive: a null profile suppresses the floor
+        /// (keeps the wealth-derived value, which is the safe default
+        /// before GameComponent-attached-finalise-init has fired).
         /// </summary>
-        private static SituationSnapshot BuildLiveSnapshot(long tick, StoryState state = null)
+        private static SituationSnapshot BuildLiveSnapshot(long tick, StoryState state = null, SettingProfile profile = null)
         {
             var snapshot = new SituationSnapshot
             {
@@ -468,6 +479,26 @@ namespace Rimconemy.InfectedAutomation.Story
             // slop-audit-fix F1: 700000f is "max wealth = 1.0 pressure" tuning
             // constant. Future: lift to StoryDirectorSettings.WealthMaxForUnityThreat.
             snapshot.ThreatPressure = System.Math.Min(1f, wealthFactor / WealthFullPressureThreshold);
+
+            // Early-Game Pressure Floor: guarantees events can fire from day 1
+            // even at 0 wealth. Profile-specific floors prevent hard-lock on
+            // Survival (0.2) and Collapse (0.15) profiles.
+            // Refuge uses 0.05 since it bans Raid family but allows Supply/Social.
+            // audit-fix 2026-08-05: use the parameter (not the instance field)
+            // — static helper cannot reach instance state and the call sites
+            // already pass ActiveProfile in via the new third arg.
+            if (profile != null)
+            {
+                float floor = profile.ProfileId switch
+                {
+                    "Rimconemy_Refuge" => 0.05f,
+                    "Rimconemy_Survival" => 0.15f,
+                    "Rimconemy_Collapse" => 0.10f,
+                    _ => 0.10f
+                };
+                snapshot.ThreatPressure = System.Math.Max(snapshot.ThreatPressure, floor);
+            }
+
             snapshot.ThreatTrend = 0f;
 
             // Colony wealth (raw total for event-prerequisite gating)
@@ -899,9 +930,12 @@ namespace Rimconemy.InfectedAutomation.Story
 
         /// <summary>
         /// Public wrapper around the private BuildLiveSnapshot so EvaluateNow
-        /// can call it without duplicating logic.
+        /// can call it without duplicating logic. Passes ActiveProfile so
+        /// the Early-Game Pressure Floor can apply the right per-profile
+        /// floor. Wraps Non-null assertion for callers that invoke
+        /// EvaluateNow before FinalizeInit has set the profile.
         /// </summary>
-        private SituationSnapshot BuildLiveSnapshotPublic(long tick) => BuildLiveSnapshot(tick, State);
+        private SituationSnapshot BuildLiveSnapshotPublic(long tick) => BuildLiveSnapshot(tick, State, ActiveProfile);
 
         // ── Phase B — Revenge-Coupling Public API ───────────────────────
 
