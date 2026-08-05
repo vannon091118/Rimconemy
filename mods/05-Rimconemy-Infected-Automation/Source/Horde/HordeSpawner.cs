@@ -30,103 +30,54 @@ namespace Rimconemy.InfectedAutomation.Horde
             if (now < _lastTick + HordeUpdateLogic.TickInterval) return;
             _lastTick = now;
 
-            try
+            var ledger = PopulationLedger.Get();
+            int effective = HordeCalculator.GetEffectiveCount(ledger);
+            var profile = StoryDirector.Get()?.ActiveProfile ?? SettingProfile.Survival;
+            if (!HordeCalculator.IsActive(effective, profile))
             {
-                var ledger = PopulationLedger.Get();
-                int effective = HordeCalculator.GetEffectiveCount(ledger);
-                var director = StoryDirector.Get();
-                var profile = director?.ActiveProfile ?? SettingProfile.Survival;
-                bool active = HordeCalculator.IsActive(effective, profile);
-
-                // 1. Despawn all if below threshold
-                if (!active)
-                {
-                    DespawnAllHordes();
-                    return;
-                }
-
-                // 2. Find player home map
-                Map homeMap = ResolveCanonicalPlayerMap();
-                if (homeMap == null) return;
-                int homeTile = homeMap.Tile;
-
-                // 3. Run pure logic for spawn/drift state
-                var tileList = new List<int>();
-                HordeUpdateLogic.RunOncePure(effective, true, homeTile, now, tileList);
-
-                // 4. Sync with actual WorldObjects
-                SyncHordesAtTiles(tileList, homeTile, now);
+                DespawnAllHordes();
+                return;
             }
-            catch (System.Exception ex)
-            {
-                Log.Warning("[Rimconemy.InfectedAutomation] HordeSpawner: " +
-                    ex.GetType().Name + ": " + ex.Message);
-            }
-        }
 
-        private static Map ResolveCanonicalPlayerMap()
-        {
-            // Reuse Foundation helper; falls back to AnyPlayerHomeMap.
-            try
-            {
-                return Rimconemy.Foundation.Maps.MapRegistry.GetPrimaryPlayerHomeMap()
-                    ?? Find.AnyPlayerHomeMap;
-            }
-            catch (System.Exception ex)
-            {
-                Log.Warning("[Rimconemy.InfectedAutomation] HordeSpawner: MapRegistry.GetPrimaryPlayerHomeMap failed: "
-                    + ex.GetType().Name + ": " + ex.Message + " — falling back to Find.AnyPlayerHomeMap.");
-                return Find.AnyPlayerHomeMap;
-            }
+            Map homeMap = Rimconemy.Foundation.Maps.MapRegistry.GetPrimaryPlayerHomeMap();
+            if (homeMap == null) return;
+            int homeTile = homeMap.Tile;
+
+            var tileList = new List<int>();
+            HordeUpdateLogic.RunOncePure(true, homeTile, now, tileList);
+            if (tileList.Count > 0)
+                SyncHordeAtTile(tileList[0], homeTile);
         }
 
         private static void DespawnAllHordes()
         {
-            if (Find.WorldObjects == null) return;
             var all = Find.WorldObjects.AllWorldObjects;
-            if (all == null) return;
             for (int i = all.Count - 1; i >= 0; i--)
-            {
                 if (all[i] is HordeWorldObject ho) ho.Destroy();
-            }
         }
 
-        private static void SyncHordesAtTiles(List<int> tileList, int homeTile, long currentTick)
+        private static void SyncHordeAtTile(int tile, int homeTile)
         {
-            if (tileList.Count == 0) return;
             var def = DefDatabase<WorldObjectDef>.GetNamedSilentFail("Rimconemy_HordeWorldObject");
             if (def == null)
             {
                 Log.Error("[Rimconemy.InfectedAutomation] HordeSpawner: Def 'Rimconemy_HordeWorldObject' missing.");
                 return;
             }
-            // Spawn one Horde at the drifted tile (one and only one per home map).
-            int tile = tileList[0];
-            var existing = Find.WorldObjects?.AllWorldObjects.FirstOrDefault(
+
+            var existing = Find.WorldObjects.AllWorldObjects.FirstOrDefault(
                 wo => wo is HordeWorldObject);
-            if (existing == null)
-            {
-                try
-                {
-                    var ho = (HordeWorldObject)WorldObjectMaker.MakeWorldObject(def);
-                    ho.Tile = tile;
-                    ho.LastMoveTick = currentTick;
-                    Find.WorldObjects.Add(ho);
-                    Log.Message("[Rimconemy.InfectedAutomation] HordeSpawner: Spawning HordeWorldObject at tile=" + tile + " (home=" + homeTile + ")");
-                }
-                catch (System.Exception ex)
-                {
-                    Log.Warning("[Rimconemy.InfectedAutomation] HordeSpawner: MakeWorldObject failed: " + ex.Message);
-                }
-            }
-            else
+            if (existing != null)
             {
                 if (existing.Tile != tile)
-                {
                     existing.Tile = tile;
-                    Log.Message("[Rimconemy.InfectedAutomation] HordeSpawner: Move HordeWorldObject → tile=" + tile);
-                }
+                return;
             }
+
+            var ho = (HordeWorldObject)WorldObjectMaker.MakeWorldObject(def);
+            ho.Tile = tile;
+            Find.WorldObjects.Add(ho);
+            Log.Message("[Rimconemy.InfectedAutomation] HordeSpawner: Spawning HordeWorldObject at tile=" + tile + " (home=" + homeTile + ")");
         }
     }
 }

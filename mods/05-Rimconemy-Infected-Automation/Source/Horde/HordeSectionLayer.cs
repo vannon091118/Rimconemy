@@ -1,13 +1,9 @@
 // Source/Horde/HordeSectionLayer.cs
 //
 // Phase D — SectionLayer that draws a pulsing concentric red circle
-// around the Home-Map center. Reuses the Visibility-clean pattern from
-// DarknessSectionLayerLifecycle: red RGB + alpha-driven pulse, no
-// per-cell mesh regeneration, full-section submesh per Regenerate.
+// around the Home-Map center. Red RGB + alpha-driven pulse, full-section
+// submesh per Regenerate.
 
-using Rimconemy.InfectedAutomation.Population;
-using Rimconemy.InfectedAutomation.Story;
-using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -29,49 +25,28 @@ namespace Rimconemy.InfectedAutomation.Horde
         {
         }
 
-        public override bool Visible
-        {
-            get
-            {
-                if (!base.Visible) return false;
-                return HordeCalculator.IsActive(
-                    HordeCalculator.GetEffectiveCount(PopulationLedger.Get()),
-                    StoryDirector.Get()?.ActiveProfile ?? SettingProfile.Survival);
-            }
-        }
+        public override bool Visible => base.Visible && HordeCalculator.IsActiveNow();
 
         public override void Regenerate()
         {
-            try
-            {
-                ClearSubMeshes(MeshParts.All);
-                long currentTick = Find.TickManager?.TicksGame ?? 0L;
-                float phase = HordeCalculator.ComputePulsePhase(currentTick);
+            ClearSubMeshes(MeshParts.All);
+            float phase = HordeCalculator.ComputePulsePhase(Find.TickManager?.TicksGame ?? 0L);
 
-                Vector3 center = new Vector3(
-                    section.botLeft.x + 17f, 0f, section.botLeft.z + 17f);
+            Vector3 center = new Vector3(
+                section.botLeft.x + 17f, 0f, section.botLeft.z + 17f);
 
-                AddRadialRing(center, InnerRadius, InnerAlphaMax, phase);
-                AddRadialRing(center, MidRadius, MidAlphaMax, phase);
-                AddRadialRing(center, OuterRadius, OuterAlphaMax, phase);
-            }
-            catch (System.Exception ex)
-            {
-                Log.Warning("[Rimconemy.InfectedAutomation] HordeSectionLayer.Regenerate: "
-                    + ex.GetType().Name + ": " + ex.Message);
-            }
+            AddRadialRing(center, InnerRadius, InnerAlphaMax, phase);
+            AddRadialRing(center, MidRadius, MidAlphaMax, phase);
+            AddRadialRing(center, OuterRadius, OuterAlphaMax, phase);
         }
 
         private void AddRadialRing(Vector3 center, float radius, float alphaMax, float phase)
         {
-            float alpha = alphaMax * phase * 0.85f; // 0..α_max, multiplied by phase for breathing.
+            float alpha = alphaMax * phase;
             const int Segments = 32;
 
-            // Pattern-Reference: DarknessSectionLayerLifecycle uses
-            // MatBases.Darkness for an alpha-overlay sub-mesh. The same
-            // material supports red RGB via per-vertex colour; we layer
-            // three concentric translucent red triangles per Ring.
             LayerSubMesh subMesh = GetSubMesh(MatBases.Darkness);
+            Color32 color = new Color32(220, 30, 30, (byte)Mathf.Clamp(Mathf.RoundToInt(alpha * 255f), 0, 255));
             for (int i = 0; i < Segments; i++)
             {
                 float angle = (float)i / Segments * 2f * Mathf.PI;
@@ -80,7 +55,6 @@ namespace Rimconemy.InfectedAutomation.Horde
                 subMesh.verts.Add(a);
                 subMesh.verts.Add(b);
                 subMesh.verts.Add(center);
-                Color32 color = new Color32(220, 30, 30, (byte)Mathf.Clamp(Mathf.RoundToInt(alpha * 255f), 0, 255));
                 subMesh.colors.Add(color);
                 subMesh.colors.Add(color);
                 subMesh.colors.Add(color);

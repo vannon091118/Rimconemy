@@ -1,14 +1,14 @@
 // Tests/HordeRegressionTests.cs
 //
-// Phase D — Horde-Overlay Visualisierung (D1-D15).
+// Phase D — Horde-Overlay Visualisierung (D1-D12).
 // spec: docs/superpowers/specs/2026-08-05-horde-overlay-design.md
 // plan: docs/superpowers/plans/2026-08-05-horde-overlay.md
 //
 // Owner: Infected & Automation (Package 05).
 //
 // Calculator-side tests cover Pure-Logic only.
-// UpdateLogic-WorldObject tests cover pure spawn / drift / despawn.
-// D14 + D15 verify Def-load + Spawner defensive paths.
+// UpdateLogic tests cover pure spawn / drift / despawn.
+// D11-D12 verify the hybrid-count route and the WorldObject Def load.
 
 using Rimconemy.InfectedAutomation.Horde;
 using Rimconemy.InfectedAutomation.Population;
@@ -19,8 +19,6 @@ namespace Rimconemy.InfectedAutomation.Tests
 {
     public static class HordeRegressionTests
     {
-        public const int ExpectedPassCount = 15;
-
         public static int RunAll()
         {
             int passed = 0;
@@ -49,14 +47,9 @@ namespace Rimconemy.InfectedAutomation.Tests
             Check(D9_UpdatePureMoveTowardsHome(),                    "D9.UpdatePureMoveTowardsHome");
             Check(D10_UpdatePureMoveIntervalRespected(),             "D10.UpdatePureMoveIntervalRespected");
 
-            // ── D11-D13: Strip-Prefix routing ──────────────
-            Check(D11_StripRimconemyPrefixForThreshold(),            "D11.StripRimconemyPrefixForThreshold");
-            Check(D12_StripRimconemyPrefixNullReturnsSurvival(),     "D12.StripRimconemyPrefixNullReturnsSurvival");
-            Check(D13_AnimalHalfCapRoute(),                          "D13.AnimalHalfCapRoute");
-
-            // ── D14-D15: WorldObject + Spawner defensive ───
-            Check(D14_WorldObjectExistsInDefDB(),                    "D14.WorldObjectExistsInDefDB");
-            Check(D15_SpawnerNullMapComponentSkip(),                 "D15.SpawnerNullMapComponentSkip");
+            // ── D11-D12: hybrid route + Def load ─────────────
+            Check(D11_AnimalHalfCapRoute(),                          "D11.AnimalHalfCapRoute");
+            Check(D12_WorldObjectExistsInDefDB(),                    "D12.WorldObjectExistsInDefDB");
 
             Log.Message(
                 "[Rimconemy.InfectedAutomation] Horde regression tests: "
@@ -118,14 +111,14 @@ namespace Rimconemy.InfectedAutomation.Tests
                 && HordeCalculator.IsActive(eHigh, SettingProfile.Collapse);
         }
 
-        // ── D5: null profile → Survival fallback ─────────────────
+        // ── D5: null profile → Survival fallback (150) ─────────────
         private static bool D5_CalculatorProfileFallbackNull()
         {
             return !HordeCalculator.IsActive(120, null)
                 && HordeCalculator.IsActive(160, null);
         }
 
-        // ── D6: PulsePhase periodic 0→1 over 120 ticks ─────────
+        // ── D6: PulsePhase periodic 0→1 over 120 ticks ─────────────
         private static bool D6_PulsePhaseSinusoidal()
         {
             float p0 = HordeCalculator.ComputePulsePhase(0L);
@@ -146,7 +139,6 @@ namespace Rimconemy.InfectedAutomation.Tests
         {
             var hordeTiles = new System.Collections.Generic.List<int> { 100, 105 };
             HordeUpdateLogic.RunOncePure(
-                effective: 100,
                 active: false,
                 homeTile: 50,
                 currentTick: 5000L,
@@ -159,7 +151,6 @@ namespace Rimconemy.InfectedAutomation.Tests
         {
             var hordeTiles = new System.Collections.Generic.List<int>();
             HordeUpdateLogic.RunOncePure(
-                effective: 200,
                 active: true,
                 homeTile: 50,
                 currentTick: 5000L,
@@ -173,7 +164,7 @@ namespace Rimconemy.InfectedAutomation.Tests
         {
             var hordeTiles = new System.Collections.Generic.List<int> { 60 };
             HordeUpdateLogic.RunOncePure(
-                effective: 200, active: true, homeTile: 50,
+                active: true, homeTile: 50,
                 currentTick: 500L, hordeTiles: hordeTiles);
             // 500/250 = 2 moves; 60 - 2 = 58
             return hordeTiles.Count == 1 && hordeTiles[0] == 58;
@@ -184,57 +175,24 @@ namespace Rimconemy.InfectedAutomation.Tests
         {
             var hordeTiles = new System.Collections.Generic.List<int> { 60 };
             HordeUpdateLogic.RunOncePure(
-                effective: 200, active: true, homeTile: 50,
+                active: true, homeTile: 50,
                 currentTick: 251L, hordeTiles: hordeTiles);
             return hordeTiles[0] == 59;
         }
 
-        // ── D11: profile "Rimconemy_Survival" routes correctly ────
-        private static bool D11_StripRimconemyPrefixForThreshold()
-        {
-            var ledger = new PopulationLedger { HumanoidLiveCount = 150, AnimalLiveCount = 0, ProfileId = "Survival" };
-            int effective = HordeCalculator.GetEffectiveCount(ledger);
-            // SettingProfile.Survival.ProfileId = "Rimconemy_Survival"
-            return HordeCalculator.IsActive(effective, SettingProfile.Survival);
-        }
-
-        // ── D12: null → Survival fallback (150) ──────────────
-        private static bool D12_StripRimconemyPrefixNullReturnsSurvival()
-        {
-            return !HordeCalculator.IsActive(120, null)
-                && HordeCalculator.IsActive(200, null);
-        }
-
-        // ── D13: hybrid route at Refuge threshold 220 ────────────
-        private static bool D13_AnimalHalfCapRoute()
+        // ── D11: hybrid route at Refuge threshold 220 ────────────
+        private static bool D11_AnimalHalfCapRoute()
         {
             var ledgerRefuge = new PopulationLedger { HumanoidLiveCount = 100, AnimalLiveCount = 100, ProfileId = "Refuge" };
             int eRefuge = HordeCalculator.GetEffectiveCount(ledgerRefuge); // 100 + 50 = 150
             return eRefuge == 150 && !HordeCalculator.IsActive(eRefuge, SettingProfile.Refuge); // Refuge=220, not active
         }
 
-        // ── D14: WorldObjectDef loads from DefDatabase ───────────
-        private static bool D14_WorldObjectExistsInDefDB()
+        // ── D12: WorldObjectDef loads from DefDatabase ───────────
+        private static bool D12_WorldObjectExistsInDefDB()
         {
             var def = DefDatabase<RimWorld.WorldObjectDef>.GetNamedSilentFail("Rimconemy_HordeWorldObject");
             return def != null && def.worldObjectClass == typeof(HordeWorldObject);
-        }
-
-        // ── D15: spawner / updater handles null / edge cases ──────
-        private static bool D15_SpawnerNullMapComponentSkip()
-        {
-            var hordeTiles = new System.Collections.Generic.List<int>();
-            try
-            {
-                HordeUpdateLogic.RunOncePure(
-                    effective: 200, active: true, homeTile: -1,
-                    currentTick: 500L, hordeTiles: hordeTiles);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
         }
     }
 }

@@ -8,6 +8,10 @@
 // active for this profile?". Pulse-phase drive is also Pure so the
 // three Render-Paths (SectionLayer, BurstLayer, CameraOverlay) stay in
 // lock-step without sharing mutable state.
+//
+// IsActiveNow() is the one deliberate exception to the Pure contract: it
+// reads the live ledger + profile so all three render paths share one
+// gate. Everything else is deterministic from its inputs.
 
 using Rimconemy.InfectedAutomation.Population;
 using Rimconemy.InfectedAutomation.Story;

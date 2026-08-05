@@ -105,7 +105,6 @@ namespace Rimconemy.InfectedAutomation
             // Phase D (2026-08-05) — Horde Overlay: World-Map wanderer +
             // SectionLayer-Kreis mittig + Per-Infected-Bursts + CameraEdge.
             Tests.HordeRegressionTests.RunAll();
-            Horde.HordeCameraOverlay.Install();
             Log.Message("[Rimconemy.InfectedAutomation] Phase D: Horde overlay wired (Calculator, WorldObject, Spawner, SectionLayer, BurstLayer, CameraEdge).");
             Log.Message("[Rimconemy.InfectedAutomation] Phase B: Daily-Growth+Reset+Revenge coupling wired.");
             Log.Message("[Rimconemy.InfectedAutomation] Building threat adapter available; Mechadroid job contracts are gated for Milestone B; no incident or raid is spawned.");
