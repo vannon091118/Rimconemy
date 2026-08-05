@@ -948,12 +948,19 @@ namespace Rimconemy.InfectedAutomation.Story
             PopulationLedger ledger, SettingProfile profile, long currentTick)
         {
             if (currentTick == LastRevengeRefreshTick) return;
-            LastRevengeRefreshTick = currentTick;
+            // Review-2026-08-05-Fix: gate-set moved AFTER the null-ledger
+            // early-out so a stray null-ledger call (e.g. before the
+            // Reconciler is initialised) cannot silently burn the per-tick
+            // slot and turn a subsequent valid call into a no-op.
             if (ledger == null) return;
+            LastRevengeRefreshTick = currentTick;
             string key = StripRimconemyPrefix(profile?.ProfileId);
             float ratio = PopulationProfileMultipliers.GetRevengeRatio(key);
-            int freeBudget = (int)System.Math.Min(int.MaxValue,
-                ledger.Cap - (long)ledger.HumanoidLiveCount);
+            // Free-budget clips at 0 first so over-capacity (Cap <
+            // HumanoidLiveCount) produces a clean integer math result
+            // rather than threading a negative through min/max.
+            int freeBudgetRaw = ledger.Cap - ledger.HumanoidLiveCount;
+            int freeBudget = (int)System.Math.Min(int.MaxValue, System.Math.Max(0, freeBudgetRaw));
             int raw = (int)System.Math.Floor((double)ledger.RecentKillsToday * ratio);
             LastPendingRevenge = System.Math.Max(0, System.Math.Min(raw, freeBudget));
         }

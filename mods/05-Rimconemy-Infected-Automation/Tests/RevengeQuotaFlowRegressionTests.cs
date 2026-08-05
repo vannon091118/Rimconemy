@@ -88,11 +88,13 @@ namespace Rimconemy.InfectedAutomation.Tests
             return director.LastPendingRevenge == 0;
         }
 
-        // ── T4: Strip-Prefix null-/empty-Safety ──────────────────────
+        // ── T4: Strip-Prefix null-/empty-/whitespace-Safety ──────────
         private static bool T4_StripPrefixNullSafe()
         {
             return StoryDirector.StripRimconemyPrefix(null) == "Survival"
-                && StoryDirector.StripRimconemyPrefix("") == "Survival";
+                && StoryDirector.StripRimconemyPrefix("") == "Survival"
+                && StoryDirector.StripRimconemyPrefix("   ") == "Survival"          // whitespace-only
+                && StoryDirector.StripRimconemyPrefix(" Rimconemy_Survival ") == "Survival"; // trimmed
         }
 
         // ── T5: Strip-Prefix keeps un-prefixed IDs intact ─────────────
@@ -216,12 +218,16 @@ namespace Rimconemy.InfectedAutomation.Tests
             PopulationLedger ledger, SettingProfile profile, long currentTick)
         {
             if (currentTick == LastRevengeRefreshTick) return;
-            LastRevengeRefreshTick = currentTick;
+            // Mirrors the production Review-2026-08-05 fix: gate-set
+            // after the null-ledger early-out so a stray null-ledger call
+            // cannot burn the per-tick slot and turn a subsequent valid
+            // call into a no-op.
             if (ledger == null) return;
+            LastRevengeRefreshTick = currentTick;
             string key = StripPrefix(profile?.ProfileId);
             float ratio = PopulationProfileMultipliers.GetRevengeRatio(key);
-            int freeBudget = (int)System.Math.Min(int.MaxValue,
-                ledger.Cap - (long)ledger.HumanoidLiveCount);
+            int freeBudgetRaw = ledger.Cap - ledger.HumanoidLiveCount;
+            int freeBudget = (int)System.Math.Min(int.MaxValue, System.Math.Max(0, freeBudgetRaw));
             int raw = (int)System.Math.Floor((double)ledger.RecentKillsToday * ratio);
             LastPendingRevenge = System.Math.Max(0, System.Math.Min(raw, freeBudget));
         }
