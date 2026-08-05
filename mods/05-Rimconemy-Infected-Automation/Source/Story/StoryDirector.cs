@@ -77,6 +77,22 @@ namespace Rimconemy.InfectedAutomation.Story
         public readonly System.Collections.Generic.List<float> ThreatHistory
             = new System.Collections.Generic.List<float>(30);
 
+        // ── Phase B — transient revenge slot (NOT SCRIBED) ──────────
+        // Phase B couples today's raid-plan to yesterday's kills by refreshing
+        // the slot at end-of-day-tick. The slot is intentionally transient so
+        // a save/load does not produce a stale revenge quota from an old
+        // game-day; the recompute path always derives the value fresh from
+        // ledger.RecentKillsToday × profile.RevengeRatio at the next day-
+        // tick. Without "transient" semantics we would either need a
+        // schema migration for the slot or risk running with a stale value
+        // after a load that crosses a day-boundary.
+        //
+        // LastRevengeRefreshTick guards against double-refresh in the same
+        // tick (the day-tick pipeline is allowed to call Recompute from a
+        // future rewire without producing fractional drops).
+        public int LastPendingRevenge;
+        public long LastRevengeRefreshTick;
+
         private StoryEventCatalog _catalog;
 
         public StoryDirector(Game game)
@@ -845,5 +861,60 @@ namespace Rimconemy.InfectedAutomation.Story
         /// can call it without duplicating logic.
         /// </summary>
         private SituationSnapshot BuildLiveSnapshotPublic(long tick) => BuildLiveSnapshot(tick, State);
+
+        // ── Phase B — Revenge-Coupling Public API ───────────────────────
+
+        /// <summary>
+        /// Read-only accessor for the current day's revenge-pending quota.
+        /// Used by <see cref="Incidents.InfectedRaidSpawnService.BuildPlanForTick"/>
+        /// to merge with the pressure-driven pawn count. Always returns
+        /// a non-negative number (the slot is clamped at 0 on every
+        /// decrement).
+        /// </summary>
+        public int GetPendingRevengeanceForToday() => LastPendingRevenge;
+
+        /// <summary>
+        /// Decrements the revenge-pending slot by the actual number of
+        /// pawns spawned in a raid-bridge run. Called from
+        /// <see cref="Incidents.InfectedRaidWorker.TryExecuteWorker"/> after
+        /// <c>SpawnHostileRavagers</c> returns <c>actuallySpawned</c>, with
+        /// the value clamped to <c>min(actuallySpawned, plan.RevengeQuotaComponent)</c>
+        /// so a partial-spawn-failure cannot silently consume more than
+        /// the quota.
+        ///
+        /// Idempotent in the sense that a second call with the same value
+        /// would decrement twice — callers MUST call exactly once per
+        /// worker run. Clamped at 0 so a stale quota cannot manifest as a
+        /// negative; <paramref name="actuallySpawned"/> <= 0 is a no-op.
+        ///
+        /// Does NOT trigger any Spawn side-effect; the slot is independent
+        /// of the live SpawnHostileRavagers path so a logging failure in
+        /// the worker cannot leak into the day-quota accounting.
+        /// </summary>
+        public void DecrementPendingRevenge(int actuallySpawned)
+        {
+            if (actuallySpawned <= 0) return;
+            LastPendingRevenge = System.Math.Max(0, LastPendingRevenge - actuallySpawned);
+        }
+
+        /// <summary>
+        /// Phase B — single-tree-source for the ProfileId translation
+        /// between SettingProfile.ProfileId ("Rimconemy_Survival") and the
+        /// legacy PopulationProfileMultipliers keys ("Survival", "Refuge",
+        /// "Collapse", no prefix). Phase A never bridged these two
+        /// namespaces, so a SettingProfile.ProfileId fed into
+        /// PopulationProfileMultipliers.GetRevengeRatio would silently
+        /// fall back to "Survival" (LogWarnFallback). This helper strips
+        /// the prefix so the lookup finds the row the spec author wrote.
+        ///
+        /// Defensive: returns "Survival" on null/empty rather than throwing
+        /// — same shape as PopulationProfileMultipliers' own fallback.
+        /// </summary>
+        public static string StripRimconemyPrefix(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return "Survival";
+            const string prefix = "Rimconemy_";
+            return id.StartsWith(prefix) ? id.Substring(prefix.Length) : id;
+        }
     }
 }
