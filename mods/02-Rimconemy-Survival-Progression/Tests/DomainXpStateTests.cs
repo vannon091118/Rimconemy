@@ -32,17 +32,18 @@ namespace Rimconemy.SurvivalProgression.Tests
             AssertEqual(1, empty.GetLevel(ProgressionDomain.Building), "empty level is 1");
             AssertEqual(0, empty.TotalAwards, "empty award count is zero");
 
-            // 2) Single valid award
+            // 2) Single valid award — 100 XP crosses the Level-2 threshold
+            //    (level = 1 + floor(sqrt(xp/100)), so 100 XP -> Level 2).
             const long tick = 60000L;
             bool accepted = empty.TryAward(
-                ProgressionDomain.Building, 10f, "build:test:1", "Rimconemy_Tier1Barricade",
+                ProgressionDomain.Building, 100f, "build:test:1", "Rimconemy_Tier1Barricade",
                 1, tick, out ProgressionActionResult r1);
             AssertTrue(accepted, "first award accepted");
             AssertTrue(r1.WasAccepted, "result WasAccepted=true");
-            AssertEqual(10f, r1.BaseExperience, "result BaseExperience preserved");
-            AssertEqual(10f, r1.ActualExperience, "result first-award retains full amount (factor=1)");
-            AssertEqual(10f, empty.GetXp(ProgressionDomain.Building), "xp credited");
-            AssertEqual(2, empty.GetLevel(ProgressionDomain.Building), "level crossed to 2 (>100 sq)");
+            AssertEqual(100f, r1.BaseExperience, "result BaseExperience preserved");
+            AssertEqual(100f, r1.ActualExperience, "result first-award retains full amount (factor=1)");
+            AssertEqual(100f, empty.GetXp(ProgressionDomain.Building), "xp credited");
+            AssertEqual(2, empty.GetLevel(ProgressionDomain.Building), "level crossed to 2 (100 sq threshold)");
             AssertEqual(1, empty.TotalAwards, "one completion key");
 
             // 3) Duplicate idempotency
@@ -52,7 +53,7 @@ namespace Rimconemy.SurvivalProgression.Tests
             AssertFalse(replay, "replay rejected");
             AssertFalse(r2.WasAccepted, "replay result WasAccepted=false");
             AssertEqual(1, empty.TotalAwards, "duplicate did not add key");
-            AssertEqual(10f, empty.GetXp(ProgressionDomain.Building), "duplicate did not add xp");
+            AssertEqual(100f, empty.GetXp(ProgressionDomain.Building), "duplicate did not add xp");
 
             // 4) Empty / invalid input rejection
             AssertFalse(empty.TryAward(ProgressionDomain.Building, 10f, "", "", 0, 0L, out _),
@@ -66,16 +67,21 @@ namespace Rimconemy.SurvivalProgression.Tests
                 "invalid domain enum rejected");
             AssertEqual(before, empty.TotalAwards, "invalid domain did not poison keyset");
 
-            // 5) Diminishing returns
+            // 5) Diminishing returns. Keys MUST carry the domain prefix
+            //    (domain:Building:) so AwardCountByDomain sees them in-domain;
+            //    without it the factor stays 1.0 and no diminishing occurs.
             var dim = new DomainXpState();
             const int n = 5;
             for (int i = 0; i < n; i++)
             {
                 dim.TryAward(
-                    ProgressionDomain.Building, 10f, "dim:" + i, "Def_X", 1, i, out _);
+                    ProgressionDomain.Building, 10f,
+                    DomainXpState.BuildDomainActionPrefix(ProgressionDomain.Building) + "dim:" + i,
+                    "Def_X", 1, i, out _);
             }
-            // After 5 awards in same domain, factor on the 5th was 1/(1+4*0.15) ~ 0.625
-            // so total xp < 5*10 = 50, but > 5*5 = 25 (lower bound sanity).
+            // factor_i = (c+5)/(2c+5) with c = prior in-domain awards
+            // (asymptote 0.5); 5 awards of 10 -> xp ~= 40.5
+            // (< 50 linear, > 25 lower bound).
             float xpDim = dim.GetXp(ProgressionDomain.Building);
             AssertTrue(xpDim > 25f && xpDim < 50f,
                 "diminishing returns shrinks xp below linear (got " + xpDim + ")");

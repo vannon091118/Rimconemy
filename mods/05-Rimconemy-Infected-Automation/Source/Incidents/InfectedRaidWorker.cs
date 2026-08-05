@@ -230,8 +230,9 @@ namespace Rimconemy.InfectedAutomation.Incidents
                 };
                 return ctx;
             }
-            catch
+            catch (System.Exception ex)
             {
+                Log.Warning("[Rimconemy.InfectedAutomation] BuildPlaceholderContext exception: " + ex.GetType().Name + ": " + ex.Message);
                 return new Story.PlaceholderContext();
             }
         }

@@ -18,6 +18,9 @@ namespace Rimconemy.EconomyTerritory.Tests
             TestInvestmentReservesPhysicalInput();
             TestInvestmentReplayDoesNotDuplicate();
             TestOutpostStateUsesAbsoluteTicks();
+            TestUnmannedAutoFactor();
+            TestMannedFactorFullOutput();
+            TestPlannedOutpostProducesZero();
 
             string summary = "[Rimconemy.EconomyTerritory] Outpost investment regression tests: "
                 + _passed + " passed, " + _failed + " failed.";
@@ -70,6 +73,37 @@ namespace Rimconemy.EconomyTerritory.Tests
             AssertEqual(60000L, outpost.LastUpdatedTick,
                 "Outpost: state evaluation records absolute world tick");
             AssertEqual(9L, outpost.CurrentNet, "Outpost: net economy is deterministic");
+        }
+
+        // D-Harmo §31.4: Unbemannt → 30 %, bemannt → 100 %.
+        private static void TestUnmannedAutoFactor()
+        {
+            var outpost = new Outpost("outpost-unmanned", "player", 1000L);
+            outpost.ForceTransition(OutpostState.Active, "test activation", 2000L);
+            outpost.UpdateEconomy(10, 1, 60000L);
+            outpost.StationedPawnCount = 0;
+            AssertEqual(3L, outpost.EffectiveGross,
+                "Outpost: unmanned Active produces 30 % of gross (auto-faktor niedrig)");
+        }
+
+        private static void TestMannedFactorFullOutput()
+        {
+            var outpost = new Outpost("outpost-manned", "player", 1000L);
+            outpost.ForceTransition(OutpostState.Active, "test activation", 2000L);
+            outpost.UpdateEconomy(10, 1, 60000L);
+            outpost.StationedPawnCount = 2;
+            AssertEqual(10L, outpost.EffectiveGross,
+                "Outpost: manned Active produces 100 % of gross (voller Output)");
+        }
+
+        private static void TestPlannedOutpostProducesZero()
+        {
+            var outpost = new Outpost("outpost-planned", "player", 1000L);
+            // State is Planned (default).
+            outpost.UpdateEconomy(10, 1, 2000L);
+            outpost.StationedPawnCount = 5;
+            AssertEqual(0L, outpost.EffectiveGross,
+                "Outpost: Planned state yields zero output (gate, not auto-promote)");
         }
 
         private static void AssertEqual<T>(T expected, T actual, string label)

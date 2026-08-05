@@ -1,4 +1,5 @@
 using System;
+using Rimconemy.Foundation.Catalog;
 using Rimconemy.Foundation.DLC;
 using Rimconemy.Foundation.Events;
 using Rimconemy.Foundation.Profile;
@@ -130,8 +131,32 @@ namespace Rimconemy.Foundation
             Tests.FoundationWindowFallbackTests.RunAll();
             Tests.FoundationHonestBannerAudit.RunAll();
             Tests.FoundationCanonicalLayerTests.RunAll();
+            // Anti-Slop-Guard: scans all Test files across all packages for
+            // anti-patterns (empty catches, skip tricks, tautology returns).
+            // 1 skip = warning, 2nd skip = HARD BLOCK demanding ROOTCAUSE FIX.
+            Tests.AntiSlopGuardTests.RunAll();
             Log.Message("[Rimconemy.Foundation] Building capability gate declared; live construction remains an interactive A-gate.");
             Log.Message("[Rimconemy.Foundation] Canonical layer active: MaterialIdentity + SettingIdentity + RoomRoleResolver.");
+
+            // Phase-5 Storyteller-Probe (2026-08-05): enumerate DefDatabase<StorytellerDef>
+            // once defs are loaded and surface a stable summary line. Late-bind path
+            // in FoundationDashboard re-captures lazily if this early call finds an
+            // empty database — defensive id+log keeps the bootstrap quiet.
+            try
+            {
+                if (StorytellerInventory.EnsureCaptured())
+                {
+                    StorytellerInventory.LogBootstrapSummary();
+                }
+                else
+                {
+                    Log.Message("[Rimconemy.Foundation] StorytellerInventory capture returned 0 (defs may not be fully loaded yet; lazy re-run on dashboard open).");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[Rimconemy.Foundation] StorytellerInventory bootstrap probe failed: {ex.GetType().Name}: {ex.Message}");
+            }
 
             Log.Message("[Rimconemy.Foundation] Bootstrap complete.");
             Log.Message("[Rimconemy.Foundation] ========================================");

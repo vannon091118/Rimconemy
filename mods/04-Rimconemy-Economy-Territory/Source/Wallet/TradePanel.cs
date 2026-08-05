@@ -204,6 +204,32 @@ namespace Rimconemy.EconomyTerritory.Wallet
         /// "Market: 25 credits" but the buttons charge "25 credits" - by
         /// construction they must agree).
         /// </summary>
+        public static long GetBalance()
+        {
+            var ledger = GetOrCreateLedger();
+            return ledger != null ? ledger.Balance : 0L;
+        }
+
+        /// <summary>
+        /// D-Harmo 2026-08-05, DECISIONS §31.4 Caller-Helper:
+        /// Outpost-Reparatur zieht Credits direkt aus dem Wallet. Manuelle
+        /// Debit-Transaktion mit angegebener Reason-Kennung; idempotent über
+        /// den RequestId-Pfad.
+        /// </summary>
+        public static long ApplyManualDebit(long amount, string reason)
+        {
+            var ledger = GetOrCreateLedger();
+            if (ledger == null || amount <= 0L) return 0L;
+            var tx = new Transaction
+            {
+                PackageId = "rimconemy.economyterritory",
+                RequestId = "manual-debit-" + reason,
+                Amount = -amount,
+                Reason = reason ?? "manual debit",
+            };
+            return ledger.ApplyTransaction(tx);
+        }
+
         public static long ApplyDemoTrade(DemoTradeKind kind)
         {
             var ledger = GetOrCreateLedger();
@@ -270,8 +296,9 @@ namespace Rimconemy.EconomyTerritory.Wallet
                 market.RegisterItem("Meal", 25L, currentStock: 0, targetStock: 0);
                 return market.Price("Meal");
             }
-            catch
+            catch (System.Exception ex)
             {
+                Log.Warning("[Rimconemy.EconomyTerritory] TryGetMarketQuote exception: " + ex.GetType().Name + ": " + ex.Message);
                 return 0;
             }
         }

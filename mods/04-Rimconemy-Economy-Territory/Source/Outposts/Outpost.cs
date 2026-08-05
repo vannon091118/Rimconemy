@@ -25,6 +25,9 @@ namespace Rimconemy.EconomyTerritory.Outposts
         public const long DefaultBlockedTimeoutTicks = 90000L; // 1.5 days
         public const long DefaultRuinedThresholdTicks = 240000L; // 4 days w/o repair
         public const long DefaultPlannedTimeoutTicks = 90000L; // 1.5 days without activation
+        // D-Harmo 2026-08-05, DECISIONS §31: standortgebundene Produktion.
+        public const int UnmannedAutoFactorPercent = 30; // 30 % Netto bei 0 Pawns.
+        public const int MannedAutoFactorPercent = 100;  // 100 % Netto bei ≥1 stationiert.
 
         public string OutpostId;
         public string OwnerId;
@@ -44,6 +47,8 @@ namespace Rimconemy.EconomyTerritory.Outposts
         public string InvestmentTransferId;
         public string InvestmentResourceId;
         public int InvestmentAmount;
+        // D-Harmo 2026-08-05, DECISIONS §31: Bemannungs-Modell.
+        public int StationedPawnCount;
 
         public Outpost(string outpostId, string ownerId, long createdAtTick = 0L)
         {
@@ -55,6 +60,21 @@ namespace Rimconemy.EconomyTerritory.Outposts
         }
 
         public long CurrentNet => GrossPerTick - DefenseCostPerTick;
+
+        /// <summary>
+        /// D-Harmo 2026-08-05, DECISIONS §31.4: Bemannungs-Faktor.
+        /// Unbemannt (0 Pawns) → 30 % des Basis-Gross, bemannt (≥1) → 100 %.
+        /// Die Basiswirtschaft läuft nur im Active-Zustand; Planned/Blocked
+        /// produzieren 0. </summary>
+        public long EffectiveGross
+        {
+            get
+            {
+                if (State != OutpostState.Active) return 0L;
+                if (StationedPawnCount <= 0) return GrossPerTick * UnmannedAutoFactorPercent / 100L;
+                return GrossPerTick * MannedAutoFactorPercent / 100L;
+            }
+        }
 
         // ── state transitions ─────────────────────────────────
 
@@ -189,8 +209,8 @@ namespace Rimconemy.EconomyTerritory.Outposts
 
         public bool TryRepair(long repairCredits, long currentTick)
         {
-            if (State != OutpostState.Disconnected) return false;
-            if (repairCredits < 100L) return false; // minimum repair cost
+            if (State != OutpostState.Disconnected && State != OutpostState.Ruined) return false;
+            if (repairCredits < 50L) return false; // minimum repair cost
 
             ForceTransition(OutpostState.Active, $"Repaired for {repairCredits} credits", currentTick);
             LastSeenActiveTick = currentTick;

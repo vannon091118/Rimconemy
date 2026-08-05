@@ -52,6 +52,7 @@
     <costList>
       <Rimconemy_StainlessSteel>30</Rimconemy_StainlessSteel>
       <Rimconemy_MachineParts>4</Rimconemy_MachineParts>
+      <Rimconemy_WeaponComponent>8</Rimconemy_WeaponComponent>
       <Steel>20</Steel>
     </costList>
     <thingCategories>

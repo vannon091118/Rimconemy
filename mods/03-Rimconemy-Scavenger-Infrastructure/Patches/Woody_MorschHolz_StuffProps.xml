@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure (Package 03).
+  D2-Harmonisierung (2026-08-05, DECISIONS §28): Frühe Wände/Türen werden
+  wieder aus `WoodLog`-Stuff gebaut. Um die "morsche"-Semantik zu
+  transportieren, ohne einen zweiten `Rimconemy_MorschHolz`-ThingDef
+  einzuführen (DECISIONS §28 verbietet das explizit), schwächen wir die
+  Stat-Faktoren des Vanilla `WoodLog`-StuffProps defensiv ab.
+
+  Patch-Strategie:
+    - PatchOperationConditional + PatchOperationSet ist defensiv: wenn der
+      Stat-Factor im Vanilla 1.6.4566-Lookup existiert, wird er ersetzt.
+      Wenn nicht, schweigt der Patch (kein Log.Error).
+    - Numeric-Values sind dezidiert unter Vanillas Default gewählt; das
+      Ziel ist "spürbar weniger" gegenüber Stahl/Stein, kein Verlust der
+      Bau-Fähigkeit an sich.
+    - Owner-Vertrag: nur Mod 03 darf Vanilla-WoodLog-Defaults anrühren
+      (§H1 Vanilla-API-Matrix), kein Cross-Paket-Reibach.
+
+  Regression-Test (`WoodyMorschRegressionTests`, Phase-First 2026-08-05):
+    - WoodWall-HP < SteelWall-HP um mindestens 15 % (≈ 0.85 × 1.0).
+    - WoodWall-Armor bleibt ≤ 0 (Wood hat keinen Armor-Bonus in 1.6).
+-->
+<Patch>
+
+  <!-- ══════════════ PART 1 — WOODLOG MaxHitPoints-Factor (morsch) ══════════════ -->
+  <Operation Class="PatchOperationConditional">
+    <xpath>Defs/ThingDef[defName="WoodLog"]/stuffProps/statFactors/MaxHitPoints</xpath>
+    <match Class="PatchOperationSet">
+      <xpath>Defs/ThingDef[defName="WoodLog"]/stuffProps/statFactors/MaxHitPoints</xpath>
+      <value>0.85</value>
+    </match>
+  </Operation>
+
+  <!-- ══════════════ PART 2 — WOODLOG Beauty-Factor (kein ästhetischer Bonus) ══════════════
+       Vanilla 1.6 setzt den Beauty-Factor für WoodLog typisch auf 1.0.
+       Wir reduzieren nicht, weil das Spieler-Wahrnehmung ("Holz ist
+       natürlich") stören würde. Die "morsch"-Wirkung kommt aus
+       MaxHitPoints, nicht aus Beauty. -->
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
+    <xpath>Defs/ThingDef[defName="WoodLog"]/stuffProps/statFactors/ArmorRating</xpath>
+    <match Class="PatchOperationSet">
+      <xpath>Defs/ThingDef[defName="WoodLog"]/stuffProps/statFactors/ArmorRating</xpath>
+      <value>0.0</value>
+    </match>
+  </Operation>
+
+</Patch>

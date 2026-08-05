@@ -66,6 +66,41 @@ namespace Rimconemy.InfectedAutomation
             // for game-over pendings (replaces single-pending tuple).
             Tests.GameOverPendingQueueRegressionTests.RunAll();
             Log.Message("[Rimconemy.InfectedAutomation] Building threat adapter available; Mechadroid job contracts are gated for Milestone B; no incident or raid is spawned.");
+
+            // Phase-5 (2026-08-05) — IncidentClassifier summary log. Validates the
+            // single Infected-Provider invariant and emits a per-Source breakdown.
+            // Boundary: bootstrap runs after vanilla Defs are loaded so the count
+            // is meaningful; full incident-classification report lives in the
+            // IncidentClassifierRegressionTests (T1/T2).
+            try
+            {
+                int rimconemy = 0, vanilla = 0, dlc = 0;
+                var buckets = Incidents.IncidentClassifier.EnumerateAll();
+                for (int i = 0; i < buckets.Count; i++)
+                {
+                    var b = buckets[i];
+                    // IncidentBucket ist struct → kein null-Vergleich möglich.
+                    // Stattdessen prüfen wir auf den Sentinel "leerer" DefName.
+                    if (string.IsNullOrEmpty(b.DefName)) continue;
+                    if (b.Source == Incidents.IncidentClassifier.IncidentSource.Rimconemy) rimconemy++;
+                    else if (b.Source == Incidents.IncidentClassifier.IncidentSource.Vanilla) vanilla++;
+                    else dlc++;
+                }
+                bool oneProvider = Incidents.IncidentClassifier.ValidateOneInfectedProvider();
+                Log.Message("[Rimconemy.InfectedAutomation] IncidentClassifier: total="
+                    + buckets.Count
+                    + ", Rimconemy=" + rimconemy
+                    + ", Vanilla=" + vanilla
+                    + ", DLC/Quest=" + dlc
+                    + ", InfectedProvider-1-of-1="
+                    + (oneProvider ? "OK" : "VIOLATION")
+                    + " (Phase-5 Klassifikation; ROADMAP §8.5)."
+                    );
+            }
+            catch (System.Exception ex)
+            {
+                Log.Warning("[Rimconemy.InfectedAutomation] IncidentClassifier.Bootstrap-summary failed: " + ex.GetType().Name + ": " + ex.Message);
+            }
         }
     }
 }

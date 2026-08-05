@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Survival & Progression (Package 02).
+  DECISIONS §30 — Two-Layer Construction-Speed-Curve (Interpretation B).
+
+  Hängt das Rimconemy-StatPart an die vanilla `StatDef.ConstructionSpeed`
+  `-parts`-Liste an. Idempotent via `not(li[...])`-Guard. Vanilla
+  `WorkSpeedGlobal`, Trait- und Health-Boni bleiben funktional.
+
+  Vanilla anchor: game/Data/Core/Defs/Stats/Stats_Pawn_General?.xml
+    (StatDef mit defName="ConstructionSpeed" — `Core` Mod).
+-->
+<Patch>
+
+  <Operation Class="PatchOperationFindMod">
+    <mods>
+      <li>Core</li>
+    </mods>
+    <match Class="PatchOperationSequence">
+      <success>Normal</success>
+      <operations>
+
+        <li Class="PatchOperationTest">
+          <xpath>/Defs/StatDef[defName="ConstructionSpeed"]</xpath>
+        </li>
+
+        <li Class="PatchOperationAdd"
+            MayRequire="rimconemy.survivalprogression,rimconemy.foundation">
+          <xpath>/Defs/StatDef[defName="ConstructionSpeed"][not(parts/li/@Class[translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')='rimconemy.survivalprogression.character.construction.constructionspeed_statpart'])]/parts</xpath>
+          <order>Append</order>
+          <value>
+            <li Class="Rimconemy.SurvivalProgression.Character.Construction.ConstructionSpeed_StatPart" />
+          </value>
+        </li>
+
+      </operations>
+    </match>
+  </Operation>
+
+</Patch>

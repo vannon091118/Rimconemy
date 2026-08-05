@@ -401,6 +401,62 @@ namespace Rimconemy.InfectedAutomation.Story
             snapshot.ThreatPressure = System.Math.Min(1f, wealthFactor / WealthFullPressureThreshold);
             snapshot.ThreatTrend = 0f;
 
+            // Colony wealth (raw total for event-prerequisite gating)
+            snapshot.ColonyWealth = wealthFactor;
+
+            // Average mood — read from pawns' current mood level
+            snapshot.AverageColonistMood = activeColonists.Count > 0
+                ? activeColonists.Average(p =>
+                {
+                    var need = p.needs?.mood;
+                    return need != null ? need.CurLevel : 0.5f;
+                })
+                : 0.5f;
+
+            // Power grid status — any home map with a powered building
+            snapshot.PowerGridActive = false;
+            foreach (var map in MapRegistry.GetPlayerHomeMaps())
+            {
+                if (map?.PowerNetManager?.PowerNetList != null)
+                {
+                    foreach (var net in map.PowerNetManager.PowerNetList)
+                    {
+                        if (net != null && net.CurrentEnergyGainRate() > 0f)
+                        {
+                            snapshot.PowerGridActive = true;
+                            break;
+                        }
+                    }
+                }
+                if (snapshot.PowerGridActive) break;
+            }
+
+            // Hostile factions — count factions with negative goodwill
+            snapshot.HostileFactionCount = 0;
+            if (Find.FactionManager != null)
+            {
+                foreach (var faction in Find.FactionManager.AllFactionsListForReading)
+                {
+                    if (faction == null || faction.IsPlayer) continue;
+                    if (faction.HostileTo(Faction.OfPlayer))
+                        snapshot.HostileFactionCount++;
+                }
+            }
+
+            // Active research count
+            snapshot.ActiveResearchCount = 0;
+            if (Find.ResearchManager != null && Find.ResearchManager.currentProj != null)
+                snapshot.ActiveResearchCount = 1;
+
+            // Any colonist injured (major health issue)
+            snapshot.AnyColonistInjured = activeColonists.Any(p =>
+                p.health?.summaryHealth?.SummaryHealthPercent < 0.6f);
+
+            // Days since last event (from StoryState)
+            snapshot.DaysSinceLastEvent = (State != null && State.LastEventTick > 0)
+                ? (tick - State.LastEventTick) / (float)Rimconemy.Foundation.TimeConstants.TicksPerDay
+                : float.MaxValue;
+
             // Ideology (simplified: 1 active rule when ThoughtWorker exists)
             snapshot.IdeologyTension = 0f;
             snapshot.ActiveSettingRuleCount = 1; // ResourceFairness is active

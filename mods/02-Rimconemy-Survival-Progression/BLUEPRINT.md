@@ -22,7 +22,7 @@ Vanilla-Ressourcen, Gebäude und Storyteller bleiben im Standalone erhalten.
 - Ein erster schwacher Gegner ist ein Drucktest, aber kein garantierter Ressourcenlieferant.
 - Gegner-Drops sind nicht garantiert; Ruinen können nur zufällig Munition, Stahlreste oder technische Teile enthalten.
 - Kein Arbeitstyp wird wegen fehlender Munition deaktiviert. Vanilla-WorkGiver, JobDriver und Reservation bleiben die Arbeitsquelle; nur normale Input-/Skill-/Reservation-Regeln dürfen einen konkreten Job blockieren.
-- Die spätere Munitionsproduktion liegt als physische T2-Energy-Kette in Paket 03: Stahl → elektrischer Hochofen → Munition; ausgewählte Rezepte verbrauchen Kohle über die Ofen-Refuelable-Mechanik, der Generator verbraucht Kohle separat.
+- Die spätere Munitionsproduktion liegt als physische T2-Strom-Kette in Paket 03: Stahl → elektrischer Hochofen → Munition; ausgewählte Rezepte verbrauchen Kohle über die Ofen-Refuelable-Mechanik, der Generator verbraucht Kohle separat.
 - Combat Extended bleibt optional und ist kein Compile- oder Gameplay-Require.
 
 **Status:** Design entschieden; Startwaffe, Munition, Verbrauch, Nachtspawn und Hochofen sind noch keine LIVE-Belege.

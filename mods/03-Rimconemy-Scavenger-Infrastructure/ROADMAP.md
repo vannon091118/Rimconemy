@@ -40,7 +40,7 @@ Das Paket ist ohne Economy, Territory, Infected oder Survival & Progression buil
 Im Full Overhaul:
 
 - Bauschutt ist das frühe Wand-/Türmaterial und regional handelbar.
-- Der elektrische Hochofen ist ein T2-Energy-Meilenstein für die spätere Munitionskette, nicht Teil des garantierten Startinventars.
+- Der elektrische Hochofen ist ein T2-Strom-Meilenstein für die spätere Munitionskette, nicht Teil des garantierten Startinventars.
 - Farmfläche erzeugt Nahrung, aber auch sichtbaren Infizierten-Druck.
 - Arbeit an Farmen, Generatoren, Bau- und Verteidigungsanlagen gibt XP über Paket 2.
 - Paket 2 schaltet Infrastruktur über bestätigte Verarbeitungsergebnisse und Maschinenwissen stufenweise frei; Vanilla-Forschung bleibt Kompatibilitätsschicht, nicht die Spielerquelle der Freigaben.

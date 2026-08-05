@@ -1,18 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Owner: Scavenger Infrastructure
-  Stable defName: Rimconemy_ConstructionDebris
+  Stable defName: Rimconemy_ConstructionDebris (Save-Contract Pflicht)
   DLC condition: none
   Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> Scavenger -> later packages
   Vanilla anchor: ThingDef (basic resource, ParentName=ResourceBase).
   1.6-Fixes: Graphic_Stacked -> Graphic_StackCount; flammability als Top-Level-Feld gestrichen
   (RimWorld leitet Verbrennbarkeit aus ThingCategory + Material ab, kein freies Feld).
+
+  D3-Harmonisierung (2026-08-05, DECISIONS §29):
+    - Konstruktionsmaterial zu Waffen-Komponente umgewidmet.
+    - KEIN stuffProps mehr (kein Wall-Stuff); Wall/Door wählen wieder Woody/Metallic/Stony.
+    - defName bleibt "Rimconemy_ConstructionDebris" (Save-sicher; alte Stacks
+      bleiben unter neuem Label weiter nutzbar).
+    - Vor T3 (Automation): nur findbar (Ruinen-Loot, Anomaly/Byproduct-Pfad).
+    - Ab T3: craftbar als Waffen-Komponente (Rimconemy_MakeWeaponComponent).
+
+  Owner-Vertrag: das Designer-XML-Label/Description sind Sprache-keyed
+  (`{Rimconemy.Scavenger.ConstructionDebris}`), damit DE/EN getrennt
+  gepflegt werden.
 -->
 <Defs>
   <ThingDef ParentName="ResourceBase">
     <defName>Rimconemy_ConstructionDebris</defName>
-    <label>construction debris</label>
-    <description>Reclaimed wreck material from ruined buildings and burned structures. Used as a base ingredient for walls and doors.</description>
+    <label>{Rimconemy.Scavenger.ConstructionDebris}</label>
+    <description>{Rimconemy.Scavenger.ConstructionDebris.Desc}</description>
     <graphicData>
       <texPath>Things/Item/Resource/StoneBlocks</texPath>
       <graphicClass>Graphic_StackCount</graphicClass>
@@ -26,18 +38,13 @@
     <thingCategories>
       <li>ResourcesRaw</li>
     </thingCategories>
-    <stuffProps>
-      <categories>
-        <li>Stony</li>
-      </categories>
-      <commonality>1.0</commonality>
-      <color>(130,125,120)</color>
-      <statFactors>
-        <MaxHitPoints>1.1</MaxHitPoints>
-        <Beauty>0.5</Beauty>
-        <WorkToBuild>1.2</WorkToBuild>
-      </statFactors>
-    </stuffProps>
+    <!--
+      stuffProps wurde bewusst entfernt (D3). Vorher hatte ConstructionDebris
+      <categories><li>Stony</li></categories> + statFactors, was es zu einem
+      baufähigen Wand-Stuff machte (Phase-Contract §11 jetzt zurückgenommen).
+      Wer Stuff-Verhalten zurückbringen will, muss eine neue Decision fällen
+      und einen separaten ThingDef dafür wählen.
+    -->
     <stackLimit>200</stackLimit>
   </ThingDef>
 </Defs>

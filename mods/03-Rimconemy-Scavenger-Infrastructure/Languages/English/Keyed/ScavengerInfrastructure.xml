@@ -6,7 +6,8 @@
 -->
 <LanguageData>
   <Rimconemy.Scavenger.Title>Scavenger</Rimconemy.Scavenger.Title>
-  <Rimconemy.Scavenger.ConstructionDebris>construction debris</Rimconemy.Scavenger.ConstructionDebris>
+  <Rimconemy.Scavenger.ConstructionDebris>weapon component</Rimconemy.Scavenger.ConstructionDebris>
+  <Rimconemy.Scavenger.ConstructionDebris.Desc>Salvaged wreck material used to craft ammunition and weapon parts. Found in ruins and wasted structures; before T3 (Automation) the component can only be looted, after T3 it is craftable at the campfire and smithy.</Rimconemy.Scavenger.ConstructionDebris.Desc>
   <Rimconemy.Scavenger.Hemp>hemp leaf</Rimconemy.Scavenger.Hemp>
   <Rimconemy.Scavenger.Hemp.Note>non-food industrial crop</Rimconemy.Scavenger.Hemp.Note>
   <Rimconemy.Scavenger.DistilledWater>distilled water</Rimconemy.Scavenger.DistilledWater>
@@ -19,6 +20,11 @@
   <Rimconemy.Scavenger.BlockReason.NoWater>No distilled water stored.</Rimconemy.Scavenger.BlockReason.NoWater>
   <Rimconemy.Scavenger.BlockReason.NoPower>No power routed.</Rimconemy.Scavenger.BlockReason.NoPower>
 
+  <Rimconemy.Scavenger.WeaponComponent>weapon component</Rimconemy.Scavenger.WeaponComponent>
+  <Rimconemy.Scavenger.WeaponComponent.Desc>A finished component used as ammunition feed or weapon part in advanced defensive structures. Crafted at the campfire or smithy from salvage debris after Smithing research.</Rimconemy.Scavenger.WeaponComponent.Desc>
+  <Rimconemy.Scavenger.MakeWeaponComponent>make weapon component</Rimconemy.Scavenger.MakeWeaponComponent>
+  <Rimconemy.Scavenger.MakeWeaponComponent.Desc>Smelt salvage debris into a finished component. Requires Smithing research (Phase 3 / Automation).</Rimconemy.Scavenger.MakeWeaponComponent.Desc>
+
   <!-- Campfire & Scraps -->
   <Rimconemy.Scavenger.Campfire>scrap campfire</Rimconemy.Scavenger.Campfire>
   <Rimconemy.Scavenger.Campfire.Desc>Burns steel scraps to reclaim usable steel.</Rimconemy.Scavenger.Campfire.Desc>
@@ -26,5 +32,5 @@
   <Rimconemy.Scavenger.SteelScraps.Desc>Mangled remnants of pre-collapse steel structures.</Rimconemy.Scavenger.SteelScraps.Desc>
   <Rimconemy.Scavenger.BurnSteelScraps>burn steel scraps</Rimconemy.Scavenger.BurnSteelScraps>
   <Rimconemy.Scavenger.BurnSteelScraps.Desc>Burn down steel scraps in the fire to reclaim usable steel.</Rimconemy.Scavenger.BurnSteelScraps.Desc>
-  <Rimconemy.Scavenger.WoodRemoved>No wood walls — use scavenged debris or reclaimed steel.</Rimconemy.Scavenger.WoodRemoved>
+  <Rimconemy.Scavenger.WoodRemoved>Soft early-game wood walls — replace with steel or stone as soon as possible.</Rimconemy.Scavenger.WoodRemoved>
 </LanguageData>

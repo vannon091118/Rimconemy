@@ -6,7 +6,8 @@
 -->
 <LanguageData>
   <Rimconemy.Scavenger.Title>Beschaffung</Rimconemy.Scavenger.Title>
-  <Rimconemy.Scavenger.ConstructionDebris>Bauschutt</Rimconemy.Scavenger.ConstructionDebris>
+  <Rimconemy.Scavenger.ConstructionDebris>Waffen-Komponente</Rimconemy.Scavenger.ConstructionDebris>
+  <Rimconemy.Scavenger.ConstructionDebris.Desc>Aus Trümmern geborgene Bruchstücke, die als Munitions- und Waffenkomponente weiterverarbeitet werden. In Ruinen und zerstörten Strukturen findbar; vor T3 (Automation) nur lootbar, ab T3 am Lagerfeuer und Schmiede craftbar.</Rimconemy.Scavenger.ConstructionDebris.Desc>
   <Rimconemy.Scavenger.Hemp>Hanfblatt</Rimconemy.Scavenger.Hemp>
   <Rimconemy.Scavenger.Hemp.Note>Industriepflanze, niemals Speise</Rimconemy.Scavenger.Hemp.Note>
   <Rimconemy.Scavenger.DistilledWater>destilliertes Wasser</Rimconemy.Scavenger.DistilledWater>
@@ -19,6 +20,11 @@
   <Rimconemy.Scavenger.BlockReason.NoWater>Kein destilliertes Wasser vorhanden.</Rimconemy.Scavenger.BlockReason.NoWater>
   <Rimconemy.Scavenger.BlockReason.NoPower>Kein Strom angeschlossen.</Rimconemy.Scavenger.BlockReason.NoPower>
 
+  <Rimconemy.Scavenger.WeaponComponent>Waffen-Komponente</Rimconemy.Scavenger.WeaponComponent>
+  <Rimconemy.Scavenger.WeaponComponent.Desc>Eine gefertigte Komponente als Munitions-Input oder Waffenteil fortgeschrittener Verteidigungsbauten. Wird ab Schmiede-Forschung (Phase 3 / Automation) am Lagerfeuer oder Schmiede aus Bergungs-Schrott gegossen.</Rimconemy.Scavenger.WeaponComponent.Desc>
+  <Rimconemy.Scavenger.MakeWeaponComponent>Waffen-Komponente fertigen</Rimconemy.Scavenger.MakeWeaponComponent>
+  <Rimconemy.Scavenger.MakeWeaponComponent.Desc>Bergungs-Schrott zu einer fertigen Komponente einschmelzen. Erfordert Schmiede-Forschung (Phase 3 / Automation).</Rimconemy.Scavenger.MakeWeaponComponent.Desc>
+
   <!-- Lagerfeuer & Stahlreste -->
   <Rimconemy.Scavenger.Campfire>Schrottlagerfeuer</Rimconemy.Scavenger.Campfire>
   <Rimconemy.Scavenger.Campfire.Desc>Verbrennt Stahlreste, um brauchbaren Stahl zurueckzugewinnen.</Rimconemy.Scavenger.Campfire.Desc>
@@ -26,5 +32,5 @@
   <Rimconemy.Scavenger.SteelScraps.Desc>Zerfledderte Stahlreste aus zusammengebrochenen Vorkollaps-Strukturen.</Rimconemy.Scavenger.SteelScraps.Desc>
   <Rimconemy.Scavenger.BurnSteelScraps>Stahlreste verbrennen</Rimconemy.Scavenger.BurnSteelScraps>
   <Rimconemy.Scavenger.BurnSteelScraps.Desc>Stahlreste im Feuer verbrennen, um brauchbaren Stahl zurueckzugewinnen.</Rimconemy.Scavenger.BurnSteelScraps.Desc>
-  <Rimconemy.Scavenger.WoodRemoved>Keine Holzwände — verwende geborgenen Bauschutt oder zurückgewonnenen Stahl.</Rimconemy.Scavenger.WoodRemoved>
+  <Rimconemy.Scavenger.WoodRemoved>Weiche Frühphasen-Holzwände — sobald wie möglich durch Stahl oder Stein ersetzen.</Rimconemy.Scavenger.WoodRemoved>
 </LanguageData>

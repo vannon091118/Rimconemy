@@ -555,7 +555,7 @@ Biotech-Pollution × Wasser, Odyssey Travel-Events × Territory-Discovery, Biome
 - Ruinen dürfen Munition, Stahlreste oder technische Teile nur zufällig liefern. Der Start muss auch ohne diesen Fund spielbar bleiben.
 - Wegen fehlender Munition werden **keine Vanilla-Arbeitstypen deaktiviert oder verweigert**. Arbeit bleibt über die normalen WorkGiver-/Job-Regeln verfügbar.
 - Die spätere Munitionsproduktion ist ein physischer Midgame-Pfad: **Stahl → Munition im elektrischen Hochofen**, wobei ausgewählte Rezepte Kohle über die Ofen-`Refuelable`-Mechanik verbrauchen. Der Generator verbraucht Kohle separat für das PowerNet.
-- Der elektrische Hochofen ist eine **T2-Energy-Capability**. Der konkrete Bau-/Forschungs- und Rezeptpfad benötigt mindestens einen geeigneten Steinbaustoff (Kalkstein, Sandstein oder Granit) sowie Eisen/Stahl und wird vor Implementierung lokal gegen RimWorld-1.6-Defs geprüft.
+- Der elektrische Hochofen ist eine **T2-Strom-Capability**. Der konkrete Bau-/Forschungs- und Rezeptpfad benötigt mindestens einen geeigneten Steinbaustoff (Kalkstein, Sandstein oder Granit) sowie Eisen/Stahl und wird vor Implementierung lokal gegen RimWorld-1.6-Defs geprüft.
 - Combat Extended bleibt optional. Der Rimconemy-Core definiert keine CE-Pflicht und darf ohne CE keinen Phantom-Munitionsstatus erzeugen.
 
 **Begründung:** Die Startressourcen sollen Entscheidungen erzwingen, aber keinen zufälligen Softlock erzeugen. Gegner erzeugen Aufmerksamkeit; Produktion und Infrastruktur erzeugen Stabilität. Der Übergang Survival → Energie → Produktion bleibt dadurch sichtbar und paketübergreifend anschlussfähig.
@@ -630,6 +630,197 @@ Stages:
 
 **Nicht behauptet:** Diese Entscheidung belegt noch keinen Hediff-Def, keinen bounded Update-Service und keinen Live-Temperaturwert. Die Punkte bleiben CODE/DEF/COMPILES/LIVE-Gates.
 
+## 27. Strom, kein „Energy" (D1)
+
+**Status:** ✅ Entschieden (Harmonisierung 2026-08-05, in Folge der §24/§25-Designlocks)
+
+**Entscheidung:** Es gibt keine eigene Rimconemy-Energy-Ressource. Strom = Vanilla-PowerNet (`CompPowerPlant`, `CompPowerTrader`, `CompPowerBattery`). Was in Specs/Labels früher als „T2-Energy" bezeichnet wurde, heißt jetzt konkret **„T2-Strom / elektrischer Hochofen"**.
+
+**Begründung:**
+- Code hat kein `Rimconemy_Energy`-ThingDef und keinerlei geplante Pläne eines Dual-Resource-Modells; alle Stromquellen und -verbraucher hängen bereits am Vanilla-PowerNet.
+- Eine parallele Energy-Ressource würde das Storage-SSOT (Mod 03) duplizieren und Credits/Physisch-Trennung (§6) widersprechen.
+- `MechadroidUnit.Energy`-Float (§19, Mod 05) bleibt **interne Wartungs-Sensorik**, kein Wirtschaftsgut und keine Trade-Währung.
+
+**Folge:**
+- Doku/Labels nur: „T2-Energy" → „T2-Strom / elektrischer Hochofen".
+- ResourceCategory, StorageQuery und WalletCredits werden nicht um „Energy" erweitert.
+- `PHASE_PROGRESSION_CONTRACT.md §2.5` und `ROADMAP.md §2.5` werden an die neue Terminologie angeglichen (kein eigener Patch nötig — der Pfad war Vanilla-Strom).
+
+**Betroffene Tasks:** D-T1 (Doku), Drift-§8 in `CODE_STATUS.md`.
+
+## 28. Frühes Bauen = Morsch-Holz (D2)
+
+**Status:** ✅ Entschieden (Harmonisierung 2026-08-05)
+
+**Entscheidung:** Early-Game-Wände und -Türen werden über das **Vanilla-`WoodLog`-Stuff** realisiert, dessen `stuffProps`-Stat-Faktoren so abgeschwächt werden, dass das Material sich wie „morsches Holz" anfühlt. Es entsteht **kein** zweiter `Rimconemy_MorschHolz`-ThingDef.
+
+**Begründung:**
+- `CANONICAL_VANILLA_DOMAIN_MAP.md` warnt vor einem zweiten Holz-ThingDef (Stuff-Duplikat erzeugt kollidierende `stuffCategories`, StorageRechner-Drift und Recipe-Mismatch).
+- Vanilla `WoodLog` ist bereits `Woody` und über Architektenmenü + PowerNet-frei verfügbar; ein StuffProps-Patch reicht für „morsch".
+- Der bisherige Versuch (`DECISIONS §17`, `WallDoorBarricade_Bauschutt_Patches.xml`) hat Woody aus Wall/DoorBase/Barricade entfernt und stattdessen Bauschutt als Stuff gepatcht. Diese Richtung wird **umgekehrt**: Bauschutt ist **kein** Wand-Material mehr (§29), Woody ist wieder zulässig.
+
+**Folge:**
+- `WallDoorBarricade_Bauschutt_Patches.xml` Part-2 (Woody-Removal) **wird zurückgenommen** (Patch-Datei wird zu `WallDoorBarricade_Woody_Allowed.xml` umbenannt oder neutralisiert).
+- Neuer Patch `WoodyMorschWalls.xml` setzt `WoodLog`-StuffProps-Stat-Faktoren herab (geringerer `MaxHitPoints`-Faktor, keine `Armor`/`Beauty`-Boni).
+- `BauschuttRemapService` (`mods/03/Source/Building/BauschuttRemapService.cs`) wird zu `WeaponComponentRemapService` umgewidmet oder stillgelegt, **nicht** mehr für Wandbau.
+- Grep-Versicherung: kein `Rimconemy_Morsch`-ThingDef im Repo (Storage zählt weiterhin `WoodLog`).
+
+**Bezug zu §17:** §17 ist durch §28 + §29 **ersetzt**; die frühere „Bauschutt-als-Wand"-Linie wird offiziell zurückgenommen. Eine spätere Re-Aktivierung müsste explizit als neue Entscheidung verankert werden.
+
+**Betroffene Tasks:** B-T1, B-T2, B-T3.
+
+## 29. Bauschutt wird Waffen-Komponente (D3)
+
+**Status:** ✅ Entschieden (Harmonisierung 2026-08-05)
+
+**Entscheidung:** `Rimconemy_ConstructionDebris` (defName stabil, Save-sicher) wird vom Wand-Material zur **Waffen-Komponente** umgewidmet.
+
+**Rollen-Phasen:**
+- **Vor T3 (Automation):** nur findbar (Ruinen-Loot, Anomaly/Byproduct-Pfad). Kein Craft-Rezept.
+- **Ab T3 (Automation):** craftbar als `Rimconemy_WeaponComponent` über `Rimconemy_MakeWeaponComponent` an Campfire/Smithy.
+
+**Pflicht:** der Edelstahl-Turm (`Rimconemy_StainlessSteelTower`, `mods/03/Defs/BuildingDefs/StainlessSteelTower.xml`) erhält in seinem `costList` einen Posten „Waffen-Komponente" und ist ohne ihn nicht blueprintfähig.
+
+**Begründung:**
+- Der bisherige StuffProps-Ansatz (`§17`) führte zu Storage-Rechnungs-Drift (Bauschutt wurde als `Woody`-/`Stony`-Stuff gehandhabt).
+- Die Waffen-Komponenten-Rolle passt zur Storyteller-Linie (Druck → Verteidigung → Türme).
+- `defName`-Stabilität gewährleistet Save-Kompatibilität: alte Saves mit „Bauschutt"-Stacks werden unter neuem Label weitergespielt, da nur `<label>`/`<description>` und `<stuffProps>` geändert werden, nicht aber die Identität.
+
+**Folge:**
+- `ConstructionDebris.xml`: `<label>` → Weapon-Component-Localized-String (DE/EN via Keyed-Language), `<description>` neu (Waffen-/Midgame-Verteidigungs-Rolle).
+- **Kein** `stuffProps`-Block mehr in `ConstructionDebris.xml`. Damit verschwindet es aus `Metallic`/`Woody`/`Stony`-Stuff-Auswahl.
+- `ResourceCategory.ConstructionDebris` bleibt; `BuildingInputAdapter.IsPhysicalInput(...)` bleibt; `RequiredUnits("Rimconemy_ConstructionDebris", "Wall")` wird zu **0** (Stuff-Pfad B entfällt); `RequiredUnits("Rimconemy_ConstructionDebris", "Rimconemy_StainlessSteelTower")` > 0 (costList-Pfad A).
+- Remap/Designator `Bauschutt-Remap` × `Wall` ist obsolet; Designator `Designator_BuildWallBauschutt` (`WallDoorBarricade_Bauschutt_Patches.xml` Part-1) wird entfernt oder als generic-utilities re-purposed.
+- ~15 Referenzen zu migrieren (Label-Texte, BuildingInputAdapter-Tests, PhaseMatrix, Outpost-Investment-Stub, Falsifizierungsberichte).
+
+**Betroffene Tasks:** C-T1 bis C-T8.
+
+## 30. ConstructionSpeed-Kurve steiler, separates Effizienz-Modell (D4)
+
+**Status:** ✅ Entschieden (Harmonisierung 2026-08-05, Interpretation B bestätigt)
+
+**Entscheidung:** Die globale Construction-Speed läuft auf zwei Layern. **Owner: Paket 02 (Survival & Progression), nicht 03.**
+
+### 30.1 Layer A — Skill-Kurve (skillNeedFactors-Patch)
+
+- Skill 1 ≈ 0,5× (deutliche Verlangsamung in der Frühphase)
+- Skill 20 ≈ 2,5× (Basisziel, deutlich über Vanilla)
+- Formel: `curve = lerp(0.5, 2.5, smoothstep(skill_level / 20))` mit `skillNeedFactors`-Patch auf Vanilla-Konstruktion-Skill.
+
+### 30.2 Layer B — separates Effizienz-Modell (WorkSpeedGlobal / Construction-Efficiency-Stat)
+
+- Vanillas `WorkSpeedGlobal`-Mechanik bleibt **voll** erhalten (Trait, Health, Mood-Effekte multiplizieren weiter).
+- Ein zusätzlicher Rimconemy-Effizienz-Bonus von **+50 %** wird als eigener `StatDef`-/`StatPart`-Pfad oder als Postfix-Multiplier auf vanilla `StatWorker` für Baujobs realisiert. Vanilla hat kein solches Pendant; die Modul-Eigentumsgrenze zu §1/§23 ist unberührt.
+- Achtung: kein zweiter Materialverbrauch (Vanilla hat keinen) — Layer B ist reine Geschwindigkeits-/WIP-Erhöhung.
+
+**Begründung:**
+- Skill-Kurve allein liefert Skill-20-Spieler × 1,5 zu wenig; die Marketing-Aussage „+50 % effizienter" war als **Composite-Effekt** (Layer A + B) verstanden, nicht als alternative Vanilla-Substitution.
+- Owner 02 weil Skill/Trait/Progression dort lebt; Layer A `skillNeedFactors`-Patch gehört zur Experience-Linie (§25) und damit zu 02.
+- Layer B ist getrennt, weil Effizienz ein eigener Player-Tradeoff (Trait/Mood) sein kann und nicht an Skills hängt — ein Survivor mit niedriger Skill-Stufe aber guter Werkzeug-Versorgung darf trotzdem schneller bauen.
+
+**Folge:**
+- `BuildconstructionSpeedSkillPostfix` (`mods/02/Source/Character/ConstructionSpeedSkillPatch.cs`, neu) implementiert Layer A.
+- `BuildEfficiencyStat` (`mods/02/Source/Character/ConstructionEfficiencyStat.cs`, neu) implementiert Layer B als `StatPart` oder Postfix.
+- Reihenfolge der Multiplikation: Skill-Faktor (Layer A) × Vanilla-Base × WorkSpeedGlobal × Layer-B-Effizienz = **End-Speed**.
+- Regressionstest Skill 1 vs Skill 20 (Layer A) und Trait-Vergleich (Layer B).
+
+**Bezug zu §25 (Erfahrungsbaum):** Skill-Level-Werte werden über die Experience-Bereiche aus §25 gespeist, nicht über Vanilla-Research-Tisch.
+
+**Betroffene Tasks:** D-T1, D-T2, D-T3.
+
+## 31. Outpost-Ökonomie über bestehende Ketten (D5)
+
+**Status:** ✅ Entschieden (Harmonisierung 2026-08-05)
+
+**Entscheidung:** Outposts werden über **physische StorageQuery-Ketten + Investment-Caller** wirtschaftlich relevant, **nicht** über eine eigene Währung oder neues Wallet-Asset.
+
+### 31.1 Physische Konsumtion
+
+- Gründung reserviert Stacks aus `StorageQuery.ReadStorage()` über das bestehende `Outpost.TryReserveInvestment(...)` (`mods/04/Source/Outposts/Outpost.cs:159`).
+- Echtes `CreditsLedger` (`MapMarketComponent` ist nicht berührt).
+
+### 31.2 Produktion standortgebunden
+
+- Aktive Outposts liefern definierte Waren **oder** Credits-Netto-Beitrag > 0 (deterministisch, nicht Vanilla-MarketValue).
+
+### 31.3 Bemannungs-Modell
+
+- **Unbemannte** Outposts: schwache 4X-Automatik mit niedrigerem Output-Faktor (~25–40 %).
+- **Bemannte** Outposts (≥1 stationierte Pawns): voller Output und voller Verteidigungs-Beitrag (Raid-Druck senkt oder lenkt um).
+
+### 31.4 Pflicht-Caller
+
+`Outpost.TryReserveInvestment(...)` hat heute **keinen** realen UI-/World-Pfad-Caller. Tests rufen die Methode direkt. **Das ist die eigentliche Lücke** — nicht fehlende Items. Caller wird über einen Settlement-Planer-Gizmo oder eine World-Component-Brücke realisiert, **nicht** über direktes `MapComponent.Tick` (vermeidet Contact-Trader-Loop).
+
+**Begründung:**
+- Storage-SSOT (Mod 03, §H4) wird nicht dupliziert.
+- Credits bleiben Wallet, Silber physisches Item (§6) — keine dritte Währung.
+- Unbemannt vs bemannt ist eine Phase-First-Frage (§ROADMAP §2.5: First-Night → Zuflucht → Outpost).
+
+**Folge:**
+- Neuer Caller in `mods/04` (Gizmo + WorldBrigde).
+- Log/Ledger-Buchung beim Reservation-Erfolg (`CreditsLedger.AppendTx(...)` oder neue `OutpostInvestmentLedger`-Tabelle).
+- Regressionstest Investitionspfad gegen StorageQuery.
+
+**Betroffene Tasks:** E-T1 bis E-T4.
+
+## 32. Bewusst später (D6)
+
+**Status:** 🔄 Explizit aufgeschoben
+
+**Aufgaben, die in der aktuellen Phase **nicht** angefasst werden:**
+
+- Strahlung, Glow, Mutation (Anomaly-Strahlungs-Layer).
+- Biome-Generation.
+- Volle Raid-Spawns (Phase-6-Stubs bleiben Phase-6-Stubs).
+- Energy-Wallet oder Energy-Ressourcen-Layer (**verboten**: verstößt direkt gegen §27 D1).
+- Paralleles Survivor-Inventar neben vanillager `ColonistInventory` (**verboten**: verstößt gegen §H4 Storage-SSOT).
+- Zweites Need-System neben `NeedMappingService` (**verboten**: verstößt gegen §1 Hybrid-Pattern).
+
+**Begründung:** Greifbare Early-Kette (Survival → Schutz → Stahl → Turm → Midgame-Verteidigung) hat Vorrang vor Feature-Vollständigkeit. Die D6-Punkte werden je nach Spieler-Fortschritt in Phase 7+ freigeschaltet.
+
+**Folge:** Keine Implementierung. Reine Negativ-Liste als Drift-Sperre; jede Verletzung muss eine neue explizite Decision erzeugen.
+
+## 33. Harmonisierte Abhängigkeitskette (D-Zusammenfassung)
+
+```text
+Morsch-Holz-Wände (§28) + langsamere Bau-Skill-Kurve (§30-A)
+    → spürbarer Early-Druck, sichtbare Skill-Belohnung
+Waffen-Komponente loot → T3 craft → Turm-Bau (§29)
+    → Midgame-Verteidigung mit sichtbarem Loot-Pfad
+Strom nur PowerNet (§27) + Coal/Generator (bereits Defs)
+    → Turm braucht Strom und ist damit Phase-2-Energy-abhängig
+Outpost konsumiert/produziert physisch + Investment-Caller (§31)
+    → Economy wird über Outpost-Loop relevant (= bevor Phase 5 Trade)
+```
+
+Diese Kette ersetzt die in §17/§D-Phase-First zuvor angedachte „Bauschutt-als-Wand"-Linie und ist die kanonische Phase-First-Reihenfolge.
+
+## 34. Phase-5 Storyteller-/Incident-Probe (D-Spike-Result 2026-08-05)
+
+**Status:** ✅ Spike-Ergebnis entschieden, kein direkter StorytellerDef benötigt.
+
+**Entscheidung:** Rimconemy betreibt **keinen** eigenen `StorytellerDef`. Der `Setting-Director`-Pattern aus §3 bleibt die kanonische Spieler-Schicht; Vanilla-Storyteller (`Cassandra`, `Phoebe`, `Rand`) bleibt autoritativ für Wealth-Raids, Quests und DLC-Incidents.
+
+**Begründung:**
+- Klassifikations-Probe (`StorytellerInventory.cs`, `mods/01/Catalog/`) enumeriert `DefDatabase<StorytellerDef>` und meldet Counts per `PackageId`. Es registriert keinen eigenen Def — Phase-Spike-Ergebnis.
+- Klassifikations-Probe (`IncidentClassifier.cs`, `mods/05/Source/Incidents/`) klassifiziert jeden `IncidentDef` als Rimconemy/Vanilla/DLC. Single-Infected-Provider-Invariante (`Rimconemy_InfectedRaidIncident` genau 1× geladen) wird bei Bootstrap geprüft.
+- Story-Auswahl (Director) + Incident-Fire (Letter-Weg → RimWorld-Storyteller) ist schon deterministic + idempotent (§H2 §5, §SAVE_CONTRACT §3).
+
+**Folge:**
+- Keine PatchOperationWrite in `StorytellerDef.parts` oder `StorytellerComp` — Vanilla-Verhalten bleibt maßgeblich.
+- Mod-05-Bootstrap emittiert eine Summary-Line: `IncidentClassifier: total=N, Rimconemy=X, Vanilla=Y, DLC/Quest=Z, InfectedProvider-1-of-1=OK`.
+- Mod-01-Bootstrap emittiert eine StorytellerInventory-Summary-Line: `StorytellerInventory: total=N, Rimconemy=X, Vanilla=Y, DLC/Quest=Z (Phase-5 Probe; no custom StorytellerDef registered — DECISIONS §21)`.
+- Falsifizierung: `earlygame__Survivor.md` und `infected__AutoResolve.md` tragen die Phase-5-Sub-Gates in den Live-Test-Pfaden.
+
+**Eigentum:** Mod 01 (Foundation) ist Owner der Probe-Klassen und der Summary-Emission. Mod 05 (Infected & Automation) bleibt Owner der Incident-Klassifikation und Single-Provider-Invariante.
+
+**Bezug zu §21 & §15-§19:** §15 (DLC-Content-Policy) liefert die Suppress/PassThrough-Tabelle, die §34 als Vanilla-Default voraussetzt. §21 (Harmony-Strategie) bleibt unberührt — die Probe liest ausschließlich DefDatabase.
+
+**Nicht behauptet:** §34 belegt keinen Live-Save/Load mit Storyteller-Reproduzierbarkeit. Live-Gates bleiben in `earlygame__Survivor.md`.
+
+---
+
 ## Zusammenfassung: Implementierungsreihenfolge
 
 | Reihenfolge | Task | Beschreibung | Blockiert |
@@ -682,3 +873,5 @@ Stages:
 | 2026-08-04 | Code-Fix: `rimconemy.foundation.colonials` Capability in PackageRegistry.cs registriert (Phase-B / F-V1 audit-gap, gegen INTERFACE_CONTRACT §9.1) | Buffy |
 | 2026-08-04 | **Dokument-Konsolidierung:** §20 DLC-Detail-Ergänzungen (aus `DECISIONS_DLC.md`), §21 Harmony-Strategie, §22 Scribe-/ExposeData-Pattern, §23 GameComponent-Zuordnung (aus `docs/AUDIT.md`) übernommen. Quell-Dokumente archiviert in `docs/archive-md-2026-08-04.tar.gz`. | Buffy |
 | 2026-08-04 | **Design-Lock:** §24 Early-Game-Munitions-/Hochofenvertrag und §25 Erfahrungsbaum statt Forschungsbaum ergänzt; Start- und Midgame-Progression bleiben handlungs- und ergebnisgebunden, Vanilla-Forschung bleibt Kompatibilitätsschicht. | Buffy |
+| 2026-08-05 | **Harmonisierung D1–D6:** §27 Strom/kein Energy, §28 Early-Bauen=Morsch-Holz (Woody-Re-Enable), §29 Bauschutt→Waffen-Komponente (StuffProps auflösen, defName stabil), §30 ConstructionSpeed zwei-Layer (Skill-Kurve + separates Effizienz-Modell, Owner 02, Interpretation B), §31 Outpost-Ökonomie über physische Ketten + Investment-Caller-Pflicht, §32 out-of-scope (Strahlung/Glow/Mutation, Biome-Gen, Energy-Wallet, paralleles Inventar, zweites Need-System), §33 Abhängigkeitskette. §17 „Construction-Cost-Patches"-Stoßrichtung wird durch §§28+29 ersetzt; alte Linie explizit zurückgenommen. | Buffy |
+| 2026-08-05 | **Phase-5 Spike-Result:** §34 Storyteller-/Incident-Probe (kein direkter StorytellerDef; Setting-Director-Pattern bleibt; StorytellerInventory + IncidentClassifier als Bootstrap-Probe). Single-Infected-Provider-Invariante wird bei Bootstrap geprüft. Vanilla-Storyteller und Wealth-Raids bleiben autoritativ. | Buffy |

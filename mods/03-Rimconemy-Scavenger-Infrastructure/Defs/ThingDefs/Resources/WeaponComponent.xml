@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure
+  Stable defName: Rimconemy_WeaponComponent
+  DLC condition: none
+  Load order: Core/DLCs -> Harmony -> Foundation -> Survival -> Scavenger -> later packages
+  Vanilla anchor: ThingDef (basic resource, ParentName=ResourceBase).
+
+  D3-Harmonisierung (2026-08-05, DECISIONS §29):
+    `Rimconemy_WeaponComponent` ist die T3-craftbare Stellvertreter-Rolle von
+    `Rimconemy_ConstructionDebris`. Früher war ConstructionDebris selbst Wand-Stuff;
+    jetzt ist es reines Loot, und die Waffen-Komponente (dieses Def) ist der
+    separate Posten, den der Edelstahl-Turm in seiner costList verlangt.
+
+  Owner-Vertrag: nur Mod 03 mutiert ThingDef-Inhalte in seinem Def-Pool.
+  Die Waffen-Komponente hat absichtlich KEINEN stuffProps-Block — sie ist
+  ein Verbrauchs-Item, kein Baumaterial. Damit kann sie weder versehentlich
+  als Wand-Stuff benutzt werden, noch kollidiert sie mit der "morsch"-Regel
+  für Woody (DECISIONS §28).
+
+  Vor T3 (Automation): nur `Rimconemy_ConstructionDebris` aus Ruinen/Byproduct.
+  Ab T3: craftbar via `Rimconemy_MakeWeaponComponent` am Campfire / FueledSmithy
+  (recipeUsers-Eintrag setzt beide Ziele).
+-->
+<Defs>
+  <ThingDef ParentName="ResourceBase">
+    <defName>Rimconemy_WeaponComponent</defName>
+    <label>{Rimconemy.Scavenger.WeaponComponent}</label>
+    <description>{Rimconemy.Scavenger.WeaponComponent.Desc}</description>
+    <graphicData>
+      <texPath>Things/Item/Resource/Steel</texPath>
+      <graphicClass>Graphic_StackCount</graphicClass>
+      <drawSize>0.9</drawSize>
+      <color>(180,90,60)</color>
+    </graphicData>
+    <statBases>
+      <MaxHitPoints>60</MaxHitPoints>
+      <Mass>0.4</Mass>
+      <MarketValue>6.0</MarketValue>
+    </statBases>
+    <thingCategories>
+      <li>ResourcesRaw</li>
+      <li>Rimconemy_IndustrialComponents</li>
+    </thingCategories>
+    <stackLimit>120</stackLimit>
+  </ThingDef>
+</Defs>

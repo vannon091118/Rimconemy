@@ -130,8 +130,8 @@ Startcharakter + knappes Inventar
   → begrenzte Waffe/Munition
   → garantierter schwacher Drucktest ohne garantierten Loot
   → Schutzraum, Licht und erste Verteidigung
-  → Stahl als Rezeptinput; Kohle als physischer Refuelable-Brennstoff für ausgewählte Ofenrezepte und den Generator
-  → T2-Energy: elektrischer Hochofen
+  →  Stahl als Rezeptinput; Kohle als physischer Refuelable-Brennstoff für ausgewählte Ofenrezepte und den Generator
+  → T2-Strom: elektrischer Hochofen
   → eigene Munitionsproduktion
 ```
 
@@ -141,7 +141,7 @@ Verbindliche Regeln:
 - Gegner-Drops sind keine garantierte Progressionsquelle.
 - Fehlende Munition verweigert keine Vanilla-Arbeitstypen; der Spieler darf weiterhin bauen, sammeln, farmen und produzieren, soweit die normalen Inputs/Jobs vorhanden sind.
 - Combat Extended bleibt optional und wird nicht zur Core-Abhängigkeit.
-- Der elektrische Hochofen ist ein geplanter T2-Energy-Freischaltpunkt. Er benötigt einen dokumentierten Stein-/Eisen-/Stahl-Baupfad. Stahl ist Rezeptinput; Kohle wird über die physische Ofen-Refuelable-Mechanik nur für ausgewählte Rezepte verbraucht. Der Generator verbraucht Kohle separat für das PowerNet.
+- Der elektrische Hochofen ist ein geplanter T2-Strom-Freischaltpunkt. Er benötigt einen dokumentierten Stein-/Eisen-/Stahl-Baupfad. Stahl ist Rezeptinput; Kohle wird über die physische Ofen-Refuelable-Mechanik nur für ausgewählte Rezepte verbraucht. Der Generator verbraucht Kohle separat für das PowerNet.
 
 **Beweisgrenze:** Startinventar, Verbrauch, Nachtspawn, Hochofen, Research-Capability und Save/Load sind noch keine `LIVE`-Belege. Die Scheibe wird erst als geschlossen gewertet, wenn ein Runtime-Save die physische Änderung und ihre Folge ohne Drift überlebt.
 
@@ -514,7 +514,7 @@ Ohne `SURVIVED`-Berichte mit A–G-Belegen gilt keine Übergabe:
 ### 8.6 Phase 6 — Paket-Gameplay (offen, Stubs → echte Mechaniken)
 
 - **02 Survival:** 2.1 Pawn-/Start-/Szenariovertrag; 2.2 Kernbedürfnisse (Nahrung/Sicherheit/Soziales); 2.3 Arbeit→Erfahrung ohne Tick-Sampling (nur validierter Output + Diminishing + Idempotency-ID); 2.4 Erfahrungsbaum der Bereiche und organische Freigaben statt Forschungsbaum; 2.5 Game Over exakt einmal; 2.7/2.8 DLC- und Save-Migration.
-- **03 Scavenger:** 3.2 Bauschutt→Wall-Blueprint mit best-effort Storage-Write (Teilabzug möglich, kein atomarer Rollback) ist im lokalen Arbeitsstand als CODE/Test-Seam ergänzt; der End-to-end-Live-Beleg bleibt offen. Weiter offen: 3.3 Nahrung/Hanf getrennt (WorkGiver/Ernte/Verderb); 3.4 Wasser-/Brennstoffmodell als physischer Pfad; 3.5 Stromnetz mit harten Input-Regeln; 3.6 Pfeilturm (Strom als harte Bedingung, Zustände Active/Blocked/Offline/Damaged); 3.7–3.10 XP-/Research-/Economy-/Threat-Adapter, DLC-/Save-Kompatibilität.
+- **03 Scavenger:** 3.2 Bauschutt→Waffen-Komponente (Vor-T3 Loot, Ab-T3 craftbar; kein Wand-Material); siehe DECISIONS §29. der End-to-end-Live-Beleg bleibt offen. Weiter offen: 3.3 Nahrung/Hanf getrennt (WorkGiver/Ernte/Verderb); 3.4 Wasser-/Brennstoffmodell als physischer Pfad; 3.5 Stromnetz mit harten Input-Regeln; 3.6 Pfeilturm (Strom als harte Bedingung, Zustände Active/Blocked/Offline/Damaged); 3.7–3.10 XP-/Research-/Economy-/Threat-Adapter, DLC-/Save-Kompatibilität.
 - **04 Economy:** 4.1 Wallet atomar/rollbackfähig; 4.2 Markt deterministisch; 4.4 Outpost-Gründung; 4.5 Produktion/Verteidigung (Brutto/Bindung/Wartung/Netto); 4.6 Proxy-Graph + Drei-Tage-Countdown (180.000 Ticks, F1-Fix); 4.7 World-Map-Overlay; 4.8 automatisierte Raids; 4.9/4.10 Integrationen + DLC-/Save-Kompatibilität.
 - **05 Infected:** 5.1 `HiddenInfected`/`InfectedRavager` plus begrenzte 1-Pawn-Spawn-Bridge sind im lokalen Arbeitsstand als CODE/DEF ergänzt; vollständige Raid-Skalierung, Auflösung und Live-Beleg bleiben offen. 5.2 Bedrohungsaggregator deterministisch; 5.4 lokale Raids; 5.5 `WorldRaidCoordinator` als Planungsgerüst, World-Map-Raid-Lifecycle offen; 5.6 Mechadroid-Grundsystem; 5.7 Automation-Aufträge; 5.9 Hauptstädte/Endgame; 5.10–5.12 Integrationen, DLC-/Vanilla-Kompatibilität, Save/Performance/Determinismus.
 
@@ -554,7 +554,7 @@ Ohne `SURVIVED`-Berichte mit A–G-Belegen gilt keine Übergabe:
 
 1. Meta-Verträge prüfen (`INTERFACE_CONTRACT`, `SAVE_CONTRACT`, `COMPATIBILITY_MATRIX` sind in `docs/` vorhanden; Referenzen in Paket-Roadmaps auf `../docs/…` korrigiert).
 2. Storage-Bridge und `AnyResourceCritical` gegen einen echten Save-/Event-Lauf belegen; danach Phase-1-Gate offiziell schließen.
-3. Bauschutt→Wand/Tür-Remap end-to-end verifizieren: lokaler Arbeitsstand enthält Blueprint-Platzierung, Dashboard-Aktion und best-effort Storage-Write; `mods/03/Patches/Bauschutt_Remap_Patches.xml` bleibt mit Falsifizierungs-/Runtime-Gate abzusichern.
+3. Bauschutt→Waffen-Komponente end-to-end verifizieren: lokaler Arbeitsstand enthält Loot-Pfad, MakeWeaponComponent-Rezept nach T3 und Tower-costList-Eintrag; `mods/03/Patches/WallDoorBarricade_Bauschutt_Patches.xml` wird im Zuge der D2/D3-Harmonisierung zu `WallDoorBarricade_Woody_Allowed.xml` umbenannt (siehe DECISIONS §28, §29).
 4. Danach vertikale Full-Profile-Kette statt horizontales Fertigstellen einzelner Pakete.
 
 ## 9. Integrierte Implementierungspläne (Stand 2026-08-05)

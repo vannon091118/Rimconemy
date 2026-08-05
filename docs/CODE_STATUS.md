@@ -30,12 +30,15 @@
 - `FoundationSaveData` persistiert Profil-/Paketdiagnose, Eventlog, Schema v1 und Sandbox-Flag.
 - `EventLog` besitzt deduplizierte Append-Only-Historie und escape-aware Save-Envelope.
 - Bootstrap führt Capability-, Cross-Package- und EventLog-Regressionstests aus.
+- **Neu (Phase-5 Storyteller-Probe 2026-08-05):** `StorytellerInventory.cs` enumeriert `DefDatabase<StorytellerDef>` per `PackageId`-Bucket (Rimconemy/Vanilla/DLC/Quest). Bootstrap emittiert `StorytellerInventory: total=N, Rimconemy=X, Vanilla=Y, DLC/Quest=Z` und ein DECISIONS-§34-Verweis (kein direkter `StorytellerDef`-Eintrag). Late-bind Re-Capture im FoundationDashboard verhindert early-Empty-Def-Database-Issue.
 
 **Nicht belegt:** vollständige Standalone-Dashboard-Abdeckung, alle Save-/Map-/DLC-Kombinationen und der Falsifizierungsbericht `SURVIVED`.
 
 ### 02 — Survival & Progression
 
 **Belegt:** `CODE`, `DEF`, `COMPILES`, `BOOT`
+
+- `ConstructionSpeed_StatPart` (Two-Layer-Kurve, DECISIONS §30 Interpretation B): Skill 1 → 0,5×, Skill 20 → 2,5× (linear) × Layer-B-Effizienz 1,5× (konstant +50 %). Owner 02. Wiring via `Patches/StatDef_ConstructionSpeed_RimconemyParts.xml` auf vanilla `StatDef.ConstructionSpeed.parts`. `ConstructionSpeedRegressionTests` prüft Endpunkte, Monotonie und Klemm-Guard (kein Hardcap-Bug). WorkSpeedGlobal, Trait-, Health- und Mood-Boni multiplizieren weiterhin ohne Kollision.
 
 - `NeedMappingService` liest Vanilla `Food`, `Rest`/Health und `Recreation`/`Joy` auf eine 0..1-Setting-Skala.
 - `Rimconemy_Need_*`-Defs verwenden die konkrete, inerte `Need_SettingIdentity`; sie werden absichtlich nicht an Pawns angehängt.
@@ -48,7 +51,7 @@
 
 **Nicht belegt:** organischer Erfahrungsbaum mit echten Action-Completion-Hooks, Architektenfreigaben, vollständiger Job-/Output-Erfahrungsintegration, echter Save/Load-Roundtrip via Runtime-Game-Save-File, interaktiver Live-Test. `ResearchProjectDef.IsFinished` ist aktuell nur ein Forschungs-Read-Model und kein belegter Rimconemy-Unlockpfad.
 
-**Neue Designentscheidung (noch kein Code-/Def-Beleg):** Die Early-Game-Waffe und Startmunition gehören in den Charakter-/Szenariovertrag; Gegner liefern keinen garantierten Drop, Ruinen-Loot bleibt zufällig, und fehlende Munition deaktiviert keine Arbeitstypen. Die spätere T2-Energy-Kette lautet: Stahl als Rezeptinput, Kohle über die Ofen-Refuelable-Mechanik für ausgewählte Rezepte, Kohle separat im Generator für das PowerNet.
+**Neue Designentscheidung (noch kein Code-/Def-Beleg):** Die Early-Game-Waffe und Startmunition gehören in den Charakter-/Szenariovertrag; Gegner liefern keinen garantierten Drop, Ruinen-Loot bleibt zufällig, und fehlende Munition deaktiviert keine Arbeitstypen. Die spätere T2-Strom-Kette lautet: Stahl als Rezeptinput, Kohle über die Ofen-Refuelable-Mechanik für ausgewählte Rezepte, Kohle separat im Generator für das PowerNet.
 
 **Neue Progressionsentscheidung (Design, noch kein Code-/Def-Beleg):** Rimconemy ersetzt die primäre Forschungs-Tisch-/Punkte-Logik durch einen Erfahrungsbaum: bestätigte Sammel-, Feuer-, Bau-, Verarbeitungs-, Energie- und Verteidigungsergebnisse geben genau einmal Erfahrung und können das Architektenmenü erweitern. Vanilla-`ResearchProjectDef`s bleiben als Kompatibilitätsschicht; der Forschungstisch ist keine notwendige Rimconemy-Freigabequelle.
 
@@ -72,7 +75,7 @@
 
 **Nicht belegt:** vollständiger Bau-/Farm-/Wasserverbrauchs-Loop im echten Spiel, end-to-end Live-Beleg des Bauschutt-Blueprint- und Storage-Abzugs, tatsächliche Wall-/Door-Materialauswahl, Caravan-/Temporary-Map-Enumeration, echte Fuel-/Power-Transition, echte Turmspielmechanik, **Live-Test der Coal-Kette (MakeCoal → Generator-Effizienz, SalvageMachineParts-Ausbeute)**, elektrischer T2-Hochofen, physischer Munitionsverbrauch/-output und Save/Load-Live-Gate.
 
-**Neue Designentscheidung (Planung, nicht Implementierungsbeleg):** Der elektrische Hochofen soll nach dem Survival-/Power-Fundament als T2-Energy-Capability mit Kalkstein, Sandstein oder Granit sowie Eisen/Stahl gebaut werden. Er soll Kohle und Stahl physisch zu Munition verarbeiten; konkrete Defs, Rezepte, Energie- und Verbrauchsregeln sind noch offen.
+**Neue Designentscheidung (Planung, nicht Implementierungsbeleg):** Der elektrische Hochofen soll nach dem Survival-/Power-Fundament als T2-Strom-Capability mit Kalkstein, Sandstein oder Granit sowie Eisen/Stahl gebaut werden. Er soll Kohle und Stahl physisch zu Munition verarbeiten; konkrete Defs, Rezepte, Strom- und Verbrauchsregeln sind noch offen.
 
 ### 04 — Economy & Territory
 
@@ -98,6 +101,7 @@
 - `StoryState` implementiert `ISchemaMigratable` (Foundation/Source/Save/) — Schema-Version via `Scribe_Values.Look`, Migration via `this.RunMigration()`, `Tests/StoryStateSchemaBumpTests` mit T1–T6-Assertions.
 - `MechadroidUnit`, Threat-/Automation-Record-Typen und Ideology-ResourceFairness-Adapter sind vorhanden.
 - Bootstrap führt StorySelector-, StoryState- und Building-Threat-Regressionstests aus; der Threat-Adapter ist bounded/deterministisch und erzeugt in A weder Incident noch Raid.
+- **Neu (Phase-5 IncidentClassifier 2026-08-05):** `IncidentClassifier.EnumerateAll()` bucketiert jeden `IncidentDef` (Rimconemy/Vanilla/DLC/Quest), `ValidateOneInfectedProvider()` prüft die Single-Provider-Invariante (`Rimconemy_InfectedRaidIncident` genau 1×). Bootstrap emittiert die Summary-Line mit per-Source-Counts. Vanilla-Storyteller und Wealth-Raids bleiben autoritativ (DECISIONS §34).
 
 **Nicht belegt:** vollständige Raid-Skalierung und -Auflösung (der Arbeitsstand ist auf maximal einen Pawn begrenzt), eigener `StorytellerDef`/`StorytellerComp`, vollständiger World-Map-Raid-Lifecycle, Mechadroid-Aufträge und interaktiver Save/Load-/Event-Fire-Live-Test.
 
@@ -130,7 +134,7 @@ Der sichere lokale Installationscheck ohne Spielstart ist:
 
 ## 4. Explizit offene Live-Gates
 
-> **Vertikal-Scheibe „Die erste Nacht" (2026-08-04):** Der operative Plan für die nächste geschlossene Spielscheibe steht in `ROADMAP.md §9.1` (integriert, Plan-Datei gelöscht). Die Vertikal-Scheibe umfasst 12 Phasen mit 37 Subtasks (Phase 0 API/DLC → Phase 12 Research/DLC-Kompatibilität). Ihr `LIVE`-Beleg erfordert den Release-Ablauf aus Phase 0–7.3 inkl. Phase 8.1–8.4 und Phase 9.1–9.4 des Plans: `Single Survivor → Campfire → Tier-1-Barrikade → 1 Nacht → Save/Load ohne Drift`. Erst danach beginnen die Folgesprints Kohle, T2-Energy-Hochofen und Automation.
+> **Vertikal-Scheibe „Die erste Nacht" (2026-08-04):** Der operative Plan für die nächste geschlossene Spielscheibe steht in `ROADMAP.md §9.1` (integriert, Plan-Datei gelöscht). Die Vertikal-Scheibe umfasst 12 Phasen mit 37 Subtasks (Phase 0 API/DLC → Phase 12 Research/DLC-Kompatibilität). Ihr `LIVE`-Beleg erfordert den Release-Ablauf aus Phase 0–7.3 inkl. Phase 8.1–8.4 und Phase 9.1–9.4 des Plans: `Single Survivor → Campfire → Tier-1-Barrikade → 1 Nacht → Save/Load ohne Drift`. Erst danach beginnen die Folgesprints Kohle, T2-Strom-Hochofen und Automation.
 >
 > **Primär-Status der Vertikalscheibe:** Die unten gelisteten Live-Gates sind nach Phasen geordnet. Phase 0–9.4 haben Vorrang vor Phase 10+. Save/Load, vollständiger Raid-Pfad, Idea/Mood-/Need-Snapshots und voller Bau-/Farm-/Wasser-/Turmloop werden erst nach der Vertikalscheibe als vollständiges `LIVE` anerkannt.
 
