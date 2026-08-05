@@ -107,30 +107,41 @@ namespace Rimconemy.InfectedAutomation.Inoculation
                     ?? PopulationProfileMultipliers.ProfileSurvival;
 
                 int profileQuota = PopulationProfileMultipliers.GetInoculationsPerDay(profileId);
+
+                // ── Skip-path logging: gated on godMode so prod-games
+                //    don't accumulate 60+ skip-line entries per day.
                 if (profileQuota <= 0)
                 {
-                    Log.Message("[Rimconemy.InfectedAutomation] RandomInoculationService.TryInfectWildAnimals: profile '"
-                        + profileId + "' InoculationsPerDay == 0 → skipping cycle.");
+                    if (Verse.DebugSettings.godMode)
+                        Log.Message("[Rimconemy.InfectedAutomation] RandomInoculationService.TryInfectWildAnimals: profile '"
+                            + profileId + "' InoculationsPerDay == 0 → skipping cycle.");
                     return 0;
                 }
 
                 Map map = Find.AnyPlayerHomeMap;
                 if (map == null)
                 {
-                    Log.Message("[Rimconemy.InfectedAutomation] RandomInoculationService.TryInfectWildAnimals: no player home map.");
+                    if (Verse.DebugSettings.godMode)
+                        Log.Message("[Rimconemy.InfectedAutomation] RandomInoculationService.TryInfectWildAnimals: no player home map.");
                     return 0;
                 }
 
                 if (ledger == null || !ledger.IsInoculationCooldownElapsed())
                 {
-                    Log.Message("[Rimconemy.InfectedAutomation] RandomInoculationService.TryInfectWildAnimals: cooldown gate active for profile '"
-                        + profileId + "' → skipping.");
+                    if (Verse.DebugSettings.godMode)
+                        Log.Message("[Rimconemy.InfectedAutomation] RandomInoculationService.TryInfectWildAnimals: cooldown gate active for profile '"
+                            + profileId + "' → skipping.");
                     return 0;
                 }
 
                 IReadOnlyList<InoculationCandidate> candidates = BuildCandidateListFromMap(map);
                 InoculationSelectorLogic.FilterCandidates(candidates, out var filtered);
-                if (filtered == null || filtered.Count == 0) return 0;
+                if (filtered == null || filtered.Count == 0)
+                {
+                    if (Verse.DebugSettings.godMode)
+                        Log.Message("[Rimconemy.InfectedAutomation] RandomInoculationService.TryInfectWildAnimals: no eligible animals on map.uniqueID=" + map.uniqueID);
+                    return 0;
+                }
 
                 int actually = 0;
                 int hardCeiling = System.Math.Min(maxCount, profileQuota);
@@ -144,6 +155,7 @@ namespace Rimconemy.InfectedAutomation.Inoculation
                     ApplyLiveConversion(picked, ledger);
                     actually++;
                 }
+                // Result-Log immer sichtbar (das ist die eigentliche Conversion).
                 Log.Message("[Rimconemy.InfectedAutomation] RandomInoculationService.TryInfectWildAnimals: requested="
                     + maxCount + " cap=" + profileQuota + " converted=" + actually + " tick=" + currentTick);
                 return actually;

@@ -305,7 +305,8 @@ namespace Rimconemy.InfectedAutomation.Population
         // ── Write-API: NoteInoculation (Task 6) ─────────────────
         /// <summary>
         /// Note a successful animal-inoculation event from Phase C
-        /// <c>RandomInoculationService</c>. Stamps the supplied
+        /// <c>RandomInoculationService</c> or Phase E
+        /// <c>AnimalInfectionDriver.TryFireOnce</c>. Stamps the supplied
         /// <paramref name="animalKindDefName"/> for diagnostics and
         /// records the current tick as the last-inoculation timestamp
         /// so the cooldown gate (driven by
@@ -315,6 +316,17 @@ namespace Rimconemy.InfectedAutomation.Population
         /// Per spec, this method does NOT spawn a pawn — Phase C's
         /// service owns the actual conversion. Phase A only persists
         /// the diagnostic slot.
+        ///
+        /// Dual-counter rationale (Decision DECISION-E-002): Phase E's
+        /// <see cref="RegisterAnimalInfection"/> writes a parallel
+        /// <see cref="AnimalInfectionCountToday"/> per-Tag counter for the
+        /// Random-Encounter-Pfad. Both counters increment from
+        /// <c>RandomInoculationService.ApplyLiveConversion</c>; Phase C's
+        /// "weekly quarantine" path adds 1/N inoculations per week, Phase
+        /// E's "horde-scaling" path adds up to <c>InoculationsPerDay</c>
+        /// per day. Operators reading <c>CumulativeInoculations</c>
+        /// should treat it as a sum across both phases — semantically
+        /// "total animals ever infected", not "unique events per day".
         /// </summary>
         public void NoteInoculation(string animalKindDefName)
         {

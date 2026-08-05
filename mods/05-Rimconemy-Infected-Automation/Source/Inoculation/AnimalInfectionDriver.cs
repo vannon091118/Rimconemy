@@ -36,10 +36,23 @@ namespace Rimconemy.InfectedAutomation.Inoculation
         /// budget (~1 driver-call per game day).</summary>
         public const int TickInterval = 3_600;
 
-        // The most recent tick the driver actually fired; lets the static
-        // API be idempotent across a re-routed call (e.g. when the
-        // InfectedRaidSpawnService also runs in the same tick). -1L
-        // = "never fired yet" (cold-start / post-load).
+        // The most recent tick the driver actually fired.
+        //
+        // Process-lifetime state (DECISION-E-003): we intentionally keep
+        // it on the static-API Driver rather than in StoryDirector
+        // because (a) the Driver's own TickInterval gate is the only
+        // place that knows whether firing is allowed for the current
+        // tick, and (b) StoryDirector already wraps the call in a
+        // try/catch so a post-load nullable restart here is harmless.
+        //
+        // Trade-off documented: a Save → Quit → Reload cycle keeps the
+        // process-lifetime stamp (the static is in-memory, not in the
+        // Scribe stream). That's acceptable because we re-fire exactly
+        // once per day-tick and the *actual* idempotency check is the
+        // ProfileCap + ledger.AnimalInfectionCountToday gate inside
+        // AnimalInfectionChance.ShouldFireToday, not this stamp.
+        //
+        // -1L = "never fired yet" (cold-start / post-load).
         private static long _lastFireTick = -1L;
 
         /// <summary>
