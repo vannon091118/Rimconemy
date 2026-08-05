@@ -234,7 +234,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.EconomyTerritory",
                 packageId: "rimconemy.economyterritory",
-                packageVersion: "0.0.27",
+                packageVersion: "0.0.28",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.economyterritory.wallet", 1),
@@ -246,7 +246,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.InfectedAutomation",
                 packageId: "rimconemy.infectedautomation",
-                packageVersion: "0.0.40",
+                packageVersion: "0.0.41",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.infectedautomation.threat", 1),

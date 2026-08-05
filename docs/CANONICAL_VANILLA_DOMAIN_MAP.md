@@ -197,7 +197,7 @@ Wer eine bestehende Funktion liest:
 | `mods/04/Source/Building/BuildingInputAdapter.cs` | Hartkodierte Strings `Rimconemy_WoodCoalGenerator` → `30`, `Rimconemy_WoodCoalGenerator` → `WoodLog 30`, `Rimconemy_ArrowTurret_Power` → `Steel 25` | DefModExtension auf Vanilla `WoodFiredGenerator` mit `inputAmount` etc. | a) PatchOperation auf Vanilla-BuildingDefs mit `costList`-Anpassung; b) Adapter liest DefModExtensions statt hartkodierte Strings |
 | (keine Datei heute) | Room-Hooks komplett fehlen | `Foundation/RoomDefinitionExt.cs` als DefModExtension-Bibliothek | a) Erstanlage |
 | `mods/02/Source/Progression/ProgressionGameComponent.cs:389` | Legacy-Read-Model liest `ResearchProjectDef.IsFinished` und sammelt IDs in Liste | bestätigte Action-Completion + Experience-/Unlock-State + Architektenfreigaben; Vanilla-Research bleibt Kompatibilitätsschicht | a) organische Freigabe aus physischem Output; b) Vanilla-Research nur für DLC-/Mod-Kompatibilität und Übersicht; c) Histogramm der Unlock-Pfade als State |
-| `mods/05/Source/Incidents/IncidentStub.cs` (in Audit) | Reiner Datencontainer mit `LogMarker = "v0"` | `IncidentDef` + `IncidentWorker`-Subklasse (die existiert schon in `InfectedRaidWorker.cs`) | a) `IncidentStub` löschen, stattdessen `IncidentWorker`-Subklasse erweitern; b) Datenfelder als ModExtension auf Vanilla `IncidentDef` |
+| `IncidentStub` (mods/05, in Audit) | Reiner Datencontainer mit `LogMarker = "v0"` | `IncidentDef` + `IncidentWorker`-Subklasse (`InfectedRaidWorker.cs`) | **entfernt 2026-08-05** (Dead-Code-Audit, kein Caller; siehe `docs/falsification/deadcode-audit-2026-08-05.md`) — Worker-Pfad erweitern, wenn IncidentDef-Verkabelung kommt |
 
 ---
 

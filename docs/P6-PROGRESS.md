@@ -13,7 +13,7 @@ Dieses Dokument sammelt Eingangs- und Nachweispunkte für die P6-Multi-Task-Stre
 | 10 | Wasser-/Brennstoff-Physikalischer Generator | 03 | `Source/Resources/{WaterFuelPath,GeneratorFuelFeeder}.cs` | Generator-Klick → WoodLog-Verbrauch sichtbar |
 | 11 | Pfeilturm (Strom als harte Bedingung) | 03 | `Source/Building/ArrowTurretPowerGate.cs` | Tower ohne Strom → Offline-UI |
 | 12 | Infizierten-Raids (echter Spawn) | 05 | `Source/Incidents/InfectedRaidSpawnService.cs` + `IncidentWorker_InfectedRaid.TryExecuteWorker` | Letter → Map-Region-Spawn |
-| 13 | Mechadroids (Grundsystem) | 05 | `Source/Mechadroids/{MechadroidUnit,MechadroidJobRegistry}.cs` | Mechadroid RNG spawnt + Job |
+| 13 | Mechadroids (Grundsystem) | 05 | `Source/Mechadroids/MechadroidJobs.cs` (`MechadroidJobLedger`) | Mechadroid RNG spawnt + Job (Stub-Klassen `MechadroidUnit`/`MechadroidJobRegistry` entfernt 2026-08-05) |
 | 14 | Outposts & Proxy-Graph (3-Tages-Countdown) | 04 | `Source/Outposts/{OutpostService,ProxyGraph}.cs` | Outpost-Gründung + 60.000·3 Tick-Countdown |
 | 15 | Weltkarten-Endgame (World-Map-Overlay + World-Raids) | 05 | `Source/World/{WorldRaidCoordinator,WorldMapOverlay}.cs` | World-Raid-Event auf Tile-Coordinate |
 | 16 | **Predicate Truthfulness Hardening** (Phase Contract v2) | 02 | `Source/Phase/PhaseProgressResolver.cs` + `Phase/PhaseContractGate.cs` | PhaseProgress-Overlay zeigt echte Phase-Progression, keine Trader-False-Positives. Truthfulness Doctrine in §10 |

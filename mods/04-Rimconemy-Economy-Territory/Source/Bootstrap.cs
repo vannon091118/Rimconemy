@@ -25,9 +25,10 @@ namespace Rimconemy.EconomyTerritory
 
             var _walletId = Wallet.CreditsLedger.LogMarker;
             var _marketCount = Market.Market.LogMarker;
-            var _outposts = Outposts.OutpostStub.LogMarker;
-            var _nodes = Territory.TerritoryNode.LogMarker;
-            Log.Message($"[Rimconemy.EconomyTerritory] Domain stubs ready: wallet={_walletId}, market={_marketCount}, outposts={_outposts}, territory={_nodes}");
+            var _outposts = Outposts.Outpost.LogMarker;
+            // OutpostStub / TerritoryNode removed 2026-08-05 (dead-code audit,
+            // Sprint A): territory graph is still OPEN, no marker class needed.
+            Log.Message($"[Rimconemy.EconomyTerritory] Domain markers ready: wallet={_walletId}, market={_marketCount}, outposts={_outposts}");
             Tests.CreditsLedgerRegressionTests.RunAll();
             Tests.CreditsLedgerSchemaBumpTests.RunAll();
             Tests.MarketPersistenceTests.RunAll();
