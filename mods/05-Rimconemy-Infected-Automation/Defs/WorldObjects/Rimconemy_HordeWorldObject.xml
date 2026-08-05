@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!--
+    Rimconemy.HordeWorldObject
+    Owner: Infected & Automation (Package 05).
+    Phase D — World-Map-Icon für die Horde (wandert zur Player-Home-Tile).
+    Mirrors OutpostWorldObject pattern (Mod 04).
+  -->
+  <RimWorld.WorldObjectDef>
+    <defName>Rimconemy_HordeWorldObject</defName>
+    <label>hordenschwarm</label>
+    <worldObjectClass>Rimconemy.InfectedAutomation.Horde.HordeWorldObject</worldObjectClass>
+    <expandingIcon>true</expandingIcon>
+    <drawerType>MapMeshAndFoam</drawerType>
+    <color>(0.85, 0.15, 0.15)</color>
+    <neverMultiSelect>true</neverMultiSelect>
+  </RimWorld.WorldObjectDef>
+
+</Defs>
