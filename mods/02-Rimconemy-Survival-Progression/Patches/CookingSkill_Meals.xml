@@ -15,6 +15,11 @@
   their own <comps> block (e.g. MealFine with CompProperties_Ingredients)
   still inherit this entry. The not(li[...]) guard keeps the patch
   idempotent.
+
+  NOTE: RimWorld 1.6 does NOT merge comps when a child has an explicit
+  <comps> block — the child's block replaces the parent's entirely.
+  Therefore concrete meal defs with their own comps (MealSimple, MealFine,
+  MealLavish, MealSurvivalPack) are patched individually below.
 -->
 <Patch>
   <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
@@ -28,6 +33,66 @@
     <xpath>/Defs/ThingDef[@Name="MealCookedIngredientless"][not(comps)]</xpath>
     <match Class="PatchOperationAdd">
       <xpath>/Defs/ThingDef[@Name="MealCookedIngredientless"]</xpath>
+      <value><comps><li Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill" /></comps></value>
+    </match>
+  </Operation>
+</Patch>
+
+<!-- ══════════════ CONCRETE MEALS WITH OWN <comps> ══════════════ -->
+<Patch>
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
+    <xpath>/Defs/ThingDef[defName="MealSimple"]/comps[not(li[@Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill"])]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName="MealSimple"]/comps[not(li[@Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill"])]</xpath>
+      <value><li Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill" /></value>
+    </match>
+  </Operation>
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
+    <xpath>/Defs/ThingDef[defName="MealSimple"][not(comps)]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName="MealSimple"]</xpath>
+      <value><comps><li Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill" /></comps></value>
+    </match>
+  </Operation>
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
+    <xpath>/Defs/ThingDef[defName="MealFine"]/comps[not(li[@Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill"])]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName="MealFine"]/comps[not(li[@Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill"])]</xpath>
+      <value><li Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill" /></value>
+    </match>
+  </Operation>
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
+    <xpath>/Defs/ThingDef[defName="MealFine"][not(comps)]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName="MealFine"]</xpath>
+      <value><comps><li Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill" /></comps></value>
+    </match>
+  </Operation>
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
+    <xpath>/Defs/ThingDef[defName="MealLavish"]/comps[not(li[@Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill"])]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName="MealLavish"]/comps[not(li[@Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill"])]</xpath>
+      <value><li Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill" /></value>
+    </match>
+  </Operation>
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
+    <xpath>/Defs/ThingDef[defName="MealLavish"][not(comps)]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName="MealLavish"]</xpath>
+      <value><comps><li Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill" /></comps></value>
+    </match>
+  </Operation>
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
+    <xpath>/Defs/ThingDef[defName="MealSurvivalPack"]/comps[not(li[@Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill"])]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName="MealSurvivalPack"]/comps[not(li[@Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill"])]</xpath>
+      <value><li Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill" /></value>
+    </match>
+  </Operation>
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
+    <xpath>/Defs/ThingDef[defName="MealSurvivalPack"][not(comps)]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName="MealSurvivalPack"]</xpath>
       <value><comps><li Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill" /></comps></value>
     </match>
   </Operation>

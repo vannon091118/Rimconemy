@@ -26,15 +26,14 @@ namespace Rimconemy.SurvivalProgression.Tests
             Check(ref failures, RoleSkillResolver.CookingBuffChance(20) > RoleSkillResolver.CookingBuffChance(1), "Cooking buff chance rises with skill");
             Check(ref failures, HasComp<ThingDef>("Wall", typeof(CompProperties_BuilderDurability)), "Building comp inherited by Wall");
             Check(ref failures, HasComp<ThingDef>("Plant_Potato", typeof(CompProperties_PlanterSkill)), "Planter comp inherited by crop");
-            // D2-Harmonisierung: Der Patch hängt CompProperties_CookSkill an
-            // `MealCookedIngredientless` — den gemeinsamen Vorfahren aller
-            // gekochten Mahlzeiten (MealSimple/MealFine/MealLavish inkl.
-            // Varianten). RimWorld merged comps-Listen über die Vererbung,
-            // daher erbt auch MealFine mit eigenem <comps>-Block (Ingredients)
-            // das Comp. `MealBase` wäre der falsche Anker: Es parented nur
-            // MealSurvivalPack/MealNutrientPaste, nicht die gekochten Mahlzeiten.
+            // D2-Harmonisierung: CompProperties_CookSkill wird via XML-Patch
+            // an MealCookedIngredientless (Parent aller gekochten Mahlzeiten)
+            // UND individuell an MealSimple/MealFine/MealLavish/MealSurvivalPack
+            // gehängt (RimWorld merged comps nur, wenn das Kind KEINEN eigenen
+            // <comps>-Block definiert — andernfalls überschreibt der Kind-Block).
+            Check(ref failures, HasComp<ThingDef>("MealSimple", typeof(CompProperties_CookSkill)), "Cook comp inherited by MealSimple");
             Check(ref failures, HasComp<ThingDef>("MealFine", typeof(CompProperties_CookSkill)), "Cook comp inherited by MealFine");
-            Log.Message("[Rimconemy.SurvivalProgression] Role mechanics regression tests: " + (14 - failures) + " passed, " + failures + " failed");
+            Log.Message("[Rimconemy.SurvivalProgression] Role mechanics regression tests: " + (15 - failures) + " passed, " + failures + " failed");
             return failures;
         }
 
