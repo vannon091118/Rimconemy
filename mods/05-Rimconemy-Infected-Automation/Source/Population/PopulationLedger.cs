@@ -271,7 +271,7 @@ namespace Rimconemy.InfectedAutomation.Population
         }
 
         /// <summary>
-        /// Phase E — Driver ruft nach erfolgreichem TryInfectWildAnimals auf.
+        /// Phase E — StoryDirector ruft nach erfolgreichem TryInfectWildAnimals auf.
         /// Inkrementiert Tageszähler + stempelt Tick. count ≤ 0 ist no-op.
         /// Idempotent im Sinne "Aufruf ohne Effekt bei count=0"; nicht idempotent
         /// über mehrere Aufrufe (jeder summiert).

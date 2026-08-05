@@ -3,9 +3,9 @@
 // Phase E — Tiersym-Infektion via Random Encounter: Pure-Logic.
 // Owner: Infected & Automation (Package 05).
 //
-// Pure-Logic, kein IO, kein Verse-Worldstate. Wird vom
-// AnimalInfectionDriver (MapComponent) aufgerufen; regression-test-bar
-// ohne MapComponent/Game-Context.
+// Pure-Logic, kein IO, kein Verse-Worldstate. Aufgerufen von
+// StoryDirector.TryFireProfileInfection (Day-Tick); regression-test-bar
+// ohne Game-Context.
 //
 // Determinismus: Tages-Bucket + HordeCount|10 + ProfileId
 // → FNV-1a-32bit-Hash → deterministisches Outcome pro Tag × Horde.

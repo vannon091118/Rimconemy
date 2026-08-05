@@ -1,15 +1,6 @@
 // Tests/AnimalInfectionDriverTests.cs
 //
 // Phase E T5 — AnimalInfectionDriver TryFireOnce Tests.
-//
-// Verifies:
-//   T9: TickInterval constant documented (>= 3600).
-//   T10: TryFireOnce(map=null) returns 0 (defensive).
-//   T11: TryFireOnce with stub-today-count over cap → no fire.
-//   T12: ResetForTests clears _lastFireTick.
-//   T13: Idempotency — calling TryFireOnce twice in the same
-//        day's id-bucket does NOT double-increment.
-
 using Rimconemy.InfectedAutomation.Inoculation;
 using Rimconemy.InfectedAutomation.Population;
 using Rimconemy.InfectedAutomation.Story;
@@ -55,8 +46,6 @@ namespace Rimconemy.InfectedAutomation.Tests
 
         private static bool T11_StubTodayBlocksFire()
         {
-            // Direkte Coverage für Today-Cap via AnimalInfectionChance — der Driver
-            // delegiert dorthin. Survival-Profil: InoculationsPerDay = 1.
             int cnt = AnimalInfectionChance.ComputeInfectionCount(60_000L, 200, SettingProfile.Survival);
             int cap = PopulationProfileMultipliers.GetInoculationsPerDay("Survival");
             return cnt >= 0 && cnt <= cap;
@@ -73,9 +62,6 @@ namespace Rimconemy.InfectedAutomation.Tests
 
         private static bool T13_IdempotentFire()
         {
-            // Die Driver-Logik delegiert an Pure-Chance + Service. Hier prüfen
-            // wir nur die ShouldFireToday-Determinismus-Eigenschaft: gleicher
-            // Day-Bucket + gleicher Ledger → gleiches Outcome.
             var l = new PopulationLedger
             {
                 HumanoidLiveCount = 100,
@@ -88,7 +74,6 @@ namespace Rimconemy.InfectedAutomation.Tests
                 l.AnimalInfectionCountToday, 100 + 100 / 2, SettingProfile.Survival);
             bool should2 = AnimalInfectionChance.ShouldFireToday(60_000L,
                 l.AnimalInfectionCountToday, 100 + 100 / 2, SettingProfile.Survival);
-            // Idempotenz per Pure-Function mit gleichen Inputs
             return should1 == should2;
         }
     }

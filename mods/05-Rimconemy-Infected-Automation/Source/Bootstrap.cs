@@ -105,18 +105,17 @@ namespace Rimconemy.InfectedAutomation
             // Phase D (2026-08-05) — Horde Overlay: World-Map wanderer +
             // SectionLayer-Kreis mittig + Per-Infected-Bursts + CameraEdge.
             Tests.HordeRegressionTests.RunAll();
+            Horde.HordeCameraOverlay.Install();
             Log.Message("[Rimconemy.InfectedAutomation] Phase D: Horde overlay wired (Calculator, WorldObject, Spawner, SectionLayer, BurstLayer, CameraEdge).");
 
             // Phase E (2026-08-05) — Tiersym-Infektion via Random Encounter.
             //   AnimalInfectionChance (Pure-Chance + Profile-Multipliers),
             //   PopulationLedger.LastAnimalInfectionTick / CountToday,
-            //   RandomInoculationService.TryInfectWildAnimals,
-            //   AnimalInfectionDriver Day-Tick wiring.
+            //   RandomInoculationService.TryInfectWildAnimals.
             Tests.AnimalInfectionRegressionTests.RunAll();
             Tests.AnimalInfectionLedgerFieldsTests.RunAll();
             Tests.AnimalInfectionServiceLimitTests.RunAll();
-            Tests.AnimalInfectionDriverTests.RunAll();
-            Log.Message("[Rimconemy.InfectedAutomation] Phase E: AnimalInfection pipeline wired (Profile-Chance, Ledger, Service, Driver).");
+            Log.Message("[Rimconemy.InfectedAutomation] Phase E: AnimalInfection pipeline wired (Profile-Chance, Ledger, Service).");
             Log.Message("[Rimconemy.InfectedAutomation] Phase B: Daily-Growth+Reset+Revenge coupling wired.");
             Log.Message("[Rimconemy.InfectedAutomation] Building threat adapter available; Mechadroid job contracts are gated for Milestone B; no incident or raid is spawned.");
 

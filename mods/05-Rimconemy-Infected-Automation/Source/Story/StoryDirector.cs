@@ -9,6 +9,9 @@ using Rimconemy.ScavengerInfrastructure.Storage;
 using RimWorld;
 using Verse;
 
+using RandomInoculationService = Rimconemy.InfectedAutomation.Inoculation.RandomInoculationService;
+using AnimalInfectionChance   = Rimconemy.InfectedAutomation.Inoculation.AnimalInfectionChance;
+
 namespace Rimconemy.InfectedAutomation.Story
 {
     /// <summary>
@@ -258,12 +261,8 @@ namespace Rimconemy.InfectedAutomation.Story
                 Inoculation.RandomInoculationService.TryInfectRandom(
                     playerHomeForInoculation, currentTick);
 
-                // Phase E — Driver-Pfad (Random-Encounter-Tiersym-Infektion).
-                // Erweitert Phase C um eine recurring Trigger-Logik. Profil-
-                // gesteuert + Horde-Cap-getrieben. Bei gleicher Map-Reference,
-                // weil TierInokulation nur auf der HomeMap Sinn macht.
-                Inoculation.AnimalInfectionDriver.TryFireOnce(
-                    playerHomeForInoculation, currentTick);
+                // Phase E — profile-driven wild-animal infection (chance + horde cap).
+                TryFireProfileInfection(currentTick);
             }
         }
 
@@ -1004,6 +1003,35 @@ namespace Rimconemy.InfectedAutomation.Story
             int freeBudget = (int)System.Math.Min(int.MaxValue, System.Math.Max(0, freeBudgetRaw));
             int raw = (int)System.Math.Floor((double)ledger.RecentKillsToday * ratio);
             LastPendingRevenge = System.Math.Max(0, System.Math.Min(raw, freeBudget));
+        }
+
+        /// <summary>
+        /// Phase E — daily-chance + horde-cap gate on wild-animal infection.
+        /// Composes <see cref="AnimalInfectionChance.ShouldFireToday"/>,
+        /// <see cref="AnimalInfectionChance.ComputeInfectionCount"/>,
+        /// <see cref="RandomInoculationService.TryInfectWildAnimals"/> and
+        /// <see cref="PopulationLedger.RegisterAnimalInfection"/>. Caller
+        /// (GameComponentTick) is responsible for gating on a known player
+        /// home map so we do not re-check it here.
+        /// </summary>
+        private void TryFireProfileInfection(long currentTick)
+        {
+            var ledger = PopulationLedger.Get();
+            if (ledger == null || ActiveProfile == null) return;
+
+            int hordeCount = System.Math.Max(
+                0, ledger.HumanoidLiveCount + ledger.AnimalLiveCount / 2);
+            if (!Inoculation.AnimalInfectionChance.ShouldFireToday(
+                    currentTick, ledger.AnimalInfectionCountToday, hordeCount, ActiveProfile))
+                return;
+
+            int count = Inoculation.AnimalInfectionChance.ComputeInfectionCount(
+                currentTick, hordeCount, ActiveProfile);
+            if (count <= 0) return;
+
+            int actually = Inoculation.RandomInoculationService.TryInfectWildAnimals(count, currentTick);
+            if (actually > 0)
+                ledger.RegisterAnimalInfection(actually, currentTick);
         }
     }
 }
