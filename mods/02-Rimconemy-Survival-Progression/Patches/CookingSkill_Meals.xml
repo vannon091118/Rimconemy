@@ -36,10 +36,9 @@
       <value><comps><li Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill" /></comps></value>
     </match>
   </Operation>
-</Patch>
+
 
 <!-- ══════════════ CONCRETE MEALS WITH OWN <comps> ══════════════ -->
-<Patch>
   <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
     <xpath>/Defs/ThingDef[defName="MealSimple"]/comps[not(li[@Class="Rimconemy.SurvivalProgression.Character.Cooking.CompProperties_CookSkill"])]</xpath>
     <match Class="PatchOperationAdd">
