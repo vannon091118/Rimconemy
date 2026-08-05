@@ -71,6 +71,26 @@ namespace Rimconemy.InfectedAutomation.Population
                 { ProfileCollapse, 60_000L * 3 },
             };
 
+        // Phase E — AnimalInfection base chance per in-game day.
+        // 0.05 = 5% per Tag (Survival); Collapse häufiger, Refuge selten.
+        public static readonly IReadOnlyDictionary<string, double> AnimalInfectionBaseChance =
+            new Dictionary<string, double>
+            {
+                { ProfileRefuge,   0.02 },
+                { ProfileSurvival, 0.05 },
+                { ProfileCollapse, 0.15 },
+            };
+
+        // Phase E — Multiplier auf BaseChance pro Horde-count über Threshold.
+        // Refuge niedrig (0.5) damit das selten bleibt, Collapse hoch (1.5).
+        public static readonly IReadOnlyDictionary<string, double> AnimalInfectionHordeScalingFactor =
+            new Dictionary<string, double>
+            {
+                { ProfileRefuge,   0.5 },
+                { ProfileSurvival, 1.0 },
+                { ProfileCollapse, 1.5 },
+            };
+
         public static float GetDailyGrowth(string profileId)
         {
             string p = profileId ?? FallbackProfile;
@@ -109,6 +129,23 @@ namespace Rimconemy.InfectedAutomation.Population
             if (InoculationMinIntervalTicks.TryGetValue(p, out long v)) return v;
             LogWarnFallback(p, "InoculationMinInterval");
             return InoculationMinIntervalTicks[FallbackProfile];
+        }
+
+        // Phase E — new getters for AnimalInfectionChance driver.
+        public static double GetAnimalInfectionBaseChance(string profileId)
+        {
+            string p = profileId ?? FallbackProfile;
+            if (AnimalInfectionBaseChance.TryGetValue(p, out double v)) return v;
+            LogWarnFallback(p, "AnimalInfectionBaseChance");
+            return AnimalInfectionBaseChance[FallbackProfile];
+        }
+
+        public static double GetAnimalInfectionHordeScalingFactor(string profileId)
+        {
+            string p = profileId ?? FallbackProfile;
+            if (AnimalInfectionHordeScalingFactor.TryGetValue(p, out double v)) return v;
+            LogWarnFallback(p, "AnimalInfectionHordeScalingFactor");
+            return AnimalInfectionHordeScalingFactor[FallbackProfile];
         }
 
         private static void LogWarnFallback(string profileId, string field)
