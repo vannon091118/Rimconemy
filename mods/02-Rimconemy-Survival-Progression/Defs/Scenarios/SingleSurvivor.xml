@@ -80,6 +80,11 @@
           <def>Rimconemy_StartEnemiesPart</def>
         </li>
 
+        <!-- Cinematic intro sequence with flow text, camera cuts, and zombie flash -->
+        <li Class="Rimconemy.InfectedAutomation.Scenarios.ScenPart_IntroSequence">
+          <def>Rimconemy_IntroSequencePart</def>
+        </li>
+
         <!-- Phase 4.2: Tier-1 architect category is registered via
              DesignationCategoryDef in Package 03; not embedded here. -->
 

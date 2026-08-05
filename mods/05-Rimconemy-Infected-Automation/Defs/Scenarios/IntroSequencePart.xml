@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <ScenPartDef>
+    <defName>Rimconemy_IntroSequencePart</defName>
+    <label>Rimconemy cinematic intro sequence</label>
+    <category>Fixed</category>
+    <scenPartClass>Rimconemy.InfectedAutomation.Scenarios.ScenPart_IntroSequence</scenPartClass>
+    <summaryPriority>800</summaryPriority>
+  </ScenPartDef>
+</Defs>
