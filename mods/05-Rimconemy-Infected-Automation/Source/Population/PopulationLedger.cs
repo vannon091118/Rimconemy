@@ -254,6 +254,46 @@ namespace Rimconemy.InfectedAutomation.Population
             return System.Math.Min(freeBudget, raw);
         }
 
+        // ── Write-API: NoteInoculation (Task 6) ─────────────────
+        /// <summary>
+        /// Note a successful animal-inoculation event from Phase C
+        /// <c>RandomInoculationService</c>. Stamps the supplied
+        /// <paramref name="animalKindDefName"/> for diagnostics and
+        /// records the current tick as the last-inoculation timestamp
+        /// so the cooldown gate (driven by
+        /// <c>PopulationProfileMultipliers.GetInoculationMinInterval</c>)
+        /// stays deterministic.
+        ///
+        /// Per spec, this method does NOT spawn a pawn — Phase C's
+        /// service owns the actual conversion. Phase A only persists
+        /// the diagnostic slot.
+        /// </summary>
+        public void NoteInoculation(string animalKindDefName)
+        {
+            if (string.IsNullOrEmpty(animalKindDefName))
+            {
+                Log.Warning("[Rimconemy.InfectedAutomation] PopulationLedger.NoteInoculation(<empty>); ignored.");
+                return;
+            }
+            CumulativeInoculations += 1;
+            LastInoculationTick = Find.TickManager?.TicksGame ?? 0L;
+        }
+
+        /// <summary>
+        /// Returns true when the cooldown gate has elapsed for the
+        /// current Profile. Pure function over the last-stamp + the
+        /// profile-driven interval. Phase C's RandomInoculationService
+        /// uses this to decide whether to attempt a new inoculation.
+        /// </summary>
+        public bool IsInoculationCooldownElapsed()
+        {
+            long interval = PopulationProfileMultipliers.GetInoculationMinInterval(ProfileId);
+            if (interval <= 0L) return true;  // safety, never on an unconfigured profile
+            long now = Find.TickManager?.TicksGame ?? 0L;
+            if (LastInoculationTick == 0L) return true;  // never inoculated yet
+            return (now - LastInoculationTick) >= interval;
+        }
+
         // ── Migration ───────────────────────────────────────
         public void MigrateIfNeeded()
         {
