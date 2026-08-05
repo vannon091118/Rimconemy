@@ -8,8 +8,6 @@
 // must be told to rebuild them or the pulse never renders.
 // Mirrors PopulationLedgerReconciler pattern.
 
-using Rimconemy.InfectedAutomation.Population;
-using Rimconemy.InfectedAutomation.Story;
 using RimWorld;
 using RimWorld.Planet;
 using System.Linq;
@@ -43,11 +41,9 @@ namespace Rimconemy.InfectedAutomation.Horde
 
             int now = Find.TickManager?.TicksGame ?? 0;
 
-            var ledger = PopulationLedger.Get();
-            int effective = HordeCalculator.GetEffectiveCount(ledger);
-            var profile = StoryDirector.Get()?.ActiveProfile ?? SettingProfile.Survival;
-
-            if (!HordeCalculator.IsActive(effective, profile))
+            // Shared live gate (same source the render paths use): ledger
+            // + active profile + threshold. No re-derivation here.
+            if (!HordeCalculator.IsActiveNow())
             {
                 DespawnAllHordes();
                 return;

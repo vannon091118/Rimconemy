@@ -12,7 +12,7 @@
 
 - Build flags: `RimWorldManagedPath=/home/vannon/GOG Games/RimWorld/game/RimWorldLinux_Data/Managed HarmonyAssembliesPath=/home/vannon/GOG Games/RimWorld/game/Mods/Harmony/Current/Assemblies`
 - Project: `mods/05-Rimconemy-Infected-Automation/Rimconemy.InfectedAutomation.csproj`
-- Tick-Frequency: MapComponent 250 ticks (HordeSpawner) + 60 ticks (SectionLayer-Regen-Hook) + frame-rate (CameraOverlay OnGUI).
+- Tick-Frequency: MapComponent 250 ticks (WorldObject-Sync) + 15 ticks (SectionLayer-Regen-Driver via `MapDrawer.RegenerateLayerNow`) + frame-rate (CameraOverlay Postfix).
 - Hybrid counter formula: `effective = HumanoidLiveCount + floor(0.5 × AnimalLiveCount)`. Profile threshold keys: Refuge=220, Survival=150, Collapse=80.
 - Pulse-Phase: Pure Sinusoid über 120-Tick-Cycle. α_max=0.35 (Kreis), α_max=0.5 (Bursts), α_max=0.4 (CameraEdge).
 - WorldMap-Icon: Verse.WorldObject-Subclass analog Outpost. Def XML `Rimconemy_HordeWorldObject`. Driftet 1 tile closer alle 250 ticks.
@@ -25,12 +25,12 @@
 | Datei | Verantwortung |
 |---|---|
 | `Source/Horde/HordeCalculator.cs` | Pure: Effective-Count, IsActive, PulsePhase, ProfileStrip-for-Threshold |
-| `Source/Horde/HordeUpdateLogic.cs` | Pure: Spawn/Drift/Despawn-State-Machine (testbar ohne Game) |
-| `Source/Horde/HordeWorldObject.cs` | Verse.WorldObject-Subclass mit Drift-State |
-| `Source/Horde/HordeSpawner.cs` | MapComponent-Orchestrator, ruft HordeUpdateLogic.RunOnce() alle 250 Ticks |
-| `Source/Horde/HordeSectionLayer.cs` | SectionLayer-Subclass: pulsierender Kreis mittig |
+| `Source/Horde/HordeUpdateLogic.cs` | Pure: `ComputeHordeTile` (tick-abgeleitete Tile-Position, testbar ohne Game) |
+| `Source/Horde/HordeWorldObject.cs` | Verse.WorldObject-Subclass (Marker; Tile setzt HordeSpawner) |
+| `Source/Horde/HordeSpawner.cs` | MapComponent-Orchestrator: 250-Tick-WorldObject-Sync + 15-Tick-`RegenerateLayerNow`-Driver |
+| `Source/Horde/HordeSectionLayer.cs` | SectionLayer-Subclass: pulsierender Kreis mittig (nur die Section um `map.Center`) |
 | `Source/Horde/HordeBurstLayer.cs` | SectionLayer-Subclass: per-infected-Pawn Radial-Bursts |
-| `Source/Horde/HordeCameraOverlay.cs` | Static OnGUI-Postfix auf Camera-Driver: Edge-Frame-Pulse |
+| `Source/Horde/HordeCameraOverlay.cs` | Static Postfix auf `UIRoot.UIRootOnGUI`, explizit via `Install()`: Edge-Frame-Pulse |
 | `Defs/WorldObjects/Rimconemy_HordeWorldObject.xml` | Def für WorldObject-Class |
 | `Source/Bootstrap.cs` | RunAll-Hook für Tests |
 | `Tests/HordeRegressionTests.cs` | 12 Tests (D1-D12) |
@@ -38,7 +38,7 @@
 
 ---
 
-### Task 1: HordeCalculator Pure-Logic + Tests D1-D6, D11-D13
+### Task 1: HordeCalculator Pure-Logic + Tests D1-D6 + D11
 
 **Files:**
 - Create: `mods/05-Rimconemy-Infected-Automation/Source/Horde/HordeCalculator.cs`
@@ -51,23 +51,23 @@
   - `public static bool IsActive(int effectiveCount, SettingProfile profile)`
   - `public static float ComputePulsePhase(long currentTick)`
 
-- [ ] **Step 1: Write the failing test file (D1-D6, D11-D13)**
+- [ ] **Step 1: Write the failing test file (D1-D6 + D11)**
 
 Create `Tests/HordeRegressionTests.cs`:
 
 ```csharp
 // Tests/HordeRegressionTests.cs
 //
-// Phase D — Horde-Overlay Visualisierung (D1-D15).
+// Phase D — Horde-Overlay Visualisierung (D1-D12).
 // spec: docs/superpowers/specs/2026-08-05-horde-overlay-design.md
 // plan: docs/superpowers/plans/2026-08-05-horde-overlay.md
 //
 // Owner: Infected & Automation (Package 05).
 //
-// Calculator-side tests cover Pure-Logic only. SectionLayer, Map-Mesh
-// mesh-regen, and Camera-edge postfix each get dedicated tasks with their
-// own seams (TestTile and StubDriver for layer; Camera-edge postfix gets
-// a stub callback).
+// Calculator-side tests cover Pure-Logic only.
+// UpdateLogic tests cover the pure tick-derived tile (spawn / drift /
+// arrival). Despawn is the Spawner's IsActive gate (covered by D1-D5).
+// D11-D12 verify the hybrid-count route and the WorldObject Def load.
 
 using Rimconemy.InfectedAutomation.Horde;
 using Rimconemy.InfectedAutomation.Population;
@@ -78,8 +78,6 @@ namespace Rimconemy.InfectedAutomation.Tests
 {
     public static class HordeRegressionTests
     {
-        public const int ExpectedPassCount = 15;
-
         public static int RunAll()
         {
             int passed = 0;
@@ -102,10 +100,8 @@ namespace Rimconemy.InfectedAutomation.Tests
             Check(D5_CalculatorProfileFallbackNull(),                "D5.CalculatorProfileFallbackNull");
             Check(D6_PulsePhaseSinusoidal(),                         "D6.PulsePhaseSinusoidal");
 
-            // ── D11-D13: Strip-Prefix routing ──────────────
-            Check(D11_StripRimconemyPrefixForThreshold(),            "D11.StripRimconemyPrefixForThreshold");
-            Check(D12_StripRimconemyPrefixNullReturnsSurvival(),     "D12.StripRimconemyPrefixNullReturnsSurvival");
-            Check(D13_AnimalHalfCapRoute(),                          "D13.AnimalHalfCapRoute");
+            // ── D11: hybrid route ────────────────────────────
+            Check(D11_AnimalHalfCapRoute(),                          "D11.AnimalHalfCapRoute");
 
             Log.Message(
                 "[Rimconemy.InfectedAutomation] Horde regression tests: "
@@ -190,30 +186,12 @@ namespace Rimconemy.InfectedAutomation.Tests
                 && System.Math.Abs(p120) < 0.01f;
         }
 
-        // ── D11: ProfileId with Rimconemy_ prefix routes correctly ──
-        private static bool D11_StripRimconemyPrefixForThreshold()
-        {
-            var ledger = new PopulationLedger { HumanoidLiveCount = 150, AnimalLiveCount = 0, ProfileId = "Survival" };
-            int effective = HordeCalculator.GetEffectiveCount(ledger);
-            // SettingProfile.Survival uses "Rimconemy_Survival" ProfileId.
-            return HordeCalculator.IsActive(effective, SettingProfile.Survival);
-        }
-
-        // ── D12: null profileId → Survival fallback ─────
-        private static bool D12_StripRimconemyPrefixNullReturnsSurvival()
-        {
-            // null profile → StripRimconemyPrefix returns "Survival"
-            // Threshold = 150. Test: 120 inactive, 200 active.
-            return !HordeCalculator.IsActive(120, null)
-                && HordeCalculator.IsActive(200, null);
-        }
-
-        // ── D13: AnimalHalfCap formula route ──────────
-        private static bool D13_AnimalHalfCapRoute()
+        // ── D11: hybrid route at Refuge threshold 220 ────────────
+        private static bool D11_AnimalHalfCapRoute()
         {
             var ledgerRefuge = new PopulationLedger { HumanoidLiveCount = 100, AnimalLiveCount = 100, ProfileId = "Refuge" };
-            int eRefuge = HordeCalculator.GetEffectiveCount(ledgerRefuge);  // 100 + 50 = 150
-            return eRefuge == 150 && !HordeCalculator.IsActive(eRefuge, SettingProfile.Refuge); // Refuge threshold=220, not active
+            int eRefuge = HordeCalculator.GetEffectiveCount(ledgerRefuge); // 100 + 50 = 150
+            return eRefuge == 150 && !HordeCalculator.IsActive(eRefuge, SettingProfile.Refuge); // Refuge=220, not active
         }
     }
 }
@@ -244,6 +222,10 @@ Create `Source/Horde/HordeCalculator.cs`:
 // active for this profile?". Pulse-phase drive is also Pure so the
 // three Render-Paths (SectionLayer, BurstLayer, CameraOverlay) stay in
 // lock-step without sharing mutable state.
+//
+// IsActiveNow() is the one deliberate exception to the Pure contract: it
+// reads the live ledger + profile so all three render paths share one
+// gate. Everything else is deterministic from its inputs.
 
 using Rimconemy.InfectedAutomation.Population;
 using Rimconemy.InfectedAutomation.Story;
@@ -253,30 +235,26 @@ namespace Rimconemy.InfectedAutomation.Horde
 {
     public static class HordeCalculator
     {
-        /// <summary>How many tiles worth of visual radius each animal
-        /// contributes (Issue: keep this consistent with Phase C's
-        /// AnimalHalfCap so reader and Horde share the same ratio).</summary>
-        public const float AnimalHalfCapFactor = 0.5f;
-
         /// <summary>Pulse-Cycle length in ticks. 120 = 2 in-game seconds
         /// at 60 ticks/sec, i.e. one slow breath. All three Render-Paths
         /// MUST use this constant so the visual stays in lock-step.</summary>
         public const int PulseCycleTicks = 120;
 
-        /// <summary>Hybrid counter: Humanoid + 0.5 × Animal. Clamped at 0
-        /// (over-cap negative goes to 0). Reads ledger fields only; no IO.</summary>
+        /// <summary>Hybrid counter: Humanoid + 0.5 × Animal. Clamped at 0.
+        /// Reads ledger fields only; no IO, deterministic from inputs.
+        /// null ledger → 0 (horde inactive).</summary>
         public static int GetEffectiveCount(PopulationLedger ledger)
         {
             if (ledger == null) return 0;
-            int human = System.Math.Max(0, ledger.HumanoidLiveCount);
-            int animal = System.Math.Max(0, ledger.AnimalLiveCount);
-            return human + (int)System.Math.Floor((double)animal * AnimalHalfCapFactor);
+            return Math.Max(0, ledger.HumanoidLiveCount) + Math.Max(0, ledger.AnimalLiveCount) / 2;
         }
 
         /// <summary>True when Effective >= HordeThreshold(profileId).
         /// ProfileId fed through StripRimconemyPrefix so SettingProfile
         /// keys ("Rimconemy_Survival") map to PopulationProfileMultipliers
-        /// keys ("Survival"). null profile → Survival fallback.</summary>
+        /// keys ("Survival"). null profile → Survival fallback (threshold
+        /// lookup goes through the same prefix-strip path, returning
+        /// "Survival" → 150).</summary>
         public static bool IsActive(int effectiveCount, SettingProfile profile)
         {
             string key = Story.StoryDirector.StripRimconemyPrefix(profile?.ProfileId);
@@ -284,22 +262,36 @@ namespace Rimconemy.InfectedAutomation.Horde
             return effectiveCount >= threshold;
         }
 
-        /// <summary>Pulse-Phase 0..1 Sinusoid over <see cref="PulseCycleTicks"/>.
-        /// Render-Paths multiply this by their per-layer alpha-max to get
-        /// the current alpha. Pure API: same currentTick → same phase.</summary>
+        /// <summary>Live gate shared by all three render paths. Reads the
+        /// current ledger + active profile and answers whether the horde
+        /// should be drawn right now.</summary>
+        public static bool IsActiveNow()
+        {
+            var ledger = PopulationLedger.Get();
+            if (ledger == null) return false;
+            var profile = Story.StoryDirector.Get()?.ActiveProfile ?? SettingProfile.Survival;
+            return IsActive(GetEffectiveCount(ledger), profile);
+        }
+
+        /// <summary>Pulse-Phase in 0..1, two-breath Sinusoid over
+        /// <see cref="PulseCycleTicks"/> (one breath per half-cycle).
+        /// Render-Paths multiply this by their per-layer alpha-max to
+        /// get the current alpha. Pure API: same currentTick → same
+        /// phase; tick=0 yields 0 (minimum alpha, no cold-start flash).
+        ///
+        /// D6 spec: pattern 0 → 1 → 0 → 1 → 0 over 120 ticks (two peaks).
+        /// Implementation: <c>|sin(angle)|</c> with <c>angle = mod/120 · 2π</c>:</summary>
         public static float ComputePulsePhase(long currentTick)
         {
-            if (currentTick <= 0) return 0f;
             int mod = (int)(currentTick % PulseCycleTicks);
             float angle = (float)mod / PulseCycleTicks * 2f * (float)System.Math.PI;
-            // 1 - cos produces 0 at start, 1 at half-cycle, 0 at full cycle.
-            return 1f - (float)System.Math.Cos(angle);
+            return (float)System.Math.Abs(System.Math.Sin(angle));
         }
     }
 }
 ```
 
-- [ ] **Step 4: Run test to verify all 9 pass**
+- [ ] **Step 4: Run test to verify all 7 pass**
 
 ```bash
 RimWorldManagedPath="/home/vannon/GOG Games/RimWorld/game/RimWorldLinux_Data/Managed" \
@@ -314,7 +306,7 @@ Expected: 0 errors / 0 warnings.
 ```bash
 git add mods/05-Rimconemy-Infected-Automation/Source/Horde/HordeCalculator.cs \
         mods/05-Rimconemy-Infected-Automation/Tests/HordeRegressionTests.cs
-git commit -m "feat(05/horde): HordeCalculator Pure-Logic + D1-D6+D11-D13 Tests (Phase D T1)"
+git commit -m "feat(05/horde): HordeCalculator Pure-Logic + D1-D6+D11 Tests (Phase D T1)"
 ```
 
 ---
@@ -328,117 +320,62 @@ git commit -m "feat(05/horde): HordeCalculator Pure-Logic + D1-D6+D11-D13 Tests 
 - Create: `mods/05-Rimconemy-Infected-Automation/Defs/WorldObjects/Rimconemy_HordeWorldObject.xml`
 - Modify: `Tests/HordeRegressionTests.cs`
 
-- [ ] **Step 1: Add tests D7-D10 + D14-D15 into RunAll() and RunAll() method body**
+- [ ] **Step 1: Add tests D7-D10 + D12 into RunAll() and test class body**
 
 Append to `Tests/HordeRegressionTests.cs` `RunAll()`:
 
 ```csharp
-            // ── D7-D10: UpdateLogic Pure ────────────────
-            Check(D7_UpdatePureDespawnBelowThreshold(),              "D7.UpdatePureDespawnBelowThreshold");
-            Check(D8_UpdatePureSpawnAboveThreshold(),                "D8.UpdatePureSpawnAboveThreshold");
-            Check(D9_UpdatePureMoveTowardsHome(),                    "D9.UpdatePureMoveTowardsHome");
-            Check(D10_UpdatePureMoveIntervalRespected(),             "D10.UpdatePureMoveIntervalRespected");
+            // ── D7-D10: UpdateLogic Pure (tick-derived tile) ──────
+            Check(D7_UpdatePureSpawnAtInitialDistance(),             "D7.UpdatePureSpawnAtInitialDistance");
+            Check(D8_UpdatePureDriftsOnePerInterval(),               "D8.UpdatePureDriftsOnePerInterval");
+            Check(D9_UpdatePureArrivesAndClampsAtHome(),             "D9.UpdatePureArrivesAndClampsAtHome");
+            Check(D10_UpdatePureDeterministicFromTick(),             "D10.UpdatePureDeterministicFromTick");
 
-            // ── D14-D15: WorldObject + Spawner ─────────
-            Check(D14_WorldObjectExistsInDefDB(),                    "D14.WorldObjectExistsInDefDB");
-            Check(D15_SpawnerNullMapComponentSkip(),                 "D15.SpawnerNullMapComponentSkip");
+            // ── D12: WorldObject Def load ──────────────────
+            Check(D12_WorldObjectExistsInDefDB(),                    "D12.WorldObjectExistsInDefDB");
 ```
 
-Append to `Tests/HordeRegressionTests.cs` after D13 (test class body):
+Append to `Tests/HordeRegressionTests.cs` after D11 (test class body):
 
 ```csharp
-        // ── D7: Pure despawn when effective < threshold ──────
-        private static bool D7_UpdatePureDespawnBelowThreshold()
+        // ── D7: tick 0 → spawn at home + 5 ────────────────────
+        private static bool D7_UpdatePureSpawnAtInitialDistance()
         {
-            var hordeTiles = new System.Collections.Generic.List<int> { 100, 105 };
-            HordeUpdateLogic.RunOncePure(
-                effective: 100,
-                active: false,
-                homeTile: 50,
-                currentTick: 5000L,
-                hordeTiles: hordeTiles);
-            return hordeTiles.Count == 0;
+            // Spec §6: tile = home + max(0, 5 − floor(tick/250)).
+            return HordeUpdateLogic.ComputeHordeTile(homeTile: 50, currentTick: 0L) == 55;
         }
 
-        // ── D8: Pure spawn when effective >= threshold ──────
-        private static bool D8_UpdatePureSpawnAboveThreshold()
+        // ── D8: floor(tick/250) moves, 1 tile per interval ──────
+        private static bool D8_UpdatePureDriftsOnePerInterval()
         {
-            var hordeTiles = new System.Collections.Generic.List<int>();
-            HordeUpdateLogic.RunOncePure(
-                effective: 200,
-                active: true,
-                homeTile: 50,
-                currentTick: 5000L,
-                hordeTiles: hordeTiles);
-            // First-spawn: drifts toward home from homeTile + 5
-            return hordeTiles.Count == 1 && hordeTiles[0] == 55; // 50 + 5
+            // tick 249 → 0 moves (still 55); tick 250 → 1 move (54).
+            return HordeUpdateLogic.ComputeHordeTile(50, 249L) == 55
+                && HordeUpdateLogic.ComputeHordeTile(50, 250L) == 54
+                && HordeUpdateLogic.ComputeHordeTile(50, 500L) == 53;
         }
 
-        // ── D9: After 250-tick interval, horde drifts toward home ──
-        private static bool D9_UpdatePureMoveTowardsHome()
+        // ── D9: reaches home at tick 1250 and clamps, never below ──
+        private static bool D9_UpdatePureArrivesAndClampsAtHome()
         {
-            var hordeTiles = new System.Collections.Generic.List<int> { 60 };
-            // 60 → 59? Let's say initial at homeTile+10, after one tick interval
-            // should be at homeTile+9 (drifted closer by 1 tile).
-            HordeUpdateLogic.RunOncePure(
-                effective: 200,
-                active: true,
-                homeTile: 50,
-                currentTick: 250L,  // first interval boundary
-                hordeTiles: hordeTiles);
-            // First call spawns; subsequent calls move.
-            // To test movement explicitly, seed tile and call again:
-            hordeTiles.Clear();
-            hordeTiles.Add(60);
-            HordeUpdateLogic.RunOncePure(
-                effective: 200, active: true, homeTile: 50,
-                currentTick: 250L, hordeTiles: hordeTiles);
-            // Tick=250 = first interval; spawn semantic triggers (still in spawn mode).
-            // For an explicit move, set tick > 250 with already-seeded horde:
-            hordeTiles.Clear();
-            hordeTiles.Add(60);
-            HordeUpdateLogic.RunOncePure(
-                effective: 200, active: true, homeTile: 50,
-                currentTick: 500L, hordeTiles: hordeTiles);
-            // After 500-tick: 500/250 = 2 moves, 60 - 2 = 58.
-            return hordeTiles.Count == 1 && hordeTiles[0] == 58;
+            return HordeUpdateLogic.ComputeHordeTile(50, 1249L) == 51
+                && HordeUpdateLogic.ComputeHordeTile(50, 1250L) == 50
+                && HordeUpdateLogic.ComputeHordeTile(50, 100000L) == 50;
         }
 
-        // ── D10: Move-interval respected ──────
-        private static bool D10_UpdatePureMoveIntervalRespected()
+        // ── D10: deterministic — same tick → same tile, no state ──
+        private static bool D10_UpdatePureDeterministicFromTick()
         {
-            var hordeTiles = new System.Collections.Generic.List<int> { 60 };
-            HordeUpdateLogic.RunOncePure(
-                effective: 200, active: true, homeTile: 50,
-                currentTick: 251L, hordeTiles: hordeTiles);
-            // 251/250 = 1 move, 60 - 1 = 59.
-            return hordeTiles[0] == 59;
+            // Pure function of (homeTile, tick): repeated calls agree and
+            // a different home tile shifts the result by the same delta.
+            return HordeUpdateLogic.ComputeHordeTile(50, 500L) == HordeUpdateLogic.ComputeHordeTile(50, 500L)
+                && HordeUpdateLogic.ComputeHordeTile(7, 250L) == 11; // 7 + (5 − 1)
         }
 
-        // ── D14: HordeWorldObject Def loads via DefDatabase ─────
-        private static bool D14_WorldObjectExistsInDefDB()
+        // ── D12: WorldObjectDef loads from DefDatabase ───────────
+        private static bool D12_WorldObjectExistsInDefDB()
         {
             var def = DefDatabase<RimWorld.WorldObjectDef>.GetNamedSilentFail("Rimconemy_HordeWorldObject");
             return def != null && def.worldObjectClass == typeof(HordeWorldObject);
-        }
-
-        // ── D15: Spawner MapComponent short-circuits on null map ──
-        // We test logic directly via HordeUpdateLogic.RunOncePure with active=true
-        // and homeTile=-1 to ensure no crash on edge cases.
-        private static bool D15_SpawnerNullMapComponentSkip()
-        {
-            var hordeTiles = new System.Collections.Generic.List<int>();
-            try
-            {
-                HordeUpdateLogic.RunOncePure(
-                    effective: 200, active: true, homeTile: -1,
-                    currentTick: 500L, hordeTiles: hordeTiles);
-                return true; // no exception thrown
-            }
-            catch
-            {
-                return false;
-            }
         }
 ```
 
@@ -459,14 +396,11 @@ Create `Source/Horde/HordeUpdateLogic.cs`:
 ```csharp
 // Source/Horde/HordeUpdateLogic.cs
 //
-// Phase D — Pure Spawn/Move/Despawn state-machine for the wandering
-// HordeWorldObject. Mirrors PopulationLedgerReconciler.ReconciliationLogic:
-// no IO, no Verse.* types, no DefDatabase read — a test seam for the
+// Phase D — Pure spawn/drift math for the wandering HordeWorldObject.
+// No IO, no Verse.* types, no DefDatabase read — a test seam for the
 // production Spawner. Pure-API design lets regression tests cover
-// "spawn at threshold", "drift toward home", "despawn below threshold"
+// "spawn at initial distance", "drift toward home", "arrival at home"
 // without spinning up a GameComponent.
-
-using System.Collections.Generic;
 
 namespace Rimconemy.InfectedAutomation.Horde
 {
@@ -476,44 +410,21 @@ namespace Rimconemy.InfectedAutomation.Horde
         public const int InitialDistanceFromHome = 5;
 
         /// <summary>
-        /// Pure entry-point: spawn / drift / despawn one Horde per home tile.
-        /// Mutates <paramref name="hordeTiles"/> in place to keep
-        /// "where the horde is" as an externalized state. The Spawner
-        /// (MapComponent) translates the result into actual Verse.WorldObject
-        /// placement; the tests inspect the list directly.
+        /// Pure position function (spec §6): the horde's world tile is
+        /// derived ONLY from the game tick — no persisted state, so
+        /// Save/Load resumes at the same tile and any activation moment
+        /// yields a consistent position.
+        ///
+        /// <c>tile = homeTile + max(0, InitialDistanceFromHome − floor(tick/250))</c>
+        ///
+        /// tick 0–249   → home + 5  (initial spawn distance)
+        /// tick 500     → home + 3  (2 tiles drifted)
+        /// tick 1250+   → home      (arrived; clamped, never below home)
         /// </summary>
-        public static void RunOncePure(
-            int effective, bool active, int homeTile, long currentTick,
-            List<int> hordeTiles)
+        public static int ComputeHordeTile(int homeTile, long currentTick)
         {
-            if (hordeTiles == null) return;
-            if (!active)
-            {
-                hordeTiles.Clear();
-                return;
-            }
-            if (homeTile < 0) return; // defensive: no player home → no spawn.
-
-            // First spawn: place at homeTile + InitialDistanceFromHome.
-            if (hordeTiles.Count == 0)
-            {
-                hordeTiles.Add(homeTile + InitialDistanceFromHome);
-                return;
-            }
-
-            // Drift: each TickInterval, move 1 tile toward home.
-            int moves = (int)(currentTick / TickInterval);
-            if (moves < 1) return;
-            int slotIndex = hordeTiles[0] - homeTile;
-            if (slotIndex <= 0)
-            {
-                // Already at home — keep position but reduce distance value
-                // so subsequent runs do not panic (moves >= 1 still produces 0 delta).
-                hordeTiles[0] = homeTile;
-                return;
-            }
-            int newSlot = System.Math.Max(0, slotIndex - moves);
-            hordeTiles[0] = homeTile + newSlot;
+            int drifted = (int)(currentTick / TickInterval);
+            return homeTile + System.Math.Max(0, InitialDistanceFromHome - drifted);
         }
     }
 }
@@ -528,23 +439,18 @@ Create `Source/Horde/HordeWorldObject.cs`:
 //
 // Phase D — Verse.WorldObject subclass for the wandering Horde. Lives
 // on the world-map; oriented to move toward the player home tile.
-// Mirrors OutpostWorldObject pattern from Mod 04.
+// Mirrors OutpostWorldObject pattern (Mod 04).
+//
+// Marker type: tile + drift state are owned entirely by HordeSpawner
+// (the MapComponent pulls currentTick and assigns Tile via the Pure
+// HordeUpdateLogic). No tick-time work or persistence needed here.
 
-using RimWorld;
-using Verse;
+using RimWorld.Planet;
 
 namespace Rimconemy.InfectedAutomation.Horde
 {
     public class HordeWorldObject : WorldObject
     {
-        // Transient (no Scribe). Drift-state derived from currentTick.
-        public long LastMoveTick;
-
-        public override void Tick()
-        {
-            base.Tick();
-            if (LastMoveTick == 0L) return;
-        }
     }
 }
 ```
@@ -556,21 +462,33 @@ Create `Source/Horde/HordeSpawner.cs`:
 ```csharp
 // Source/Horde/HordeSpawner.cs
 //
-// Phase D — MapComponent orchestrator. Calls HordeUpdateLogic every
-// 250 ticks, spawns / moves / despawns HordeWorldObjects accordingly.
+// Phase D — MapComponent orchestrator on the player-home map. Every
+// 250 ticks it syncs the HordeWorldObject to the tick-derived tile;
+// every 15 ticks it forces a regenerate of the two SectionLayer
+// render-paths. Vanilla auto-instantiates SectionLayer subclasses per
+// Section, but nothing ever marks custom layers dirty — the map drawer
+// must be told to rebuild them or the pulse never renders.
 // Mirrors PopulationLedgerReconciler pattern.
 
-using Rimconemy.InfectedAutomation.Population;
-using Rimconemy.InfectedAutomation.Story;
 using RimWorld;
-using System.Collections.Generic;
+using RimWorld.Planet;
+using System.Linq;
 using Verse;
 
 namespace Rimconemy.InfectedAutomation.Horde
 {
     public sealed class HordeSpawner : MapComponent
     {
+        public HordeSpawner(Map map) : base(map) { }
+
+        // Layer-regen cadence. MUST be a proper divisor of the 120-tick
+        // pulse cycle with ≥4 samples: a 60-tick loop samples |sin(θ)| at
+        // θ and θ+π which are equal → the pulse would freeze. 15 ticks
+        // yields 8 samples per two-breath cycle, a visible beat.
+        private const int LayerRegenIntervalTicks = 15;
+
         private int _lastTick = -HordeUpdateLogic.TickInterval;
+        private int _nextLayerRegenTick;
 
         public override void MapComponentTick()
         {
@@ -578,89 +496,69 @@ namespace Rimconemy.InfectedAutomation.Horde
             if (map == null) return;
             if (Scribe.mode != LoadSaveMode.Inactive) return;
 
+            // The horde is a home-map concept: world-object sync and layer
+            // regeneration both target the primary player-home map only.
+            Map homeMap = Rimconemy.Foundation.Maps.MapRegistry.GetPrimaryPlayerHomeMap();
+            if (homeMap == null || map != homeMap) return;
+
             int now = Find.TickManager?.TicksGame ?? 0;
-            if (now < _lastTick + HordeUpdateLogic.TickInterval) return;
-            _lastTick = now;
 
-            try
+            // Shared live gate (same source the render paths use): ledger
+            // + active profile + threshold. No re-derivation here.
+            if (!HordeCalculator.IsActiveNow())
             {
-                var ledger = PopulationLedger.Get();
-                int effective = HordeCalculator.GetEffectiveCount(ledger);
-                var profile = StoryDirector.Get()?.ActiveProfile ?? SettingProfile.Survival;
-                bool active = HordeCalculator.IsActive(effective, profile);
-
-                // 1. Despawn all if below threshold
-                if (!active)
-                {
-                    DespawnAllHordes();
-                    return;
-                }
-
-                // 2. Find player home map
-                Map homeMap = ResolveCanonicalPlayerMap();
-                if (homeMap == null) return;
-                int homeTile = homeMap.Tile;
-
-                // 3. Run pure logic for spawn/drift state
-                var tileList = new List<int>();
-                HordeUpdateLogic.RunOncePure(effective, true, homeTile, now, tileList);
-
-                // 4. Sync with actual WorldObjects
-                SyncHordesAtTiles(tileList, homeTile, now);
+                DespawnAllHordes();
+                return;
             }
-            catch (System.Exception ex)
+
+            // World-object sync: 250-tick cadence, tile purely tick-derived
+            // (spec §6 — no persisted drift state).
+            if (now >= _lastTick + HordeUpdateLogic.TickInterval)
             {
-                Log.Warning("[Rimconemy.InfectedAutomation] HordeSpawner: " +
-                    ex.GetType().Name + ": " + ex.Message);
+                _lastTick = now;
+                SyncHordeAtTile(HordeUpdateLogic.ComputeHordeTile(homeMap.Tile, now), homeMap.Tile);
             }
-        }
 
-        private static Map ResolveCanonicalPlayerMap()
-        {
-            // Reuse Foundation helper; falls back to AnyPlayerHomeMap.
-            return Rimconemy.Foundation.Maps.MapRegistry.GetPrimaryPlayerHomeMap()
-                ?? Find.AnyPlayerHomeMap;
+            // Layer pulse: force a rebuild of the two render layers on a
+            // 15-tick cadence so the alpha actually animates. RegenerateLayerNow
+            // checks Visible per section, so this is a no-op while inactive.
+            if (now >= _nextLayerRegenTick)
+            {
+                _nextLayerRegenTick = now + LayerRegenIntervalTicks;
+                map.mapDrawer?.RegenerateLayerNow(typeof(HordeSectionLayer));
+                map.mapDrawer?.RegenerateLayerNow(typeof(HordeBurstLayer));
+            }
         }
 
         private static void DespawnAllHordes()
         {
-            if (Find.WorldObjects == null) return;
             var all = Find.WorldObjects.AllWorldObjects;
             for (int i = all.Count - 1; i >= 0; i--)
-            {
                 if (all[i] is HordeWorldObject ho) ho.Destroy();
-            }
         }
 
-        private static void SyncHordesAtTiles(List<int> tileList, int homeTile, long currentTick)
+        private static void SyncHordeAtTile(int tile, int homeTile)
         {
-            if (tileList.Count == 0) return;
             var def = DefDatabase<WorldObjectDef>.GetNamedSilentFail("Rimconemy_HordeWorldObject");
             if (def == null)
             {
                 Log.Error("[Rimconemy.InfectedAutomation] HordeSpawner: Def 'Rimconemy_HordeWorldObject' missing.");
                 return;
             }
-            // Spawn one Horde at the drifted tile (one and only one per home map).
-            int tile = tileList[0];
+
             var existing = Find.WorldObjects.AllWorldObjects.FirstOrDefault(
                 wo => wo is HordeWorldObject);
-            if (existing == null)
-            {
-                var ho = (HordeWorldObject)WorldObjectMaker.MakeWorldObject(def);
-                ho.Tile = tile;
-                ho.LastMoveTick = currentTick;
-                Find.WorldObjects.Add(ho);
-                Log.Message("[Rimconemy.InfectedAutomation] HordeSpawner: Spawning HordeWorldObject at tile=" + tile + " (home=" + homeTile + ")");
-            }
-            else
+            if (existing != null)
             {
                 if (existing.Tile != tile)
-                {
                     existing.Tile = tile;
-                    Log.Message("[Rimconemy.InfectedAutomation] HordeSpawner: Move HordeWorldObject → tile=" + tile);
-                }
+                return;
             }
+
+            var ho = (HordeWorldObject)WorldObjectMaker.MakeWorldObject(def);
+            ho.Tile = tile;
+            Find.WorldObjects.Add(ho);
+            Log.Message("[Rimconemy.InfectedAutomation] HordeSpawner: Spawning HordeWorldObject at tile=" + tile + " (home=" + homeTile + ")");
         }
     }
 }
@@ -706,7 +604,7 @@ using System.Linq;
 
 `Bootstrap.cs` already Lazy-<cctor>-driven; XML Defs load via DefDatabase at first access. No change needed.
 
-- [ ] **Step 9: Run test to verify all 15 pass**
+- [ ] **Step 9: Run test to verify all 12 pass**
 
 ```bash
 RimWorldManagedPath="/home/vannon/GOG Games/RimWorld/game/RimWorldLinux_Data/Managed" \
@@ -740,11 +638,10 @@ git commit -m "feat(05/horde): HordeWorldObject + Spawner + Def + UpdateLogic Pu
 // Source/Horde/HordeSectionLayer.cs
 //
 // Phase D — SectionLayer that draws a pulsing concentric red circle
-// around the Home-Map center. Reuses the Visibility-clean pattern from
-// DarknessSectionLayerLifecycle: red RGB + alpha-driven pulse, no
-// per-cell mesh regeneration, full-section submesh per Regenerate.
+// around the Home-Map center. Red RGB + alpha-driven pulse, full-section
+// submesh per Regenerate. Regeneration is driven by HordeSpawner via
+// MapDrawer.RegenerateLayerNow (custom layers are never auto-dirtied).
 
-using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -764,99 +661,78 @@ namespace Rimconemy.InfectedAutomation.Horde
 
         public HordeSectionLayer(Section section) : base(section)
         {
-            // Visible by default; Hide() called from HordeSpawner.IsActive == false.
-            visible = true;
         }
 
-        public override bool Visible
-        {
-            get
-            {
-                if (!base.Visible) return false;
-                return HordeHordeActive() && HordeIsLayerAttached();
-            }
-        }
-
-        private static bool HordeHordeActive()
-        {
-            var ledger = Population.PopulationLedger.Get();
-            if (ledger == null) return false;
-            int effective = HordeCalculator.GetEffectiveCount(ledger);
-            var director = Story.StoryDirector.Get();
-            var profile = director?.ActiveProfile ?? SettingProfile.Survival;
-            return HordeCalculator.IsActive(effective, profile);
-        }
-
-        private static bool HordeIsLayerAttached()
-        {
-            // Layer is attached to a Map; the Map has a non-null map.ID.
-            return true; // Visible call happens through Section machinery.
-        }
+        public override bool Visible => base.Visible && HordeCalculator.IsActiveNow();
 
         public override void Regenerate()
         {
-            try
-            {
-                ClearSubMeshes();
-                long currentTick = Find.TickManager?.TicksGame ?? 0L;
-                float phase = HordeCalculator.ComputePulsePhase(currentTick);
+            ClearSubMeshes(MeshParts.All);
+            Map map = section.map;
+            if (map == null) return;
 
-                // Approximate section center: cross-section centroid.
-                Vector3 center = new Vector3(
-                    section.botLeft.x + 17f, 0f, section.botLeft.z + 17f);
+            // Spec: "pulsierender Kreis um die Home-Map-Mitte" — one circle
+            // around the map center. Vertices are world-space, so the single
+            // section containing the map center draws the whole ring; letting
+            // every section within reach draw it would stack ~9 copies of the
+            // same geometry (z-fighting + 9× triangles).
+            if (!section.CellRect.Contains(map.Center)) return;
 
-                AddRadialRing(center, InnerRadius, InnerAlphaMax, phase);
-                AddRadialRing(center, MidRadius, MidAlphaMax, phase);
-                AddRadialRing(center, OuterRadius, OuterAlphaMax, phase);
-            }
-            catch (System.Exception ex)
-            {
-                Log.Warning("[Rimconemy.InfectedAutomation] HordeSectionLayer.Regenerate: "
-                    + ex.GetType().Name + ": " + ex.Message);
-            }
+            Vector3 center = map.Center.ToVector3();
+            float phase = HordeCalculator.ComputePulsePhase(Find.TickManager?.TicksGame ?? 0L);
+
+            AddRadialRing(center, InnerRadius, InnerAlphaMax, phase);
+            AddRadialRing(center, MidRadius, MidAlphaMax, phase);
+            AddRadialRing(center, OuterRadius, OuterAlphaMax, phase);
         }
 
         private void AddRadialRing(Vector3 center, float radius, float alphaMax, float phase)
         {
-            float alpha = alphaMax * phase * 0.85f; // 0..α_max, multiplied by phase for breathing.
+            float alpha = alphaMax * phase;
             const int Segments = 32;
+
+            LayerSubMesh subMesh = GetSubMesh(MatBases.Darkness);
+            Color32 color = new Color32(220, 30, 30, (byte)Mathf.Clamp(Mathf.RoundToInt(alpha * 255f), 0, 255));
             for (int i = 0; i < Segments; i++)
             {
                 float angle = (float)i / Segments * 2f * Mathf.PI;
                 Vector3 a = center + new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
                 Vector3 b = center + new Vector3(Mathf.Cos(angle + (2f * Mathf.PI / Segments)) * radius, 0f, Mathf.Sin(angle + (2f * Mathf.PI / Segments)) * radius);
-                LayerSubMesh subMesh = GetSubMesh(MatLoader);
                 subMesh.verts.Add(a);
                 subMesh.verts.Add(b);
                 subMesh.verts.Add(center);
-                Color32 color = new Color32(220, 30, 30, (byte)Mathf.Clamp(Mathf.RoundToInt(alpha * 255f), 0, 255));
                 subMesh.colors.Add(color);
                 subMesh.colors.Add(color);
                 subMesh.colors.Add(color);
             }
         }
-
-        // Material loader simplifies test/load by deferring to Verse defaults.
-        private Material MatLoader => base.Material;
     }
 }
 ```
 
-- [ ] **Step 2: Auto-register SectionLayer**
+- [ ] **Step 2: Auto-instantiation + regen driver (no manual registration)**
 
-Add a `<cctor>`-style trigger in `HordeSpawner.cs` (or `Bootstrap.cs`). Choose `HordeSpawner.cs` so the registration stays near the spawn logic:
+Vanilla `Verse.Section` auto-instantiates every `SectionLayer` subclass per Section
+via `GenTypes.AllSubclassesNonAbstract(typeof(SectionLayer))` + `Activator.CreateInstance`
+— verified against Assembly-CSharp 1.6.4566. No registration hook is needed.
 
-Append to `HordeSpawner.cs` (a static initialiser — must be added carefully to maintain mute-on-no-game semantics):
+**BUT** instantiation ≠ rendering: vanilla only calls `Regenerate()` on layers it marks
+dirty via its own `MapMeshFlag`s. A custom layer is never dirtied, so `HordeSpawner`
+must drive regeneration explicitly (already implemented in Task 2 Step 5):
 
 ```csharp
-        static HordeSpawner()
+        // HordeSpawner.MapComponentTick, 15-Tick-Cadence (nur bei active):
+        if (now >= _nextLayerRegenTick)
         {
-            // SectionLayer-list registration happens in Map.MapMesh,
-            // not here. We only expose a marker that the SpawnLog can use.
+            _nextLayerRegenTick = now + LayerRegenIntervalTicks;
+            map.mapDrawer?.RegenerateLayerNow(typeof(HordeSectionLayer));
+            map.mapDrawer?.RegenerateLayerNow(typeof(HordeBurstLayer));
         }
 ```
 
-(Note: SectionLayer auto-registration is normally done by adding a `SectionLayer` subclass — RimWorld's MapComponent-Map-Mesh machinery discovers subclasses via reflection at Map load. No explicit registration is needed.)
+Cadence note: `LayerRegenIntervalTicks` MUST be a proper divisor of the 120-tick pulse
+cycle with ≥4 samples. A 60-tick loop would sample `|sin(θ)|` at θ and θ+π, which are
+equal → the pulse would freeze. 15 ticks = 8 samples per two-breath cycle.
 
 - [ ] **Step 3: Add Bootstrap RunAll-Hook**
 
@@ -865,7 +741,8 @@ Append to `Bootstrap.cs`:
 ```csharp
             // Phase D (2026-08-05) — Horde Overlay: World-Map-Icon + SectionLayer Kreis.
             Tests.HordeRegressionTests.RunAll();
-            Log.Message("[Rimconemy.InfectedAutomation] Phase D: Horde overlay wired (Calculator, WorldObject, Spawner, SectionLayer).");
+            Horde.HordeCameraOverlay.Install();
+            Log.Message("[Rimconemy.InfectedAutomation] Phase D: Horde overlay wired (Calculator, WorldObject, Spawner, SectionLayer, BurstLayer, CameraEdge).");
 ```
 
 - [ ] **Step 4: Run test (still missing Bursts/Camera — these don't add new tests yet)**
