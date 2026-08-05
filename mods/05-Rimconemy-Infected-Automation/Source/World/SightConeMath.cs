@@ -18,11 +18,20 @@ namespace Rimconemy.InfectedAutomation.World
     /// </summary>
     public static class SightConeMath
     {
-        /// <summary>Max forward sight at full daylight (GlowGrid=1.0).</summary>
-        public const float MaxForwardRadius = 25f;
+        /// <summary>Max forward sight at full daylight (GlowGrid=1.0).
+        /// Aggressive 2026-08-05: shortened 25 → 18 → 16 so the daylight
+        /// range stays compact and the distance-falloff reaches the full-black
+        /// cliff earlier, even during day.</summary>
+        public const float MaxForwardRadius = 16f;
 
-        /// <summary>Minimum forward sight in pitch black (GlowGrid=0.0).</summary>
-        public const float MinForwardRadius = 3f;
+        /// <summary>Base forward sight at night without artificial light.
+        /// 2026-08-05: dropped 15 → 12 so Day (MaxForwardRadius=16) and
+        /// Night differ by 4 tiles. At 5 tiles forward, visibility is
+        /// ~47 % in daylight vs ~34 % in pitch black; beyond 10 tiles at
+        /// night the cone is fully dark and the player must fall back to
+        /// torchlight or retreat. Glowers and torches still scale this value
+        /// up to MaxForwardRadius.</summary>
+        public const float MinForwardRadius = 12f;
 
         /// <summary>Behind the pawn: fraction of forward radius.</summary>
         public const float BehindRadiusFactor = 0.15f;
@@ -33,8 +42,24 @@ namespace Rimconemy.InfectedAutomation.World
         /// <summary>Width of the forward cone at full extent (degrees from centerline).</summary>
         public const float ConeHalfAngle = 60f;
 
-        /// <summary>Light sources (glowers) add this bonus per unit of nearby GlowGrid value.</summary>
-        public const float LightSourceBonusMultiplier = 0.5f;
+        /// <summary>Light sources (glowers) add this bonus per unit of nearby
+        /// GlowGrid value. 2026-08-05: raised 0.7 → 0.9 so a single torch
+        /// next to the pawn at night now extends forward-radius from the
+        /// base <see cref="MinForwardRadius"/> = 12 by ≈ +5 tiles (instead
+        /// of +4), compensating the tighter Day/Night contrast that came
+        /// from shrinking <see cref="MinForwardRadius"/> to 12. Two nearby
+        /// torches still clamp to ~full daylight reach
+        /// (<see cref="MaxForwardRadius"/> = 16).</summary>
+        public const float LightSourceBonusMultiplier = 0.9f;
+
+        /// <summary>Power-curve exponent for distance falloff. 1.0 = linear,
+        /// 2.0 = quadratic. 2026-08-05 v2: raised 1.7 → 2.0 so mid-range
+        /// cells darken FAST and the visible/hidden split becomes a clear
+        /// cliff instead of a slow fade. At full daylight (MaxForward=16):
+        ///   5 tiles → vis 0.473 (~53 % black)
+        ///  10 tiles → vis 0.141 (~86 % black)
+        ///  13 tiles → vis 0.035 (~97 % black)</summary>
+        public const float DistanceFalloffExponent = 2.0f;
 
         /// <summary>How far glowers affect colonist sight (cells).</summary>
         public const float GlowerEffectRadius = 12f;
@@ -84,10 +109,15 @@ namespace Rimconemy.InfectedAutomation.World
             // Directional factor: angle between facing and target.
             float directionalFactor = ComputeDirectionalFactor(pawnPos, targetCell, facingDir, forwardRadius);
 
-            // Distance falloff: linear from 1 at pawn to 0 at max radius.
+            // Distance falloff: power-curve from 1 at pawn to 0 at max radius.
+            // Aggressive 2026-08-05: linear falloff made mid-range cells nearly
+            // full-bright even during day; the power curve makes distance
+            // perceptible at every range, so the cone always looks dimmer
+            // towards the edges regardless of light level.
             float maxRadius = forwardRadius * directionalFactor;
             if (dist >= maxRadius) return 0f;
-            float distanceFactor = 1f - (dist / maxRadius);
+            float normalizedDist = 1f - (dist / maxRadius);
+            float distanceFactor = MathF.Pow(normalizedDist, DistanceFalloffExponent);
 
             // Combine.
             float visibility = distanceFactor * directionalFactor;
@@ -156,25 +186,14 @@ namespace Rimconemy.InfectedAutomation.World
             if (map == null) return 0f;
             float bonus = 0f;
 
-            if (map.listerBuildings?.allBuildingsColonist != null)
-            {
-                foreach (var b in map.listerBuildings.allBuildingsColonist)
-                {
-                    var glower = b?.TryGetComp<CompGlower>();
-                    if (glower == null || !glower.Glows) continue;
-                    float dist = pawnPos.DistanceTo(b.Position);
-                    if (dist > GlowerEffectRadius) continue;
-                    float contribution = (1f - dist / GlowerEffectRadius) * LightSourceBonusMultiplier;
-                    bonus += contribution;
-                }
-            }
-
-            // Also check non-building things (campfires, torches as items).
+            // Single pass over AllThings. In RimWorld 1.6, buildings register
+            // in listerThings.AllThings when spawned, so a separate iteration
+            // over allBuildingsColonist would double-count building glowers.
             if (map.listerThings?.AllThings != null)
             {
                 foreach (var t in map.listerThings.AllThings)
                 {
-                    if (t == null || t is Verse.Building) continue;
+                    if (t == null) continue;
                     var glower = t.TryGetComp<CompGlower>();
                     if (glower == null || !glower.Glows) continue;
                     float dist = pawnPos.DistanceTo(t.Position);
@@ -188,31 +207,18 @@ namespace Rimconemy.InfectedAutomation.World
         }
 
         /// <summary>
-        /// Returns the light level at a cell from the map's GlowGrid.
+        /// Returns the light level at a cell. Uses <see cref="LightSystem.DaylightCurve"/>
+        /// and <see cref="LightSystem.WeatherAttenuation"/> — single source of truth.
         /// Value [0, 1] where 1 = full daylight/bright interior.
         /// </summary>
         public static float GetCellLightLevel(Map map, IntVec3 cell)
         {
             if (map == null || !cell.InBounds(map)) return 0f;
 
-            // Compute daylight factor from current tick (same formula as LightSystem).
             long tick = Find.TickManager?.TicksGame ?? 0L;
-            float dayProgress = (tick % 60000L) / 60000f;
-            float hour = dayProgress * 24f;
-            float daylight = 0f;
-            if (hour >= 5f && hour < 7f) daylight = (hour - 5f) / 2f;
-            else if (hour >= 7f && hour < 18f) daylight = 1f;
-            else if (hour >= 18f && hour < 20f) daylight = 1f - (hour - 18f) / 2f;
-
-            // Weather attenuation.
-            float weatherFactor = 1f;
-            if (map.weatherManager?.curWeather != null)
-            {
-                string w = map.weatherManager.curWeather.defName;
-                if (w.Contains("Fog")) weatherFactor = w.Contains("Rain") ? 0.5f : 0.4f;
-                else if (w.Contains("Rain")) weatherFactor = 0.7f;
-                else if (w.Contains("Snow")) weatherFactor = 0.8f;
-            }
+            float hour = LightSystem.HourOfDay(tick);
+            float daylight = LightSystem.DaylightCurve(hour);
+            float weatherFactor = LightSystem.WeatherAttenuation(map);
 
             float outdoorLight = daylight * weatherFactor;
 

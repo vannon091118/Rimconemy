@@ -16,14 +16,14 @@ namespace Rimconemy.InfectedAutomation.World
     /// sides dim, behind is dark. Light sources extend vision.
     /// Mouse cursor adds a weak glow.
     ///
-    /// Visual: draws a screen-space darkness overlay. Cells outside
-    /// all colonist sight cones are dimmed (semi-transparent black).
-    /// The overlay fades smoothly from visible to pitch black.
+    /// Visual: supplies a per-cell visibility grid to the existing
+    /// world-space SectionLayer_Darkness renderer. Cells outside all
+    /// colonist sight cones are dimmed without screen-space rectangles.
     ///
     /// Architecture:
     ///   - Visibility grid: flat float[] per cell, max across all colonists
     ///   - Update: every 60 ticks (1 second) for colonist contributions
-    ///   - Render: each frame, draw darkness quads for dimmed cells
+    ///   - Render: vanilla SectionLayer_Darkness mesh, regenerated when dirty
     /// </summary>
     public sealed class ColonistSightSystem : MapComponent
     {
@@ -39,6 +39,14 @@ namespace Rimconemy.InfectedAutomation.World
 
         /// <summary>Last tick the grid was updated.</summary>
         private int _lastUpdateTick = -1;
+        private float[] _previousVisibilityGrid;
+
+        /// <summary>True after at least one <see cref="ComputeAllColonistSight"/>
+        /// has processed a non-zero set of colonists. Used by
+        /// <see cref="DarknessSectionLayerLifecycle"/> to gate the
+        /// AmbientVeilAlpha floor so the init / no-colonists branches do not
+        /// produce a permanent global shadow.</summary>
+        private bool _hasActiveSight;
 
         /// <summary>Cached mouse cell for glow.</summary>
         private IntVec3 _lastMouseCell = IntVec3.Invalid;
@@ -53,7 +61,34 @@ namespace Rimconemy.InfectedAutomation.World
                 _gridWidth = map.Size.x;
                 _gridHeight = map.Size.z;
                 _visibilityGrid = new float[_gridWidth * _gridHeight];
+                _previousVisibilityGrid = new float[_gridWidth * _gridHeight];
+                // Initialize with full visibility so colonists are not
+                // invisible before the first tick computes the grid.
+                for (int i = 0; i < _visibilityGrid.Length; i++)
+                    _visibilityGrid[i] = 1f;
             }
+        }
+
+        /// <summary>Force recompute on next tick (e.g. after save/load).
+        /// Re-initializes grid to full visibility to prevent a black screen
+        /// until the first tick completes. Resets <see cref="_hasActiveSight"/>
+        /// and the snapshot so the AmbientVeilAlpha applies again only after
+        /// the first post-load tick has actually processed colonists.</summary>
+        public override void FinalizeInit()
+        {
+            base.FinalizeInit();
+            if (_visibilityGrid != null)
+            {
+                for (int i = 0; i < _visibilityGrid.Length; i++)
+                {
+                    _visibilityGrid[i] = 1f;
+                    if (_previousVisibilityGrid != null)
+                        _previousVisibilityGrid[i] = 1f;
+                }
+            }
+            _lastUpdateTick = -1;
+            _hasActiveSight = false;
+            MarkDarknessSectionsDirty(null);
         }
 
         // ── tick ──────────────────────────────────────────────
@@ -72,6 +107,8 @@ namespace Rimconemy.InfectedAutomation.World
             try
             {
                 ComputeAllColonistSight(currentTick);
+                var changedSections = ComputeChangedSections();
+                MarkDarknessSectionsDirty(changedSections);
             }
             catch (Exception ex)
             {
@@ -119,7 +156,10 @@ namespace Rimconemy.InfectedAutomation.World
             {
                 for (int i = 0; i < _visibilityGrid.Length; i++)
                     _visibilityGrid[i] = 1f;
+                return;
             }
+
+            _hasActiveSight = true;
         }
 
         private void ComputeSinglePawnSight(Pawn pawn)
@@ -148,7 +188,7 @@ namespace Rimconemy.InfectedAutomation.World
                     float vis = SightConeMath.ComputeCellVisibility(
                         pawnPos, cell, facing, cellLight, glowerBonus, _lastMouseCell);
 
-                    if (vis > 0f)
+                    if (vis > 0f && (cell == pawnPos || GenSight.LineOfSight(pawnPos, cell, map)))
                     {
                         int idx = cz * _gridWidth + cx;
                         _visibilityGrid[idx] = Math.Max(_visibilityGrid[idx], vis);
@@ -188,18 +228,21 @@ namespace Rimconemy.InfectedAutomation.World
 
         // ── colonists ─────────────────────────────────────────
 
+        // Cached list reused every tick to avoid per-tick List allocation.
+        private readonly List<Pawn> _colonistBuffer = new List<Pawn>();
+
         private List<Pawn> GetColonists()
         {
-            var result = new List<Pawn>();
-            if (map?.mapPawns?.FreeColonistsSpawned == null) return result;
+            _colonistBuffer.Clear();
+            if (map?.mapPawns?.FreeColonistsSpawned == null) return _colonistBuffer;
 
             foreach (var pawn in map.mapPawns.FreeColonistsSpawned)
             {
                 if (pawn != null && !pawn.Dead && pawn.Spawned && pawn.IsColonist)
-                    result.Add(pawn);
+                    _colonistBuffer.Add(pawn);
             }
 
-            return result;
+            return _colonistBuffer;
         }
 
         // ── visibility query ───────────────────────────────────
@@ -207,6 +250,7 @@ namespace Rimconemy.InfectedAutomation.World
         /// <summary>Returns the visibility at a cell [0, 1].</summary>
         public float GetVisibility(IntVec3 cell)
         {
+            if (!Enabled) return 1f;
             if (_visibilityGrid == null || !cell.InBounds(map)) return 1f;
             int idx = cell.z * _gridWidth + cell.x;
             if (idx < 0 || idx >= _visibilityGrid.Length) return 1f;
@@ -219,90 +263,88 @@ namespace Rimconemy.InfectedAutomation.World
             return GetVisibility(cell) < 0.5f;
         }
 
-        // ── visual overlay ────────────────────────────────────
-
-        /// <summary>Draws the darkness overlay over the map.</summary>
-        public override void MapComponentOnGUI()
-        {
-            base.MapComponentOnGUI();
-            if (!Enabled || _visibilityGrid == null) return;
-
-            // Only render when a map is visible.
-            if (Find.CurrentMap != map) return;
-
-            var cameraDriver = Find.CameraDriver;
-            if (cameraDriver == null) return;
-
-            CellRect viewRect = cameraDriver.CurrentViewRect;
-            if (viewRect.IsEmpty) return;
-
-            // Clip to map bounds.
-            viewRect.ClipInsideMap(map);
-
-            // Get the map camera for world→screen conversion.
-            var cam = Camera.current;
-            if (cam == null) return;
-
-            const int blockSize = 8;
-
-            for (int bz = viewRect.minZ; bz <= viewRect.maxZ; bz += blockSize)
-            {
-                for (int bx = viewRect.minX; bx <= viewRect.maxX; bx += blockSize)
-                {
-                    float avgVis = 0f;
-                    int count = 0;
-
-                    for (int dz = 0; dz < blockSize; dz++)
-                    {
-                        for (int dx = 0; dx < blockSize; dx++)
-                        {
-                            int cx = bx + dx;
-                            int cz = bz + dz;
-                            if (cx < 0 || cx >= _gridWidth || cz < 0 || cz >= _gridHeight) continue;
-                            int idx = cz * _gridWidth + cx;
-                            avgVis += _visibilityGrid[idx];
-                            count++;
-                        }
-                    }
-
-                    if (count == 0) continue;
-                    avgVis /= count;
-
-                    // Skip fully visible blocks.
-                    if (avgVis >= 0.99f) continue;
-
-                    // More darkness = more opaque overlay.
-                    float alpha = (1f - avgVis) * 0.78f;
-
-                    // Convert world to screen position.
-                    Vector3 worldCenter = new Vector3(bx + blockSize * 0.5f, 0, bz + blockSize * 0.5f);
-                    Vector3 screenPos = cam.WorldToScreenPoint(worldCenter);
-                    // RimWorld OnGUI uses top-left origin.
-                    float sx = screenPos.x;
-                    float sy = Screen.height - screenPos.y;
-
-                    // Estimate cell size from camera.
-                    Vector3 worldCorner = new Vector3(bx + blockSize, 0, bz + blockSize);
-                    Vector3 screenCorner = cam.WorldToScreenPoint(worldCorner);
-                    float pixelSize = Mathf.Abs(screenCorner.x - screenPos.x);
-                    if (pixelSize < 1f) pixelSize = 32f; // fallback
-                    float rectX = sx - pixelSize * 0.5f;
-                    float rectY = sy - pixelSize * 0.5f;
-
-                    // Draw the darkness block.
-                    var prevColor = GUI.color;
-                    GUI.color = new Color(0f, 0f, 0f, alpha);
-                    GUI.DrawTexture(new Rect(rectX, rectY, pixelSize, pixelSize), Texture2D.whiteTexture);
-                    GUI.color = prevColor;
-                }
-            }
-        }
-
-        // ── static accessor ───────────────────────────────────
+        // ── public accessors ───────────────────────────────────
 
         public static ColonistSightSystem Get(Map map)
         {
             return map?.GetComponent<ColonistSightSystem>();
         }
+
+        /// <summary>True once at least one tick has processed a non-empty
+        /// set of colonists. Stays true for the lifetime of this map; reset
+        /// by <see cref="FinalizeInit"/> on save/load. Used by the darkness
+        /// renderer to gate the AmbientVeilAlpha floor.</summary>
+        public bool HasActiveSight() => _hasActiveSight;
+
+        // ── internal helpers (not engine-touching) ────────────
+
+        // Cached set reused every tick to avoid per-tick HashSet allocation.
+        private readonly HashSet<int> _changedSectionsBuffer = new HashSet<int>();
+
+        private HashSet<int> ComputeChangedSections()
+        {
+            _changedSectionsBuffer.Clear();
+            if (_visibilityGrid == null || _previousVisibilityGrid == null)
+                return null;
+
+            for (int z = 0; z < _gridHeight; z++)
+            {
+                for (int x = 0; x < _gridWidth; x++)
+                {
+                    int index = z * _gridWidth + x;
+                    if (Math.Abs(_visibilityGrid[index] - _previousVisibilityGrid[index]) <= 0.01f)
+                        continue;
+                    _changedSectionsBuffer.Add((z / Section.Size) * 100000 + (x / Section.Size));
+                }
+            }
+
+            Array.Copy(_visibilityGrid, _previousVisibilityGrid, _visibilityGrid.Length);
+            return _changedSectionsBuffer.Count > 0 ? _changedSectionsBuffer : null;
+        }
+
+        /// <summary>
+        /// Marks each map section dirty for the existing vanilla darkness
+        /// layer. Mesh generation remains in RimWorld's map-drawer lifecycle;
+        /// no Unity mesh work is performed from the tick method.
+        /// </summary>
+        private void MarkDarknessSectionsDirty(HashSet<int> changedSections)
+        {
+            if (map?.mapDrawer == null) return;
+
+            try
+            {
+                if (changedSections == null)
+                {
+                    for (int z = 0; z < _gridHeight; z += Section.Size)
+                    {
+                        for (int x = 0; x < _gridWidth; x += Section.Size)
+                            MarkSectionDirty(x, z);
+                    }
+                    return;
+                }
+
+                foreach (int key in changedSections)
+                {
+                    int zSection = key / 100000;
+                    int xSection = key % 100000;
+                    MarkSectionDirty(xSection * Section.Size, zSection * Section.Size);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("[Rimconemy.InfectedAutomation] Darkness sections could not be marked dirty: "
+                    + ex.GetType().Name + ": " + ex.Message);
+            }
+        }
+
+        private void MarkSectionDirty(int x, int z)
+        {
+            map.mapDrawer.MapMeshDirty(
+                new IntVec3(x, 0, z),
+                (ulong)MapMeshFlagDefOf.GroundGlow,
+                regenAdjacentCells: false,
+                regenAdjacentSections: false);
+        }
     }
+
 }

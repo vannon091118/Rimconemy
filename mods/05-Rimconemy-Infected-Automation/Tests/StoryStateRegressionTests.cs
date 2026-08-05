@@ -12,10 +12,18 @@ namespace Rimconemy.InfectedAutomation.Tests
         private static int _passed;
         private static int _failed;
 
+        /// <summary>Matches <see cref="StoryState.ClassId"/>;
+        /// used to clean up test instances between runs.</summary>
+        private const string TestClassId = "rimconemy.infectedautomation.storyState";
+
         public static bool RunAll()
         {
             _passed = 0;
             _failed = 0;
+
+            // Wipe any leftover registration from a previous hot-reload or
+            // double-static-constructor edge case before the real tests start.
+            Rimconemy.Foundation.Save.MigrationRegistry.Unregister(TestClassId);
 
             TestFreshKeysSurviveAgePrune();
             TestOldKeysPruneBeforeFreshKeys();
@@ -23,6 +31,12 @@ namespace Rimconemy.InfectedAutomation.Tests
             TestUnknownAgeKeysUseCountCapOnly();
             TestPostLoadTicksSurviveLateAgePrune();
             TestUnorderedLegacySetUsesDeterministicFallback();
+
+            // TestPostLoadTicksSurviveLateAgePrune invokes RebuildAfterLoad
+            // which calls MigrateIfNeeded → MigrationRegistry.Register.
+            // Unregister so the SchemaBump tests and the real GameComponent
+            // can register cleanly later.
+            Rimconemy.Foundation.Save.MigrationRegistry.Unregister(TestClassId);
 
             string summary = "[Rimconemy.InfectedAutomation] StoryState regression tests: "
                 + _passed + " passed, " + _failed + " failed.";

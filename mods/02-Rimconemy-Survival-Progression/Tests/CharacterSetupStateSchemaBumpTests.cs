@@ -37,11 +37,19 @@ namespace Rimconemy.SurvivalProgression.Tests
     {
         public const int ExpectedPassCount = 6;
 
+        /// <summary>Matches <see cref="CharacterSetupState.ClassId"/>;
+        /// used to clean up test instances between runs.</summary>
+        private const string TestClassId = "rimconemy.survivalprogression.characterSetup";
+
         public static int RunAll()
         {
             int passed = 0;
             int failed = 0;
             string firstFailure = null;
+
+            // Wipe any leftover registration from a previous hot-reload or
+            // double-static-constructor edge case before the real tests start.
+            Rimconemy.Foundation.Save.MigrationRegistry.Unregister(TestClassId);
 
             void Check(bool ok, string name)
             {
@@ -51,12 +59,23 @@ namespace Rimconemy.SurvivalProgression.Tests
                 Log.Warning("[Rimconemy.SurvivalProgression] SchemaBump test FAILED: " + name);
             }
 
-            Check(TestV0SchemaBumpsToCurrent(),                "T1.V0SchemaBumpsToCurrent");
-            Check(TestV1SchemaIsIdempotent(),                  "T2.V1SchemaIsIdempotent");
-            Check(TestV0WithRecordsPreservesData(),            "T3.V0WithRecordsPreservesData");
-            Check(TestV0WithNullRecordsNormalizesToEmpty(),    "T4.V0WithNullRecordsNormalizesToEmpty");
-            Check(TestV0WithAppliedFlagPreserved(),            "T5.V0WithAppliedFlagPreserved");
-            Check(TestScribeRoundTripBumpsSchema(),
+            void CheckAndClean(bool ok, string name)
+            {
+                Check(ok, name);
+                // Each test creates a new CharacterSetupState instance that
+                // self-registers via MigrateIfNeeded → RunMigration.
+                // Unregister after every test so the next one starts with a
+                // clean registry and the real GameComponent's registration
+                // later never sees a stale test instance.
+                Rimconemy.Foundation.Save.MigrationRegistry.Unregister(TestClassId);
+            }
+
+            CheckAndClean(TestV0SchemaBumpsToCurrent(),                "T1.V0SchemaBumpsToCurrent");
+            CheckAndClean(TestV1SchemaIsIdempotent(),                  "T2.V1SchemaIsIdempotent");
+            CheckAndClean(TestV0WithRecordsPreservesData(),            "T3.V0WithRecordsPreservesData");
+            CheckAndClean(TestV0WithNullRecordsNormalizesToEmpty(),    "T4.V0WithNullRecordsNormalizesToEmpty");
+            CheckAndClean(TestV0WithAppliedFlagPreserved(),            "T5.V0WithAppliedFlagPreserved");
+            CheckAndClean(TestScribeRoundTripBumpsSchema(),
                   "T6.ScribeRoundTripBumpsSchema");
 
             Log.Message(
@@ -162,6 +181,14 @@ namespace Rimconemy.SurvivalProgression.Tests
         // ── T5 ────────────────────────────────────────────────────────
         // The Applied flag is part of the GameComponent contract
         // for the Bio-Remap idempotency. Migration must preserve it.
+        //
+        // 2026-08-05: the v1→v2 step (MigrateLegacyRecordsToBundles)
+        // recalculates Applied from RequiredPawnIds validity. An empty
+        // PawnSetupRecord has no skills and is filtered out during
+        // migration, draining RequiredPawnIds to empty and resetting
+        // Applied to false. Supply a realistic record with skills so the
+        // bundle derivation produces a valid entry that preserves the
+        // flag across the schema bump.
         public static bool TestV0WithAppliedFlagPreserved()
         {
             try
@@ -172,7 +199,11 @@ namespace Rimconemy.SurvivalProgression.Tests
                     Applied = true
                 };
                 state.Records = new Dictionary<int, PawnSetupRecord>();
-                state.Records[42] = new PawnSetupRecord();
+                state.Records[42] = new PawnSetupRecord
+                {
+                    SkillDefNames = new List<string> { "Construction", "Mining" },
+                    SkillLevels = new List<int> { 5, 3 }
+                };
                 state.MigrateIfNeeded();
                 return state.Applied == true;
             }
