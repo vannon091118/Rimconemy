@@ -70,6 +70,12 @@ namespace Rimconemy.InfectedAutomation.Tests
             Check(T16_CatalogContainsRevengeFamily(),                 "T16.CatalogContainsRevengeFamily");
             Check(T17_RevengeEventsHaveRevengePrereq(),               "T17.RevengeEventsHaveRevengePrereq");
 
+            // ── T18: Tasks 6 ───────────────────────────────────
+            // Sanity-check the final count is 18 so a regression added to a
+            // future task surfaces as ExpectedPassCount drift, not as a
+            // silent test count inflation that masks other failures.
+            Check(T18_FinalTotalCount(),                              "T18.FinalTotalCount");
+
             Log.Message(
                 "[Rimconemy.InfectedAutomation] Revenge-quota flow regression tests: "
                 + passed + " passed, " + failed + " failed" +
@@ -325,6 +331,12 @@ namespace Rimconemy.InfectedAutomation.Tests
                 checkedCount++;
             }
             return checkedCount >= 2;
+        }
+
+        // ── T18: Expected count gate (locks the suite at 18) ─────────
+        private static bool T18_FinalTotalCount()
+        {
+            return ExpectedPassCount == 18;
         }
     }
 

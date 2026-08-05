@@ -213,6 +213,40 @@ namespace Rimconemy.InfectedAutomation.Story
             var snapshot = BuildLiveSnapshot(currentTick, State);
             EvaluateWithSnapshot(snapshot, currentTick);
 
+            // Phase B (2026-08-05) — Day-Growth + Reset + Recompute-Revenge
+            // block, AFTER the Eval block. The refactor follows the user
+            // override of the Phase-A spec:
+            //   1. WipeCheck (above)
+            //   2. Eval-Gate-MinEventSpacing (above)
+            //   3. Eval (StorySelector + queue)           ← EvaluateWithSnapshot
+            //   4. Day-Growth                             ← ApplyDailyGrowthTick
+            //   5. Reset-Daily-Counters                   ← ResetDailyCounters
+            //   6. Recompute-Revenge                      ← RecomputeRevengeAfterDayTick
+            //   7. Inoculation (Phase C)                  ← TryInfectRandom
+            //
+            // Why Eval-before-Growth: today's threats are evaluated against
+            // today's already-grown cap, so a long survival streak produces
+            // the difficulty curve the player can react to (Revenge quota,
+            // Inoculation). The Growth+Reset block writes next-day state.
+            try
+            {
+                var ledger = PopulationLedger.Get();
+                if (ledger != null)
+                {
+                    ledger.ApplyDailyGrowthTick();
+                    ledger.ResetDailyCounters();
+                }
+                RecomputeRevengeAfterDayTick(ledger, ActiveProfile, currentTick);
+            }
+            catch (System.Exception ex)
+            {
+                // Defensive: never let the day-block throw out into
+                // GameComponentTick — Inoculation still has to run below.
+                Log.Warning("[Rimconemy.InfectedAutomation] StoryDirector: " +
+                    "Day-Growth/Reset/Recompute block raised " +
+                    ex.GetType().Name + ": " + ex.Message);
+            }
+
             // Phase C — Tier-Inokulation Day-Tick Hook (2026-08-05).
             // Independent of StorySelector: animal-inoculation runs once
             // per day if Profile allows + cooldown gate is open. Profile

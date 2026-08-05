@@ -95,6 +95,13 @@ namespace Rimconemy.InfectedAutomation
             // first wild-animal conversion.
             Tests.InoculationRegressionTests.RunAll();
             Tests.InfectedPackBehaviorRegressionTests.RunAll();
+
+            // Phase B (2026-08-05) — Daily-Growth + Revenge Coupling.
+            // SpawnPlan.RevengeQuotaComponent, Worker post-spawn
+            // DecrementPendingRevenge, StoryDirector.LastPendingRevenge
+            // recompute, StoryEventCatalog.Revenge family.
+            Tests.RevengeQuotaFlowRegressionTests.RunAll();
+            Log.Message("[Rimconemy.InfectedAutomation] Phase B: Daily-Growth+Reset+Revenge coupling wired.");
             Log.Message("[Rimconemy.InfectedAutomation] Building threat adapter available; Mechadroid job contracts are gated for Milestone B; no incident or raid is spawned.");
 
             // Phase-5 (2026-08-05) — IncidentClassifier summary log. Validates the
