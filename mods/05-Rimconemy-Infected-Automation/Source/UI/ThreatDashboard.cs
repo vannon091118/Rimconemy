@@ -72,7 +72,6 @@ namespace Rimconemy.InfectedAutomation.UI
                 y += 30f;
             }
 
-
             // ── Threat pressure gauge ────────────────────────────
             var snapshot = director.LastSnapshot;
             if (snapshot != null)
@@ -152,10 +151,10 @@ namespace Rimconemy.InfectedAutomation.UI
                 {
                     long remaining = pair.Value - currentTick;
                     StatusLevel lvl = remaining > 0 ? StatusLevel.Warn : StatusLevel.Success;
-                    string label = pair.Key + ":  " + (remaining > 0
+                    string pairLabel = pair.Key + ":  " + (remaining > 0
                         ? (remaining / Rimconemy.Foundation.TimeConstants.TicksPerDay).ToString("0.0") + "d"
                         : "Abgelaufen");
-                    RimconemyUi.DrawStatusBadge(new Rect(0f, y, width, 22f), label, lvl);
+                    RimconemyUi.DrawStatusBadge(new Rect(0f, y, width, 22f), pairLabel, lvl);
                     y += 24f;
                 }
             }

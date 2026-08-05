@@ -13,6 +13,14 @@
       <downloadUrl>https://steamcommunity.com/workshop/filedetails/?id=2009463077</downloadUrl>
     </li>
   </modDependencies>
+  <!--
+    DECISION-D-001 (cycle-break 2026-08-05): All cross-package reads use
+    Foundation.CrossPackageState (late-bound reflection bridge, audit-bundle B /
+    F-01) — not a direct DLL ref. Mod 02 must NOT list 05 (or any peer) in
+    loadAfter: the cross-layer reads (GameOverPendingQueue, etc.) hit the
+    Bridge at runtime, not at DLL-load. Listing 05 here created a 02↔05 cycle
+    in About.xml graph even though code is cycle-free.
+  -->
   <loadAfter>
     <li>rimconemy.foundation</li>
   </loadAfter>

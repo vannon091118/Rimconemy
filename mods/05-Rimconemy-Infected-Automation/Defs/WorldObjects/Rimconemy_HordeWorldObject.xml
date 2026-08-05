@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!--
+    Rimconemy.HordeWorldObject
+    Owner: Infected & Automation (Package 05).
+    Phase D — World-Map-Icon für die Horde (wandert zur Player-Home-Tile).
+    Mirrors OutpostWorldObject pattern (Mod 04).
+  -->
+  <!-- RimWorld 1.6 (4566 rev579) WorldObjectDef dropped the
+       <drawerType> and <color> fields from the public parser schema
+       (they are computed by the world map renderer from the icon's
+       graphicData). Including them now throws "doesn't correspond to
+       any field in type WorldObjectDef." for each, plus a cascading NRE
+       in ThingDef.PostLoad. Visual styling is therefore handled by the
+       <expandingIcon> + Texture/gui handling in HordeWorldObject.cs. -->
+  <RimWorld.WorldObjectDef>
+    <defName>Rimconemy_HordeWorldObject</defName>
+    <label>hordenschwarm</label>
+    <worldObjectClass>Rimconemy.InfectedAutomation.Horde.HordeWorldObject</worldObjectClass>
+    <expandingIcon>true</expandingIcon>
+    <neverMultiSelect>true</neverMultiSelect>
+  </RimWorld.WorldObjectDef>
+
+</Defs>

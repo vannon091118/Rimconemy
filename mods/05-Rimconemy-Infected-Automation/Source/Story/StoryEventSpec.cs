@@ -318,6 +318,16 @@ namespace Rimconemy.InfectedAutomation.Story
             };
         }
 
+        public static EventCondition RevengePendingAtLeast(int threshold)
+        {
+            return new EventCondition
+            {
+                ConditionId = "RevengePending",
+                Parameter = threshold.ToString(),
+                Description = $"StoryDirector.LastPendingRevenge >= {threshold}.",
+            };
+        }
+
         public static EventCondition DaysSinceStartAbove(float days)
         {
             return new EventCondition

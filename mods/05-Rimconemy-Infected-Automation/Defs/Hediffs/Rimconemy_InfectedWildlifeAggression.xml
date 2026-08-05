@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Infected & Automation
+  defName: Rimconemy_InfectedWildlifeAggression
+  Phase E — Animal-Infektion Speed-Boost + Marker-Hediff.
+
+  - statOffsets/MoveSpeed=0.5 → +50% Bewegungsgeschwindigkeit auf
+    konvertierten Wildtieren. Verdoppelt das ursprüngliche Tier-Tempo
+    ohne das Race direkt zu mutieren (so bleibt der Vanilla Tier-Tag
+    "Wolf/Bear/etc." visuell erhalten).
+  - HediffWithComps (single stage, stat-offset only) — kein
+    Severity-Decay, permanent bis pawn.Destroyed.
+  - isInfection=true damit Health-Tab den Tier als infiziert markiert.
+  - RimWorld 1.6.4566: statOffsets/scales gehören auf HediffStage,
+    nicht direkt auf HediffDef (Rimconemy DECISIONS §24, 2026-08-05).
+-->
+<Defs>
+  <HediffDef ParentName="DiseaseBase">
+    <defName>Rimconemy_InfectedWildlifeAggression</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>infected wildlife aggression</label>
+    <labelNoun>infected wildlife</labelNoun>
+    <description>Infected wildlife becomes significantly faster and reacts aggressively toward colonists and other animals. The vanilla animal label (wolf, bear, …) is preserved, but global movement speed rises by +50%.</description>
+    <defaultLabelColor>(0.85, 0.20, 0.20)</defaultLabelColor>
+    <isInfection>true</isInfection>
+    <stages>
+      <li>
+        <statOffsets>
+          <MoveSpeed>0.5</MoveSpeed>
+        </statOffsets>
+      </li>
+    </stages>
+    <comps/>
+  </HediffDef>
+</Defs>

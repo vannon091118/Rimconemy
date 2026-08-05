@@ -32,6 +32,7 @@ namespace Rimconemy.SurvivalProgression.Scenarios
         public const string EventKey_SingleSurvivor = "single-survivor";
         public const string EventKey_ScrapRifleGiven = "scrap-rifle-given";
         public const string EventKey_SteelScrapsScattered = "steel-scraps-scattered";
+        public const string EventKey_WoodPilesScattered  = "wood-piles-scattered";
 
         // 1.6-validated DefNames (do not rename — they cross DLL boundaries).
         // Owner-Package: 03 (Scavenger Infrastructure). Mod 02 only consumes the name
@@ -40,9 +41,15 @@ namespace Rimconemy.SurvivalProgression.Scenarios
         public const string DefName_SteelScraps = "Rimconemy_SteelScraps";
         public const string DefOwnerPackage_SteelScraps = "Rimconemy.ScavengerInfrastructure";
 
-        // Spawn radius for the steel-scraps scatter (cells, squared).
+        // Spawn radius for the steel-scraps scatter (cells).
         public const int SteelScrapsScatterRadius = 8;
         public const int SteelScrapsScatterCount = 3;
+
+        // Wood-pile scatter (Feature 3): 5 piles, radius 10, 10–25 logs each.
+        public const int WoodPileScatterRadius = 10;
+        public const int WoodPileScatterCount  = 5;
+        public const int WoodPileMinStack      = 10;
+        public const int WoodPileMaxStack      = 25;
 
         public string EventKeySingleSurvivor   => EventKey_SingleSurvivor;
         public string EventKeyScrapRifleGiven  => EventKey_ScrapRifleGiven;
@@ -77,6 +84,12 @@ namespace Rimconemy.SurvivalProgression.Scenarios
                 {
                     ScatterSteelScraps(map);
                     state.MarkCompleted(map, EventKey_SteelScrapsScattered);
+                }
+
+                if (!state.IsCompletedFor(map, EventKey_WoodPilesScattered))
+                {
+                    ScatterWoodPiles(map);
+                    state.MarkCompleted(map, EventKey_WoodPilesScattered);
                 }
             }
             catch (Exception ex)
@@ -197,6 +210,49 @@ namespace Rimconemy.SurvivalProgression.Scenarios
             {
                 Log.Message(
                     $"[Rimconemy.SurvivalProgression] ScenPart_RimconemyStart: scattered {placed} steel scraps around centre of map={map.uniqueID}.");
+            }
+        }
+
+        private static void ScatterWoodPiles(Map map)
+        {
+            // Vanilla WoodLog — always available in Core, no cross-package dependency.
+            var woodDef = DefDatabase<ThingDef>.GetNamedSilentFail("WoodLog");
+            if (woodDef == null)
+            {
+                Log.Warning(
+                    "[Rimconemy.SurvivalProgression] ScenPart_RimconemyStart: ThingDef 'WoodLog' not loaded. " +
+                    "Wood-pile scatter skipped — early game continues without starter wood.");
+                return;
+            }
+
+            IntVec3 centre = map.Center;
+            int placed = 0;
+            for (int attempt = 0; attempt < WoodPileScatterCount * 4 && placed < WoodPileScatterCount; attempt++)
+            {
+                IntVec3 cell = centre + Rand.Range(-WoodPileScatterRadius, WoodPileScatterRadius + 1)
+                    * new IntVec3(1, 0, 0)
+                    + Rand.Range(-WoodPileScatterRadius, WoodPileScatterRadius + 1)
+                    * new IntVec3(0, 0, 1);
+
+                if (!cell.InBounds(map)) continue;
+                if (!cell.Standable(map)) continue;
+                if (cell.Fogged(map)) continue;
+
+                var wood = ThingMaker.MakeThing(woodDef);
+                wood.stackCount = Rand.Range(WoodPileMinStack, WoodPileMaxStack + 1);
+                GenSpawn.Spawn(wood, cell, map);
+                placed++;
+            }
+
+            if (placed < WoodPileScatterCount)
+            {
+                Log.Warning(
+                    $"[Rimconemy.SurvivalProgression] ScenPart_RimconemyStart: only {placed}/{WoodPileScatterCount} wood piles placed on map={map.uniqueID}.");
+            }
+            else
+            {
+                Log.Message(
+                    $"[Rimconemy.SurvivalProgression] ScenPart_RimconemyStart: scattered {placed} wood piles around centre of map={map.uniqueID}.");
             }
         }
     }

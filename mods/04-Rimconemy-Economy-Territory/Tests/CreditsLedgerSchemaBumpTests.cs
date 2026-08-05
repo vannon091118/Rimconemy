@@ -20,11 +20,19 @@ namespace Rimconemy.EconomyTerritory.Tests
     {
         public const int ExpectedPassCount = 6;
 
+        /// <summary>Matches <see cref="CreditsLedger.ClassId"/>;
+        /// used to clean up test instances between runs.</summary>
+        private const string TestClassId = "rimconemy.economyterritory.creditsLedger";
+
         public static int RunAll()
         {
             int passed = 0;
             int failed = 0;
             string firstFailure = null;
+
+            // Wipe any leftover registration from a previous hot-reload or
+            // double-static-constructor edge case before the real tests start.
+            Rimconemy.Foundation.Save.MigrationRegistry.Unregister(TestClassId);
 
             void Check(bool ok, string name)
             {
@@ -34,12 +42,23 @@ namespace Rimconemy.EconomyTerritory.Tests
                 Log.Warning("[Rimconemy.EconomyTerritory] CreditsLedgerSchemaBump test FAILED: " + name);
             }
 
-            Check(TestV0SchemaBumpsToCurrent(),                "T1.V0SchemaBumpsToCurrent");
-            Check(TestV1SchemaIsIdempotent(),                  "T2.V1SchemaIsIdempotent");
-            Check(TestV0WithBalancePreserved(),                "T3.V0WithBalancePreserved");
-            Check(TestV0WithNullTransactionsNormalized(),      "T4.V0WithNullTransactionsNormalized");
-            Check(TestV0WithWalletIdPreserved(),               "T5.V0WithWalletIdPreserved");
-            Check(TestScribeRoundTripBumpsSchema(),
+            void CheckAndClean(bool ok, string name)
+            {
+                Check(ok, name);
+                // Each test creates a new CreditsLedger instance that
+                // self-registers via MigrateIfNeeded → RunMigration.
+                // Unregister after every test so the next one starts with a
+                // clean registry and the real component's registration
+                // later never sees a stale test instance.
+                Rimconemy.Foundation.Save.MigrationRegistry.Unregister(TestClassId);
+            }
+
+            CheckAndClean(TestV0SchemaBumpsToCurrent(),                "T1.V0SchemaBumpsToCurrent");
+            CheckAndClean(TestV1SchemaIsIdempotent(),                  "T2.V1SchemaIsIdempotent");
+            CheckAndClean(TestV0WithBalancePreserved(),                "T3.V0WithBalancePreserved");
+            CheckAndClean(TestV0WithNullTransactionsNormalized(),      "T4.V0WithNullTransactionsNormalized");
+            CheckAndClean(TestV0WithWalletIdPreserved(),               "T5.V0WithWalletIdPreserved");
+            CheckAndClean(TestScribeRoundTripBumpsSchema(),
                   "T6.ScribeRoundTripBumpsSchema");
 
             Log.Message(

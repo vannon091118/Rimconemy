@@ -38,6 +38,9 @@ namespace Rimconemy.InfectedAutomation.Scenarios
             base.PostMapGenerate(map);
             try
             {
+                // Scenario diagnostic: warn if running in wrong scenario
+                LogScenarioMismatchIfNeeded();
+
                 if (map == null) return;
                 var ledger = Current.Game?.GetComponent<RimconemyStartEnemiesLedger>();
                 if (ledger == null)
@@ -76,12 +79,12 @@ namespace Rimconemy.InfectedAutomation.Scenarios
 
         private static int SpawnStarterInfected(Map map, int count)
         {
-            var faction = Find.FactionManager?.AllFactionsListForReading?
-                .FirstOrDefault(f => f?.def?.defName == DefName_HiddenFaction);
+            // Use shared utility to ensure hidden faction exists (materializes on demand)
+            var faction = InfectedFactionUtility.EnsureHiddenInfectedFaction();
             if (faction == null)
             {
                 Log.Warning(
-                    $"[Rimconemy.InfectedAutomation] ScenPart_RimconemyStartEnemies: faction '{DefName_HiddenFaction}' not registered.");
+                    $"[Rimconemy.InfectedAutomation] ScenPart_RimconemyStartEnemies: faction '{InfectedFactionUtility.HiddenFactionDefName}' not available.");
                 return 0;
             }
 
@@ -133,6 +136,76 @@ namespace Rimconemy.InfectedAutomation.Scenarios
                 }
             }
             return placed;
+        }
+
+        /// <summary>
+        /// Scenario diagnostic: logs a warning if this ScenPart runs outside
+        /// the Rimconemy Single Survivor scenario. Helps players understand
+        /// why no starter infected appears when using a vanilla scenario.
+        ///
+        /// RimWorld 1.6.4566 rev579 Scenario accessor drift: the public
+        /// field name has moved between <c>parts</c> (1.5) and the public
+        /// <c>ScenParts</c> property (1.6). Rather than pick a winner and
+        /// break on the next point-release, we reflectively probe both
+        /// candidates in priority order. If neither is found, we stay
+        /// quiet rather than spam the log on an unrecognised API.
+        /// </summary>
+        private static void LogScenarioMismatchIfNeeded()
+        {
+            if (IsRimconemySingleSurvivorScenario(Find.Scenario)) return;
+
+            var scenario = Find.Scenario;
+            Log.Warning("[Rimconemy.InfectedAutomation] ScenPart_RimconemyStartEnemies running outside Rimconemy Single Survivor scenario. " +
+                "Starter infected requires 'Rimconemy Single Survivor' scenario. " +
+                "Current scenario: " + (scenario?.name ?? "unknown"));
+        }
+
+        /// <summary>
+        /// Reflective marker check for <see cref="RimWorld.Scenario"/>:
+        /// walks the scenario's <c>parts</c> (1.5) or <c>ScenParts</c> (1.6)
+        /// collection and looks for any <see cref="ScenPart"/> whose runtime
+        /// type name matches the Rimconemy single-survivor marker. Defensive
+        /// against both null scenario and reflection failures (returns false
+        /// in either case; the caller logs the warning, never throws).
+        /// </summary>
+        private static bool IsRimconemySingleSurvivorScenario(RimWorld.Scenario scenario)
+        {
+            if (scenario == null) return false;
+            try
+            {
+                System.Collections.IEnumerable partsEnum = null;
+                var t = scenario.GetType();
+                var prop = t.GetProperty("ScenParts",
+                    System.Reflection.BindingFlags.Public
+                    | System.Reflection.BindingFlags.NonPublic
+                    | System.Reflection.BindingFlags.Instance);
+                if (prop != null && prop.CanRead)
+                {
+                    partsEnum = prop.GetValue(scenario) as System.Collections.IEnumerable;
+                }
+                if (partsEnum == null)
+                {
+                    var field = t.GetField("parts",
+                        System.Reflection.BindingFlags.Public
+                        | System.Reflection.BindingFlags.NonPublic
+                        | System.Reflection.BindingFlags.Instance);
+                    if (field != null)
+                    {
+                        partsEnum = field.GetValue(scenario) as System.Collections.IEnumerable;
+                    }
+                }
+                if (partsEnum == null) return false;
+                foreach (var p in partsEnum)
+                {
+                    if (p != null && p.GetType().Name == "ScenPart_RimconemyStartEnemies")
+                        return true;
+                }
+            }
+            catch
+            {
+                // Defensive: diagnostic stays a no-op on reflection failure.
+            }
+            return false;
         }
     }
 }

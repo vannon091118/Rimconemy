@@ -72,6 +72,7 @@ namespace Rimconemy.InfectedAutomation.Story
             Register(PowerStruggle);
             Register(LastCache);
             // ── new events (event pool expansion) ──────────
+            Register(Sturmloot);
             Register(BountifulHarvest);
             Register(ResourceSpoilage);
             Register(WandererArrives);
@@ -80,6 +81,12 @@ namespace Rimconemy.InfectedAutomation.Story
             Register(MechSwarm);
             Register(Epidemic);
             Register(Betrayal);
+            // ── Phase B — Revenge family (2026-08-05) ────────────────
+            Register(LesserRevenge);
+            Register(GreaterRevenge);
+
+            // ── Phase F — Horde Migration (2026-08-05) ─────────────
+            Register(HordeMigrationLetter);
         }
 
         /// <summary>
@@ -899,9 +906,58 @@ namespace Rimconemy.InfectedAutomation.Story
 
         // ═══════════════════════════════════════════════════════
         // NEW EVENTS — event pool expansion (2026-08-05)
-        // ═══════════════════════════════════════════════════════
+        // ═══════════════════════════════════════════════════════            // ── Band 1 — Refuge: positive supply event ──────────
+        public static readonly StoryEventSpec Sturmloot = new StoryEventSpec
+        {
+            EventId = "rimconemy_supply_sturmloot",
+            EventVersion = 1,
+            EventFamily = "Supply",
+            Label = "Sturmgut",
+            Description = "Ein Unwetter hat Holz und Vorräte herbeigespült.",
 
-        // ── Band 1 — Refuge: positive supply event ──────────
+            Prerequisites = new List<EventCondition>
+            {
+                EventCondition.MaxActiveEventsReached(),
+                EventCondition.ActiveEvent("Supply"),
+            },
+            Exclusions = new List<EventCondition>
+            {
+                EventCondition.ActiveRecoveryEvent(),
+                EventCondition.ExcludeWhenDaysSinceLastEventBelow(3.0f),
+            },
+
+            Weights = new Dictionary<string, float>
+            {
+                { "Rimconemy_Refuge", 15f },
+                { "Rimconemy_Survival", 25f },
+            },
+            CooldownsDays = new Dictionary<string, float>
+            {
+                { "Rimconemy_Refuge", 8.0f },
+                { "Rimconemy_Survival", 5.0f },
+            },
+
+            EscalationBand = 1,
+            EscalationModifier = 0f,
+
+            LetterLabel = "Sturmgut",
+            LetterText = "Ein Unwetter hat Holzstämme und Vorräte herbeigespült. Die Gruppe kann sie einsammeln.",
+            TextKey = "Rimconemy_Sturmloot_Letter",
+
+            Choices = new List<EventChoice>
+            {
+                new EventChoice
+                {
+                    ChoiceId = "Collect",
+                    Label = "Sammeln",
+                    Effects = new List<string> { "ResourceBoost:Wood+150", "ResourceBoost:Food+50" },
+                },
+            },
+
+            FollowUpIds = new List<string>(),
+            DeterminismKeyTemplate = "{ProfileId}+{EventId}+{StorageHash}+{GameTickDay}",
+        };
+
         public static readonly StoryEventSpec BountifulHarvest = new StoryEventSpec
         {
             EventId = "rimconemy_supply_bountiful_harvest",
@@ -1369,6 +1425,196 @@ namespace Rimconemy.InfectedAutomation.Story
 
             FollowUpIds = new List<string>(),
             DeterminismKeyTemplate = "{ProfileId}+{EventId}+{IdeologyTension}+{PawnId}+{GameTickDay}",
+        };
+        // ═══════════════════════════════════════════════════════
+        // PHASE B — REVENGE FAMILY (transient, daily-decay)
+        // ═══════════════════════════════════════════════════════
+
+        public static readonly StoryEventSpec LesserRevenge = new StoryEventSpec
+        {
+            EventId = "rimconemy.revenge.lesser",
+            EventVersion = 1,
+            EventFamily = "Revenge",
+            Label = "Rache-Schwarm",
+            Description = "Kleiner Schwarm Infizierter rächt die gestrigen Verluste.",
+
+            Prerequisites = new List<EventCondition>
+            {
+                EventCondition.MaxActiveEventsReached(),
+                EventCondition.RevengePendingAtLeast(1),
+            },
+            Exclusions = new List<EventCondition>
+            {
+                EventCondition.ActiveRaidOrThreat(),
+            },
+
+            Weights = new Dictionary<string, float>
+            {
+                { "Rimconemy_Survival", 0.7f },
+                { "Rimconemy_Collapse", 0.9f },
+            },
+            CooldownsDays = new Dictionary<string, float>
+            {
+                { "Rimconemy_Survival", 14.0f },
+                { "Rimconemy_Collapse", 7.0f },
+            },
+
+            EscalationBand = 2,
+            EscalationModifier = 0.06f,
+
+            LetterLabel = "Rache-Schwarm",
+            LetterText = "Kleine Infiziertengruppen reagieren auf die gestrigen Verluste. Sie nähern sich der Siedlung.",
+            TextKey = "Rimconemy_LesserRevenge_Letter",
+
+            Choices = new List<EventChoice>
+            {
+                new EventChoice
+                {
+                    ChoiceId = "Defend",
+                    Label = "Verteidigen",
+                    Effects = new List<string> { "DefenseBonus:+0.20 for 1 day", "ResourceCost:10%" },
+                },
+            },
+
+            FollowUpIds = new List<string>(),
+            DeterminismKeyTemplate = "{ProfileId}+{EventId}+{GameTickDay}",
+        };
+
+        public static readonly StoryEventSpec GreaterRevenge = new StoryEventSpec
+        {
+            EventId = "rimconemy.revenge.greater",
+            EventVersion = 1,
+            EventFamily = "Revenge",
+            Label = "Rache-Welle",
+            Description = "Eine große Welle Infizierter rächt mit aller Wucht.",
+
+            Prerequisites = new List<EventCondition>
+            {
+                EventCondition.MaxActiveEventsReached(),
+                EventCondition.RevengePendingAtLeast(MinGreaterRevenge),
+            },
+            Exclusions = new List<EventCondition>
+            {
+                EventCondition.ActiveRaidOrThreat(),
+            },
+
+            Weights = new Dictionary<string, float>
+            {
+                { "Rimconemy_Survival", 0.4f },
+                { "Rimconemy_Collapse", 0.7f },
+            },
+            CooldownsDays = new Dictionary<string, float>
+            {
+                { "Rimconemy_Survival", 21.0f },
+                { "Rimconemy_Collapse", 10.0f },
+            },
+
+            EscalationBand = 3,
+            EscalationModifier = 0.12f,
+
+            LetterLabel = "Rache-Welle!",
+            LetterText = "Eine massive Welle Infizierter greift als Vergeltung für die vielen Verluste an. Die Wut ist spürbar.",
+            TextKey = "Rimconemy_GreaterRevenge_Letter",
+
+            Choices = new List<EventChoice>
+            {
+                new EventChoice
+                {
+                    ChoiceId = "FullDefense",
+                    Label = "Volle Verteidigung",
+                    Effects = new List<string> { "DefenseBonus:+0.40 for 2 days", "ResourceCost:25%" },
+                },
+                new EventChoice
+                {
+                    ChoiceId = "Evacuate",
+                    Label = "Vorrang-Rückzug",
+                    Effects = new List<string> { "EvacuateCivilians", "StorageBlocked:60%", "IdeologyTension:+0.10" },
+                },
+            },
+
+            FollowUpIds = new List<string>(),
+            DeterminismKeyTemplate = "{ProfileId}+{EventId}+{GameTickDay}",
+        };
+
+        /// <summary>Threshold above which the greater-revenge event unlocks.
+        /// 8 minted-spawns is mid-tier: well above the daily Survival baseline
+        /// but comfortably below Collapse proportions.</summary>
+        public const int MinGreaterRevenge = 8;
+
+        // ═══════════════════════════════════════════════════════
+        // PHASE F — HORDE MIGRATION LETTER (2026-08-05)
+        // ═══════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Wandering-Horde Letter — fired by HordeStorySelector.SelectHordeMigrationLetter
+        /// when ThreatPressure ≥ ProfileThreshold AND effective count is active
+        /// AND no HordeManifest is currently active AND cooldown elapsed.
+        ///
+        /// The actual Manifest-spawn is triggered by Choice "Mobilize" via
+        /// HordeStorySelector.ProcessTriggerHordeMigrationEffect.
+        /// Letter-only Outcome = player has agency to accept/reject the migration.
+        /// </summary>
+        public static readonly StoryEventSpec HordeMigrationLetter = new StoryEventSpec
+        {
+            EventId = Rimconemy.InfectedAutomation.Horde.HordeStorySelector.HordeMigrationLetterId,
+            EventVersion = 1,
+            EventFamily = "Raid",
+            Label = "Wandernde Horde",
+            Description = "Eine massive Horde Infizierter wandert auf dein Territorium zu.",
+
+            Prerequisites = new List<EventCondition>
+            {
+                EventCondition.MaxActiveEventsReached(),
+            },
+            Exclusions = new List<EventCondition>
+            {
+                EventCondition.ActiveRaidOrThreat(),
+            },
+
+            Weights = new Dictionary<string, float>
+            {
+                { "Rimconemy_Survival", 0.6f },
+                { "Rimconemy_Collapse", 0.85f },
+                { "Rimconemy_Refuge", 0.3f },
+            },
+            CooldownsDays = new Dictionary<string, float>
+            {
+                { "Rimconemy_Survival", 10.0f },
+                { "Rimconemy_Collapse", 5.0f },
+                { "Rimconemy_Refuge", 14.0f },
+            },
+
+            EscalationBand = 3,
+            EscalationModifier = 0.15f,
+
+            LetterLabel = "Wandernde Horde!",
+            LetterText = "Auf den Wegen rings um die Siedlung zieht eine massive Horde Infizierter ihre Bahn. Sie sind noch weit \u2014 aber sie kommen n\u00e4her. Die Horde wird alles niedermachen, was sich ihr in den Weg stellt.",
+            TextKey = "Rimconemy_HordeMigrationLetter",
+
+            Choices = new List<EventChoice>
+            {
+                new EventChoice
+                {
+                    ChoiceId = "Mobilize",
+                    Label = "Horde ausl\u00f6sen",
+                    Effects = new List<string> { "TriggerHordeMigration:Survival", "DefenseBonus:+0.30 for 3 days", "ResourceCost:30%" },
+                },
+                new EventChoice
+                {
+                    ChoiceId = "Fortify",
+                    Label = "Siedlung verbarrikadieren",
+                    Effects = new List<string> { "StorageBlocked:50%", "DefenseBonus:+0.15 for 2 days" },
+                },
+                new EventChoice
+                {
+                    ChoiceId = "Ignore",
+                    Label = "Ignorieren",
+                    Effects = new List<string> { "HordeEscalation:+0.20", "ThreatPressure:+0.10" },
+                },
+            },
+
+            FollowUpIds = new List<string>(),
+            DeterminismKeyTemplate = "{ProfileId}+{EventId}+{GameTickDay}+{HordeEffective}",
         };
     }
 }

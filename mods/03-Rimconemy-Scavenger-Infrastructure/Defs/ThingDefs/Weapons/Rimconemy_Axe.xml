@@ -1,0 +1,53 @@
+<Defs>
+  <ThingDef Name="Rimconemy_Axe" ParentName="BaseWeapon">
+    <defName>Rimconemy_Axe</defName>
+    <label>Schrott-Axt</label>
+    <thingClass>ThingWithComps</thingClass>
+    <techLevel>Neolithic</techLevel>
+    <statBases>
+      <MaxHitPoints>100</MaxHitPoints>
+      <Flammability>1.0</Flammability>
+      <DeteriorationRate>2</DeteriorationRate>
+      <Beauty>-3</Beauty>
+      <SellPriceFactor>0.20</SellPriceFactor>
+      <MarketValue>50</MarketValue>
+      <Mass>3.0</Mass>
+      <WorkToMake>8000</WorkToMake>
+    </statBases>
+    <!-- graphicData: required. Even a vanilla placeholder path beats
+         graphicClass=null + texPath=null, which crashed downstream
+         ThingDef.PostLoad via defensive NRE. -->
+    <graphicData>
+      <!-- Mod-private path (Textures/Things/Item/Equipment/WeaponMelee/Rimconemy_Axe.png)
+           copied from Core/About/Preview.png by scripts/deploy.sh. Keeps the
+           texture asset stable across RimWorld 1.6 point-releases that rename
+           vanilla PAK paths. -->
+      <texPath>Things/Item/Equipment/WeaponMelee/Rimconemy_Axe</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <onGroundRandomRotateAngle>35</onGroundRandomRotateAngle>
+    </graphicData>
+    <!-- melee damage / AP are encoded on the Tool definition; VerbProperties
+         only carries the verb-class routing + worker-class here. The
+         legacy VerbProperties entries caused a context-cascade of field
+         resolution errors that were misleading and noisy. -->
+    <verbs>
+      <li Class="VerbProperties">
+        <verbClass>Verb_MeleeAttack</verbClass>
+        <label>Hauen</label>
+      </li>
+    </verbs>
+    <tools>
+      <li Class="Tool">
+        <label>sharp</label>
+        <capacities>
+          <li>Cut</li>
+        </capacities>
+        <power>1.5</power>
+        <cooldownTime>1.3</cooldownTime>
+      </li>
+    </tools>
+    <comps>
+      <li Class="Rimconemy.SurvivalProgression.Character.Tools.CompProperties_AxeDurability" />
+    </comps>
+  </ThingDef>
+</Defs>

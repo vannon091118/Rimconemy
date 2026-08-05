@@ -148,12 +148,14 @@ namespace Rimconemy.InfectedAutomation.World
                     return InfectedBehaviorState.Investigating;
 
                 case InfectedBehaviorState.Assault:
+                    // All colonists gone for a long time → back to Roaming.
+                    // MUST come first: NoColonistTicks (2000) > TargetLostTicks (600),
+                    // so >=2000 matches BOTH. Check the stronger condition first.
+                    if (!colonistVisible && ticksInState >= AssaultNoColonistTicks)
+                        return InfectedBehaviorState.Roaming;
                     // Target lost briefly → back to Investigating.
                     if (!colonistVisible && ticksInState >= AssaultTargetLostTicks)
                         return InfectedBehaviorState.Investigating;
-                    // All colonists gone → back to Roaming.
-                    if (!colonistVisible && ticksInState >= AssaultNoColonistTicks)
-                        return InfectedBehaviorState.Roaming;
                     return InfectedBehaviorState.Assault;
 
                 default:

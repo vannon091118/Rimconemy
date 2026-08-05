@@ -9,22 +9,24 @@ namespace Rimconemy.InfectedAutomation.Incidents
     /// Owner: Infected &amp; Automation (Package 05).
     /// P6 — Task 12: Infizierten-Raids (echter Spawn-Pfad).
     ///
-    /// Phase-6 Stub: prepares an idempotent SpawnPlan for
-    /// <see cref="InfectedRaidWorker"/> so a future iteration can drop
-    /// real infected colonists near the colony. The plan is derived
-    /// from the threat aggregator so the spawn scales with pressure.
+    /// Idempotent SpawnPlan-Builder for <see cref="InfectedRaidWorker"/>:
+    /// derives the next-tick plan from the threat aggregator so the
+    /// spawn scales with pressure, then merges in a Phase-B revenge-pending
+    /// quota sourced from <see cref="Story.StoryDirector.LastPendingRevenge"/>.
+    /// Pawn count is the higher of pressure-plan and revenge-floor; the
+    /// reason string distinguishes which path drove the merge.
     ///
-    /// The actual TryExecuteWorker determines spawn positions and
-    /// deploys the infected pawn. This service is read-only: it
-    /// produces numbers + categories. No exceptions escape so
+    /// The actual TryExecuteWorker still determines spawn positions and
+    /// deploys the infected pawn; this service is read-only — it produces
+    /// numbers + categories and swallows no exceptions so
     /// <see cref="InfectedRaidWorker"/> stays safe.
     ///
-    /// Audit-Finding 6 (2026-08-04): the snapshot read now delegates to
-    /// <see cref="ThreatSnapshotBridge"/> so neither this service nor
-    /// <see cref="WorldRaidCoordinator"/> constructs duplicate
+    /// Audit-Finding 6 (2026-08-04): the snapshot read delegates to
+    /// <see cref="Threat.ThreatSnapshotBridge"/> so neither this service
+    /// nor <see cref="World.WorldRaidCoordinator"/> constructs duplicate
     /// ThreatAggregator instances.
     ///
-    /// Spec: docs/P6-PROGRESS.md Task 12.
+    /// Spec: docs/P6-PROGRESS.md Task 12; docs/superpowers/specs/2026-08-05-daily-growth-revenge-design.md §5+§6.
     /// </summary>
     public static class InfectedRaidSpawnService
     {
@@ -32,9 +34,21 @@ namespace Rimconemy.InfectedAutomation.Incidents
         {
             public int PawnCount;
             public float ThreatPressureComponent;
+            /// <summary>Phase B: transient revenge-pending floor that drove
+            /// the merge. 0 if no revenge slot was active. Always equals
+            /// the value read from StoryDirector.GetPendingRevengeanceForToday()
+            /// (or the StubDirector override) at plan-time.</summary>
+            public int RevengeQuotaComponent;
             public int MapId;        // -1 if no map
             public string Reason;
         }
+
+        /// <summary>Test-Seam: when non-null, BuildPlanForTick reads the
+        /// pending revenge quota from this stub instead of the live
+        /// StoryDirector (so regression tests do not need a running
+        /// GameComponent). Default null = Produktivverhalten. Reset to
+        /// null by the Boot RunAll wipe path.</summary>
+        public static DirectorAccessStub StubDirector;
 
         public static SpawnPlan BuildPlanForTick(long tick)
         {
@@ -42,6 +56,7 @@ namespace Rimconemy.InfectedAutomation.Incidents
             {
                 PawnCount = 0,
                 ThreatPressureComponent = 0f,
+                RevengeQuotaComponent = 0,
                 MapId = -1,
                 Reason = "no-game",
             };
@@ -55,17 +70,43 @@ namespace Rimconemy.InfectedAutomation.Incidents
 
                 var snapshot = GetCurrentThreatSnapshot();
                 float pressure = snapshot?.TotalPressure ?? 0f;
-                int pawnCount = ComputeSpawnCount(pressure);
-                plan.PawnCount = pawnCount;
+                int pressurePlan = ComputeSpawnCount(pressure);
+
+                // Phase B: merge with revenge-pending floor. Higher-of-both
+                // semantics — a revenge quota can lift a non-event pressure
+                // into a real spawn, but a hot pressure-plan still wins over
+                // a stale revenge slot.
+                int revengePlan = ReadRevengePending();
+
+                plan.PawnCount = System.Math.Max(pressurePlan, revengePlan);
                 plan.ThreatPressureComponent = pressure;
+                plan.RevengeQuotaComponent = revengePlan;
                 plan.MapId = canonical.uniqueID;
-                plan.Reason = pawnCount > 0 ? "ok" : "pressure-too-low";
+                plan.Reason = MergeReason(pressurePlan, revengePlan);
             }
             catch (System.Exception ex)
             {
                 plan.Reason = "exception: " + ex.GetType().Name;
             }
             return plan;
+        }
+
+        private static int ReadRevengePending()
+        {
+            var stub = StubDirector;
+            if (stub != null) return stub.GetPendingRevengeance();
+            var live = Story.StoryDirector.Get();
+            return live != null ? live.GetPendingRevengeanceForToday() : 0;
+        }
+
+        // Reason metadata so the dashboard / log can see WHICH path drove
+        // the spawn when both are non-zero.
+        private static string MergeReason(int pressurePlan, int revengePlan)
+        {
+            if (revengePlan > pressurePlan) return "revenge-dominant";
+            if (pressurePlan > 0) return "pressure-based";
+            if (revengePlan > 0) return "revenge-fallback"; // would never elect to spawn because of revenge-only when pressurePlan==0; defensive
+            return "ok";
         }
 
         // Phase-6 MVP scaling: pressure>0.5 → 3 pawns, 0.3-0.5 → 2, 0.15-0.3 → 1, else 0.

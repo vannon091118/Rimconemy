@@ -22,17 +22,31 @@ namespace Rimconemy.InfectedAutomation.Tests
         private static int _passed;
         private static int _failed;
 
+        /// <summary>Matches <see cref="StoryState.ClassId"/>;
+        /// used to clean up test instances between runs.</summary>
+        private const string TestClassId = "rimconemy.infectedautomation.storyState";
+
         public static bool RunAll()
         {
             _passed = 0;
             _failed = 0;
+
+            // Wipe any leftover registration from a previous hot-reload or
+            // double-static-constructor edge case before the real tests start.
+            Rimconemy.Foundation.Save.MigrationRegistry.Unregister(TestClassId);
 
             TestEnqueueWhenNoColonists();
             TestEdgeTriggerFirstWipeTickIsImmutable();
             TestMultipleWipeTickSignalsAccumulate();
             TestFifoDrainOrder();
             TestLegacyPreF13SinglePendingSurvivesReload();
+            // LegacyPreF13 invokes RebuildAfterLoad → MigrateIfNeeded →
+            // MigrationRegistry.Register. Unregister before the next test
+            // so ModernPreF13 doesn't see a stale instance.
+            Rimconemy.Foundation.Save.MigrationRegistry.Unregister(TestClassId);
             TestModernPreF13QueueSurvivesRoundTrip();
+            // ModernPreF13 also invokes RebuildAfterLoad. Unregister again.
+            Rimconemy.Foundation.Save.MigrationRegistry.Unregister(TestClassId);
             TestPeekDoesNotDrain();
 
             string summary = "[Rimconemy.InfectedAutomation] GameOverPendingQueue regression tests: "

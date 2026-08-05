@@ -4,9 +4,13 @@ using System.Linq;
 using Rimconemy.Foundation.Colonials;
 using Rimconemy.Foundation.Maps;
 using Rimconemy.Foundation.Registry;
+using Rimconemy.InfectedAutomation.Population;
 using Rimconemy.ScavengerInfrastructure.Storage;
 using RimWorld;
 using Verse;
+
+using RandomInoculationService = Rimconemy.InfectedAutomation.Inoculation.RandomInoculationService;
+using AnimalInfectionChance   = Rimconemy.InfectedAutomation.Inoculation.AnimalInfectionChance;
 
 namespace Rimconemy.InfectedAutomation.Story
 {
@@ -76,6 +80,22 @@ namespace Rimconemy.InfectedAutomation.Story
         /// </summary>
         public readonly System.Collections.Generic.List<float> ThreatHistory
             = new System.Collections.Generic.List<float>(30);
+
+        // ── Phase B — transient revenge slot (NOT SCRIBED) ──────────
+        // Phase B couples today's raid-plan to yesterday's kills by refreshing
+        // the slot at end-of-day-tick. The slot is intentionally transient so
+        // a save/load does not produce a stale revenge quota from an old
+        // game-day; the recompute path always derives the value fresh from
+        // ledger.RecentKillsToday × profile.RevengeRatio at the next day-
+        // tick. Without "transient" semantics we would either need a
+        // schema migration for the slot or risk running with a stale value
+        // after a load that crosses a day-boundary.
+        //
+        // LastRevengeRefreshTick guards against double-refresh in the same
+        // tick (the day-tick pipeline is allowed to call Recompute from a
+        // future rewire without producing fractional drops).
+        public int LastPendingRevenge;
+        public long LastRevengeRefreshTick;
 
         private StoryEventCatalog _catalog;
 
@@ -192,9 +212,60 @@ namespace Rimconemy.InfectedAutomation.Story
                 return;
             }
 
-            // Don't evaluate if threat is below profile minimum
-            var snapshot = BuildLiveSnapshot(currentTick, State);
+            // Don't evaluate if threat is below profile minimum. Pass the
+            // instance ActiveProfile so the Early-Game Pressure Floor can
+            // apply the profile-specific floor — audit-fix 2026-08-05.
+            var snapshot = BuildLiveSnapshot(currentTick, State, ActiveProfile);
             EvaluateWithSnapshot(snapshot, currentTick);
+
+            // Phase B (2026-08-05) — Day-Growth + Reset + Recompute-Revenge
+            // block, AFTER the Eval block. The refactor follows the user
+            // override of the Phase-A spec:
+            //   1. WipeCheck (above)
+            //   2. Eval-Gate-MinEventSpacing (above)
+            //   3. Eval (StorySelector + queue)           ← EvaluateWithSnapshot
+            //   4. Day-Growth                             ← ApplyDailyGrowthTick
+            //   5. Reset-Daily-Counters                   ← ResetDailyCounters
+            //   6. Recompute-Revenge                      ← RecomputeRevengeAfterDayTick
+            //   7. Inoculation (Phase C)                  ← TryInfectRandom
+            //
+            // Why Eval-before-Growth: today's threats are evaluated against
+            // today's already-grown cap, so a long survival streak produces
+            // the difficulty curve the player can react to (Revenge quota,
+            // Inoculation). The Growth+Reset block writes next-day state.
+            try
+            {
+                var ledger = PopulationLedger.Get();
+                if (ledger != null)
+                {
+                    ledger.ApplyDailyGrowthTick();
+                    ledger.ResetDailyCounters();
+                }
+                RecomputeRevengeAfterDayTick(ledger, ActiveProfile, currentTick);
+            }
+            catch (System.Exception ex)
+            {
+                // Defensive: never let the day-block throw out into
+                // GameComponentTick — Inoculation still has to run below.
+                Log.Warning("[Rimconemy.InfectedAutomation] StoryDirector: " +
+                    "Day-Growth/Reset/Recompute block raised " +
+                    ex.GetType().Name + ": " + ex.Message);
+            }
+
+            // Phase C — Tier-Inokulation Day-Tick Hook (2026-08-05).
+            // Independent of StorySelector: animal-inoculation runs once
+            // per day if Profile allows + cooldown gate is open. Profile
+            // – 'Refuge' disables it; 'Survival' once per week; 'Collapse'
+            // three per week. Failure modes log and remain no-op.
+            Map playerHomeForInoculation = ResolveCanonicalPlayerMap();
+            if (playerHomeForInoculation != null)
+            {
+                Inoculation.RandomInoculationService.TryInfectRandom(
+                    playerHomeForInoculation, currentTick);
+
+                // Phase E — profile-driven wild-animal infection (chance + horde cap).
+                TryFireProfileInfection(currentTick);
+            }
         }
 
         /// <summary>
@@ -355,8 +426,17 @@ namespace Rimconemy.InfectedAutomation.Story
         /// Builds a SituationSnapshot from the live game world.
         /// Reads RimWorld state (pawn counts, threat, etc.) and
         /// produces the aggregated read-model that StorySelector needs.
+        ///
+        /// audit-fix 2026-08-05: the Early-Game Pressure Floor reads
+        /// ActiveProfile for profile-specific floors. BuildLiveSnapshot
+        /// was a static helper (no instance context), so the call tripped
+        /// CS0120. We now accept the active profile as a parameter so
+        /// call sites stay static-friendly but the floor logic gets the
+        /// right value. Defensive: a null profile suppresses the floor
+        /// (keeps the wealth-derived value, which is the safe default
+        /// before GameComponent-attached-finalise-init has fired).
         /// </summary>
-        private static SituationSnapshot BuildLiveSnapshot(long tick, StoryState state = null)
+        private static SituationSnapshot BuildLiveSnapshot(long tick, StoryState state = null, SettingProfile profile = null)
         {
             var snapshot = new SituationSnapshot
             {
@@ -399,6 +479,26 @@ namespace Rimconemy.InfectedAutomation.Story
             // slop-audit-fix F1: 700000f is "max wealth = 1.0 pressure" tuning
             // constant. Future: lift to StoryDirectorSettings.WealthMaxForUnityThreat.
             snapshot.ThreatPressure = System.Math.Min(1f, wealthFactor / WealthFullPressureThreshold);
+
+            // Early-Game Pressure Floor: guarantees events can fire from day 1
+            // even at 0 wealth. Profile-specific floors prevent hard-lock on
+            // Survival (0.2) and Collapse (0.15) profiles.
+            // Refuge uses 0.05 since it bans Raid family but allows Supply/Social.
+            // audit-fix 2026-08-05: use the parameter (not the instance field)
+            // — static helper cannot reach instance state and the call sites
+            // already pass ActiveProfile in via the new third arg.
+            if (profile != null)
+            {
+                float floor = profile.ProfileId switch
+                {
+                    "Rimconemy_Refuge" => 0.05f,
+                    "Rimconemy_Survival" => 0.15f,
+                    "Rimconemy_Collapse" => 0.10f,
+                    _ => 0.10f
+                };
+                snapshot.ThreatPressure = System.Math.Max(snapshot.ThreatPressure, floor);
+            }
+
             snapshot.ThreatTrend = 0f;
 
             // Colony wealth (raw total for event-prerequisite gating)
@@ -830,8 +930,156 @@ namespace Rimconemy.InfectedAutomation.Story
 
         /// <summary>
         /// Public wrapper around the private BuildLiveSnapshot so EvaluateNow
-        /// can call it without duplicating logic.
+        /// can call it without duplicating logic. Passes ActiveProfile so
+        /// the Early-Game Pressure Floor can apply the right per-profile
+        /// floor. Wraps Non-null assertion for callers that invoke
+        /// EvaluateNow before FinalizeInit has set the profile.
         /// </summary>
-        private SituationSnapshot BuildLiveSnapshotPublic(long tick) => BuildLiveSnapshot(tick, State);
+        private SituationSnapshot BuildLiveSnapshotPublic(long tick) => BuildLiveSnapshot(tick, State, ActiveProfile);
+
+        // ── Phase B — Revenge-Coupling Public API ───────────────────────
+
+        /// <summary>
+        /// Read-only accessor for the current day's revenge-pending quota.
+        /// Used by <see cref="Incidents.InfectedRaidSpawnService.BuildPlanForTick"/>
+        /// to merge with the pressure-driven pawn count. Always returns
+        /// a non-negative number (the slot is clamped at 0 on every
+        /// decrement).
+        /// </summary>
+        public int GetPendingRevengeanceForToday() => LastPendingRevenge;
+
+        /// <summary>
+        /// Decrements the revenge-pending slot by the actual number of
+        /// pawns spawned in a raid-bridge run. Called from
+        /// <see cref="Incidents.InfectedRaidWorker.TryExecuteWorker"/> after
+        /// <c>SpawnHostileRavagers</c> returns <c>actuallySpawned</c>, with
+        /// the value clamped to <c>min(actuallySpawned, plan.RevengeQuotaComponent)</c>
+        /// so a partial-spawn-failure cannot silently consume more than
+        /// the quota.
+        ///
+        /// Idempotent in the sense that a second call with the same value
+        /// would decrement twice — callers MUST call exactly once per
+        /// worker run. Clamped at 0 so a stale quota cannot manifest as a
+        /// negative; <paramref name="actuallySpawned"/> <= 0 is a no-op.
+        ///
+        /// Does NOT trigger any Spawn side-effect; the slot is independent
+        /// of the live SpawnHostileRavagers path so a logging failure in
+        /// the worker cannot leak into the day-quota accounting.
+        /// </summary>
+        public void DecrementPendingRevenge(int actuallySpawned)
+        {
+            if (actuallySpawned <= 0) return;
+            LastPendingRevenge = System.Math.Max(0, LastPendingRevenge - actuallySpawned);
+        }
+
+        /// <summary>
+        /// Phase B — single-tree-source for the ProfileId translation
+        /// between SettingProfile.ProfileId ("Rimconemy_Survival") and the
+        /// legacy PopulationProfileMultipliers keys ("Survival", "Refuge",
+        /// "Collapse", no prefix). Phase A never bridged these two
+        /// namespaces, so a SettingProfile.ProfileId fed into
+        /// PopulationProfileMultipliers.GetRevengeRatio would silently
+        /// fall back to "Survival" (LogWarnFallback). This helper strips
+        /// the prefix so the lookup finds the row the spec author wrote.
+        ///
+        /// Defensive: returns "Survival" on null/empty rather than throwing
+        /// — same shape as PopulationProfileMultipliers' own fallback.
+        /// Whitespace-only inputs are trimmed before the lookup so a
+        /// stray "  " cannot leak into the multiplier table (minor
+        /// review-finding from Task 1).
+        /// </summary>
+        public static string StripRimconemyPrefix(string id)
+        {
+            if (id == null) return "Survival";
+            string trimmed = id.Trim();
+            if (trimmed.Length == 0) return "Survival";
+            const string prefix = "Rimconemy_";
+            return trimmed.StartsWith(prefix) ? trimmed.Substring(prefix.Length) : trimmed;
+        }
+
+        /// <summary>
+        /// Phase B — recompute the revenge quota at end of day-tick.
+        /// Called from <see cref="GameComponentTick"/> AFTER the
+        /// StorySelector eval block and AFTER
+        /// <see cref="PopulationLedger.ApplyDailyGrowthTick"/> +
+        /// <c>ResetDailyCounters</c> (per user-override of the
+        /// Phase-A-spec ordering).
+        ///
+        /// Reads ledger.RecentKillsToday, multiplies by the profile
+        /// RevengeRatio (SettingProfile.ProfileId "Rimconemy_<x>" prefix
+        /// stripped so it matches PopulationProfileMultipliers keys), clips
+        /// to the available free-budget (Cap − HumanoidLiveCount).
+        ///
+        /// Idempotent within a tick: a refresh invoked twice with the same
+        /// currentTick is a no-op (LastRevengeRefreshTick gate). The
+        /// day-tick pipeline is allowed to call this method from any future
+        /// rewire without producing fractional drops.
+        ///
+        /// Defensive: null ledger → no-op (no log); null profile → "
+        /// Survival" fallback via StripRimconemyPrefix.
+        /// </summary>
+        public void RecomputeRevengeAfterDayTick(
+            PopulationLedger ledger, SettingProfile profile, long currentTick)
+        {
+            if (currentTick == LastRevengeRefreshTick) return;
+            // Review-2026-08-05-Fix: gate-set moved AFTER the null-ledger
+            // early-out so a stray null-ledger call (e.g. before the
+            // Reconciler is initialised) cannot silently burn the per-tick
+            // slot and turn a subsequent valid call into a no-op.
+            if (ledger == null) return;
+            LastRevengeRefreshTick = currentTick;
+            string key = StripRimconemyPrefix(profile?.ProfileId);
+            float ratio = PopulationProfileMultipliers.GetRevengeRatio(key);
+            // Free-budget clips at 0 first so over-capacity (Cap <
+            // HumanoidLiveCount) produces a clean integer math result
+            // rather than threading a negative through min/max.
+            int freeBudgetRaw = ledger.Cap - ledger.HumanoidLiveCount;
+            int freeBudget = (int)System.Math.Min(int.MaxValue, System.Math.Max(0, freeBudgetRaw));
+            int raw = (int)System.Math.Floor((double)ledger.RecentKillsToday * ratio);
+            LastPendingRevenge = System.Math.Max(0, System.Math.Min(raw, freeBudget));
+        }
+
+        /// <summary>
+        /// Phase E — daily-chance + horde-cap gate on wild-animal infection.
+        /// Composes <see cref="AnimalInfectionChance.ShouldFireToday"/>,
+        /// <see cref="AnimalInfectionChance.ComputeInfectionCount"/>,
+        /// <see cref="RandomInoculationService.TryInfectWildAnimals"/> and
+        /// <see cref="PopulationLedger.RegisterAnimalInfection"/>. Caller
+        /// (GameComponentTick) is responsible for gating on a known player
+        /// home map so we do not re-check it here.
+        /// </summary>
+        private void TryFireProfileInfection(long currentTick)
+        {
+            var ledger = PopulationLedger.Get();
+            if (ledger == null || ActiveProfile == null) return;
+
+            int hordeCount = System.Math.Max(
+                0, ledger.HumanoidLiveCount + ledger.AnimalLiveCount / 2);
+            if (!Inoculation.AnimalInfectionChance.ShouldFireToday(
+                    currentTick, ledger.AnimalInfectionCountToday, hordeCount, ActiveProfile))
+                return;
+
+            int count = Inoculation.AnimalInfectionChance.ComputeInfectionCount(
+                currentTick, hordeCount, ActiveProfile);
+            if (count <= 0) return;
+
+            int actually = Inoculation.RandomInoculationService.TryInfectWildAnimals(count, currentTick);
+            if (actually > 0)
+            {
+                ledger.RegisterAnimalInfection(actually, currentTick);
+                // Falsification §G Anmerkung D-2 (2026-08-05): zentrale
+                // Erfolgs-Log-Zeile fuer den Live-Beleg. Vorher war der
+                // Erfolgs-Pfad still; nur Skip-Logs (gated auf godMode) im
+                // RandomInoculationService-Layer. Mit dieser Zeile kann der
+                // User im Player.log direkt pruefen, dass der Day-Tick
+                // tatsaechlich gefeuert hat — unabhaengig von godMode.
+                Log.Message("[Rimconemy.InfectedAutomation] StoryDirector.TryFireProfileInfection: "
+                    + actually + " wild animals infected at tick=" + currentTick
+                    + " profile=" + ActiveProfile.ProfileId
+                    + " hordeCount=" + hordeCount
+                    + " ledger.AnimalInfectionCountToday="
+                    + ledger.AnimalInfectionCountToday);
+            }
+        }
     }
 }

@@ -11,17 +11,16 @@ namespace Rimconemy.InfectedAutomation.World
     /// Owner: Infected &amp; Automation (Package 05).
     /// P6 — Task 15: Weltkarten-Endgame (World-Raids).
     ///
-    /// Phase-6 Stub: aggregates per-tile threat from the world layer and
-    /// produces a "raid window" describing when the next world-raid
-    /// should fire. WorldObject registration is owned by a User Live-Test
-    /// phase.
+    /// Live Read-Model Service: aggregates per-tile threat from the world
+    /// layer via <see cref="ThreatSnapshotBridge"/> and produces a
+    /// "raid window" describing when the next world-raid should fire on
+    /// each loaded player-home or temporary-child map. WorldObject
+    /// registration is owned by a User Live-Test phase.
     ///
-    /// Audit-Finding 6 (2026-08-04): both this class and
-    /// <see cref="InfectedRaidSpawnService"/> previously constructed a
-    /// local <c>new ThreatAggregator { TotalPressure = ... }</c> instance.
-    /// That pattern would have caused double Pressure-Berechnung when
-    /// both stubs transition to live mode. Threat reads are now routed
-    /// through <see cref="ThreatSnapshotBridge"/>.
+    /// Audit-Finding 6 (2026-08-04): consumed by both this class and
+    /// <see cref="Incidents.InfectedRaidSpawnService"/> via the shared
+    /// <see cref="ThreatSnapshotBridge"/> so neither path constructs a
+    /// duplicate <c>ThreatAggregator</c> instance.
     ///
     /// Spec: docs/P6-PROGRESS.md Task 15.
     /// </summary>

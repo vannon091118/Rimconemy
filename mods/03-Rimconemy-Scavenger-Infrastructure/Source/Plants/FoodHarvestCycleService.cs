@@ -9,11 +9,11 @@ namespace Rimconemy.ScavengerInfrastructure.Plants
     /// Owner: Scavenger Infrastructure (Package 03).
     /// P6 — Task 9: Nahrung/Hanf getrennt.
     ///
-    /// Phase-6 Stub: reads the storage snapshot and returns a per-pipeline
-    /// counter so the UI can show "Food harvested" vs "Hemp harvested"
-    /// independently. The actual harvest cycle (workgiver, growth tick,
-    /// rot accumulation) is a User Live-Test concern. Stub does not
-    /// modify world state.
+    /// Read-Model Service: walks the player-home storage snapshot and
+    /// returns per-pipeline counters (Food / Hemp / Straw / Rotten) so the
+    /// UI can show them independently. Read-only; does not mutate world
+    /// state. The actual harvest cycle (workgiver, growth tick, rot
+    /// accumulation) remains a User Live-Test concern.
     ///
     /// Specification: docs/P6-PROGRESS.md Task 9.
     /// </summary>

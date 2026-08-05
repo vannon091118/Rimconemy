@@ -47,7 +47,18 @@ namespace Rimconemy.SurvivalProgression.Patches
     /// at PreOpen makes the screen uniform while preserving player agency for
     /// the SKBW post-Start window.
     /// </summary>
-    [HarmonyPatch(typeof(Page_ConfigureStartingPawns), nameof(Page_ConfigureStartingPawns.PreOpen))]
+    // Patch target rationale (DECISIONS §24, 2026-08-05):
+    // RimWorld 1.6.4566 rev579 renamed `PreOpen` -> `PostOpen` on the
+    // `Page` base class. `Page_ConfigureStartingPawns` does NOT declare
+    // its own override, so `nameof(Page_ConfigureStartingPawns.PreOpen)`
+    // resolved to `null` and Harmony PatchAll threw
+    // `Patching exception in method null. Customization-page BioRemap
+    // skipped.`. We target the base-class `Page.PostOpen` and bound the
+    // patch to the actual subclass via the `__instance` runtime check
+    // inside the Postfix. This pattern keeps the Bio-Remap active even
+    // if Ludeon renames the hook in a later point-release: only the
+    // base-class binding needs updating then.
+    [HarmonyPatch(typeof(Page), nameof(Page.PostOpen))]
     public static class Page_ConfigureStartingPawnsBioPatch
     {
         // Phase-5 audit-round-5 fix (harmony reflection-dedup):
@@ -61,9 +72,17 @@ namespace Rimconemy.SurvivalProgression.Patches
             = new HashSet<string>(System.StringComparer.Ordinal);
 
         [HarmonyPostfix]
-        public static void Postfix()
+        public static void Postfix(Page __instance)
         {
-            if (Current.Game == null)
+            // Base-class binding is broad by design; restrict the Bio-Remap
+            // application to the page we actually want to mutate so we do
+            // not re-anchor age / skill budgets on unrelated screen opens.
+            if (!(__instance is Page_ConfigureStartingPawns))
+            {
+                return;
+            }
+
+            if (Current.Game == null || Current.Game.InitData == null)
                 return;
 
             // Verse.GameInitData uses the field name 'startingAndOptionalPawns'

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Infected & Automation
+  defName: Rimconemy_InfectedWildlife
+  Phase C — Tier-Inokulation Hybrid-Kind.
+
+  - defaultFactionDef: Rimconemy_HiddenInfectedFaction (joined on
+    RandomInoculationService.ApplyLiveConversion).
+  - humanlikeFaction=false (so 1.6 ConfigErrors around backstory ranges
+    don't fire, mirroring the existing Rimconemy_InfectedRavager).
+    - combatPower=50 (Phase E) means every wild-animal kind shares the
+    same combat multiplier for raid-wealth calculations. Phase E bumped
+    30 → 50 because the animal AI now actively attacks colonists via the
+    Harmony JobDriver-Patch; raid-wealth should reflect that.
+  - Race is overwritten at runtime by RandomInoculationService (1.6
+    allows '.' = any')?  No — RimWorld 1.6 does not allow runtime
+    Race-swap; instead the original pawn keeps its Race (Wolf/Bear etc.)
+    and only kindDef switches to this branded KindDef. The Race stays
+    animal=true, Humanlike=false from the original wild animal.
+-->
+<Defs>
+  <PawnKindDef>
+    <defName>Rimconemy_InfectedWildlife</defName>
+    <label>infected wildlife</label>
+    <description>A wild animal that has been converted into an infected wildlife pawn by the Rimconemy Storyteller. Reuses the original animal race (wolf/bear/caribou/etc.) but carries a unified infected-wildlife kindDef for UI/health-bar categories.</description>
+    <defaultFactionDef>Rimconemy_HiddenInfectedFaction</defaultFactionDef>
+    <race>Human</race>
+    <initialResistanceRange>0~0</initialResistanceRange>
+    <initialWillRange>0.4~0.6</initialWillRange>
+    <combatPower>50</combatPower>
+  </PawnKindDef>
+</Defs>

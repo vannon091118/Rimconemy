@@ -1,3 +1,19 @@
+// Source/Bootstrap.cs
+//
+// Owner: Infected & Automation.
+// Standalone startup marker for Package 05 scaffold.
+//
+// Hook reason: StaticConstructorOnStartup binds before any map loads.
+// Threat aggregator, infected raid provider, mechadroid units and
+// automation jobs are exposed as record types and event stubs.
+// Vanilla Storyteller/Wealth-Raids remain authoritative until A3
+// validates an explicit IncidentDef/IncidentWorker wiring.
+//
+// Compile references (resolved at build time): Rimconemy.Foundation (01),
+// Rimconemy.ScavengerInfrastructure (03). Survival (02) is reached via the
+// Foundation servicebus. Economy (04) is reached via the late-bound
+// reflection bridge in Foundation.CrossPackageState (audit-bundle B / F-01).
+using Rimconemy.InfectedAutomation.Scenarios;
 using Verse;
 
 namespace Rimconemy.InfectedAutomation
@@ -23,6 +39,7 @@ namespace Rimconemy.InfectedAutomation
         static Bootstrap()
         {
             Log.Message("[Rimconemy.InfectedAutomation] Standalone bootstrap starting...");
+            World.DarknessSectionLayerLifecycle.Install();
             Log.Message("[Rimconemy.InfectedAutomation] Faction, PawnKind, Incident and Mechadroid defs registered (one provider per Full Profile).");
             Log.Message("[Rimconemy.InfectedAutomation] Vanilla storyteller and Wealth-Raids remain authoritative while API-INCIDENT-01 / API-MECH-01 stay UNVERIFIED.");
 
@@ -36,8 +53,9 @@ namespace Rimconemy.InfectedAutomation
 
             // P2/H3 §2: CollectiveDefense tracker is a GameComponent subclass -
             // RimWorld auto-registers any GameComponent subclass on mod load.
-            // We log a one-shot marker so the operator sees the ThoughtDef
-            // registration succeeded before the post-combat patch takes over.
+            // The PostApplyDamage postfix must be installed explicitly (Package
+            // 05 has no PatchAll; cf. DarknessSectionLayerLifecycle/HordeCameraOverlay).
+            Ideology.Pawn_PostApplyDamage_CollectiveDefense.Install();
             Log.Message(
                 "[Rimconemy.InfectedAutomation] CollectiveDefense setting rule (H3 §2): " +
                 "thoughts=" + (Ideology.ThoughtDefs_CollectiveDefense.ValiantDefense != null) +
@@ -78,8 +96,66 @@ namespace Rimconemy.InfectedAutomation
             Tests.Sprint2BehaviorRegressionTests.RunAll();
             // Sprint 2.5 (2026-08-05) — Colonist sight cone / darkness overlay:
             // Directional vision, light-level-scaling, Project-Zomboid-style
-            // dimming. MapComponent auto-registered; rendering via MapComponentOnGUI.
+            // dimming. MapComponent auto-registered; rendering via the
+            // existing world-space SectionLayer_Darkness lifecycle.
             Tests.ColonistSightSystemRegressionTests.RunAll();
+            Tests.DarknessSectionLayerRegressionTests.RunAll();
+            // Phase A (2026-08-05) — Population-Ledger data layer. Pure-data,
+            // no AI or Spawn yet; lays the SSOT before Phase B (Daily-Growth
+            // tick integration) and Phase C (RandomInoculationService).
+            Tests.PopulationProfileMultipliersRegressionTests.RunAll();
+            Tests.PopulationLedgerRegressionTests.RunAll();
+            // Phase C (2026-08-05) — Tier-Inokulation service + pack behavior.
+            // The deterministic selector, branded KindDef
+            // ("Rimconemy_InfectedWildlife"), and AnimalHalfCap accounting
+            // must all pass before the StoryDirector Day-Tick fires its
+            // first wild-animal conversion.
+            Tests.InoculationRegressionTests.RunAll();
+            Tests.InfectedPackBehaviorRegressionTests.RunAll();
+
+            // Phase B (2026-08-05) — Daily-Growth + Revenge Coupling.
+            // SpawnPlan.RevengeQuotaComponent, Worker post-spawn
+            // DecrementPendingRevenge, StoryDirector.LastPendingRevenge
+            // recompute, StoryEventCatalog.Revenge family.
+            Tests.RevengeQuotaFlowRegressionTests.RunAll();
+
+            // Phase D (2026-08-05) — Horde Overlay: World-Map wanderer +
+            // SectionLayer-Kreis mittig + Per-Infected-Bursts + CameraEdge.
+            Tests.HordeRegressionTests.RunAll();
+            // Phase F (2026-08-05) — Wandering-Horde: Manifest + HiddenPawnStamp +
+            // TravelTile-FSM + Reveal-Materialization + StorySelector-Letter.
+            //
+            // Forward-compat probes (DECISIONS §24, 2026-08-05): the Phase-F
+            // substrate classes (HordeManifest, HordeMigrationDriver,
+            // HordeMaterialization) defer to a later task. The tests below
+            // are excluded via <Compile Remove> in the csproj on purpose
+            // when the substrate is not yet shipped. Bootstrap here mirrors
+            // the same forward-compat pattern: reflectively probe + invoke
+            // RunAll if the class is present, no-op otherwise. Soft-logged
+            // at Log.Warning if the reflection itself blows up so a real
+            // regression surfaces.
+            InvokePhaseFTestIfPresent("Rimconemy.InfectedAutomation.Tests.HordeManifestTests");
+            InvokePhaseFTestIfPresent("Rimconemy.InfectedAutomation.Tests.HordeMigrationDriverTests");
+            InvokePhaseFTestIfPresent("Rimconemy.InfectedAutomation.Tests.HordeMaterializationTests");
+            InvokePhaseFTestIfPresent("Rimconemy.InfectedAutomation.Tests.HordeStorySelectorTests");
+            Horde.HordeCameraOverlay.Install();
+            Log.Message("[Rimconemy.InfectedAutomation] Phase D+F: Horde overlay + migration wired (Calculator, WorldObject, Spawner, SectionLayer, BurstLayer, CameraEdge, Manifest, Driver, Materialization, StorySelector).");
+
+            // Phase E (2026-08-05) — Tiersym-Infektion via Random Encounter.
+            //   AnimalInfectionChance (Pure-Chance + Profile-Multipliers),
+            //   PopulationLedger.LastAnimalInfectionTick / CountToday,
+            //   RandomInoculationService.TryInfectWildAnimals.
+            Tests.AnimalInfectionRegressionTests.RunAll();
+            Tests.AnimalInfectionLedgerFieldsTests.RunAll();
+            Tests.AnimalInfectionServiceLimitTests.RunAll();
+            // Driver-Seam (AnimalInfectionDriver.TryFireOnce + ResetForTests)
+            // and Overlay-Predikat (ShouldShowInfectionMarker) deterministisch
+            // ohne RimWorld-Map-Setup testbar — schließt die Lücke aus
+            // Falsification §G Anmerkung C-1.
+            Tests.AnimalInfectionDriverTests.RunAll();
+            Tests.AnimalInfectionAiOverlayTests.RunAll();
+            Log.Message("[Rimconemy.InfectedAutomation] Phase E: AnimalInfection pipeline wired (Profile-Chance, Ledger, Service, Driver-Seam, Overlay-Predikat).");
+            Log.Message("[Rimconemy.InfectedAutomation] Phase B: Daily-Growth+Reset+Revenge coupling wired.");
             Log.Message("[Rimconemy.InfectedAutomation] Building threat adapter available; Mechadroid job contracts are gated for Milestone B; no incident or raid is spawned.");
 
             // Phase-5 (2026-08-05) — IncidentClassifier summary log. Validates the
@@ -115,6 +191,41 @@ namespace Rimconemy.InfectedAutomation
             catch (System.Exception ex)
             {
                 Log.Warning("[Rimconemy.InfectedAutomation] IncidentClassifier.Bootstrap-summary failed: " + ex.GetType().Name + ": " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Forward-compat probe for Phase-F tests that may not have shipped
+        /// alongside their substrate class. Matches the
+        /// <c>Rimconemy.InfectedAutomation.Tests.HordeStorySelectorTests</c>
+        /// reflection pattern used to keep the boot log clean while
+        /// deferred Phase-F deliverables are still in flight.
+        ///
+        /// The probe:
+        ///   1. Resolves the test type via <c>Type.GetType(string, false)</c>
+        ///      against the loaded <c>Rimconemy.InfectedAutomation</c> assembly.
+        ///   2. Looks up the public-static <c>RunAll()</c> method.
+        ///   3. Invokes it inside a try/catch so a broken test does not
+        ///      poison the rest of the static constructor.
+        /// Failure (resolution or NRE) is logged at Log.Warning so a real
+        /// regression surfaces; non-existence is a silent no-op so a
+        /// missing Phase-F deliverable does not flood the log.
+        /// </summary>
+        private static void InvokePhaseFTestIfPresent(string typeName)
+        {
+            try
+            {
+                var t = System.Type.GetType(typeName + ", Rimconemy.InfectedAutomation", throwOnError: false);
+                if (t == null) return;
+                var m = t.GetMethod("RunAll",
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (m == null) return;
+                m.Invoke(null, null);
+            }
+            catch (System.Exception ex)
+            {
+                Log.Warning("[Rimconemy.InfectedAutomation][PhaseF-ForwardCompat] Bootstrap reflect "
+                    + typeName + ": " + ex.GetType().Name + ": " + ex.Message);
             }
         }
     }

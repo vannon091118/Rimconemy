@@ -15,6 +15,7 @@
 // Vanilla Wealth Raids remain independently operational
 // (Vanilla Policy, H2 §6).
 
+using Rimconemy.InfectedAutomation.Scenarios;
 using Rimconemy.InfectedAutomation.Story;
 using RimWorld;
 using Verse;
@@ -137,14 +138,36 @@ namespace Rimconemy.InfectedAutomation.Incidents
             if (SpawnBridgeOverride != null)
             {
                 LastSpawnedCount = SpawnBridgeOverride(toSpawn);
-                Log.Message($"[Rimconemy.InfectedAutomation] InfectedRaidWorker: SpawnBridgeOverride → {LastSpawnedCount}");
+                // Phase B: even on the test seam, the revenge slot has to
+                // be debited; otherwise regression tests that wire both
+                // seams (override + StubDirector) would not cover the
+                // decrement path.
+                int revengeConsumedTest = System.Math.Min(LastSpawnedCount, plan.RevengeQuotaComponent);
+                if (revengeConsumedTest > 0)
+                {
+                    Story.StoryDirector.Get()?.DecrementPendingRevenge(revengeConsumedTest);
+                }
+                Log.Message($"[Rimconemy.InfectedAutomation] InfectedRaidWorker: SpawnBridgeOverride → {LastSpawnedCount} revenge-consumed={revengeConsumedTest}");
                 return true;
             }
 
             // Production path: actually spawn.
             int actuallySpawned = SpawnHostileRavagers(toSpawn, parms);
             LastSpawnedCount = actuallySpawned;
-            Log.Message($"[Rimconemy.InfectedAutomation] InfectedRaidWorker executed: {resolvedLabel} (plan={plan.Reason} requested={requested} spawned={actuallySpawned})");
+
+            // Phase B (2026-08-05): decrement the revenge-pending slot so
+            // the day-quota reflects what actually arrived. We clamp to
+            // min(actuallySpawned, plan.RevengeQuotaComponent) so a
+            // partial-spawn failure cannot silently consume more than the
+            // quota — and so a SpawnBridgeOverride (test seam) cannot
+            // skip the accounting on the way out.
+            int revengeConsumed = System.Math.Min(actuallySpawned, plan.RevengeQuotaComponent);
+            if (revengeConsumed > 0)
+            {
+                Story.StoryDirector.Get()?.DecrementPendingRevenge(revengeConsumed);
+            }
+
+            Log.Message($"[Rimconemy.InfectedAutomation] InfectedRaidWorker executed: {resolvedLabel} (plan={plan.Reason} requested={requested} spawned={actuallySpawned} revenge-consumed={revengeConsumed})");
 
             return true;
         }
@@ -179,12 +202,11 @@ namespace Rimconemy.InfectedAutomation.Incidents
                     return 0;
                 }
 
-                Faction faction = Find.FactionManager?.FirstFactionOfDef(factionDef);
+                // Use shared utility to ensure hidden faction exists (materializes on demand)
+                Faction faction = InfectedFactionUtility.EnsureHiddenInfectedFaction();
                 if (faction == null)
                 {
-                    // No live faction instance yet (cold-start race). Skip
-                    // the spawn; the next tick will try again.
-                    Log.Warning("[Rimconemy.InfectedAutomation] Spawn-bridge: live faction missing; skipping spawn.");
+                    Log.Warning("[Rimconemy.InfectedAutomation] Spawn-bridge: live faction missing even after materialize; skipping spawn.");
                     return 0;
                 }
 
