@@ -360,10 +360,12 @@ namespace Rimconemy.SurvivalProgression.Character
 
             // Preserve hidden role-source skills across the reset; their
             // backstory values feed the derived Hunting/Smithing read-models.
-            int sourceAnimals = RoleSkillResolver.SkillOf(pawn, SkillDefOf.Animals);
-            int sourceArtistic = RoleSkillResolver.SkillOf(pawn, SkillDefOf.Artistic);
-            Passion sourceAnimalsPassion = PassionOf(pawn, SkillDefOf.Animals);
-            Passion sourceArtisticPassion = PassionOf(pawn, SkillDefOf.Artistic);
+            var animalsRecord = pawn.skills.GetSkill(SkillDefOf.Animals);
+            var artisticRecord = pawn.skills.GetSkill(SkillDefOf.Artistic);
+            int sourceAnimals = animalsRecord?.Level ?? 0;
+            int sourceArtistic = artisticRecord?.Level ?? 0;
+            Passion sourceAnimalsPassion = animalsRecord?.passion ?? Passion.None;
+            Passion sourceArtisticPassion = artisticRecord?.passion ?? Passion.None;
             ForceResetAllSkills(pawn);
 
             var eligible = EligibleSkills
@@ -377,7 +379,10 @@ namespace Rimconemy.SurvivalProgression.Character
             // ForceResetAllSkills cleared passion for ALL skills including
             // hidden role-source skills. Restore the backstory passion so
             // Animals/Artistic keep their original learning rates.
-            RestoreHiddenPassions(pawn, sourceAnimalsPassion, sourceArtisticPassion);
+            if (animalsRecord != null && !animalsRecord.TotallyDisabled)
+                animalsRecord.passion = sourceAnimalsPassion;
+            if (artisticRecord != null && !artisticRecord.TotallyDisabled)
+                artisticRecord.passion = sourceArtisticPassion;
             return result;
         }
 
@@ -392,22 +397,5 @@ namespace Rimconemy.SurvivalProgression.Character
                 artisticRecord.Level = SkillBudgetCalculator.ClampLevel(artistic);
         }
 
-        private static Passion PassionOf(Pawn pawn, SkillDef skillDef)
-        {
-            if (pawn?.skills == null || skillDef == null) return Passion.None;
-            SkillRecord record = pawn.skills.GetSkill(skillDef);
-            return record?.passion ?? Passion.None;
-        }
-
-        private static void RestoreHiddenPassions(Pawn pawn, Passion animalsPassion, Passion artisticPassion)
-        {
-            if (pawn?.skills == null) return;
-            SkillRecord animalsRecord = pawn.skills.GetSkill(SkillDefOf.Animals);
-            if (animalsRecord != null && !animalsRecord.TotallyDisabled)
-                animalsRecord.passion = animalsPassion;
-            SkillRecord artisticRecord = pawn.skills.GetSkill(SkillDefOf.Artistic);
-            if (artisticRecord != null && !artisticRecord.TotallyDisabled)
-                artisticRecord.passion = artisticPassion;
-        }
     }
 }

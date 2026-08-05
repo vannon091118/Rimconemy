@@ -182,8 +182,6 @@ namespace Rimconemy.Foundation.Tests
                     // correctly via `current != null` — no fallback needed.
                     var handlerEnd = handler.HandlerEnd;
 
-                    if (handlerStart == null) continue;
-
                     int instrCount = CountInstructionsInRange(body, handlerStart, handlerEnd);
 
                     // Empty catch: 0 instructions (just the handler boundary)
