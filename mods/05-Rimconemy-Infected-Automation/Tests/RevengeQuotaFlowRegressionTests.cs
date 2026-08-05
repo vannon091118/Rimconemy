@@ -56,6 +56,11 @@ namespace Rimconemy.InfectedAutomation.Tests
             Check(T8_RecomputeClipsToFreeBudget(),                    "T8.RecomputeClipsToFreeBudget");
             Check(T9_RecomputeDoublRefreshGuard(),                    "T9.RecomputeDoubleRefreshGuard");
 
+            // ── T10-T12: Tasks 3 ───────────────────────────────────
+            Check(T10_BuildPlanMergesPressureAndRevenge(),            "T10.BuildPlanMergesPressureAndRevenge");
+            Check(T11_BuildPlanPrefersHigherComponent(),              "T11.BuildPlanPrefersHigherComponent");
+            Check(T12_BuildPlanNoRevengeOnZeroKills(),                "T12.BuildPlanNoRevengeOnZeroKills");
+
             Log.Message(
                 "[Rimconemy.InfectedAutomation] Revenge-quota flow regression tests: "
                 + passed + " passed, " + failed + " failed" +
@@ -179,6 +184,65 @@ namespace Rimconemy.InfectedAutomation.Tests
             ledger.RecentKillsToday = 0;
             director.RecomputeRevengeAfterDayTickStub(ledger, SettingProfile.Survival, 120_000L);
             return director.LastPendingRevenge == 7; // unchanged because of gate
+        }
+
+        // ── T10: BuildPlan merges pressure + revenge floor ────────────
+        // No live GameComponent is available in regression tests, so the
+        // ThreatSnapshotBridge.GetLatest() path returns null and the
+        // pressure-plan is 0. The stub injects revenue-pending = 5, so
+        // the merged plan must be 5 and reason must be "revenge-dominant".
+        private static bool T10_BuildPlanMergesPressureAndRevenge()
+        {
+            var stub = new Incidents.DirectorAccessStub { PendingRevenge = 5 };
+            Incidents.InfectedRaidSpawnService.StubDirector = stub;
+            try
+            {
+                var plan = Incidents.InfectedRaidSpawnService.BuildPlanForTick(120_000L);
+                return plan.RevengeQuotaComponent == 5
+                    && plan.PawnCount == 5
+                    && plan.Reason == "revenge-dominant";
+            }
+            finally
+            {
+                Incidents.InfectedRaidSpawnService.StubDirector = null;
+            }
+        }
+
+        // ── T11: higher-of-two semantics: revenge 5 always wins ───────
+        // Even if ThreatSnapshotBridge delivered a non-zero snapshot (we
+        // cannot reach that path without a live Game), the structural
+        // invariant is PawnCount >= RevengeQuotaComponent (and == 5 here).
+        private static bool T11_BuildPlanPrefersHigherComponent()
+        {
+            var stub = new Incidents.DirectorAccessStub { PendingRevenge = 5 };
+            Incidents.InfectedRaidSpawnService.StubDirector = stub;
+            try
+            {
+                var plan = Incidents.InfectedRaidSpawnService.BuildPlanForTick(120_000L);
+                return plan.PawnCount >= plan.RevengeQuotaComponent
+                    && plan.PawnCount == 5;
+            }
+            finally
+            {
+                Incidents.InfectedRaidSpawnService.StubDirector = null;
+            }
+        }
+
+        // ── T12: zero revenge → pressure-only path → revenge cp = 0 ───
+        private static bool T12_BuildPlanNoRevengeOnZeroKills()
+        {
+            var stub = new Incidents.DirectorAccessStub { PendingRevenge = 0 };
+            Incidents.InfectedRaidSpawnService.StubDirector = stub;
+            try
+            {
+                var plan = Incidents.InfectedRaidSpawnService.BuildPlanForTick(120_000L);
+                return plan.RevengeQuotaComponent == 0
+                    && plan.PawnCount == plan.ThreatPressureComponent;
+            }
+            finally
+            {
+                Incidents.InfectedRaidSpawnService.StubDirector = null;
+            }
         }
     }
 
