@@ -1,0 +1,64 @@
+// Tests/HordeProfileMultipliersTests.cs
+//
+// Phase F T1 — Profile-Multipliers regression tests for Horde-related
+// configuration. Determines the per-profile capacity, activation
+// threshold, letter-cooldown, and staging-duration for the wandering
+// horde.
+using Rimconemy.InfectedAutomation.Population;
+using Verse;
+
+namespace Rimconemy.InfectedAutomation.Tests
+{
+    public static class HordeProfileMultipliersTests
+    {
+        public const int ExpectedPassCount = 5;
+
+        public static int RunAll()
+        {
+            int passed = 0, failed = 0; string firstFailure = null;
+            void Check(bool ok, string name)
+            {
+                if (ok) { passed++; return; }
+                failed++;
+                if (firstFailure == null) firstFailure = name;
+                Log.Warning("[Rimconemy.InfectedAutomation] HordeProfileMultipliers test FAILED: " + name);
+            }
+
+            Check(T1_HordeCapacityRefuge(),         "T1.HordeCapacityRefuge");
+            Check(T2_HordeCapacityCollapse(),       "T2.HordeCapacityCollapse");
+            Check(T3_HordeActivationThreshold(),    "T3.HordeActivationThreshold");
+            Check(T4_HordeLetterCooldownDays(),     "T4.HordeLetterCooldownDays");
+            Check(T5_HordeStagingDurationTicks(),   "T5.HordeStagingDurationTicks");
+
+            Log.Message("[Rimconemy.InfectedAutomation] HordeProfileMultipliers tests: "
+                + passed + " passed, " + failed + " failed"
+                + (firstFailure != null ? " (first: " + firstFailure + ")" : ""));
+            return passed;
+        }
+
+        private static bool T1_HordeCapacityRefuge() =>
+            PopulationProfileMultipliers.GetHordeCapacity("Refuge") == 50;
+
+        private static bool T2_HordeCapacityCollapse() =>
+            PopulationProfileMultipliers.GetHordeCapacity("Collapse") == 200;
+
+        private static bool T3_HordeActivationThreshold()
+        {
+            float threshold = PopulationProfileMultipliers.GetHordeActivationThreshold("Survival");
+            return threshold >= 0.6f && threshold <= 0.8f;
+        }
+
+        private static bool T4_HordeLetterCooldownDays()
+        {
+            float collapseCooldown = PopulationProfileMultipliers.GetHordeLetterCooldownDays("Collapse");
+            float refugeCooldown = PopulationProfileMultipliers.GetHordeLetterCooldownDays("Refuge");
+            return collapseCooldown > 0f && refugeCooldown > collapseCooldown;
+        }
+
+        private static bool T5_HordeStagingDurationTicks()
+        {
+            int staging = PopulationProfileMultipliers.GetHordeStagingDurationTicks("Collapse");
+            return staging > 0 && staging < 10000;
+        }
+    }
+}

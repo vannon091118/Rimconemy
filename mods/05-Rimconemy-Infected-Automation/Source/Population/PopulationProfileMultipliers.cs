@@ -91,6 +91,87 @@ namespace Rimconemy.InfectedAutomation.Population
                 { ProfileCollapse, 1.5 },
             };
 
+        // ────────────────────────────────────────────────────────────────────
+        // Phase F — Wandering-Horde Profile-Drivers.
+        // Per-Profile Multiplier, die das Wander-Verhalten + Manifest-Spawn
+        // der Phase-F-Horde deterministisch aus dem aktiven Profile ableiten.
+        //   - Capacity       = Anzahl der HiddenPawnStamps pro Profil
+        //   - ActivationThr  = ThreatPressure-Schwelle ab der die Horde aktiv wird
+        //   - LetterCooldown = Mindestabstand (Sim-Tage) zwischen zwei Horde-Letters
+        //   - StagingTicks   = Dauer des "Staging"-FSM-States, bevor Attack feuert
+        // Spec: docs/superpowers/specs/2026-08-05-horde-migration-design.md §4.4+§4.5.
+        // ────────────────────────────────────────────────────────────────────
+        public static readonly IReadOnlyDictionary<string, int> HordeCapacity =
+            new Dictionary<string, int>
+            {
+                { ProfileRefuge,   50  },
+                { ProfileSurvival, 100 },
+                { ProfileCollapse, 200 },
+            };
+
+        public static readonly IReadOnlyDictionary<string, float> HordeActivationThreshold =
+            new Dictionary<string, float>
+            {
+                { ProfileRefuge,   0.85f },
+                { ProfileSurvival, 0.70f },
+                { ProfileCollapse, 0.50f },
+            };
+
+        public static readonly IReadOnlyDictionary<string, float> HordeLetterCooldownDays =
+            new Dictionary<string, float>
+            {
+                { ProfileRefuge,   30f },
+                { ProfileSurvival, 14f },
+                { ProfileCollapse, 5f  },
+            };
+
+        public static readonly IReadOnlyDictionary<string, int> HordeStagingDurationTicks =
+            new Dictionary<string, int>
+            {
+                { ProfileRefuge,   250 * 5 },
+                { ProfileSurvival, 250 * 3 },
+                { ProfileCollapse, 250 * 2 },
+            };
+
+        /// <summary>
+        /// Phase F — Reveal-Radius (Tile-distance). Pawns materialisieren
+        /// wenn Home-Tile ≤ HordeRevealRadiusTiles; außerhalb: Cleanup.
+        /// Spec §4.5.
+        /// </summary>
+        public const int HordeRevealRadiusTiles = 8;
+
+        public static int GetHordeCapacity(string profileId)
+        {
+            string p = profileId ?? FallbackProfile;
+            if (HordeCapacity.TryGetValue(p, out int v)) return v;
+            LogWarnFallback(p, "HordeCapacity");
+            return HordeCapacity[FallbackProfile];
+        }
+
+        public static float GetHordeActivationThreshold(string profileId)
+        {
+            string p = profileId ?? FallbackProfile;
+            if (HordeActivationThreshold.TryGetValue(p, out float v)) return v;
+            LogWarnFallback(p, "HordeActivationThreshold");
+            return HordeActivationThreshold[FallbackProfile];
+        }
+
+        public static float GetHordeLetterCooldownDays(string profileId)
+        {
+            string p = profileId ?? FallbackProfile;
+            if (HordeLetterCooldownDays.TryGetValue(p, out float v)) return v;
+            LogWarnFallback(p, "HordeLetterCooldownDays");
+            return HordeLetterCooldownDays[FallbackProfile];
+        }
+
+        public static int GetHordeStagingDurationTicks(string profileId)
+        {
+            string p = profileId ?? FallbackProfile;
+            if (HordeStagingDurationTicks.TryGetValue(p, out int v)) return v;
+            LogWarnFallback(p, "HordeStagingDurationTicks");
+            return HordeStagingDurationTicks[FallbackProfile];
+        }
+
         public static float GetDailyGrowth(string profileId)
         {
             string p = profileId ?? FallbackProfile;
