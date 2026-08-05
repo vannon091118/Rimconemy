@@ -90,6 +90,73 @@ namespace Rimconemy.InfectedAutomation.Inoculation
         }
 
         /// <summary>
+        /// Phase E — Driver-Variante: konvertiert bis zu <paramref name="maxCount"/>
+        /// Tiere in einem einzigen Service-Call. Pro Tag (gestempelt via
+        /// <paramref name="currentTick"/>) ruft die Driver-Pipeline diese
+        /// Methode mit dem ShouldFireToday-Outcome auf.
+        /// </summary>
+        public static int TryInfectWildAnimals(int maxCount, long currentTick)
+        {
+            if (maxCount <= 0) return 0;
+            if (Current.Game == null) return 0;
+
+            try
+            {
+                PopulationLedger ledger = PopulationLedger.Get();
+                string profileId = ledger?.ProfileId
+                    ?? PopulationProfileMultipliers.ProfileSurvival;
+
+                int profileQuota = PopulationProfileMultipliers.GetInoculationsPerDay(profileId);
+                if (profileQuota <= 0)
+                {
+                    Log.Message("[Rimconemy.InfectedAutomation] RandomInoculationService.TryInfectWildAnimals: profile '"
+                        + profileId + "' InoculationsPerDay == 0 → skipping cycle.");
+                    return 0;
+                }
+
+                Map map = Find.AnyPlayerHomeMap;
+                if (map == null)
+                {
+                    Log.Message("[Rimconemy.InfectedAutomation] RandomInoculationService.TryInfectWildAnimals: no player home map.");
+                    return 0;
+                }
+
+                if (ledger == null || !ledger.IsInoculationCooldownElapsed())
+                {
+                    Log.Message("[Rimconemy.InfectedAutomation] RandomInoculationService.TryInfectWildAnimals: cooldown gate active for profile '"
+                        + profileId + "' → skipping.");
+                    return 0;
+                }
+
+                IReadOnlyList<InoculationCandidate> candidates = BuildCandidateListFromMap(map);
+                InoculationSelectorLogic.FilterCandidates(candidates, out var filtered);
+                if (filtered == null || filtered.Count == 0) return 0;
+
+                int actually = 0;
+                int hardCeiling = System.Math.Min(maxCount, profileQuota);
+                for (int i = 0; i < filtered.Count && actually < hardCeiling; i++)
+                {
+                    var picked = filtered[i];
+                    // ApplyLiveConversion never throws (try/catch internal);
+                    // a successful call counts toward `actually`. Candidates
+                    // already filtered to non-infected animals so a real
+                    // conversion always happens.
+                    ApplyLiveConversion(picked, ledger);
+                    actually++;
+                }
+                Log.Message("[Rimconemy.InfectedAutomation] RandomInoculationService.TryInfectWildAnimals: requested="
+                    + maxCount + " cap=" + profileQuota + " converted=" + actually + " tick=" + currentTick);
+                return actually;
+            }
+            catch (System.Exception ex)
+            {
+                Log.Warning("[Rimconemy.InfectedAutomation] RandomInoculationService.TryInfectWildAnimals exception: "
+                    + ex.GetType().Name + ": " + ex.Message);
+                return 0;
+            }
+        }
+
+        /// <summary>
         /// Walk the live map and produce an InoculationCandidate snapshot
         /// list. Animal-only filter is applied here as well as in
         /// FilterCandidates so the Service output is consistent with
