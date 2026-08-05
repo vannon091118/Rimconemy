@@ -55,10 +55,14 @@ namespace Rimconemy.EconomyTerritory.Building
 
         /// <summary>
         /// Units of <paramref name="defName"/> required to construct
-        /// <paramref name="buildingDefName"/>. Looks up the Vanillea/Mod-03
-        /// resolved Def and reads <c>costList</c>. Returns 0 if the building def
-        /// is unknown, if the costList is absent, or if the requested material is
-        /// not part of the building's cost. Deterministic and side-effect-free.
+        /// <paramref name="buildingDefName"/>. Reads both <c>costList</c>
+        /// (direct ingredient) and <c>costStuffCount</c> + <c>stuffCategories</c>
+        /// (Stuff-substitution path). Two read-paths are summed so a Wall which
+        /// has <c>costStuffCount=15</c> and a Stuff satisfying
+        /// <see cref="ConstructionDebrisDefName"/> returns 15 for that
+        /// construction input — honest, deterministic and side-effect-free.
+        /// Returns 0 if the building def is unknown, or if the requested
+        /// material does not appear in either path.
         /// </summary>
         public static int RequiredUnits(string defName, string buildingDefName)
         {
@@ -68,22 +72,40 @@ namespace Rimconemy.EconomyTerritory.Building
             var def = DefDatabase<ThingDef>.GetNamedSilentFail(buildingDefName);
             if (def == null) return 0;
 
-            var costList = def.costList;
-            if (costList == null) return 0;
+            int totalCost = 0;
 
-            foreach (var c in costList)
+            // Path A: direct ingredient in costList (Steel/MachineParts etc.).
+            if (def.costList != null)
             {
-                if (c?.thingDef == null) continue;
-                if (c.thingDef.defName.Equals(defName, StringComparison.Ordinal))
+                foreach (var c in def.costList)
                 {
-                    return c.count;
+                    if (c?.thingDef == null) continue;
+                    if (c.thingDef.defName.Equals(defName, StringComparison.Ordinal))
+                        totalCost += c.count;
                 }
             }
 
-            // checkstuffProps variants — building may consume Rimconemy_ConstructionDebris
-            // as Stuff rather than directly as a cost. Defensive read;
-            // count=0 for stuff-strapped cost is acceptable for Milestone A.
-            return 0;
+            // Path B: Stuff-substitution. The building consumes costStuffCount
+            // units of some Stuff picked from stuffCategories. If the requested
+            // defName is a Stuff whose stuffProps.categories intersect the
+            // building's stuffCategories, the whole costStuffCount is owed.
+            if (def.costStuffCount > 0 && def.stuffCategories != null)
+            {
+                var stuffDef = DefDatabase<ThingDef>.GetNamedSilentFail(defName);
+                if (stuffDef?.stuffProps?.categories != null)
+                {
+                    foreach (var cat in def.stuffCategories)
+                    {
+                        if (cat != null && stuffDef.stuffProps.categories.Contains(cat))
+                        {
+                            totalCost += def.costStuffCount;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return totalCost;
         }
     }
 }

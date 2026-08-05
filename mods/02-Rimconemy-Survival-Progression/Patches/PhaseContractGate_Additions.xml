@@ -1,45 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Owner: Survival & Progression (Package 02).
-  PHASE_PROGRESSION_CONTRACT §11 (Phase-2 fix 2026-08-05).
+  PHASE_PROGRESSION_CONTRACT §11 (Phase-2 hardening 2026-08-05).
 
   Attaches PhaseContractGate DefModExtension (earlyPhaseActive=true) to
-  Wall / DoorBase / Barricade / Sandbag. Each def is patched in TWO
-  branches to be safe against the vanilla DOM state:
+  Wall / DoorBase / Barricade. For each def we use TWO EXCLUSIVE
+  PatchOperationConditional branches, gated on the existence of the
+  <modExtensions> container at def-load time:
 
-    A. <modExtensions> ALREADY EXISTS (a previous mod pre-stamped it):
-       use <PatchOperationAppend> ... <xpath>.../modExtensions</xpath>
-       to safely inject a new <li> without overwriting existing children.
+    A. <modExtensions> ALREADY EXISTS (an upstream mod pre-stamped it):
+       gate with [modExtensions], then nest a PatchOperationAdd whose
+       xpath targets <modExtensions> directly to inject <li>.
 
     B. <modExtensions> DOES NOT EXIST (fresh vanilla):
-       use <Operation Class="PatchOperationAdd"> ... <xpath>.../</xpath>
-       on the ThingDef root with a <value><modExtensions>...</modExtensions>
-       child to mint the container. This path is what most RimWorld def
-       patches should use, since vanilla 1.6 ThingDefs typically lack
-       a "modExtensions" element.
+       gate with [not(modExtensions)], then nest a PatchOperationAdd
+       whose xpath targets the ThingDef root with a <modExtensions>
+       container as the add body to mint the container.
 
-  Revocation path: removing PhaseContractGate from these Defs will cause
-  the dependent Mod-03 patches (Stufe 2+ in §11) to silently no-op.
+  Both branches use PatchOperationConditional+match (engine-native
+  idempotent pattern from the §11 doctrine) — never a raw PatchOperationAdd
+  to /modExtensions, which causes Verse to emit Log.Error when the
+  container is absent.
+
+  Revocation path: removing PhaseContractGate from these defs causes
+  the dependent Mod-03 patches (Stufe 2 in §11) to silently no-op.
+
+  Sandbag is dropped (verified absent from vanilla 1.6.4566 Core + DLC
+  Data folders via grep -rln 'defName="Sandbag"' game/Data/ returning
+  empty). Adding a Sandbag branch re-emerges only on community demand.
 -->
 <Patch>
 
-  <!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-       WALL: branch-A (append if exists) + branch-B (mint if absent)
-       \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
-
-  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Wall"]/modExtensions</xpath>
-    <value>
-      <li Class="Rimconemy.SurvivalProgression.Phase.PhaseContractGate">
-        <earlyPhaseActive>true</earlyPhaseActive>
-      </li>
-    </value>
+  <!-- ══════════════ WALL ══════════════ -->
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
+    <xpath>/Defs/ThingDef[defName="Wall"][modExtensions]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName="Wall"]/modExtensions</xpath>
+      <value>
+        <li Class="Rimconemy.SurvivalProgression.Phase.PhaseContractGate">
+          <earlyPhaseActive>true</earlyPhaseActive>
+        </li>
+      </value>
+    </match>
   </Operation>
 
   <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Wall"][not(modExtensions)]</xpath>
+    <xpath>/Defs/ThingDef[defName="Wall"][not(modExtensions)]</xpath>
     <match Class="PatchOperationAdd">
-      <xpath>Defs/ThingDef[defName="Wall"]</xpath>
+      <xpath>/Defs/ThingDef[defName="Wall"]</xpath>
       <value>
         <modExtensions>
           <li Class="Rimconemy.SurvivalProgression.Phase.PhaseContractGate">
@@ -50,23 +58,23 @@
     </match>
   </Operation>
 
-  <!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-       DOOR (via DoorBase ParentName)
-       \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
-
-  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[@Name="DoorBase"]/modExtensions</xpath>
-    <value>
-      <li Class="Rimconemy.SurvivalProgression.Phase.PhaseContractGate">
-        <earlyPhaseActive>true</earlyPhaseActive>
-      </li>
-    </value>
+  <!-- ══════════════ DOOR (via DoorBase ParentName injection — single patch for all doors) ══════════════ -->
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
+    <xpath>/Defs/ThingDef[@Name="DoorBase"][modExtensions]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[@Name="DoorBase"]/modExtensions</xpath>
+      <value>
+        <li Class="Rimconemy.SurvivalProgression.Phase.PhaseContractGate">
+          <earlyPhaseActive>true</earlyPhaseActive>
+        </li>
+      </value>
+    </match>
   </Operation>
 
   <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[@Name="DoorBase"][not(modExtensions)]</xpath>
+    <xpath>/Defs/ThingDef[@Name="DoorBase"][not(modExtensions)]</xpath>
     <match Class="PatchOperationAdd">
-      <xpath>Defs/ThingDef[@Name="DoorBase"]</xpath>
+      <xpath>/Defs/ThingDef[@Name="DoorBase"]</xpath>
       <value>
         <modExtensions>
           <li Class="Rimconemy.SurvivalProgression.Phase.PhaseContractGate">
@@ -77,23 +85,23 @@
     </match>
   </Operation>
 
-  <!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-       BARRICADE
-       \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
-
-  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Barricade"]/modExtensions</xpath>
-    <value>
-      <li Class="Rimconemy.SurvivalProgression.Phase.PhaseContractGate">
-        <earlyPhaseActive>true</earlyPhaseActive>
-      </li>
-    </value>
+  <!-- ══════════════ BARRICADE ══════════════ -->
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
+    <xpath>/Defs/ThingDef[defName="Barricade"][modExtensions]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName="Barricade"]/modExtensions</xpath>
+      <value>
+        <li Class="Rimconemy.SurvivalProgression.Phase.PhaseContractGate">
+          <earlyPhaseActive>true</earlyPhaseActive>
+        </li>
+      </value>
+    </match>
   </Operation>
 
   <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Barricade"][not(modExtensions)]</xpath>
+    <xpath>/Defs/ThingDef[defName="Barricade"][not(modExtensions)]</xpath>
     <match Class="PatchOperationAdd">
-      <xpath>Defs/ThingDef[defName="Barricade"]</xpath>
+      <xpath>/Defs/ThingDef[defName="Barricade"]</xpath>
       <value>
         <modExtensions>
           <li Class="Rimconemy.SurvivalProgression.Phase.PhaseContractGate">
@@ -104,30 +112,4 @@
     </match>
   </Operation>
 
-  <!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-       SANDBAG
-       \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
-
-  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Sandbag"]/modExtensions</xpath>
-    <value>
-      <li Class="Rimconemy.SurvivalProgression.Phase.PhaseContractGate">
-        <earlyPhaseActive>true</earlyPhaseActive>
-      </li>
-    </value>
-  </Operation>
-
-  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Sandbag"][not(modExtensions)]</xpath>
-    <match Class="PatchOperationAdd">
-      <xpath>Defs/ThingDef[defName="Sandbag"]</xpath>
-      <value>
-        <modExtensions>
-          <li Class="Rimconemy.SurvivalProgression.Phase.PhaseContractGate">
-            <earlyPhaseActive>true</earlyPhaseActive>
-          </li>
-        </modExtensions>
-      </value>
-    </match>
-  </Operation>
 </Patch>

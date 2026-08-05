@@ -33,7 +33,10 @@
     <description>Alloy steel with salvaged machine parts to strip the chromium and nickel content needed for corrosion-resistant stainless steel. Trade-phase recipe — beyond Vanilla Smelting.</description>
     <jobString>Alloying stainless steel</jobString>
     <workAmount>800</workAmount>
-    <workSkill>Smithing</workSkill>
+    <!-- Audit-fix E1 (2026-08-05): SkillDef "Smithing" was merged into "Crafting"
+         in vanilla RimWorld 1.6 Core. ResearchProject defName "Smithing" still
+         exists, so researchPrerequisites is unchanged. -->
+    <workSkill>Crafting</workSkill>
     <researchPrerequisites>
       <li>Smithing</li>
     </researchPrerequisites>

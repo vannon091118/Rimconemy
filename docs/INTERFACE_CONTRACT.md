@@ -229,6 +229,7 @@ Inherit-Hinweis: `RimconemyWindow.InitialSize` ist `Vector2.zero` als Default;
 
 | Methode | Zweck |
 |---|---|
+| `T(string key)` | Keyed-Übersetzung mit Raw-Key-Fallback (null-/empty-guarded); zentrale Übersetzungs-Helper für alle Dashboards (2026-08-05 aus lokalen `T()`-Duplikaten extrahiert) |
 | `DrawSectionTitle(Rect, key, font)` | Titel-Zeile (Keyed-Lookup + `try/finally` color/font reset) |
 | `DrawRow(Rect, leftLabel, rightValue, Color?)` | 2-Spalten-Zeile |
 | `DrawStatusBadge(Rect, label, StatusLevel)` | Inline-Status-Badge (mit `try/finally`) |
@@ -402,4 +403,5 @@ Entscheidung für Stabilität und geringeres Kollisionsrisiko.
 | Datum | Version | Änderung |
 |---|---|---|
 | 2026-08-04 | 1.4 | §10 Harmony-Strategie dokumentiert: Minimierung zugunsten nativer Anker. Referenz auf AUDIT.md §1. |
+| 2026-08-05 | 1.5 | §8.3: `RimconemyUi.T(string key)` als zentrale Übersetzungs-Helper ergänzt (ersetzt lokale `T()`-Duplikate in FoundationDashboard + PhaseProgressWindow; `DrawSectionTitle`/`DrawEmptyState` nutzen sie intern). |
 

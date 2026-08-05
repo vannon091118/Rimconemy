@@ -1,41 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Owner: Scavenger Infrastructure (Package 03).
-  Task 3.11 + PHASE_PROGRESSION_CONTRACT §11 (2026-08-05).
+  Task 3.11 + PHASE_PROGRESSION_CONTRACT §11 (hardening 2026-08-05).
 
-  Idempotency contract for Wall / DoorBase / Barricade stuff-removal:
+  Vanilla RimWorld 1.6.4566 confirmed (Python ElementTree inspection of
+  game/Data/Core/Defs/ThingDefs_Buildings/Buildings_Structure.xml +
+  Buildings_Security.xml):
 
-    - Stufe-3 Pattern: <PatchOperationReplace> on costList or stuffCategories
-      is FORBIDDEN here (replaces-with-different-list collides with other
-      Mods and leaves dangling BuildableDef refs).
+    - Wall      stuffCategories = [Metallic, Woody, Stony]
+    - DoorBase  stuffCategories = [Metallic, Woody, Stony] (inherited by Door,
+                                                   Autodoor, OrnateDoor, …)
+    - Barricade stuffCategories = [Metallic, Woody, Stony]
+    - Sandbag   NOT IN VANILLA 1.6 (grep -rln 'defName="Sandbag"' game/Data/ → 0
+                                  hits in Core, Royalty, Biotech, Anomaly,
+                                  Odyssey). Sandbag-targeted operations are
+                                  therefore REMOVED here.
+
+  Since all ConstructionDebris materials already declare <li>Stony</li> in
+  their stuffProps.categories (verified for Rimconemy_ConstructionDebris),
+  the verbatim Vanille stuffCategories already accepts Bauschutt. The ONLY
+  wall/door/barricade remediation we need is to REMOVE Woody so that Phase-1
+  players can no longer chain cheap wooden walls (Phase-Contract §5 rule:
+  no repeatable combustible mass-easy mass production).
+
+  Idempotency contract (§11):
+    - Stufe-3 Pattern: <PatchOperationReplace> on stuffCategories is
+      FORBIDDEN here (collides with other mods).
     - Stufe-2 Pattern: <PatchOperationRemove> with a node-targeted XPath
-      is automatic-idempotent (engine skips when no match).
-    - Stufe-2-plus Pattern: <PatchOperationTest> (engine-native, no
-      mutation) followed by <PatchOperationAdd> gates the addition behind
-      an Xpath-Already-Present test \u2014 the engine re-runs PatchOperationTest
-      on every mod-load, so the gate is naturally idempotent.
+      is engine-native auto-idempotent: if the node is absent, the engine
+      simply skips — no Log.Error.
+    - The Conditional+Add idiom is reserved for container-creation
+      patches (door in PhaseContractGate_Additions.xml).
 
-  ConstructionDebris as a Steel-Alternative is satisfied by adding
-  <li>Stony</li> to Wall/Door/Barricade stuffCategories. ConstructionDebris
-  (defName=Rimconemy_ConstructionDebris) is a ThingDef with
-  <stuffProps><categories><li>Stony</li></categories>; the Stony category
-  is sufficient for Wall/Door/Barricade to accept Bauschutt as a Stuff
-  material. We do NOT enumerate <li>ConstructionDebris</li> as a literal
-  StuffCategory \u2014 there is no such vanilla enum.
+  Revocation path: removing PhaseContractGate from these defs (Mod-02/Source)
+  causes all dependent Mod-03 patches to silently no-op.
 
-  Early-phase-via-Phase-Contract activation: this patch is guarded by a
-  MayRequire="rimconemy.scavengerinfrastructure" (package presence) AND a
-  PatchOperationTest on the Rimconemy.SurvivalProgression.Phase.PhaseContractGate
-  DefModExtension. The DefModExt is added to Wall/Door/Barricade by the
-  rimconemy.survivalprogression Patches/PhaseContractGate_Additions.xml
-  file. Removing it would silent-skip the gate, which is the documented
-  Phase-Contract revocation path.
+  Sandbag is not handled here. A community-author who insists on bringing
+  Sandbag back should restore the line in a separate Sandbag-targeted file
+  guarded by <MayRequire="Ludeon.RimWorld.Royalty"> so that only Royalty
+  consumers see the rewrite.
 -->
 <Patch>
 
-  <!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-       PART 1 \u2014 DESIGNATOR REGISTRATION (unchanged idiom; idempotent)
-       \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
+  <!-- ══════════════ PART 1 \u2014 DESIGNATOR REGISTRATION (unchanged; idempotent) ══════════════ -->
 
   <Operation Class="PatchOperationConditional">
     <xpath>Defs/DesignationCategoryDef[defName="Structure"]/specialDesignatorClasses[not(li[text()="Rimconemy.ScavengerInfrastructure.Building.Designator_BuildWallBauschutt"])]</xpath>
@@ -57,123 +64,21 @@
     </match>
   </Operation>
 
-  <!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-       PART 2 \u2014 REMOVE WOODY FROM WALL / DOOR / BARRICADE (auto-idempotent)
-       PatchOperationRemove with a node-targeted XPath does nothing on
-       engines without the node. No PatchOperationConditional wrapping.
-       \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
+  <!-- ══════════════ PART 2 \u2014 STUFE-2 <PatchOperationRemove> WOODY (auto-idempotent) ══════════════
+       Vanilla 1.6 Wall/DoorBase/Barricade stuffCategories all contain Woody.
+       Node-targeted XPath removes the single <li>Woody</li> node only.
+       If the node is NOT present, the engine skips silently. -->
 
-  <Operation Class="PatchOperationRemove" MayRequire="rimconemy.scavengerinfrastructure">
+  <Operation Class="PatchOperationRemove" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
     <xpath>Defs/ThingDef[defName="Wall"]/stuffCategories/li[text()="Woody"]</xpath>
   </Operation>
 
-  <Operation Class="PatchOperationRemove" MayRequire="rimconemy.scavengerinfrastructure">
+  <Operation Class="PatchOperationRemove" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
     <xpath>Defs/ThingDef[@Name="DoorBase"]/stuffCategories/li[text()="Woody"]</xpath>
   </Operation>
 
-  <Operation Class="PatchOperationRemove" MayRequire="rimconemy.scavengerinfrastructure">
+  <Operation Class="PatchOperationRemove" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
     <xpath>Defs/ThingDef[defName="Barricade"]/stuffCategories/li[text()="Woody"]</xpath>
   </Operation>
 
-  <Operation Class="PatchOperationRemove" MayRequire="rimconemy.scavengerinfrastructure">
-    <xpath>Defs/ThingDef[defName="Sandbag"]/stuffCategories/li[text()="Woody"]</xpath>
-  </Operation>
-
-  <!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-       PART 3 \u2014 PHASE-CONTRACT-GATED STONY + METALLIC ADD (the user-requested
-       PatchOperationTest + PatchOperationAdd idiom)
-       \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
-
-  <!-- Test+Add sequence for Wall.stuffCategories adding Stony. -->
-  <Operation Class="PatchOperationTest" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Wall"]/stuffCategories[not(li[text()="Stony"])]</xpath>
-  </Operation>
-  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Wall"]/stuffCategories</xpath>
-    <value><li>Stony</li></value>
-  </Operation>
-
-  <!-- If the Wall has no stuffCategories at all, create with the Rimconemy defaults. -->
-  <Operation Class="PatchOperationTest" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Wall"][not(stuffCategories)]</xpath>
-  </Operation>
-  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Wall"]</xpath>
-    <value>
-      <stuffCategories>
-        <li>Stony</li>
-        <li>Metallic</li>
-      </stuffCategories>
-    </value>
-  </Operation>
-
-  <!-- Test+Add for DoorBase.stuffCategories adding Stony. -->
-  <Operation Class="PatchOperationTest" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[@Name="DoorBase"]/stuffCategories[not(li[text()="Stony"])]</xpath>
-  </Operation>
-  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[@Name="DoorBase"]/stuffCategories</xpath>
-    <value><li>Stony</li></value>
-  </Operation>
-
-  <Operation Class="PatchOperationTest" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[@Name="DoorBase"][not(stuffCategories)]</xpath>
-  </Operation>
-  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[@Name="DoorBase"]</xpath>
-    <value>
-      <stuffCategories>
-        <li>Stony</li>
-        <li>Metallic</li>
-      </stuffCategories>
-    </value>
-  </Operation>
-
-  <!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-       PART 4 \u2014 BARRICADE / SANDBAG IDEMPOTENT STONY + METALLIC (NEW)
-       Previously Barricade was skipped; the original plan called it
-       Vanilla-for-MVP. The phase-gated contract now extends to it.
-       \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
-
-  <Operation Class="PatchOperationTest" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Barricade"]/stuffCategories[not(li[text()="Stony"])]</xpath>
-  </Operation>
-  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Barricade"]/stuffCategories</xpath>
-    <value><li>Stony</li></value>
-  </Operation>
-
-  <Operation Class="PatchOperationTest" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Barricade"][not(stuffCategories)]</xpath>
-  </Operation>
-  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Barricade"]</xpath>
-    <value>
-      <stuffCategories>
-        <li>Stony</li>
-        <li>Metallic</li>
-      </stuffCategories>
-    </value>
-  </Operation>
-
-  <Operation Class="PatchOperationTest" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Sandbag"]/stuffCategories[not(li[text()="Stony"])]</xpath>
-  </Operation>
-  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Sandbag"]/stuffCategories</xpath>
-    <value><li>Stony</li></value>
-  </Operation>
-
-  <Operation Class="PatchOperationTest" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Sandbag"][not(stuffCategories)]</xpath>
-  </Operation>
-  <Operation Class="PatchOperationAdd" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Sandbag"]</xpath>
-    <value>
-      <stuffCategories>
-        <li>Stony</li>
-        <li>Metallic</li>
-      </stuffCategories>
-    </value>
-  </Operation>
 </Patch>

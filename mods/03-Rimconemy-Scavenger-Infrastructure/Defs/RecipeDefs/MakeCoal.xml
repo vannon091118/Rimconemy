@@ -13,17 +13,19 @@
     Production phase:     NOT producible (Coal Synthesis still locked).
     Automation phase:     Producible (after research + workSkill gate).
 
-  Skill gate (Period 2026-08-05 review-fix):
-    workSkill = Smithing (Pyrolysis IS smithing thermodynamics, not cooking;
-      previous Cooking-flag was a design-by-analogy mistake and is corrected
-      here. Coal is metallurgy, not cuisine.)
-    skillRequirements: Smithing >= 3 — successful smelting requires a basic
+  Skill gate (Period 2026-08-05 review-fix + Audit-fix E1 2026-08-05):
+    workSkill = Crafting (Pyrolysis IS smithing thermodynamics, which 1.6
+      rolls up under the Crafting SkillDef; the legacy "Smithing" SkillDef
+      was merged into Crafting in vanilla RimWorld 1.6 — using "Smithing"
+      here would crash def-load with "No SkillDef named Smithing").
+    skillRequirements: Crafting >= 3 — successful smelting requires a basic
       understanding of fuel oxidation.
 
   Phase-Gate (XML, real):
-    researchPrerequisites: Smithing (Vanilla research, already required by
-      FueledSmithy route). Until Smithing research completes, this recipe
-      is hidden from the bill list on Rimconemy_Campfire.
+    researchPrerequisites: Smithing — ResearchProject *defName* still exists
+      in 1.6 Core (only the SkillDef was renamed to Crafting). Until Smithing
+      research completes, this recipe is hidden from the bill list on
+      Rimconemy_Campfire.
 
   Material economics:
     3 WoodLog + 2 Rimconemy_HempLeafy -> 4 Rimconemy_Coal.
@@ -38,9 +40,9 @@
     <description>Pyrolyse wood and hemp fibre in a hot, oxygen-poor chamber to drive off volatiles and concentrate carbon. Coal Synthesis research gates availability; requires Smithing 3 — a refiner's understanding of how volatiles depart.</description>
     <jobString>Making coal</jobString>
     <workAmount>500</workAmount>
-    <workSkill>Smithing</workSkill>
+    <workSkill>Crafting</workSkill>
     <skillRequirements>
-      <Smithing>3</Smithing>
+      <Crafting>3</Crafting>
     </skillRequirements>
     <researchPrerequisites>
       <li>Smithing</li>

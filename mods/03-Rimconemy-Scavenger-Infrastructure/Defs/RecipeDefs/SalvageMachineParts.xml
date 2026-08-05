@@ -33,7 +33,10 @@
     <description>Extract gears, actuators, and precision components from steel scraps. Smithing + Machining research unlock the recipe; Automation-phase precision tooling.</description>
     <jobString>Salvaging machine parts</jobString>
     <workAmount>800</workAmount>
-    <workSkill>Smithing</workSkill>
+    <!-- Audit-fix E1 (2026-08-05): SkillDef "Smithing" was merged into "Crafting"
+         in vanilla RimWorld 1.6 Core. ResearchProject defNames "Smithing" +
+         "Machining" both still exist, so the conjunction gate is unchanged. -->
+    <workSkill>Crafting</workSkill>
     <researchPrerequisites>
       <li>Smithing</li>
       <li>Machining</li>

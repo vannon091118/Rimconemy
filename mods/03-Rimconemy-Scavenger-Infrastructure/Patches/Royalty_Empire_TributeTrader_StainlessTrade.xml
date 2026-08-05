@@ -9,6 +9,19 @@
 
   Patch risk: STUFE 1 (Add only). Vanilla traderKindDefs.stockGenerators
     is appended, never replaced.
+
+  Audit-fix E2 (2026-08-05) — Vanilla-1.6 schema compliance:
+    (1) The PatchOperationAdd xpath now targets the stockGenerators LIST, not the
+        TraderKindDef itself. Prior `<order>Append</order>` against the def appended
+        the value <li> as a SIBLING of stockGenerators, where countRange is not a
+        TraderKindDef field — the player.log error "doesn't correspond to any field
+        in type TraderKindDef" was a parse-time fallout, not a class-name bug.
+    (2) StockGenerator_MarketValue in vanilla 1.6 doesn't accept <thingDefCategories>;
+        it uses <tradeTag> + <maxTechLevelGenerate> + <countRange>. We instead use
+        StockGenerator_Category with <categoryDef> pointing at the custom
+        Rimconemy_IndustrialComponents ThingCategoryDef (parent: ResourcesRaw).
+        Idempotence guard: not(stockGenerators/li[@Class="StockGenerator_Category"]
+        [categoryDef="Rimconemy_IndustrialComponents"]).
 -->
 <Patch>
 
@@ -19,19 +32,17 @@
       <operations>
 
         <li Class="PatchOperationTest">
-          <xpath>/Defs/TraderKindDef[defName="Empire_Caravan_TributeCollector"]</xpath>
+          <xpath>/Defs/TraderKindDef[defName="Empire_Caravan_TributeCollector"]/stockGenerators[not(li[@Class="StockGenerator_Category"][categoryDef="Rimconemy_IndustrialComponents"])]</xpath>
         </li>
 
         <li Class="PatchOperationAdd">
-          <xpath>/Defs/TraderKindDef[defName="Empire_Caravan_TributeCollector"]
-                [not(stockGenerators/li[@Class="StockGenerator_MarketValue"])]</xpath>
+          <xpath>/Defs/TraderKindDef[defName="Empire_Caravan_TributeCollector"]/stockGenerators[not(li[@Class="StockGenerator_Category"][categoryDef="Rimconemy_IndustrialComponents"])]</xpath>
           <order>Append</order>
           <value>
-            <li Class="StockGenerator_MarketValue">
-              <thingDefCategories>
-                <li>Rimconemy_IndustrialComponents</li>
-              </thingDefCategories>
-              <countRange>2~6</countRange>
+            <li Class="StockGenerator_Category">
+              <categoryDef>Rimconemy_IndustrialComponents</categoryDef>
+              <thingDefCountRange>2~6</thingDefCountRange>
+              <countRange>1~3</countRange>
             </li>
           </value>
         </li>

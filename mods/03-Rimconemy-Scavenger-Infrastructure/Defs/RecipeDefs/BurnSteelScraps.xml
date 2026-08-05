@@ -37,7 +37,11 @@
     <description>Burn down steel scraps to reclaim usable steel. Five pile of scrap burn down to one ingot's worth of reclaimed steel; the impurity loss is the price of salvage. Production-phase recipe — gated by Smithing research.</description>
     <jobString>Burning steel scraps</jobString>
     <workAmount>600</workAmount>
-    <workSkill>Smithing</workSkill>
+    <!-- Audit-fix E1 (2026-08-05): SkillDef "Smithing" was merged into "Crafting"
+         in vanilla RimWorld 1.6 Core. ResearchProject defName "Smithing" still
+         exists (only the *SkillDef* was renamed), so the research gate is
+         unchanged. -->
+    <workSkill>Crafting</workSkill>
     <researchPrerequisites>
       <li>Smithing</li>
     </researchPrerequisites>

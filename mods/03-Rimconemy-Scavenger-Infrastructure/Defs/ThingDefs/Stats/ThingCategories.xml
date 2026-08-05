@@ -41,4 +41,14 @@
     <label>Rimconemy crafting stations</label>
     <parent>Buildings</parent>
   </ThingCategoryDef>
+  <!-- Audit-fix E2 (2026-08-05): added Rimconemy_IndustrialComponents as the
+       category the Royalty tribute-trader patch targets via StockGenerator_Category.
+       Joining Rimconemy_Scraps naturally: MachineParts + StainlessSteel are
+       refined descendants of steel scraps in the Phase 3 / Trade production
+       chain. Vanilla 1.6: ResourcesRaw is the canonical ResourcesRaw parent. -->
+  <ThingCategoryDef>
+    <defName>Rimconemy_IndustrialComponents</defName>
+    <label>Rimconemy industrial components</label>
+    <parent>Rimconemy_Scraps</parent>
+  </ThingCategoryDef>
 </Defs>

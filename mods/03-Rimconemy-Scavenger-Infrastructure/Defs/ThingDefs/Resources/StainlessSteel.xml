@@ -29,6 +29,10 @@
     </statBases>
     <thingCategories>
       <li>Rimconemy_Scraps</li>
+      <!-- Audit-fix E2 (2026-08-05): joined Rimconemy_IndustrialComponents so
+           the Empire tribute-collector (Royalty_DLC) buys StainlessSteel
+           alongside MachineParts via StockGenerator_Category. -->
+      <li>Rimconemy_IndustrialComponents</li>
     </thingCategories>
     <stackLimit>150</stackLimit>
     <drawGUIOverlay>true</drawGUIOverlay>
