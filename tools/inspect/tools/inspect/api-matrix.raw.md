@@ -157,7 +157,24 @@ new MapComponent(Verse.Map map);
 
 ## WorldComponent — `Verse.WorldComponent`
 
-**STATUS: NICHT GEFUNDEN** — Klasse fehlt in der lokalen 1.6-Assembly (oder umbenannt/vor DLL geladen).
+BaseType: `System.Object` · Sealed: False · Abstract: True
+
+### Constructors
+
+```csharp
+// Public, HideBySig, SpecialName, RTSpecialName
+new WorldComponent(RimWorld.Planet.World world);
+```
+
+### Public/Protected Methods (5 total)
+
+| Return | Name | Params | Static | Notes |
+|---|---|---|---|---|
+| `System.Void` | `ExposeData` | `` |  | virtual |
+| `System.Void` | `FinalizeInit` | `Boolean fromLoad` |  | virtual |
+| `System.Void` | `WorldComponentOnGUI` | `` |  | virtual |
+| `System.Void` | `WorldComponentTick` | `` |  | virtual |
+| `System.Void` | `WorldComponentUpdate` | `` |  | virtual |
 
 ## ThingComp — `Verse.ThingComp`
 
@@ -291,15 +308,123 @@ new IncidentWorker();
 
 ## RecipeWorker — `RimWorld.RecipeWorker`
 
-**STATUS: NICHT GEFUNDEN** — Klasse fehlt in der lokalen 1.6-Assembly (oder umbenannt/vor DLL geladen).
+BaseType: `System.Object` · Sealed: False · Abstract: False
+
+### Constructors
+
+```csharp
+// Public, HideBySig, SpecialName, RTSpecialName
+new RecipeWorker();
+```
+
+### Public/Protected Methods (13 total)
+
+| Return | Name | Params | Static | Notes |
+|---|---|---|---|---|
+| `System.Void` | `ApplyOnPawn` | `Pawn pawn, BodyPartRecord part, Pawn billDoer, List`1 ingredients, Bill bill` |  | virtual |
+| `System.Boolean` | `AvailableOnNow` | `Thing thing, BodyPartRecord part` |  | virtual |
+| `Verse.AcceptanceReport` | `AvailableReport` | `Thing thing, BodyPartRecord part` |  | virtual |
+| `System.Void` | `CheckForWarnings` | `Pawn billDoer` |  | virtual |
+| `System.Void` | `ConsumeIngredient` | `Thing ingredient, RecipeDef recipe, Map map` |  | virtual |
+| `Verse.TaggedString` | `GetConfirmation` | `Pawn pawn` |  | virtual |
+| `System.Single` | `GetIngredientCount` | `IngredientCount ing, Bill bill` |  | virtual |
+| `System.String` | `GetLabelWhenUsedOn` | `Pawn pawn, BodyPartRecord part` |  | virtual |
+| `System.Collections.Generic.IEnumerable`1<Verse.BodyPartRecord>` | `GetPartsToApplyOn` | `Pawn pawn, RecipeDef recipe` |  | virtual |
+| `System.Boolean` | `IsViolationOnPawn` | `Pawn pawn, BodyPartRecord part, Faction billDoerFaction` |  | virtual |
+| `System.String` | `LabelFromUniqueIngredients` | `Bill bill` |  | virtual |
+| `System.Void` | `Notify_IterationCompleted` | `Pawn billDoer, List`1 ingredients` |  | virtual |
+| `System.Void` | `ReportViolation` | `Pawn pawn, Pawn billDoer, Faction factionToInform, Int32 goodwillImpact, HistoryEventDef overrideEventDef` |  |  |
 
 ## Designator — `RimWorld.Designator`
 
-**STATUS: NICHT GEFUNDEN** — Klasse fehlt in der lokalen 1.6-Assembly (oder umbenannt/vor DLL geladen).
+BaseType: `Verse.Command` · Sealed: False · Abstract: True
+
+### Constructors
+
+```csharp
+// Public, HideBySig, SpecialName, RTSpecialName
+new Designator();
+```
+
+### Public/Protected Methods (38 total)
+
+| Return | Name | Params | Static | Notes |
+|---|---|---|---|---|
+| `Verse.AcceptanceReport` | `CanDesignateCell` | `IntVec3 loc` |  | virtual · abstract |
+| `Verse.AcceptanceReport` | `CanDesignateThing` | `Thing t` |  | virtual |
+| `System.Boolean` | `CanRemainSelected` | `` |  | virtual |
+| `System.Boolean` | `CheckCanInteract` | `` |  |  |
+| `Verse.Command_Action` | `CreateReverseDesignationGizmo` | `Thing t` |  |  |
+| `System.String` | `DescReverseDesignating` | `Thing t` |  | virtual |
+| `System.Void` | `Deselected` | `` |  | virtual |
+| `System.Void` | `DesignateMultiCell` | `IEnumerable`1 cells` |  | virtual |
+| `System.Void` | `DesignateSingleCell` | `IntVec3 c` |  | virtual |
+| `System.Void` | `DesignateThing` | `Thing t` |  | virtual |
+| `System.Void` | `DoExtraGuiControls` | `Single leftX, Single bottomY` |  | virtual |
+| `System.Void` | `DrawMouseAttachments` | `` |  | virtual |
+| `System.Void` | `DrawPanelReadout` | `Single& curY, Single width` |  | virtual |
+| `System.Void` | `Finalize` | `Boolean somethingSucceeded` |  |  |
+| `System.Void` | `FinalizeDesignationFailed` | `` |  | virtual |
+| `System.Void` | `FinalizeDesignationSucceeded` | `` |  | virtual |
+| `System.Boolean` | `get_AlwaysDoGuiControls` | `` |  | virtual |
+| `Verse.DesignationDef` | `get_Designation` | `` |  | virtual |
+| `System.Boolean` | `get_DoTooltip` | `` |  | virtual |
+| `System.Boolean` | `get_DragDrawMeasurements` | `` |  | virtual |
+| `System.Boolean` | `get_DrawHighlight` | `` |  | virtual |
+| `Verse.DrawStyleCategoryDef` | `get_DrawStyleCategory` | `` |  | virtual |
+| `System.String` | `get_HighlightTag` | `` |  | virtual |
+| `Verse.Map` | `get_Map` | `` |  |  |
+| `System.Single` | `get_PanelReadoutTitleExtraRightMargin` | `` |  | virtual |
+| `System.Collections.Generic.IEnumerable`1<Verse.FloatMenuOption>` | `get_RightClickFloatMenuOptions` | `` |  | virtual |
+| `System.String` | `get_TutorTagDesignate` | `` |  |  |
+| `System.String` | `get_TutorTagSelect` | `` |  | virtual |
+| `Verse.GizmoResult` | `GizmoOnGUI` | `Vector2 topLeft, Single maxWidth, GizmoRenderParms parms` |  | virtual |
+| `UnityEngine.Texture2D` | `IconReverseDesignating` | `Thing t, Single& angle, Vector2& offset` |  | virtual |
+| `System.String` | `LabelCapReverseDesignating` | `Thing t` |  | virtual |
+| `System.Void` | `ProcessInput` | `Event ev` |  | virtual |
+| `System.Boolean` | `RemoveAllDesignationsAffects` | `LocalTargetInfo target` |  | virtual |
+| `System.Void` | `RenderHighlight` | `List`1 dragCells` |  | virtual |
+| `System.Void` | `Selected` | `` |  | virtual |
+| `System.Void` | `SelectedProcessInput` | `Event ev` |  | virtual |
+| `System.Void` | `SelectedUpdate` | `` |  | virtual |
+| `System.Boolean` | `ShowWarningForCell` | `IntVec3 c` |  | virtual |
+
+### Public/Protected Properties (12 total)
+
+| Type | Name | Get | Set | Static |
+|---|---|---|---|---|
+| `Verse.Map` | `Map` | ✓ |  |  |
+| `System.Boolean` | `DragDrawMeasurements` | ✓ |  |  |
+| `System.Boolean` | `DrawHighlight` | ✓ |  |  |
+| `System.Boolean` | `DoTooltip` | ✓ |  |  |
+| `System.Boolean` | `AlwaysDoGuiControls` | ✓ |  |  |
+| `Verse.DesignationDef` | `Designation` | ✓ |  |  |
+| `System.Single` | `PanelReadoutTitleExtraRightMargin` | ✓ |  |  |
+| `Verse.DrawStyleCategoryDef` | `DrawStyleCategory` | ✓ |  |  |
+| `System.String` | `TutorTagSelect` | ✓ |  |  |
+| `System.String` | `TutorTagDesignate` | ✓ |  |  |
+| `System.String` | `HighlightTag` | ✓ |  |  |
+| `System.Collections.Generic.IEnumerable`1<Verse.FloatMenuOption>` | `RightClickFloatMenuOptions` | ✓ |  |  |
 
 ## GenSight — `RimWorld.GenSight`
 
-**STATUS: NICHT GEFUNDEN** — Klasse fehlt in der lokalen 1.6-Assembly (oder umbenannt/vor DLL geladen).
+BaseType: `System.Object` · Sealed: True · Abstract: True
+
+### Public/Protected Methods (11 total)
+
+| Return | Name | Params | Static | Notes |
+|---|---|---|---|---|
+| `System.Collections.Generic.List`1<Verse.IntVec3>` | `BresenhamCellsBetween` | `IntVec3 a, IntVec3 b` | ✅ | static |
+| `System.Collections.Generic.List`1<Verse.IntVec3>` | `BresenhamCellsBetween` | `Int32 x0, Int32 y0, Int32 x1, Int32 y1` | ✅ | static |
+| `System.Void` | `DebugDrawFOVSymmetry_Update` | `` | ✅ | static |
+| `Verse.IntVec3` | `LastPointOnLineOfSight` | `IntVec3 start, IntVec3 end, Func`2 validator, Boolean skipFirstCell` | ✅ | static |
+| `System.Boolean` | `LineOfSight` | `IntVec3 start, IntVec3 end, Map map, Boolean skipFirstCell, Func`2 validator, Int32 halfXOffset, Int32 halfZOffset` | ✅ | static |
+| `System.Boolean` | `LineOfSight` | `IntVec3 start, IntVec3 end, Map map, CellRect startRect, CellRect endRect, Func`2 validator, Boolean forLeaning` | ✅ | static |
+| `System.Boolean` | `LineOfSight` | `IntVec3 start, IntVec3 end, Map map` | ✅ | static |
+| `System.Boolean` | `LineOfSightToEdges` | `IntVec3 start, IntVec3 end, Map map, Boolean skipFirstCell, Func`2 validator` | ✅ | static |
+| `System.Boolean` | `LineOfSightToThing` | `IntVec3 start, Thing t, Map map, Boolean skipFirstCell, Func`2 validator` | ✅ | static |
+| `System.Collections.Generic.IEnumerable`1<Verse.IntVec3>` | `PointsOnLineOfSight` | `IntVec3 start, IntVec3 end` | ✅ | static |
+| `System.Void` | `PointsOnLineOfSight` | `IntVec3 start, IntVec3 end, Action`1 visitor` | ✅ | static |
 
 ## FogGrid — `Verse.FogGrid`
 
@@ -330,7 +455,27 @@ new FogGrid(Verse.Map map);
 
 ## PawnGenerator — `RimWorld.PawnGenerator`
 
-**STATUS: NICHT GEFUNDEN** — Klasse fehlt in der lokalen 1.6-Assembly (oder umbenannt/vor DLL geladen).
+BaseType: `System.Object` · Sealed: True · Abstract: True
+
+### Public/Protected Methods (15 total)
+
+| Return | Name | Params | Static | Notes |
+|---|---|---|---|---|
+| `System.Void` | `AdjustXenotypeForFactionlessPawn` | `Pawn pawn, PawnGenerationRequest& request, XenotypeDef& xenotype` | ✅ | static |
+| `Verse.Pawn` | `GeneratePawn` | `PawnKindDef kindDef, Faction faction, Nullable`1 tile` | ✅ | static |
+| `Verse.Pawn` | `GeneratePawn` | `PawnGenerationRequest request` | ✅ | static |
+| `System.Collections.Generic.List`1<RimWorld.Trait>` | `GenerateTraitsFor` | `Pawn pawn, Int32 traitCount, Nullable`1 req, Boolean growthMomentTrait` | ✅ | static |
+| `RimWorld.BodyTypeDef` | `GetBodyTypeFor` | `Pawn pawn` | ✅ | static |
+| `RimWorld.XenotypeDef` | `GetXenotypeForGeneratedPawn` | `PawnGenerationRequest request` | ✅ | static |
+| `System.Boolean` | `IsBeingGenerated` | `Pawn pawn` | ✅ | static |
+| `System.Boolean` | `IsPawnBeingGeneratedAndNotAllowsDead` | `Pawn pawn` | ✅ | static |
+| `System.Void` | `PawnGenerationHistogram` | `` | ✅ | static |
+| `System.Void` | `PostProcessGeneratedGear` | `Thing gear, Pawn pawn` | ✅ | static |
+| `System.Int32` | `RandomTraitDegree` | `TraitDef traitDef` | ✅ | static |
+| `System.Void` | `RedressPawn` | `Pawn pawn, PawnGenerationRequest request` | ✅ | static |
+| `System.Void` | `Reset` | `` | ✅ | static |
+| `System.Void` | `TryGenerateSexualityTraitFor` | `Pawn pawn, Boolean allowGay` | ✅ | static |
+| `System.Collections.Generic.Dictionary`2<RimWorld.XenotypeDef,System.Single>` | `XenotypesAvailableFor` | `PawnKindDef kind, FactionDef factionDef, Faction faction` | ✅ | static |
 
 ## ResearchManager — `RimWorld.ResearchManager`
 
@@ -439,8 +584,89 @@ new CompRefuelable();
 
 ## CompGlower — `RimWorld.CompGlower`
 
-**STATUS: NICHT GEFUNDEN** — Klasse fehlt in der lokalen 1.6-Assembly (oder umbenannt/vor DLL geladen).
+BaseType: `Verse.ThingComp` · Sealed: False · Abstract: False
 
+### Constructors
+
+```csharp
+// Public, HideBySig, SpecialName, RTSpecialName
+new CompGlower();
+```
+
+### Public/Protected Methods (18 total)
+
+| Return | Name | Params | Static | Notes |
+|---|---|---|---|---|
+| `System.Collections.Generic.IEnumerable`1<Verse.Gizmo>` | `CompGetGizmosExtra` | `` |  | virtual |
+| `System.Void` | `ForceRegister` | `Map map` |  |  |
+| `Verse.ColorInt` | `get_GlowColor` | `` |  | virtual |
+| `System.Single` | `get_GlowRadius` | `` |  | virtual |
+| `System.Boolean` | `get_Glows` | `` |  |  |
+| `System.Boolean` | `get_HasGlowColorOverride` | `` |  |  |
+| `RimWorld.CompProperties_Glower` | `get_Props` | `` |  |  |
+| `System.Boolean` | `get_ShouldBeLitNow` | `` |  | virtual |
+| `System.Void` | `PostDeSpawn` | `Map map, DestroyMode mode` |  | virtual |
+| `System.Void` | `PostExposeData` | `` |  | virtual |
+| `System.Void` | `PostMapInit` | `` |  | virtual |
+| `System.Void` | `PostSpawnSetup` | `Boolean respawningAfterLoad` |  | virtual |
+| `System.Void` | `PostSwapMap` | `` |  | virtual |
+| `System.Void` | `ReceiveCompSignal` | `String signal` |  | virtual |
+| `System.Void` | `set_GlowColor` | `ColorInt value` |  | virtual |
+| `System.Void` | `set_GlowRadius` | `Single value` |  | virtual |
+| `System.Void` | `SetGlowColorInternal` | `Nullable`1 color` |  | virtual |
+| `System.Void` | `UpdateLit` | `Map map` |  |  |
+
+### Public/Protected Properties (6 total)
+
+| Type | Name | Get | Set | Static |
+|---|---|---|---|---|
+| `RimWorld.CompProperties_Glower` | `Props` | ✓ |  |  |
+| `Verse.ColorInt` | `GlowColor` | ✓ | ✓ |  |
+| `System.Single` | `GlowRadius` | ✓ | ✓ |  |
+| `System.Boolean` | `ShouldBeLitNow` | ✓ |  |  |
+| `System.Boolean` | `Glows` | ✓ |  |  |
+| `System.Boolean` | `HasGlowColorOverride` | ✓ |  |  |
+
+### PhaseProgress-ResearchProbe
+
+- `IsFinished`: 0 Treffer
+- `TotalCost`: 0 Treffer
+- `CostAmount`: 0 Treffer
+- `BaseCost`: 0 Treffer
+- `totalCost`: 0 Treffer
+
+## PhaseProgress-Reach — ResearchProjectDef direct
+
+BaseType: `Verse.Def` - Sealed: False - Abstract: False
+
+### Public/Protected Methods (filtered to 'Finished/Cost/Progress')
+
+| Return | Name | Params | Static | Notes |
+|---|---|---|---|---|
+| `System.Single` | `get_CostApparent` | `` |  |  |
+| `System.Single` | `get_ProgressReal` | `` |  |  |
+| `System.Single` | `get_ProgressApparent` | `` |  |  |
+| `System.String` | `get_ProgressApparentString` | `` |  |  |
+| `System.Single` | `get_ProgressPercent` | `` |  |  |
+| `System.Boolean` | `get_IsFinished` | `` |  |  |
+| `System.Single` | `get_Cost` | `` |  |  |
+| `System.Boolean` | `get_PrerequisitesCompleted` | `` |  |  |
+| `System.Int32` | `get_AnalyzedThingsCompleted` | `` |  |  |
+| `System.Single` | `CostFactor` | `TechLevel researcherTechLevel` |  |  |
+| `System.Boolean` | `AnyOtherVisiblePrerequisitesCompleted` | `ResearchProjectDef prerequisite` |  |  |
+
+### Public Properties (filtered)
+| Type | Name | Get | Set |
+|---|---|---|---|
+| `System.Single` | `CostApparent` | x |  |
+| `System.Boolean` | `IsFinished` | x |  |
+| `System.Single` | `Cost` | x |  |
+
+### Public Fields (filtered)
+| Type | Name |
+|---|---|
+| `System.Single` | `baseCost` |
+| `System.Single` | `knowledgeCost` |
 ## Spike-Pflicht-Heuristik-Sweeps
 
 ### TryStartCastOn / TryCastShot / Launch
@@ -509,10 +735,38 @@ new CompRefuelable();
   - `RimWorld.Bill_Production.Notify_IterationCompleted(Pawn billDoer, List`1 ingredients) -> Void`
   - `RimWorld.Bill_ProductionWithUft.Notify_IterationCompleted(Pawn billDoer, List`1 ingredients) -> Void`
 
+### Mineable.Yield-Hooks (API-MINING-02)
+
+- `DestroyMined`: 1 Treffer
+  - `RimWorld.Mineable.DestroyMined(Pawn pawn) -> Void`
+- `TrySpawnYield`: 0 Treffer
+- `TrySpawnYieldFromDamage`: 0 Treffer
+- `YieldNow`: 1 Treffer
+  - `RimWorld.Plant.YieldNow() -> Int32`
+- `SpawnYield`: 0 Treffer
+- `SpawnYieldAt`: 0 Treffer
+- `SpawnItems`: 0 Treffer
+- `YieldCount`: 0 Treffer
+
+## API-MINING-02 — Mineable-class direct enumeration
+
+BaseType: `Verse.Building` · Sealed: False · Abstract: False
+
+### Public/Protected Methods (filtered to Mineable.Yield-bearing)
+
+| Return | Name | Params | Static | Notes |
+|---|---|---|---|---|
+| `System.Void` | `Destroy` | `DestroyMode mode` |  | virtual |
+| `System.Void` | `DestroyMined` | `Pawn pawn` |  |  |
+| `System.Void` | `ExposeData` | `` |  | virtual |
+| `System.Void` | `Kill` | `Nullable`1 dinfo, Hediff exactCulprit` |  | virtual |
+| `System.Void` | `Notify_TookMiningDamage` | `Int32 amount, Pawn miner` |  |  |
+| `System.Void` | `PreApplyDamage` | `DamageInfo& dinfo, Boolean& absorbed` |  | virtual |
+
 ## Identität
 
 - Datei: `/home/vannon/GOG Games/RimWorld/game/RimWorldLinux_Data/Managed/Assembly-CSharp.dll`
 - Größe: 15.746.048 Bytes
 - SHA-256: `A0AF57EF9162B569D3B052818BA3A29FCCCC8610F355F2BB9B08FAD5882982D3`
-- Erfasst am: 2026-08-04T20:23:19Z
+- Erfasst am: 2026-08-05T16:30:43Z
 
