@@ -63,7 +63,7 @@ mit jeder Patch-Stage zusammen aktualisiert.
 |---|---|---|---|---|
 | 18 | `ThreatPressure` | [`infected__ThreatPressure.md`](infected__ThreatPressure.md) | `ThreatAggregator` + `StoryDirector` | `COMPILED` |
 | 19 | `InfectedRaid` | [`infected__InfectedRaid.md`](infected__InfectedRaid.md) | `InfectedRaidSpawnService` + `InfectedRaidWorker` | `UNVERIFIED` |
-| 20 | `MechadroidJob` | [`infected__MechadroidJob.md`](infected__MechadroidJob.md) | `MechadroidJobRegistry` | `COMPILED` |
+| 20 | `MechadroidJob` | [`infected__MechadroidJob.md`](infected__MechadroidJob.md) | `MechadroidJobLedger` (`MechadroidJobs.cs`) | `COMPILED` |
 | 21 | `ManualRaid` | [`infected__ManualRaid.md`](infected__ManualRaid.md) | `IncidentClassifier` | `COMPILED` |
 | 22 | `AutoResolve` | [`infected__AutoResolve.md`](infected__AutoResolve.md) | `WorldRaidCoordinator` + `ThreatAggregator` | `COMPILED` |
 
@@ -81,6 +81,12 @@ Diese Berichte bündeln die 5 Phasen-Gates aus
 | 27 | `Early Game: Save/Load` | [`earlygame__SaveLoad.md`](earlygame__SaveLoad.md) | `RimconemyStartState` + `RimconemyStartEnemiesLedger` + `ISchemaMigratable` | `COMPILED` (Pre-LIVE) |
 
 > **Akzeptanz-Reihenfolge:** Erst `Early Game: Survivor`+`SavLoad` grün (echte Phase-1-Belege), dann Campfire → Barrikade → First Night. Save/Load ist die Brücke, die jeden Übergang absichert.
+
+### Audit-Dokumente (kein A–G-Belegschema)
+
+| # | Dokument | Zweck |
+|---|---|---|
+| A | [`deadcode-audit-2026-08-05.md`](deadcode-audit-2026-08-05.md) | Dead-Code-Find + Sprint-A-Delete-Log (5 Klassen, 2 Projekte, 41 Logs entfernt; Root-Cause-Muster; Extraktions-Pattern) |
 
 ## Beleg-Strategie
 

@@ -356,15 +356,4 @@ namespace Rimconemy.EconomyTerritory.Outposts
             return new OutpostLedger();
         }
     }
-
-    /// <summary>
-    /// Backward-compat alias for the historical <c>OutpostStub</c> name.
-    /// Real outposts live in <see cref="Outpost"/>; this alias exists so
-    /// legacy callers / deploy scripts that string-referenced the stub
-    /// continue to compile.
-    /// </summary>
-    public static class OutpostStub
-    {
-        public const string LogMarker = "v1";
-    }
 }
