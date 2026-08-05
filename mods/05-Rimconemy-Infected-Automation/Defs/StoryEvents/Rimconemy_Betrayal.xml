@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Rimconemy_Betrayal — Verrat
+  Owner: Infected & Automation (Story-Domäne)
+  Status: ACTIVE — wird vom StoryEventCatalog.MergeFromDefDatabase() geladen.
+  Band: 3 (Collapse), Familie: Collapse
+  Reagiert auf: 4+ Kolonisten, 20+ Tage seit Start, feindliche Fraktionen, Mood < 0.6
+-->
+<Defs>
+  <Rimconemy.InfectedAutomation.Story.StoryEventDef>
+    <defName>rimconemy.collapse.betrayal</defName>
+    <label>Verrat</label>
+    <description>Ein Kolonist verrät die Gruppe an Feinde.</description>
+
+    <eventVersion>1</eventVersion>
+    <eventFamily>Collapse</eventFamily>
+    <escalationBand>3</escalationBand>
+    <escalationTarget>ThreatPressure</escalationTarget>
+    <escalationModifier>0.15</escalationModifier>
+
+    <prerequisites>
+      <li>MaxActiveEvents()</li>
+      <li>NOT ActiveEvent(Collapse)</li>
+      <li>ColonistCountAbove(3)</li>
+      <li>DaysSinceStartAbove(20)</li>
+    </prerequisites>
+
+    <exclusions>
+      <li>MoodAbove(0.6)</li>
+      <li>DaysSinceLastEventBelow(4.0)</li>
+      <li>HostileFactionsBelow(1)</li>
+    </exclusions>
+
+    <weights>
+      <li>Rimconemy_Collapse=35</li>
+    </weights>
+
+    <cooldownDays>
+      <li>Rimconemy_Collapse=10.0</li>
+    </cooldownDays>
+
+    <textKey>Rimconemy_Betrayal_Letter</textKey>
+    <letterLabel>Verrat!</letterLabel>
+    <letterText>{PawnName} wurde dabei erwischt, Informationen an eine feindliche Fraktion zu übergeben. Der Schaden ist bereits angerichtet.</letterText>
+
+    <choices>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Exile</choiceId>
+        <label>Verbannen</label>
+        <effects>
+          <li>PawnLeaves</li>
+          <li>AllPawnsMood:-3 for 3 days</li>
+          <li>HostileFactionReputation:-20</li>
+        </effects>
+      </li>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Forgive</choiceId>
+        <label>Verzeihen</label>
+        <effects>
+          <li>PawnMood:-8 for 5 days</li>
+          <li>GroupCohesion:-0.10</li>
+          <li>ThreatPressure:+0.05</li>
+        </effects>
+      </li>
+    </choices>
+
+    <followUpIds />
+    <determinismKey>{ProfileId}+{EventId}+{IdeologyTension}+{PawnId}+{GameTickDay}</determinismKey>
+  </Rimconemy.InfectedAutomation.Story.StoryEventDef>
+</Defs>

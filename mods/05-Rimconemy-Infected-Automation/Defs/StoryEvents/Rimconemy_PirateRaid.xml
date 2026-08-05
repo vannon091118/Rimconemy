@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Rimconemy_PirateRaid — Piraten-Scout
+  Owner: Infected & Automation (Story-Domäne)
+  Status: ACTIVE — wird vom StoryEventCatalog.MergeFromDefDatabase() geladen.
+  Band: 2 (Survival), Familie: Raid
+  Reagiert auf: 100k+ Vermögen, feindliche Fraktionen, ThreatPressure > 0.2
+-->
+<Defs>
+  <Rimconemy.InfectedAutomation.Story.StoryEventDef>
+    <defName>rimconemy.raid.pirate_scouts</defName>
+    <label>Piraten-Scout</label>
+    <description>Piraten erkunden die Gegend auf Beute.</description>
+
+    <eventVersion>1</eventVersion>
+    <eventFamily>Raid</eventFamily>
+    <escalationBand>2</escalationBand>
+    <escalationTarget>ThreatPressure</escalationTarget>
+    <escalationModifier>0.06</escalationModifier>
+
+    <prerequisites>
+      <li>MaxActiveEvents()</li>
+      <li>NOT ActiveEvent(Raid)</li>
+      <li>WealthAbove(100000)</li>
+      <li>HostileFactionsAbove(0)</li>
+    </prerequisites>
+
+    <exclusions>
+      <li>ThreatBelow(0.2)</li>
+      <li>DaysSinceLastEventBelow(2.0)</li>
+    </exclusions>
+
+    <weights>
+      <li>Rimconemy_Survival=35</li>
+      <li>Rimconemy_Collapse=50</li>
+    </weights>
+
+    <cooldownDays>
+      <li>Rimconemy_Survival=4.0</li>
+      <li>Rimconemy_Collapse=2.5</li>
+    </cooldownDays>
+
+    <textKey>Rimconemy_PirateRaid_Letter</textKey>
+    <letterLabel>Piraten gesichtet</letterLabel>
+    <letterText>Piraten-Scouts wurden in der Nähe der Siedlung gesichtet. Sie scheinen die Vorräte zu studieren.</letterText>
+
+    <choices>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Defend</choiceId>
+        <label>Verteidigen</label>
+        <effects>
+          <li>DefenseBonus:+0.20 for 1 day</li>
+          <li>ResourceCost:15%</li>
+        </effects>
+      </li>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Bribe</choiceId>
+        <label>Bestechen</label>
+        <effects>
+          <li>WalletCost:80 Credits</li>
+          <li>IdeologyTension:-0.02</li>
+        </effects>
+      </li>
+    </choices>
+
+    <followUpIds />
+    <determinismKey>{ProfileId}+{EventId}+{ThreatPressure}+{GameTickDay}</determinismKey>
+  </Rimconemy.InfectedAutomation.Story.StoryEventDef>
+</Defs>

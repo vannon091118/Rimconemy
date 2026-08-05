@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
+    <xpath>/Defs/StatDef[defName="GlobalLearningFactor"]/parts[not(li[@Class="Rimconemy.SurvivalProgression.Character.IntellectualLearning_StatPart"])]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/StatDef[defName="GlobalLearningFactor"]/parts[not(li[@Class="Rimconemy.SurvivalProgression.Character.IntellectualLearning_StatPart"])]</xpath>
+      <value><li Class="Rimconemy.SurvivalProgression.Character.IntellectualLearning_StatPart" /></value>
+    </match>
+  </Operation>
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
+    <xpath>/Defs/StatDef[defName="GlobalLearningFactor"][not(parts)]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/StatDef[defName="GlobalLearningFactor"]</xpath>
+      <value><parts><li Class="Rimconemy.SurvivalProgression.Character.IntellectualLearning_StatPart" /></parts></value>
+    </match>
+  </Operation>
+</Patch>

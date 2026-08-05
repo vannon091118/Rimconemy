@@ -1,51 +1,51 @@
 using HarmonyLib;
+using Rimconemy.SurvivalProgression.Character.Construction;
 using Rimconemy.SurvivalProgression.Progression;
 using RimWorld;
 using Verse;
 
 namespace Rimconemy.SurvivalProgression.Progression.Hooks
 {
-    /// <summary>
-    /// Phase 8.3 — Harmony Postfix on
-    /// <c>RimWorld.Frame.CompleteConstruction(Pawn worker)</c>. Spike verified
-    /// 2026-08-04 against the local 1.6.4566 Assembly-CSharp.dll
-    /// (Cecil-Sweep found exactly one public instance method with that
-    /// name). See <c>tools/inspect/phase-8.3-construction-hooks.raw.md</c>
-    /// for the sweep origin.
-    ///
-    /// The postfix calls
-    /// <see cref="BuildingCompletionBridge.Submit(DomainXpState, ThingDef, Map, Frame, Pawn, long, float)"/>
-    /// with the def produced by <c>__instance.BuildDef</c> and the map
-    /// owned by the surviving <see cref="Frame"/>.
-    ///
-    /// Critical: This Postfix runs *after* the Frame has spawned the
-    /// resulting solid <see cref="Building"/> via
-    /// <see cref="Frame.MakeSolidThing"/> internally. By harvest-time
-    /// the Frame may be Destroy()-ed; we therefore resolve the
-    /// identity through <see cref="Frame.BuildDef"/> (string-stable for
-    /// this construction-specific frame) rather than through the spawned
-    /// building.
-    /// </summary>
+    /// <summary>Vanilla 1.6 construction completion bridge.</summary>
     [HarmonyPatch(typeof(RimWorld.Frame), nameof(RimWorld.Frame.CompleteConstruction))]
     public static class FrameCompletionPatch
     {
-        static FrameCompletionPatch()
+        public sealed class CompletionState
         {
-            // Intentionally empty. Static constructors in Harmony patches are
-            // reserved for shared resources (logging channels, throttling
-            // counters, etc.). Today the class is stateless.
+            public Map Map;
+            public IntVec3 Position;
+            public ThingDef Def;
+        }
+
+        [HarmonyPrefix]
+        public static void CaptureCompletionState(Frame __instance, out CompletionState __state)
+        {
+            // The Frame is destroyed by CompleteConstruction; capture its
+            // identity before the postfix runs so the finished building can
+            // be found at the frame cell afterwards.
+            __state = __instance == null ? null : new CompletionState
+            {
+                Map = __instance.Map,
+                Position = __instance.Position,
+                Def = __instance.BuildDef as ThingDef,
+            };
         }
 
         [HarmonyPostfix]
-        public static void NotifyCompletion(Pawn worker, Frame __instance)
+        public static void NotifyCompletion(Pawn worker, Frame __instance, CompletionState __state)
         {
-            // Defensive guards for early-startup / god-mode / etc.
-            if (__instance == null) return;
-            if (Current.Game == null) return;
-            if (__instance.Map == null) return;
+            if (__state == null || Current.Game == null) return;
 
-            ThingDef def = __instance.BuildDef as ThingDef;
-            if (def == null) return;
+            Map map = __state.Map;
+            ThingDef def = __state.Def;
+            if (map == null || def == null || !__state.Position.InBounds(map)) return;
+
+            // CompleteConstruction has already spawned the solid building. Find
+            // the exact result at the frame cell rather than retaining the
+            // destroyed frame as the source of HP state.
+            Building finished = FindFinishedBuilding(map, __state.Position, def);
+            if (finished != null)
+                BuilderDurability.ApplyToBuilding(finished, worker);
 
             var component = Current.Game.GetComponent<ProgressionGameComponent>();
             if (component == null) return;
@@ -53,14 +53,19 @@ namespace Rimconemy.SurvivalProgression.Progression.Hooks
             if (xpState == null) return;
 
             long tick = Find.TickManager?.TicksGame ?? 0L;
+            BuildingCompletionBridge.Submit(xpState, def, map, __instance, worker, tick);
+        }
 
-            BuildingCompletionBridge.Submit(
-                xpState,
-                def,
-                __instance.Map,
-                __instance,
-                worker,
-                tick);
+        private static Building FindFinishedBuilding(Map map, IntVec3 position, ThingDef def)
+        {
+            var things = map.thingGrid.ThingsListAtFast(position);
+            if (things == null) return null;
+            for (int i = 0; i < things.Count; i++)
+            {
+                Building building = things[i] as Building;
+                if (building != null && building.def == def) return building;
+            }
+            return null;
         }
     }
 }

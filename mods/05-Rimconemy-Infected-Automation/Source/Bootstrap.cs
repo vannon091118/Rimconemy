@@ -65,6 +65,10 @@ namespace Rimconemy.InfectedAutomation
             // Audit-Bündel C / F-13 (2026-08-04) — FIFO edge-trigger queue
             // for game-over pendings (replaces single-pending tuple).
             Tests.GameOverPendingQueueRegressionTests.RunAll();
+            // Sprint 1 (2026-08-05) — Perception infrastructure regression:
+            // ChunkState Scribe roundtrip, LightSystem daylight curve,
+            // NoiseSystem falloff, PerceptionMath formulas.
+            Tests.Sprint1PerceptionRegressionTests.RunAll();
             Log.Message("[Rimconemy.InfectedAutomation] Building threat adapter available; Mechadroid job contracts are gated for Milestone B; no incident or raid is spawned.");
 
             // Phase-5 (2026-08-05) — IncidentClassifier summary log. Validates the

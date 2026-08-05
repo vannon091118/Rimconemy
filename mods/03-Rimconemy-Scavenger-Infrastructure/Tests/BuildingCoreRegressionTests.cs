@@ -47,8 +47,13 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 "Building: resource category remains stable");
             var debris = DefDatabase<ThingDef>.GetNamedSilentFail("Rimconemy_ConstructionDebris");
             AssertTrue(debris != null, "Building: ConstructionDebris ThingDef is loaded");
-            AssertTrue(debris == null || debris.stuffProps != null,
-                "Building: ConstructionDebris exposes stuffProps");
+            // D3-Harmonisierung: ConstructionDebris ist kein Stuff mehr.
+            // <stuffProps> wurde bewusst aus dem Def entfernt (kein
+            // Wall-Stuff, kein Door-Stuff). Der Test prüft, dass der Def
+            // ohne stuffProps stabil bootet.
+            AssertTrue(debris != null, "Building: ConstructionDebris ThingDef is loaded");
+            AssertTrue(debris.stuffProps == null,
+                "Building: ConstructionDebris is no longer Stuff (D3 — stuffProps removed)");
         }
 
         private static void TestPowerDefContract()

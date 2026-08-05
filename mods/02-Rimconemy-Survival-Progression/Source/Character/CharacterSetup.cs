@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Rimconemy.Foundation.Colonials;
 using Rimconemy.Foundation.Maps;
+using Rimconemy.SurvivalProgression.Character.Roles;
 using RimWorld;
 using Verse;
 
@@ -280,14 +281,22 @@ namespace Rimconemy.SurvivalProgression.Character
         /// cumulative cost - regardless of whether leftover levels were
         /// inherited from a non-eligible backstory or passion bias.
         /// </summary>
-        private static bool ApplyBudget(Pawn pawn, Dictionary<SkillDef, int> budget)
+        private static bool ApplyBudget(Pawn pawn, Dictionary<SkillDef, int> budget,
+            int? sourceAnimals = null, int? sourceArtistic = null)
         {
             if (pawn?.skills == null || budget == null) return false;
+
+            // Animals and Artistic are hidden role-source skills: not budgeted
+            // here, but their pre-budget values feed the derived Hunting and
+            // Smithing read-models. Callers that reset skills first pass the
+            // captured values explicitly.
+            int animals = sourceAnimals ?? RoleSkillResolver.SkillOf(pawn, SkillDefOf.Animals);
+            int artistic = sourceArtistic ?? RoleSkillResolver.SkillOf(pawn, SkillDefOf.Artistic);
 
             var sanitized = new Dictionary<SkillDef, int>();
             foreach (var kvp in budget)
             {
-                if (kvp.Key == null) continue;
+                if (kvp.Key == null || RoleSkillCatalog.HiddenFromCharacterWindow(kvp.Key)) continue;
                 int level = SkillBudgetCalculator.ClampLevel(kvp.Value);
                 var record = pawn.skills.GetSkill(kvp.Key);
                 if (EligibleSkills.Contains(kvp.Key) && record != null && !record.TotallyDisabled)
@@ -304,14 +313,17 @@ namespace Rimconemy.SurvivalProgression.Character
                 return false;
             }
 
-            // Write levels from the allocation.
             foreach (var skillDef in EligibleSkills)
             {
+                if (RoleSkillCatalog.HiddenFromCharacterWindow(skillDef)) continue;
                 var skillRecord = pawn.skills.GetSkill(skillDef);
                 if (skillRecord == null || skillRecord.TotallyDisabled) continue;
-                int desiredLevel = sanitized.TryGetValue(skillDef, out int v) ? v : SkillBudgetCalculator.MinPerSkill;
-                skillRecord.Level = desiredLevel;
+                skillRecord.Level = sanitized.TryGetValue(skillDef, out int value)
+                    ? value : SkillBudgetCalculator.MinPerSkill;
             }
+
+            RestoreHiddenRoleSources(pawn, animals, artistic);
+            Cooking.CookingOutcomeResolver.ApplyStartingRoleTrait(pawn);
 
             Log.Message(
                 "[Rimconemy.SurvivalProgression] Custom budget applied to "
@@ -346,15 +358,56 @@ namespace Rimconemy.SurvivalProgression.Character
         {
             if (pawn?.skills == null) return false;
 
-            // Deterministic order: get the Forced allocation slot first,
-            // then build the cost-aware default over the clean slate.
+            // Preserve hidden role-source skills across the reset; their
+            // backstory values feed the derived Hunting/Smithing read-models.
+            int sourceAnimals = RoleSkillResolver.SkillOf(pawn, SkillDefOf.Animals);
+            int sourceArtistic = RoleSkillResolver.SkillOf(pawn, SkillDefOf.Artistic);
+            Passion sourceAnimalsPassion = PassionOf(pawn, SkillDefOf.Animals);
+            Passion sourceArtisticPassion = PassionOf(pawn, SkillDefOf.Artistic);
             ForceResetAllSkills(pawn);
 
             var eligible = EligibleSkills
-                .Where(skill => skill != null && pawn.skills.GetSkill(skill) != null && !pawn.skills.GetSkill(skill).TotallyDisabled)
+                .Where(skill => skill != null
+                    && !RoleSkillCatalog.HiddenFromCharacterWindow(skill)
+                    && pawn.skills.GetSkill(skill) != null
+                    && !pawn.skills.GetSkill(skill).TotallyDisabled)
                 .ToList();
             var allocation = SkillBudgetCalculator.BuildDefaultAllocation(eligible);
-            return ApplyBudget(pawn, allocation);
+            bool result = ApplyBudget(pawn, allocation, sourceAnimals, sourceArtistic);
+            // ForceResetAllSkills cleared passion for ALL skills including
+            // hidden role-source skills. Restore the backstory passion so
+            // Animals/Artistic keep their original learning rates.
+            RestoreHiddenPassions(pawn, sourceAnimalsPassion, sourceArtisticPassion);
+            return result;
+        }
+
+        private static void RestoreHiddenRoleSources(Pawn pawn, int animals, int artistic)
+        {
+            if (pawn?.skills == null) return;
+            SkillRecord animalsRecord = pawn.skills.GetSkill(SkillDefOf.Animals);
+            if (animalsRecord != null && !animalsRecord.TotallyDisabled)
+                animalsRecord.Level = SkillBudgetCalculator.ClampLevel(animals);
+            SkillRecord artisticRecord = pawn.skills.GetSkill(SkillDefOf.Artistic);
+            if (artisticRecord != null && !artisticRecord.TotallyDisabled)
+                artisticRecord.Level = SkillBudgetCalculator.ClampLevel(artistic);
+        }
+
+        private static Passion PassionOf(Pawn pawn, SkillDef skillDef)
+        {
+            if (pawn?.skills == null || skillDef == null) return Passion.None;
+            SkillRecord record = pawn.skills.GetSkill(skillDef);
+            return record?.passion ?? Passion.None;
+        }
+
+        private static void RestoreHiddenPassions(Pawn pawn, Passion animalsPassion, Passion artisticPassion)
+        {
+            if (pawn?.skills == null) return;
+            SkillRecord animalsRecord = pawn.skills.GetSkill(SkillDefOf.Animals);
+            if (animalsRecord != null && !animalsRecord.TotallyDisabled)
+                animalsRecord.passion = animalsPassion;
+            SkillRecord artisticRecord = pawn.skills.GetSkill(SkillDefOf.Artistic);
+            if (artisticRecord != null && !artisticRecord.TotallyDisabled)
+                artisticRecord.passion = artisticPassion;
         }
     }
 }

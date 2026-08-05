@@ -370,10 +370,10 @@ namespace Rimconemy.ScavengerInfrastructure.Building
                 field.SetValue(turretLike, 0);
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Field-Not-Found ist erwartet (RimWorld-Version-Drift etc.).
-                Log.Warning("[Rimconemy.ScavengerInfrastructure] TryResetBurstCooldownViaReflection: " + ex.GetType().Name + ": " + ex.Message);
+                // Stille Rückgabe verhindert Log-Spam in Tests und Production.
                 return false;
             }
         }

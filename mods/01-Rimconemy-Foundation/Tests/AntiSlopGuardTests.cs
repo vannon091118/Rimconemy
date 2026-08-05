@@ -125,18 +125,37 @@ namespace Rimconemy.Foundation.Tests
             }
         }
 
+        // Types whose own bodies contain anti-slop test strings that would
+        // cause false positives (the guard is the guard's own test fixture).
+        private static readonly HashSet<string> _exemptTypes = new HashSet<string>
+        {
+            "Rimconemy.Foundation.Tests.AntiSlopGuardTests",
+        };
+
         private static void ScanType(TypeDefinition type, string asmName, ref bool asmClean)
         {
             if (type == null) return;
 
-            foreach (var method in type.Methods)
-            {
-                if (!method.HasBody) continue;
+            // Never scan the guard itself — its test strings are the
+            // detection targets, not violations.
+            if (_exemptTypes.Contains(type.FullName)) return;
 
-                ScanMethod(method, type.FullName, asmName, ref asmClean);
+            // Only scan test classes: types ending with "Tests" or in a "Tests" namespace.
+            // Production code is NOT scanned — the guard watches for test-slop only.
+            bool isTestClass = type.FullName.EndsWith("Tests")
+                || type.FullName.Contains(".Tests.")
+                || type.FullName.Contains("Tests_");
+
+            if (isTestClass)
+            {
+                foreach (var method in type.Methods)
+                {
+                    if (!method.HasBody) continue;
+                    ScanMethod(method, type.FullName, asmName, ref asmClean);
+                }
             }
 
-            // Recurse into nested types
+            // Recurse into nested types (inherit test scope)
             foreach (var nested in type.NestedTypes)
             {
                 ScanType(nested, asmName, ref asmClean);
@@ -158,8 +177,12 @@ namespace Rimconemy.Foundation.Tests
 
                     // Find the range of instructions in this catch handler
                     var handlerStart = handler.HandlerStart;
-                    var handlerEnd = handler.HandlerEnd ?? GetNextHandlerStart(body, handler);
-                    if (handlerStart == null || handlerEnd == null) continue;
+                    // HandlerEnd is null when handler extends to end of method
+                    // (Cecil convention). CountInstructionsInRange handles null
+                    // correctly via `current != null` — no fallback needed.
+                    var handlerEnd = handler.HandlerEnd;
+
+                    if (handlerStart == null) continue;
 
                     int instrCount = CountInstructionsInRange(body, handlerStart, handlerEnd);
 
@@ -195,18 +218,7 @@ namespace Rimconemy.Foundation.Tests
                 }
             }
 
-            // Pattern 3: Check for "asserted-as-pass" / "swallowed" in method debug comments
-            if (method.DebugInformation != null && method.DebugInformation.SequencePoints != null)
-            {
-                foreach (var sp in method.DebugInformation.SequencePoints)
-                {
-                    if (sp.Document == null) continue;
-                    // We can't read the source file from Cecil sequence points easily,
-                    // but we can check the IL for specific patterns.
-                }
-            }
-
-            // Pattern 3b: Check IL for ldstr "asserted-as-pass" or "swallowed"
+            // Pattern 3: Check IL for ldstr "asserted-as-pass" or "swallowed"
             foreach (var instr in body.Instructions)
             {
                 if (instr.OpCode != OpCodes.Ldstr) continue;
@@ -221,6 +233,27 @@ namespace Rimconemy.Foundation.Tests
                         {
                             RecordViolation(asmName, typeName, method.Name, "ASSERTED_AS_PASS",
                                 "String-Literal '" + str + "' — Exception wird als PASS getarnt");
+                            asmClean = false;
+                        }
+                    }
+                }
+            }
+
+            // Pattern 4: Detect --skip / --noverify flag abuse via ldstr
+            foreach (var instr in body.Instructions)
+            {
+                if (instr.OpCode != OpCodes.Ldstr) continue;
+                if (instr.Operand is string flag)
+                {
+                    string lower = flag.ToLowerInvariant();
+                    if (lower.Contains("--skip") || lower.Contains("--noverify")
+                        || lower.Contains("skiptest") || lower.Contains("skip_test"))
+                    {
+                        string key = typeName + "::" + method.Name + ":SKIP_FLAG@" + instr.Offset;
+                        if (_reportedViolations.Add(key))
+                        {
+                            RecordViolation(asmName, typeName, method.Name, "SKIP_FLAG",
+                                "LLM Skip/Noverify Flag erkannt in String-Literal '" + flag + "'");
                             asmClean = false;
                         }
                     }
@@ -245,19 +278,44 @@ namespace Rimconemy.Foundation.Tests
 
             if (instrs.Count == 0) return false;
 
-            // Pattern: ldnull + throw (rethrow) — not a return true
-            // Pattern: ret — check the previous instruction
-            // Simplest: the handler body ends with "ret" and before it is ldc.i4.1 (true) or ldc.i4.m1 (true)
-            var lastInstr = instrs[instrs.Count - 1];
-            if (lastInstr.OpCode != OpCodes.Ret) return false;
-
-            if (instrs.Count >= 2)
+            // Find the last non-nop/branch instruction
+            Instruction lastMeaningful = null;
+            for (int i = instrs.Count - 1; i >= 0; i--)
             {
-                var beforeRet = instrs[instrs.Count - 2];
-                // ldc.i4.1 = true, ldc.i4.m1 = -1 (also truthy in C#)
-                if (beforeRet.OpCode == OpCodes.Ldc_I4_1 || beforeRet.OpCode == OpCodes.Ldc_I4_M1)
-                    return true;
+                var op = instrs[i].OpCode;
+                if (op != OpCodes.Nop && op != OpCodes.Br_S && op != OpCodes.Br)
+                {
+                    lastMeaningful = instrs[i];
+                    break;
+                }
             }
+            if (lastMeaningful == null) return false;
+            if (lastMeaningful.OpCode != OpCodes.Ret) return false;
+
+            // Find the instruction before ret (skipping nops/branches)
+            Instruction beforeRet = null;
+            for (int i = instrs.Count - 2; i >= 0; i--)
+            {
+                var op = instrs[i].OpCode;
+                if (op != OpCodes.Nop && op != OpCodes.Br_S && op != OpCodes.Br)
+                {
+                    beforeRet = instrs[i];
+                    break;
+                }
+            }
+            if (beforeRet == null) return false;
+
+            // Check for all C# compiler variants of "ldc.i4 1" (true):
+            //   ldc.i4.1  (compact)
+            //   ldc.i4.m1 (compact, -1, truthy in C#)
+            //   ldc.i4 1  (wide form with int operand)
+            //   ldc.i4.s 1 (byte form)
+            if (beforeRet.OpCode == OpCodes.Ldc_I4_1 || beforeRet.OpCode == OpCodes.Ldc_I4_M1)
+                return true;
+            if (beforeRet.OpCode == OpCodes.Ldc_I4 && beforeRet.Operand is int val && val != 0)
+                return true;
+            if (beforeRet.OpCode == OpCodes.Ldc_I4_S && beforeRet.Operand is sbyte sval && sval != 0)
+                return true;
 
             return false;
         }
@@ -272,22 +330,6 @@ namespace Rimconemy.Foundation.Tests
                 current = current.Next;
             }
             return count;
-        }
-
-        private static Instruction GetNextHandlerStart(Mono.Cecil.Cil.MethodBody body, ExceptionHandler current)
-        {
-            Instruction closest = null;
-            foreach (var handler in body.ExceptionHandlers)
-            {
-                if (handler == current) continue;
-                if (handler.HandlerStart == null) continue;
-                if (handler.HandlerStart.Offset > current.HandlerStart.Offset)
-                {
-                    if (closest == null || handler.HandlerStart.Offset < closest.Offset)
-                        closest = handler.HandlerStart;
-                }
-            }
-            return closest ?? body.Instructions.LastOrDefault();
         }
 
         private static void RecordViolation(string asmName, string typeName, string methodName,

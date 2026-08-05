@@ -1,5 +1,6 @@
 using Rimconemy.Foundation.Canonical;
 using UnityEngine;
+using Verse;
 
 namespace Rimconemy.SurvivalProgression.Needs
 {

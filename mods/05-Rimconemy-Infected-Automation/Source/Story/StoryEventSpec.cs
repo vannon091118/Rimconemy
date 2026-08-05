@@ -166,6 +166,250 @@ namespace Rimconemy.InfectedAutomation.Story
             };
         }
 
+        // ── new condition factories (event pool expansion) ──────────
+
+        public static EventCondition HealthLow()
+        {
+            return new EventCondition
+            {
+                ConditionId = "HealthLow",
+                Parameter = null,
+                Description = "Average colonist health below 60%.",
+            };
+        }
+
+        public static EventCondition HealthCritical()
+        {
+            return new EventCondition
+            {
+                ConditionId = "HealthCritical",
+                Parameter = null,
+                Description = "Average colonist health below 30%.",
+            };
+        }
+
+        public static EventCondition AnyColonistInjured()
+        {
+            return new EventCondition
+            {
+                ConditionId = "AnyColonistInjured",
+                Parameter = null,
+                Description = "At least one colonist has a major injury.",
+            };
+        }
+
+        public static EventCondition WealthAbove(float threshold)
+        {
+            return new EventCondition
+            {
+                ConditionId = "WealthAbove",
+                Parameter = threshold.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                Description = $"Colony wealth above {threshold:F0}.",
+            };
+        }
+
+        public static EventCondition WealthBelow(float threshold)
+        {
+            return new EventCondition
+            {
+                ConditionId = "WealthBelow",
+                Parameter = threshold.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                Description = $"Colony wealth below {threshold:F0}.",
+            };
+        }
+
+        public static EventCondition ThreatAbove(float threshold)
+        {
+            return new EventCondition
+            {
+                ConditionId = "ThreatAbove",
+                Parameter = threshold.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                Description = $"Threat pressure above {threshold:P0}.",
+            };
+        }
+
+        public static EventCondition MoodBelow(float threshold)
+        {
+            return new EventCondition
+            {
+                ConditionId = "MoodBelow",
+                Parameter = threshold.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                Description = $"Average mood below {threshold:P0}.",
+            };
+        }
+
+        public static EventCondition MoodAbove(float threshold)
+        {
+            return new EventCondition
+            {
+                ConditionId = "MoodAbove",
+                Parameter = threshold.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                Description = $"Average mood above {threshold:P0}.",
+            };
+        }
+
+        public static EventCondition PowerOff()
+        {
+            return new EventCondition
+            {
+                ConditionId = "PowerOff",
+                Parameter = null,
+                Description = "Colony power grid is offline.",
+            };
+        }
+
+        public static EventCondition PowerOn()
+        {
+            return new EventCondition
+            {
+                ConditionId = "PowerOn",
+                Parameter = null,
+                Description = "Colony power grid is online.",
+            };
+        }
+
+        public static EventCondition ColonistCountAbove(int count)
+        {
+            return new EventCondition
+            {
+                ConditionId = "ColonistCountAbove",
+                Parameter = count.ToString(),
+                Description = $"More than {count} colonists.",
+            };
+        }
+
+        public static EventCondition ColonistCountBelow(int count)
+        {
+            return new EventCondition
+            {
+                ConditionId = "ColonistCountBelow",
+                Parameter = count.ToString(),
+                Description = $"Fewer than {count} colonists.",
+            };
+        }
+
+        public static EventCondition DaysSinceLastEventAbove(float days)
+        {
+            return new EventCondition
+            {
+                ConditionId = "DaysSinceLastEventAbove",
+                Parameter = days.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                Description = $"At least {days:F1} days since last event.",
+            };
+        }
+
+        public static EventCondition ResourceCritical()
+        {
+            return new EventCondition
+            {
+                ConditionId = "ResourceCritical",
+                Parameter = null,
+                Description = "At least one resource is critically low.",
+            };
+        }
+
+        public static EventCondition HostileFactionsAbove(int count)
+        {
+            return new EventCondition
+            {
+                ConditionId = "HostileFactionsAbove",
+                Parameter = count.ToString(),
+                Description = $"More than {count} hostile factions.",
+            };
+        }
+
+        public static EventCondition DaysSinceStartAbove(float days)
+        {
+            return new EventCondition
+            {
+                ConditionId = "DaysSinceStartAbove",
+                Parameter = days.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                Description = $"At least {days:F1} days since game start.",
+            };
+        }
+
+        // ── new exclusion factories ─────────────────────────────────
+
+        public static EventCondition ExcludeWhenAnyResourceCritical()
+        {
+            return new EventCondition
+            {
+                ConditionId = "AnyResourceCritical",
+                Parameter = null,
+                Description = "Blocked when any resource is already critical.",
+            };
+        }
+
+        public static EventCondition ExcludeWhenThreatBelow(float threshold)
+        {
+            return new EventCondition
+            {
+                ConditionId = "ThreatBelow",
+                Parameter = threshold.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                Description = $"Blocked when threat pressure is below {threshold:P0}.",
+            };
+        }
+
+        public static EventCondition ExcludeWhenHealthAbove(float threshold)
+        {
+            return new EventCondition
+            {
+                ConditionId = "HealthAbove",
+                Parameter = threshold.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                Description = $"Blocked when average health is above {threshold:P0}.",
+            };
+        }
+
+        public static EventCondition ExcludeWhenMoodAbove(float threshold)
+        {
+            return new EventCondition
+            {
+                ConditionId = "MoodAbove",
+                Parameter = threshold.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                Description = $"Blocked when average mood is above {threshold:P0}.",
+            };
+        }
+
+        public static EventCondition ExcludeWhenPowerOn()
+        {
+            return new EventCondition
+            {
+                ConditionId = "PowerOn",
+                Parameter = null,
+                Description = "Blocked when power grid is online.",
+            };
+        }
+
+        public static EventCondition ExcludeWhenWealthAbove(float threshold)
+        {
+            return new EventCondition
+            {
+                ConditionId = "WealthAbove",
+                Parameter = threshold.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                Description = $"Blocked when colony wealth is above {threshold:F0}.",
+            };
+        }
+
+        public static EventCondition ExcludeWhenDaysSinceLastEventBelow(float days)
+        {
+            return new EventCondition
+            {
+                ConditionId = "DaysSinceLastEventBelow",
+                Parameter = days.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                Description = $"Blocked when less than {days:F1} days since last event.",
+            };
+        }
+
+        public static EventCondition ExcludeWhenHostileFactionsBelow(int count)
+        {
+            return new EventCondition
+            {
+                ConditionId = "HostileFactionsBelow",
+                Parameter = count.ToString(),
+                Description = $"Blocked when fewer than {count} hostile factions.",
+            };
+        }
+
         /// <summary>
         /// Build an EventCondition from a single line of XML, e.g.
         ///   <c>profile.MaxActiveEvents erreicht</c>

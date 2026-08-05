@@ -75,7 +75,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             AssertTrue(def != null, "I3.Rimconemy_BurnSteelScraps RecipeDef is loaded");
         }
 
-        /// <summary>I4: Woody is NOT in Wall stuffCategories (if Wall loaded).</summary>
+        /// <summary>I4: Woody IS in Wall stuffCategories (D2 — Wood removal reverted, B1).</summary>
         private static void TestI4_WoodyNotInWall()
         {
             var wall = DefDatabase<ThingDef>.GetNamedSilentFail("Wall");
@@ -85,10 +85,12 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 return;
             }
             bool hasWoody = wall.stuffCategories.Exists(c => c != null && c.defName == "Woody");
-            AssertTrue(!hasWoody, "I4.Woody is NOT in Wall stuffCategories");
+            // D2-Harmonisierung (2026-08-05): Woody-Removal aus Wall/Door/Barricade
+            // wurde zurückgenommen. Holz ist wieder Stuff-Material.
+            AssertTrue(hasWoody, "I4.Woody IS in Wall stuffCategories (D2 revert)");
         }
 
-        /// <summary>I5: Woody is NOT in Door stuffCategories (if Door loaded).</summary>
+        /// <summary>I5: Woody IS in Door stuffCategories (D2 — Wood removal reverted, B1).</summary>
         private static void TestI5_WoodyNotInDoor()
         {
             var door = DefDatabase<ThingDef>.GetNamedSilentFail("Door");
@@ -98,7 +100,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 return;
             }
             bool hasWoody = door.stuffCategories.Exists(c => c != null && c.defName == "Woody");
-            AssertTrue(!hasWoody, "I5.Woody is NOT in Door stuffCategories");
+            AssertTrue(hasWoody, "I5.Woody IS in Door stuffCategories (D2 revert)");
         }
 
         /// <summary>I6: Stony IS in Wall stuffCategories.</summary>

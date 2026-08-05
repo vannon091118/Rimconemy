@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <Rimconemy.BuilderDurability.Inspect>Baukunst-Skill {0}: +{1} Gebäudehaltbarkeit</Rimconemy.BuilderDurability.Inspect>
+  <Rimconemy.Farming.PlantedBy>Gepflanzt von einem Pflanzen-Skill {0}: {1} Wachstumsrate</Rimconemy.Farming.PlantedBy>
+  <Rimconemy.Intellectual.LearningFactor>Intelligenz {0}: {1} Lernfaktor</Rimconemy.Intellectual.LearningFactor>
+  <Rimconemy.Role.Title>Rollen</Rimconemy.Role.Title>
+  <Rimconemy.Role.Preview>Rollen-Vorschau für die gewählte Verteilung</Rimconemy.Role.Preview>
+  <Rimconemy.Role.Level>Stufe {0}</Rimconemy.Role.Level>
+  <Rimconemy.Role.Smithing>Schmied</Rimconemy.Role.Smithing>
+  <Rimconemy.Role.Hunting>Jagd</Rimconemy.Role.Hunting>
+  <Rimconemy.Role.Farming>Landwirtschaft</Rimconemy.Role.Farming>
+  <Rimconemy.Role.Cooking>Kochen</Rimconemy.Role.Cooking>
+  <Rimconemy.Role.Intellectual>Intelligenz</Rimconemy.Role.Intellectual>
+  <Rimconemy.Role.Preview>Abgeleitete Rollen nutzen die versteckten Quellen Tiere/Künstler.</Rimconemy.Role.Preview>
+  <Rimconemy.Role.Level>Stufe {0}</Rimconemy.Role.Level>
+</LanguageData>

@@ -193,7 +193,7 @@ namespace Rimconemy.InfectedAutomation.Story
             }
 
             // Don't evaluate if threat is below profile minimum
-            var snapshot = BuildLiveSnapshot(currentTick);
+            var snapshot = BuildLiveSnapshot(currentTick, State);
             EvaluateWithSnapshot(snapshot, currentTick);
         }
 
@@ -356,7 +356,7 @@ namespace Rimconemy.InfectedAutomation.Story
         /// Reads RimWorld state (pawn counts, threat, etc.) and
         /// produces the aggregated read-model that StorySelector needs.
         /// </summary>
-        private static SituationSnapshot BuildLiveSnapshot(long tick)
+        private static SituationSnapshot BuildLiveSnapshot(long tick, StoryState state = null)
         {
             var snapshot = new SituationSnapshot
             {
@@ -413,25 +413,28 @@ namespace Rimconemy.InfectedAutomation.Story
                 })
                 : 0.5f;
 
-            // Power grid status — any home map with a powered building
+            // Power grid status — check if any building has a powered CompPowerTrader.
             snapshot.PowerGridActive = false;
             foreach (var map in MapRegistry.GetPlayerHomeMaps())
             {
-                if (map?.PowerNetManager?.PowerNetList != null)
+                if (map == null) continue;
+                var things = map.listerBuildings?.allBuildingsColonist;
+                if (things == null) continue;
+                for (int i = 0; i < things.Count; i++)
                 {
-                    foreach (var net in map.PowerNetManager.PowerNetList)
+                    var b = things[i];
+                    if (b == null) continue;
+                    var comp = b.TryGetComp<CompPowerTrader>();
+                    if (comp != null && comp.PowerOn)
                     {
-                        if (net != null && net.CurrentEnergyGainRate() > 0f)
-                        {
-                            snapshot.PowerGridActive = true;
-                            break;
-                        }
+                        snapshot.PowerGridActive = true;
+                        break;
                     }
                 }
                 if (snapshot.PowerGridActive) break;
             }
 
-            // Hostile factions — count factions with negative goodwill
+            // Hostile factions — count factions hostile to the player
             snapshot.HostileFactionCount = 0;
             if (Find.FactionManager != null)
             {
@@ -443,18 +446,18 @@ namespace Rimconemy.InfectedAutomation.Story
                 }
             }
 
-            // Active research count
+            // Active research count — Phase 2 placeholder.
+            // The exact ResearchManager property API varies across RimWorld versions;
+            // we leave this at 0 for now and populate via a future capability bridge.
             snapshot.ActiveResearchCount = 0;
-            if (Find.ResearchManager != null && Find.ResearchManager.currentProj != null)
-                snapshot.ActiveResearchCount = 1;
 
             // Any colonist injured (major health issue)
             snapshot.AnyColonistInjured = activeColonists.Any(p =>
-                p.health?.summaryHealth?.SummaryHealthPercent < 0.6f);
+                (p.health?.summaryHealth?.SummaryHealthPercent ?? 0.5f) < 0.6f);
 
             // Days since last event (from StoryState)
-            snapshot.DaysSinceLastEvent = (State != null && State.LastEventTick > 0)
-                ? (tick - State.LastEventTick) / (float)Rimconemy.Foundation.TimeConstants.TicksPerDay
+            snapshot.DaysSinceLastEvent = (state != null && state.LastEventTick > 0)
+                ? (tick - state.LastEventTick) / (float)Rimconemy.Foundation.TimeConstants.TicksPerDay
                 : float.MaxValue;
 
             // Ideology (simplified: 1 active rule when ThoughtWorker exists)
@@ -727,6 +730,23 @@ namespace Rimconemy.InfectedAutomation.Story
             ThreatHistory.Add(snapshot.ThreatPressure);
             if (ThreatHistory.Count > 30) ThreatHistory.RemoveAt(0);
 
+            // ThreatTrend: compare current pressure against the rolling
+            // ThreatHistory average. Positive = rising, negative = falling.
+            // Clamped to [-1, +1] so downstream consumers can normalize.
+            if (ThreatHistory.Count >= 2)
+            {
+                float sum = 0f;
+                for (int i = 0; i < ThreatHistory.Count - 1; i++)
+                    sum += ThreatHistory[i];
+                float avg = sum / (ThreatHistory.Count - 1);
+                float raw = snapshot.ThreatPressure - avg;
+                snapshot.ThreatTrend = System.Math.Max(-1f, System.Math.Min(1f, raw * 2f));
+            }
+            else
+            {
+                snapshot.ThreatTrend = 0f;
+            }
+
             if (snapshot.ThreatPressure < ActiveProfile.MinThreatLevel)
             {
                 LastSelectionReason = $"Bedrohungspegel {snapshot.ThreatPressure:P0} < Profil-Minimum {ActiveProfile.MinThreatLevel:P0} — kein Event ausgelöst.";
@@ -812,6 +832,6 @@ namespace Rimconemy.InfectedAutomation.Story
         /// Public wrapper around the private BuildLiveSnapshot so EvaluateNow
         /// can call it without duplicating logic.
         /// </summary>
-        private static SituationSnapshot BuildLiveSnapshotPublic(long tick) => BuildLiveSnapshot(tick);
+        private SituationSnapshot BuildLiveSnapshotPublic(long tick) => BuildLiveSnapshot(tick, State);
     }
 }

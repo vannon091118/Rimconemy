@@ -26,9 +26,11 @@
   <!-- ══════════════ PART 1 — WOODLOG MaxHitPoints-Factor (morsch) ══════════════ -->
   <Operation Class="PatchOperationConditional">
     <xpath>Defs/ThingDef[defName="WoodLog"]/stuffProps/statFactors/MaxHitPoints</xpath>
-    <match Class="PatchOperationSet">
+    <match Class="PatchOperationReplace">
       <xpath>Defs/ThingDef[defName="WoodLog"]/stuffProps/statFactors/MaxHitPoints</xpath>
-      <value>0.85</value>
+      <value>
+        <MaxHitPoints>0.85</MaxHitPoints>
+      </value>
     </match>
   </Operation>
 
@@ -39,9 +41,11 @@
        MaxHitPoints, nicht aus Beauty. -->
   <Operation Class="PatchOperationConditional" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
     <xpath>Defs/ThingDef[defName="WoodLog"]/stuffProps/statFactors/ArmorRating</xpath>
-    <match Class="PatchOperationSet">
+    <match Class="PatchOperationReplace">
       <xpath>Defs/ThingDef[defName="WoodLog"]/stuffProps/statFactors/ArmorRating</xpath>
-      <value>0.0</value>
+      <value>
+        <ArmorRating>0.0</ArmorRating>
+      </value>
     </match>
   </Operation>
 

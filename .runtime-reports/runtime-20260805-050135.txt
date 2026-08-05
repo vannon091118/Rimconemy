@@ -6,3 +6,17 @@ timeout=90
 deploy=true build=true start=true
 before_log_signature=5650077|17032|2026-08-05 04:59:15.665457411 +0200|e712734c2374ba9656baae814df24b1489773bee3db3b0bda04f47cf7bf6508b
 
+after_log_signature=5648207|254582|2026-08-05 05:03:16.595192855 +0200|5b1deef1bf5b193f398a38ac6ea69224129f3ada6a9230fb1c6a9c9c16cdcf10
+failures=5
+warnings=1
+result=FAIL
+failure_details_begin
+forbidden runtime errors found in Player.log
+missing summary: BuildingCore regression tests: [0-9]+ passed, 0 failed
+missing summary: Building input regression tests: [0-9]+ passed, 0 failed
+missing summary: CampfireScraps regression tests: [0-9]+ passed, 0 failed
+missing summary: CoalChain regression tests: [0-9]+ passed, 0 failed
+failure_details_end
+warning_details_begin
+Scenario contract summary not required; use --require-scenario-tests
+warning_details_end

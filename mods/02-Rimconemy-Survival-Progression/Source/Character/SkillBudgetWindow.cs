@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Rimconemy.Foundation.UI;
+using Rimconemy.SurvivalProgression.Character.Roles;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -111,6 +112,33 @@ namespace Rimconemy.SurvivalProgression.Character
             Widgets.Label(zoneRect, zoneKey.Translate());
             GUI.color = Color.white;
             y += RimconemyTheme.RowHeight;
+
+            // The hidden Animals/Artistic source skills are not allocated as a
+            // second truth. Show their derived Hunting/Smithing result here so
+            // the player can see the role consequences while distributing the
+            // visible budget.
+            Pawn previewPawn = GetPreviewPawn();
+            if (previewPawn != null)
+            {
+                RimconemyUi.DrawSectionTitle(
+                    new Rect(inRect.x, y, inRect.width, RimconemyTheme.SectionTitleHeight),
+                    "Rimconemy.Role.Title",
+                    GameFont.Small);
+                y += RimconemyTheme.SectionTitleHeight;
+                DrawRolePreviewRow(inRect, ref y, "Rimconemy.Role.Farming", PreviewLevel(SkillDefOf.Plants));
+                DrawRolePreviewRow(inRect, ref y, "Rimconemy.Role.Cooking", PreviewLevel(SkillDefOf.Cooking));
+                DrawRolePreviewRow(inRect, ref y, "Rimconemy.Role.Hunting", RoleSkillResolver.HuntingLevelFromSkills(
+                    PreviewLevel(SkillDefOf.Shooting),
+                    RoleSkillResolver.SkillOf(previewPawn, SkillDefOf.Animals)));
+                DrawRolePreviewRow(inRect, ref y, "Rimconemy.Role.Smithing", RoleSkillResolver.SmithingLevelFromSkills(
+                    PreviewLevel(SkillDefOf.Crafting),
+                    RoleSkillResolver.SkillOf(previewPawn, SkillDefOf.Artistic)));
+                DrawRolePreviewRow(inRect, ref y, "Rimconemy.Role.Intellectual", PreviewLevel(SkillDefOf.Intellectual));
+                GUI.color = RimconemyTheme.Muted;
+                Widgets.Label(new Rect(inRect.x, y, inRect.width, RimconemyTheme.RowHeight), "Rimconemy.Role.Preview".Translate());
+                GUI.color = Color.white;
+                y += RimconemyTheme.RowHeight + RimconemyTheme.SectionSpacing;
+            }
 
             var setupState = CharacterSetupState.Get();
             // Honest Banner: SkillBudgetWindow ist das einzige Foundation-konsumierende
@@ -303,9 +331,44 @@ namespace Rimconemy.SurvivalProgression.Character
                 && state.Applied;
         }
 
+        private int PreviewLevel(SkillDef skillDef)
+        {
+            return skillDef != null && _allocations.TryGetValue(skillDef, out int level)
+                ? level
+                : 0;
+        }
+
+        private static void DrawRolePreviewRow(Rect inRect, ref float y, string labelKey, int level)
+        {
+            RimconemyUi.DrawRow(
+                new Rect(inRect.x, y, inRect.width, RimconemyTheme.RowHeight),
+                labelKey.Translate(),
+                "Rimconemy.Role.Level".Translate(level));
+            y += RimconemyTheme.RowHeight;
+        }
+
+        private static Pawn GetPreviewPawn()
+        {
+            GameInitData initData = Find.GameInitData;
+            if (initData == null) return null;
+            var field = initData.GetType().GetField(
+                "startingAndOptionalPawns",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var pawns = field?.GetValue(initData) as IList;
+            if (pawns == null) return null;
+            for (int i = 0; i < pawns.Count; i++)
+            {
+                Pawn pawn = pawns[i] as Pawn;
+                if (pawn != null) return pawn;
+            }
+            return null;
+        }
+
         private static List<SkillDef> GetEligibleSkills()
         {
-            return new List<SkillDef>(CharacterSetup.EligibleSkills);
+            return CharacterSetup.EligibleSkills
+                .Where(skill => skill != null && !RoleSkillCatalog.HiddenFromCharacterWindow(skill))
+                .ToList();
         }
     }
 

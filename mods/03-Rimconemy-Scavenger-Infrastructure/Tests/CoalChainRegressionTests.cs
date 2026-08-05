@@ -132,23 +132,25 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             }
         }
 
-        /// <summary>C7: Campfire has all 4 recipes wired (Burn, Coal, Salvage, StainlessSteel).</summary>
+        /// <summary>C7: Campfire has all 5 recipes wired (D3 adds MakeWeaponComponent).</summary>
         private static void TestC7_CampfireHasAllRecipes()
         {
             var campfire = DefDatabase<ThingDef>.GetNamedSilentFail("Rimconemy_Campfire");
             AssertTrue(campfire != null, "C7.Rimconemy_Campfire ThingDef is loaded");
             if (campfire != null)
             {
-                AssertTrue(campfire.recipes != null && campfire.recipes.Count == 4,
-                    "C7.Campfire has exactly 4 recipes");
+                AssertTrue(campfire.recipes != null && campfire.recipes.Count >= 5,
+                    "C7.Campfire has at least 5 recipes");
                 bool hasBurn = campfire.recipes.Exists(r => r != null && r.defName == "Rimconemy_BurnSteelScraps");
                 bool hasMake = campfire.recipes.Exists(r => r != null && r.defName == "Rimconemy_MakeCoal");
                 bool hasSalvage = campfire.recipes.Exists(r => r != null && r.defName == "Rimconemy_SalvageMachineParts");
                 bool hasSS = campfire.recipes.Exists(r => r != null && r.defName == "Rimconemy_MakeStainlessSteel");
+                bool hasWC = campfire.recipes.Exists(r => r != null && r.defName == "Rimconemy_MakeWeaponComponent");
                 AssertTrue(hasBurn, "C7.Campfire has BurnSteelScraps");
                 AssertTrue(hasMake, "C7.Campfire has MakeCoal");
                 AssertTrue(hasSalvage, "C7.Campfire has SalvageMachineParts");
                 AssertTrue(hasSS, "C7.Campfire has MakeStainlessSteel");
+                AssertTrue(hasWC, "C7.Campfire has MakeWeaponComponent (D3)");
             }
         }
 

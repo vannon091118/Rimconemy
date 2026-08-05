@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using RimWorld;
+using Rimconemy.SurvivalProgression.Character.Roles;
 using Verse;
 
 namespace Rimconemy.SurvivalProgression.Character
@@ -170,7 +171,9 @@ namespace Rimconemy.SurvivalProgression.Character
             else
             {
                 spent = pawn.skills.skills
-                    .Where(r => r?.def != null)
+                    .Where(r => r?.def != null
+                        && !r.TotallyDisabled
+                        && !RoleSkillCatalog.HiddenFromCharacterWindow(r.def))
                     .Sum(r => SkillBudgetCalculator.CostForLevel(r.Level));
             }
 

@@ -71,6 +71,15 @@ namespace Rimconemy.InfectedAutomation.Story
             Register(Desertion);
             Register(PowerStruggle);
             Register(LastCache);
+            // ── new events (event pool expansion) ──────────
+            Register(BountifulHarvest);
+            Register(ResourceSpoilage);
+            Register(WandererArrives);
+            Register(LeadershipChallenge);
+            Register(PirateRaid);
+            Register(MechSwarm);
+            Register(Epidemic);
+            Register(Betrayal);
         }
 
         /// <summary>
@@ -886,6 +895,480 @@ namespace Rimconemy.InfectedAutomation.Story
 
             FollowUpIds = new List<string>(),
             DeterminismKeyTemplate = "{ProfileId}+{EventId}+{StorageHash}+{GameTickDay}",
+        };
+
+        // ═══════════════════════════════════════════════════════
+        // NEW EVENTS — event pool expansion (2026-08-05)
+        // ═══════════════════════════════════════════════════════
+
+        // ── Band 1 — Refuge: positive supply event ──────────
+        public static readonly StoryEventSpec BountifulHarvest = new StoryEventSpec
+        {
+            EventId = "rimconemy.supply.bountiful_harvest",
+            EventVersion = 1,
+            EventFamily = "Supply",
+            Label = "Üppige Ernte",
+            Description = "Die Felder liefern mehr als erwartet. Die Moral steigt.",
+
+            Prerequisites = new List<EventCondition>
+            {
+                EventCondition.MaxActiveEventsReached(),
+                EventCondition.ActiveEvent("Supply"),
+                EventCondition.ColonistCountAbove(1),
+                EventCondition.WealthBelow(200000f),
+            },
+            Exclusions = new List<EventCondition>
+            {
+                EventCondition.ExcludeWhenAnyResourceCritical(),
+                EventCondition.ExcludeWhenDaysSinceLastEventBelow(2.0f),
+            },
+
+            Weights = new Dictionary<string, float>
+            {
+                { "Rimconemy_Refuge", 20f },
+                { "Rimconemy_Survival", 10f },
+            },
+            CooldownsDays = new Dictionary<string, float>
+            {
+                { "Rimconemy_Refuge", 10.0f },
+                { "Rimconemy_Survival", 12.0f },
+            },
+
+            EscalationBand = 1,
+            EscalationModifier = 0f,
+
+            LetterLabel = "Reiche Ernte",
+            LetterText = "Die Felder tragen dieses Mal besonders gut. Vorräte für {PawnName} und die Gruppe sind gesichert.",
+            TextKey = "Rimconemy_BountifulHarvest_Letter",
+
+            Choices = new List<EventChoice>
+            {
+                new EventChoice
+                {
+                    ChoiceId = "Stockpile",
+                    Label = "Vorrat anlegen",
+                    Effects = new List<string> { "ResourceBoost:Food+150", "MoodModifier:+3 for 3 days" },
+                },
+                new EventChoice
+                {
+                    ChoiceId = "Share",
+                    Label = "Mit Nachbarn teilen",
+                    Effects = new List<string> { "ResourceBoost:Food+50", "OpinionChange:+15", "MoodModifier:+2 for 2 days" },
+                },
+            },
+
+            FollowUpIds = new List<string>(),
+            DeterminismKeyTemplate = "{ProfileId}+{EventId}+{StorageHash}+{GameTickDay}",
+        };
+
+        // ── Band 2 — Survival: resource decay ────────────────
+        public static readonly StoryEventSpec ResourceSpoilage = new StoryEventSpec
+        {
+            EventId = "rimconemy.supply.resource_spoilage",
+            EventVersion = 1,
+            EventFamily = "Supply",
+            Label = "Vorratsverderb",
+            Description = "Hitze und Feuchtigkeit haben einen Teil der Vorräte ruiniert.",
+
+            Prerequisites = new List<EventCondition>
+            {
+                EventCondition.MaxActiveEventsReached(),
+                EventCondition.ActiveEvent("Supply"),
+                EventCondition.ThreatAbove(0.25f),
+            },
+            Exclusions = new List<EventCondition>
+            {
+                EventCondition.ExcludeWhenDaysSinceLastEventBelow(1.5f),
+            },
+
+            Weights = new Dictionary<string, float>
+            {
+                { "Rimconemy_Survival", 35f },
+                { "Rimconemy_Collapse", 45f },
+            },
+            CooldownsDays = new Dictionary<string, float>
+            {
+                { "Rimconemy_Survival", 4.0f },
+                { "Rimconemy_Collapse", 2.0f },
+            },
+
+            EscalationBand = 2,
+            EscalationModifier = 0.04f,
+
+            LetterLabel = "Vorräte verdorben",
+            LetterText = "{PawnName} stellt fest, dass ein Teil der Vorräte ungenießbar geworden ist. Der Verlust betrifft hauptsächlich Lebensmittel.",
+            TextKey = "Rimconemy_ResourceSpoilage_Letter",
+
+            Choices = new List<EventChoice>
+            {
+                new EventChoice
+                {
+                    ChoiceId = "Salvage",
+                    Label = "Reste retten",
+                    Effects = new List<string> { "ResourceLoss:Food-30%", "MoodModifier:-2 for 1 day" },
+                },
+                new EventChoice
+                {
+                    ChoiceId = "Disinfect",
+                    Label = "Aufbereiten",
+                    Effects = new List<string> { "ResourceLoss:Food-15%", "WalletCost:20 Credits", "MoodModifier:-1 for 1 day" },
+                },
+            },
+
+            FollowUpIds = new List<string>(),
+            DeterminismKeyTemplate = "{ProfileId}+{EventId}+{StorageHash}+{GameTickDay}",
+        };
+
+        // ── Band 1-2 — Social: new colonist ──────────────────
+        public static readonly StoryEventSpec WandererArrives = new StoryEventSpec
+        {
+            EventId = "rimconemy.social.wanderer_arrives",
+            EventVersion = 1,
+            EventFamily = "Social",
+            Label = "Wanderer",
+            Description = "Ein Fremder bittet um Aufnahme in die Gruppe.",
+
+            Prerequisites = new List<EventCondition>
+            {
+                EventCondition.MaxActiveEventsReached(),
+                EventCondition.ActiveEvent("Social"),
+                EventCondition.ColonistCountBelow(8),
+                EventCondition.DaysSinceStartAbove(5f),
+            },
+            Exclusions = new List<EventCondition>
+            {
+                EventCondition.ExcludeWhenMoodAbove(0.7f),
+                EventCondition.ExcludeWhenDaysSinceLastEventBelow(3.0f),
+            },
+
+            Weights = new Dictionary<string, float>
+            {
+                { "Rimconemy_Refuge", 15f },
+                { "Rimconemy_Survival", 20f },
+            },
+            CooldownsDays = new Dictionary<string, float>
+            {
+                { "Rimconemy_Refuge", 15.0f },
+                { "Rimconemy_Survival", 12.0f },
+            },
+
+            EscalationBand = 1,
+            EscalationModifier = 0f,
+
+            LetterLabel = "Fremder nähert sich",
+            LetterText = "Ein Wanderer hat die Siedlung erreicht und bittet um Aufnahme. Er scheint arbeitsfähig und friedlich.",
+            TextKey = "Rimconemy_WandererArrives_Letter",
+
+            Choices = new List<EventChoice>
+            {
+                new EventChoice
+                {
+                    ChoiceId = "Accept",
+                    Label = "Aufnehmen",
+                    Effects = new List<string> { "AddColonist:Wanderer", "MoodModifier:+2 for 2 days" },
+                },
+                new EventChoice
+                {
+                    ChoiceId = "Decline",
+                    Label = "Abweisen",
+                    Effects = new List<string> { "MoodModifier:-1 for 1 day", "OpinionChange:-5" },
+                },
+            },
+
+            FollowUpIds = new List<string>(),
+            DeterminismKeyTemplate = "{ProfileId}+{EventId}+{PawnId}+{GameTickDay}",
+        };
+
+        // ── Band 3 — Social: power challenge ─────────────────
+        public static readonly StoryEventSpec LeadershipChallenge = new StoryEventSpec
+        {
+            EventId = "rimconemy.social.leadership_challenge",
+            EventVersion = 1,
+            EventFamily = "Social",
+            Label = "Führungskrise",
+            Description = "{PawnName} fordert die Führung offen heraus.",
+
+            Prerequisites = new List<EventCondition>
+            {
+                EventCondition.MaxActiveEventsReached(),
+                EventCondition.ActiveEvent("Social"),
+                EventCondition.ColonistCountAbove(2),
+                EventCondition.MoodBelow(0.4f),
+            },
+            Exclusions = new List<EventCondition>
+            {
+                EventCondition.ExcludeWhenDaysSinceLastEventBelow(2.0f),
+            },
+
+            Weights = new Dictionary<string, float>
+            {
+                { "Rimconemy_Collapse", 55f },
+            },
+            CooldownsDays = new Dictionary<string, float>
+            {
+                { "Rimconemy_Collapse", 7.0f },
+            },
+
+            EscalationBand = 3,
+            EscalationModifier = 0.07f,
+
+            LetterLabel = "Führungssturz",
+            LetterText = "{PawnName} fordert die Führungsrolle heraus und gewinnt rapide an Unterstützung. Die Gruppe steht vor einer Spaltung.",
+            TextKey = "Rimconemy_LeadershipChallenge_Letter",
+
+            Choices = new List<EventChoice>
+            {
+                new EventChoice
+                {
+                    ChoiceId = "Challenge",
+                    Label = "Herausforderung annehmen",
+                    Effects = new List<string> { "PawnMood:-5 for 3 days", "GroupCohesion:-0.15", "IdeologyTension:+0.08" },
+                },
+                new EventChoice
+                {
+                    ChoiceId = "StepDown",
+                    Label = "Führung abtreten",
+                    Effects = new List<string> { "TransferLeadership", "MoodModifier:+5 for 5 days", "GroupCohesion:+0.05" },
+                },
+            },
+
+            FollowUpIds = new List<string>(),
+            DeterminismKeyTemplate = "{ProfileId}+{EventId}+{IdeologyTension}+{PawnId}+{GameTickDay}",
+        };
+
+        // ── Band 2 — Raid: pirate scouts ─────────────────────
+        public static readonly StoryEventSpec PirateRaid = new StoryEventSpec
+        {
+            EventId = "rimconemy.raid.pirate_scouts",
+            EventVersion = 1,
+            EventFamily = "Raid",
+            Label = "Piraten-Scout",
+            Description = "Piraten erkunden die Gegend auf Beute.",
+
+            Prerequisites = new List<EventCondition>
+            {
+                EventCondition.MaxActiveEventsReached(),
+                EventCondition.ActiveEvent("Raid"),
+                EventCondition.WealthAbove(100000f),
+                EventCondition.HostileFactionsAbove(0),
+            },
+            Exclusions = new List<EventCondition>
+            {
+                EventCondition.ExcludeWhenThreatBelow(0.2f),
+                EventCondition.ExcludeWhenDaysSinceLastEventBelow(2.0f),
+            },
+
+            Weights = new Dictionary<string, float>
+            {
+                { "Rimconemy_Survival", 35f },
+                { "Rimconemy_Collapse", 50f },
+            },
+            CooldownsDays = new Dictionary<string, float>
+            {
+                { "Rimconemy_Survival", 4.0f },
+                { "Rimconemy_Collapse", 2.5f },
+            },
+
+            EscalationBand = 2,
+            EscalationModifier = 0.06f,
+
+            LetterLabel = "Piraten gesichtet",
+            LetterText = "Piraten-Scouts wurden in der Nähe der Siedlung gesichtet. Sie scheinen die Vorräte zu studieren.",
+            TextKey = "Rimconemy_PirateRaid_Letter",
+
+            Choices = new List<EventChoice>
+            {
+                new EventChoice
+                {
+                    ChoiceId = "Defend",
+                    Label = "Verteidigen",
+                    Effects = new List<string> { "DefenseBonus:+0.20 for 1 day", "ResourceCost:15%" },
+                },
+                new EventChoice
+                {
+                    ChoiceId = "Bribe",
+                    Label = "Bestechen",
+                    Effects = new List<string> { "WalletCost:80 Credits", "IdeologyTension:-0.02" },
+                },
+            },
+
+            FollowUpIds = new List<string>(),
+            DeterminismKeyTemplate = "{ProfileId}+{EventId}+{ThreatPressure}+{GameTickDay}",
+        };
+
+        // ── Band 3 — Raid: mechanoid surge ───────────────────
+        public static readonly StoryEventSpec MechSwarm = new StoryEventSpec
+        {
+            EventId = "rimconemy.raid.mech_swarm",
+            EventVersion = 1,
+            EventFamily = "Raid",
+            Label = "Mechanoidenschwarm",
+            Description = "Ein Schwarm Mechanoiden nähert sich der Siedlung.",
+
+            Prerequisites = new List<EventCondition>
+            {
+                EventCondition.MaxActiveEventsReached(),
+                EventCondition.ActiveEvent("Raid"),
+                EventCondition.WealthAbove(300000f),
+                EventCondition.ThreatAbove(0.5f),
+                EventCondition.DaysSinceStartAbove(15f),
+            },
+            Exclusions = new List<EventCondition>
+            {
+                EventCondition.ExcludeWhenHealthAbove(0.8f),
+                EventCondition.ExcludeWhenDaysSinceLastEventBelow(3.0f),
+            },
+
+            Weights = new Dictionary<string, float>
+            {
+                { "Rimconemy_Collapse", 65f },
+            },
+            CooldownsDays = new Dictionary<string, float>
+            {
+                { "Rimconemy_Collapse", 4.0f },
+            },
+
+            EscalationBand = 3,
+            EscalationModifier = 0.12f,
+
+            LetterLabel = "Mechanoiden im Anmarsch!",
+            LetterText = "Ein Schwarm Mechanoiden bewegt sich auf die Siedlung zu. Die Bedrohung ist erheblich.",
+            TextKey = "Rimconemy_MechSwarm_Letter",
+
+            Choices = new List<EventChoice>
+            {
+                new EventChoice
+                {
+                    ChoiceId = "FullDefense",
+                    Label = "Volle Verteidigung",
+                    Effects = new List<string> { "DefenseBonus:+0.40 for 3 days", "ResourceCost:30%", "MoodModifier:-5 for 2 days" },
+                },
+                new EventChoice
+                {
+                    ChoiceId = "Evacuate",
+                    Label = "Evakuieren",
+                    Effects = new List<string> { "EvacuateCivilians", "StorageBlocked:75%", "IdeologyTension:+0.15" },
+                },
+            },
+
+            FollowUpIds = new List<string>(),
+            DeterminismKeyTemplate = "{ProfileId}+{EventId}+{ThreatPressure}+{GameTickDay}",
+        };
+
+        // ── Band 3 — Collapse: epidemic ──────────────────────
+        public static readonly StoryEventSpec Epidemic = new StoryEventSpec
+        {
+            EventId = "rimconemy.collapse.epidemic",
+            EventVersion = 1,
+            EventFamily = "Collapse",
+            Label = "Seuchen-Ausbruch",
+            Description = "Eine Krankheit breitet sich unter den Kolonisten aus.",
+
+            Prerequisites = new List<EventCondition>
+            {
+                EventCondition.MaxActiveEventsReached(),
+                EventCondition.ActiveEvent("Collapse"),
+                EventCondition.HealthLow(),
+                EventCondition.ColonistCountAbove(2),
+            },
+            Exclusions = new List<EventCondition>
+            {
+                EventCondition.ExcludeWhenDaysSinceLastEventBelow(2.5f),
+            },
+
+            Weights = new Dictionary<string, float>
+            {
+                { "Rimconemy_Collapse", 50f },
+            },
+            CooldownsDays = new Dictionary<string, float>
+            {
+                { "Rimconemy_Collapse", 6.0f },
+            },
+
+            EscalationBand = 3,
+            EscalationModifier = 0.09f,
+
+            LetterLabel = "Seuche!",
+            LetterText = "Eine unbekannte Krankheit breitet sich aus. {PawnName} zeigt erste Symptome. Ohne Behandlung wird die Situation kritisch.",
+            TextKey = "Rimconemy_Epidemic_Letter",
+
+            Choices = new List<EventChoice>
+            {
+                new EventChoice
+                {
+                    ChoiceId = "Quarantine",
+                    Label = "Quarantäne verhängen",
+                    Effects = new List<string> { "PawnMood:-10 for 5 days", "ProductionPenalty:-30% for 3 days", "IdeologyTension:+0.05" },
+                },
+                new EventChoice
+                {
+                    ChoiceId = "Treat",
+                    Label = "Behandeln",
+                    Effects = new List<string> { "ResourceCost:Medicine-40", "PawnHealth:+0.2", "WalletCost:30 Credits" },
+                },
+            },
+
+            FollowUpIds = new List<string>(),
+            DeterminismKeyTemplate = "{ProfileId}+{EventId}+{PawnId}+{GameTickDay}",
+        };
+
+        // ── Band 3 — Collapse: betrayal ──────────────────────
+        public static readonly StoryEventSpec Betrayal = new StoryEventSpec
+        {
+            EventId = "rimconemy.collapse.betrayal",
+            EventVersion = 1,
+            EventFamily = "Collapse",
+            Label = "Verrat",
+            Description = "Ein Kolonist verrät die Gruppe an Feinde.",
+
+            Prerequisites = new List<EventCondition>
+            {
+                EventCondition.MaxActiveEventsReached(),
+                EventCondition.ActiveEvent("Collapse"),
+                EventCondition.ColonistCountAbove(3),
+                EventCondition.DaysSinceStartAbove(20f),
+            },
+            Exclusions = new List<EventCondition>
+            {
+                EventCondition.ExcludeWhenMoodAbove(0.6f),
+                EventCondition.ExcludeWhenDaysSinceLastEventBelow(4.0f),
+                EventCondition.ExcludeWhenHostileFactionsBelow(1),
+            },
+
+            Weights = new Dictionary<string, float>
+            {
+                { "Rimconemy_Collapse", 35f },
+            },
+            CooldownsDays = new Dictionary<string, float>
+            {
+                { "Rimconemy_Collapse", 10.0f },
+            },
+
+            EscalationBand = 3,
+            EscalationModifier = 0.15f,
+
+            LetterLabel = "Verrat!",
+            LetterText = "{PawnName} wurde dabei erwischt, Informationen an eine feindliche Fraktion zu übergeben. Der Schaden ist bereits angerichtet.",
+            TextKey = "Rimconemy_Betrayal_Letter",
+
+            Choices = new List<EventChoice>
+            {
+                new EventChoice
+                {
+                    ChoiceId = "Exile",
+                    Label = "Verbannen",
+                    Effects = new List<string> { "PawnLeaves", "AllPawnsMood:-3 for 3 days", "HostileFactionReputation:-20" },
+                },
+                new EventChoice
+                {
+                    ChoiceId = "Forgive",
+                    Label = "Verzeihen",
+                    Effects = new List<string> { "PawnMood:-8 for 5 days", "GroupCohesion:-0.10", "ThreatPressure:+0.05" },
+                },
+            },
+
+            FollowUpIds = new List<string>(),
+            DeterminismKeyTemplate = "{ProfileId}+{EventId}+{IdeologyTension}+{PawnId}+{GameTickDay}",
         };
     }
 }

@@ -347,12 +347,134 @@ namespace Rimconemy.InfectedAutomation.Story
                         break;
 
                     case "ActiveVanillaRaid":
-                        // Placeholder: game layer evaluates this
+                        // Phase 2 can query Find.Storyteller for an active vanilla raid.
                         break;
 
                     case "AtLeastOneActiveSettingRule":
                         if (snapshot.ActiveSettingRuleCount <= 0)
                             return false;
+                        break;
+
+                    case "HealthLow":
+                        // Fires when average colonist health drops below 0.6.
+                        if (snapshot.AverageSurvivorHealth >= 0.6f)
+                            return false;
+                        break;
+
+                    case "HealthCritical":
+                        // Fires when average colonist health drops below 0.3.
+                        if (snapshot.AverageSurvivorHealth >= 0.3f)
+                            return false;
+                        break;
+
+                    case "AnyColonistInjured":
+                        if (!snapshot.AnyColonistInjured)
+                            return false;
+                        break;
+
+                    case "WealthAbove":
+                        // Parameter: threshold as float string, e.g. "200000".
+                        if (float.TryParse(cond.Parameter, System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture, out float wThreshold))
+                        {
+                            if (snapshot.ColonyWealth < wThreshold)
+                                return false;
+                        }
+                        break;
+
+                    case "WealthBelow":
+                        if (float.TryParse(cond.Parameter, System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture, out float wBelow))
+                        {
+                            if (snapshot.ColonyWealth >= wBelow)
+                                return false;
+                        }
+                        break;
+
+                    case "ThreatAbove":
+                        if (float.TryParse(cond.Parameter, System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture, out float tAbove))
+                        {
+                            if (snapshot.ThreatPressure < tAbove)
+                                return false;
+                        }
+                        break;
+
+                    case "MoodBelow":
+                        // Average mood percentage threshold (0-1 scale).
+                        if (float.TryParse(cond.Parameter, System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture, out float moodThreshold))
+                        {
+                            if (snapshot.AverageColonistMood >= moodThreshold)
+                                return false;
+                        }
+                        break;
+
+                    case "MoodAbove":
+                        if (float.TryParse(cond.Parameter, System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture, out float moodAbove))
+                        {
+                            if (snapshot.AverageColonistMood < moodAbove)
+                            return false;
+                        }
+                        break;
+
+                    case "PowerOff":
+                        if (snapshot.PowerGridActive)
+                            return false;
+                        break;
+
+                    case "PowerOn":
+                        if (!snapshot.PowerGridActive)
+                            return false;
+                        break;
+
+                    case "ColonistCountAbove":
+                        if (int.TryParse(cond.Parameter, out int cAbove))
+                        {
+                            if (snapshot.SurvivorCount <= cAbove)
+                                return false;
+                        }
+                        break;
+
+                    case "ColonistCountBelow":
+                        if (int.TryParse(cond.Parameter, out int cBelow))
+                        {
+                            if (snapshot.SurvivorCount >= cBelow)
+                                return false;
+                        }
+                        break;
+
+                    case "DaysSinceLastEventAbove":
+                        if (float.TryParse(cond.Parameter, System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture, out float dAbove))
+                        {
+                            if (snapshot.DaysSinceLastEvent < dAbove)
+                                return false;
+                        }
+                        break;
+
+                    case "ResourceCritical":
+                        // At least one resource must be critical.
+                        if (!snapshot.AnyResourceCritical)
+                            return false;
+                        break;
+
+                    case "HostileFactionsAbove":
+                        if (int.TryParse(cond.Parameter, out int fAbove))
+                        {
+                            if (snapshot.HostileFactionCount <= fAbove)
+                                return false;
+                        }
+                        break;
+
+                    case "DaysSinceStartAbove":
+                        if (float.TryParse(cond.Parameter, System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture, out float dsAbove))
+                        {
+                            if (snapshot.DaysSinceStart < dsAbove)
+                                return false;
+                        }
                         break;
 
                     default:
@@ -376,7 +498,7 @@ namespace Rimconemy.InfectedAutomation.Story
                 switch (cond.ConditionId)
                 {
                     case "ActiveRecoveryEvent":
-                        // Placeholder: game layer evaluates
+                        // Phase 2: query active events for recovery family.
                         break;
 
                     case "NoActiveSettingRules":
@@ -385,7 +507,79 @@ namespace Rimconemy.InfectedAutomation.Story
                         break;
 
                     case "ActiveRaidOrThreatEvent":
-                        // Placeholder: game layer evaluates
+                        // Phase 2: query active events for raid/threat families.
+                        break;
+
+                    case "AnyResourceCritical":
+                        // Block event when any resource is already critical
+                        // (avoids stacking crisis events on top of each other).
+                        if (snapshot.AnyResourceCritical)
+                            return true;
+                        break;
+
+                    case "ThreatBelow":
+                        // Don't fire low-stakes events when threat is high.
+                        if (float.TryParse(cond.Parameter, System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture, out float tBelow))
+                        {
+                            if (snapshot.ThreatPressure >= tBelow)
+                                return true;
+                        }
+                        break;
+
+                    case "HealthAbove":
+                        // Don't fire health-crisis events when health is fine.
+                        if (float.TryParse(cond.Parameter, System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture, out float hAbove))
+                        {
+                            if (snapshot.AverageSurvivorHealth >= hAbove)
+                                return true;
+                        }
+                        break;
+
+                    case "MoodAbove":
+                        // Don't fire mood-crisis events when mood is fine.
+                        if (float.TryParse(cond.Parameter, System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture, out float mAbove))
+                        {
+                            if (snapshot.AverageColonistMood >= mAbove)
+                                return true;
+                        }
+                        break;
+
+                    case "PowerOn":
+                        // Don't fire power-outage events when power is on.
+                        if (snapshot.PowerGridActive)
+                            return true;
+                        break;
+
+                    case "WealthAbove":
+                        // Don't fire scarcity events when colony is wealthy.
+                        if (float.TryParse(cond.Parameter, System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture, out float wAbove))
+                        {
+                            if (snapshot.ColonyWealth >= wAbove)
+                                return true;
+                        }
+                        break;
+
+                    case "DaysSinceLastEventBelow":
+                        // Don't fire rapid-fire events too close together.
+                        if (float.TryParse(cond.Parameter, System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture, out float dBelow))
+                        {
+                            if (snapshot.DaysSinceLastEvent < dBelow)
+                                return true;
+                        }
+                        break;
+
+                    case "HostileFactionsBelow":
+                        // Don't fire diplomatic events when few hostiles.
+                        if (int.TryParse(cond.Parameter, out int fBelow))
+                        {
+                            if (snapshot.HostileFactionCount < fBelow)
+                                return true;
+                        }
                         break;
 
                     default:

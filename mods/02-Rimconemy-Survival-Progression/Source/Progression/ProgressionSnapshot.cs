@@ -12,6 +12,13 @@ namespace Rimconemy.SurvivalProgression.Progression
         public int PawnId;
         public string PawnLabel;
         public string WorkDomain = "Unassigned";
+        // Derived role read model. Animals and Artistic remain hidden source
+        // skills; these values are the player-facing role layer.
+        public int FarmingLevel;
+        public int CookingLevel;
+        public int HuntingLevel;
+        public int SmithingLevel;
+        public int IntellectualLevel;
         public float Experience;
         public float Efficiency = 1.0f;
         public List<string> ResearchCapabilities = new List<string>();
@@ -30,6 +37,11 @@ namespace Rimconemy.SurvivalProgression.Progression
             Scribe_Values.Look(ref PawnId, "pawnId", 0);
             Scribe_Values.Look(ref PawnLabel, "pawnLabel", "");
             Scribe_Values.Look(ref WorkDomain, "workDomain", "Unassigned");
+            Scribe_Values.Look(ref FarmingLevel, "farmingLevel", 0);
+            Scribe_Values.Look(ref CookingLevel, "cookingLevel", 0);
+            Scribe_Values.Look(ref HuntingLevel, "huntingLevel", 0);
+            Scribe_Values.Look(ref SmithingLevel, "smithingLevel", 0);
+            Scribe_Values.Look(ref IntellectualLevel, "intellectualLevel", 0);
             Scribe_Values.Look(ref Experience, "experience", 0f);
             Scribe_Values.Look(ref Efficiency, "efficiency", 1f);
             Scribe_Collections.Look(ref ResearchCapabilities, "researchCapabilities", LookMode.Value);

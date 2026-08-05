@@ -210,7 +210,7 @@ namespace Rimconemy.Foundation.Tests
                 if (NeedDefOf.Food == null) return true; // DefDatabase might not be ready in tests; soft skip
                 return NeedSettingsTranslator.Translate(NeedDefOf.Food) == SettingIdentity.Food;
             }
-            catch (System.Exception ex) { Log.Warning("[Rimconemy.Mod01] test swallowed (asserted-as-pass): " + ex); return true; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] T7 FAILED: " + ex.GetType().Name + ": " + ex.Message); return false; }
         }
 
         // --- T8: NeedDefOf.Rest → Safety ---
@@ -221,7 +221,7 @@ namespace Rimconemy.Foundation.Tests
                 if (NeedDefOf.Rest == null) return true;
                 return NeedSettingsTranslator.Translate(NeedDefOf.Rest) == SettingIdentity.Safety;
             }
-            catch (System.Exception ex) { Log.Warning("[Rimconemy.Mod01] test swallowed (asserted-as-pass): " + ex); return true; }
+            catch (System.Exception ex) { Log.Error("[Rimconemy.Mod01] T8 FAILED: " + ex.GetType().Name + ": " + ex.Message); return false; }
         }
 
         // --- T9: IsCritical boundary semantics ---

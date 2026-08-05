@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Rimconemy_BountifulHarvest — Üppige Ernte
+  Owner: Infected & Automation (Story-Domäne)
+  Status: ACTIVE — wird vom StoryEventCatalog.MergeFromDefDatabase() geladen.
+  Band: 1 (Refuge), Familie: Supply
+  Reagiert auf: 2+ Kolonisten, Vermögen < 200k
+-->
+<Defs>
+  <Rimconemy.InfectedAutomation.Story.StoryEventDef>
+    <defName>rimconemy.supply.bountiful_harvest</defName>
+    <label>Üppige Ernte</label>
+    <description>Die Felder liefern mehr als erwartet. Die Moral steigt.</description>
+
+    <eventVersion>1</eventVersion>
+    <eventFamily>Supply</eventFamily>
+    <escalationBand>1</escalationBand>
+    <escalationTarget>ThreatPressure</escalationTarget>
+    <escalationModifier>0.0</escalationModifier>
+
+    <prerequisites>
+      <li>MaxActiveEvents()</li>
+      <li>NOT ActiveEvent(Supply)</li>
+      <li>ColonistCountAbove(1)</li>
+      <li>WealthBelow(200000)</li>
+    </prerequisites>
+
+    <exclusions>
+      <li>AnyResourceCritical</li>
+      <li>DaysSinceLastEventBelow(2.0)</li>
+    </exclusions>
+
+    <weights>
+      <li>Rimconemy_Refuge=20</li>
+      <li>Rimconemy_Survival=10</li>
+    </weights>
+
+    <cooldownDays>
+      <li>Rimconemy_Refuge=10.0</li>
+      <li>Rimconemy_Survival=12.0</li>
+    </cooldownDays>
+
+    <textKey>Rimconemy_BountifulHarvest_Letter</textKey>
+    <letterLabel>Reiche Ernte</letterLabel>
+    <letterText>Die Felder tragen dieses Mal besonders gut. Vorräte für {PawnName} und die Gruppe sind gesichert.</letterText>
+
+    <choices>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Stockpile</choiceId>
+        <label>Vorrat anlegen</label>
+        <effects>
+          <li>ResourceBoost:Food+150</li>
+          <li>MoodModifier:+3 for 3 days</li>
+        </effects>
+      </li>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Share</choiceId>
+        <label>Mit Nachbarn teilen</label>
+        <effects>
+          <li>ResourceBoost:Food+50</li>
+          <li>OpinionChange:+15</li>
+          <li>MoodModifier:+2 for 2 days</li>
+        </effects>
+      </li>
+    </choices>
+
+    <followUpIds />
+    <determinismKey>{ProfileId}+{EventId}+{StorageHash}+{GameTickDay}</determinismKey>
+  </Rimconemy.InfectedAutomation.Story.StoryEventDef>
+</Defs>
