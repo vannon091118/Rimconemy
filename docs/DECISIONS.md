@@ -537,7 +537,7 @@ Biotech-Pollution × Wasser, Odyssey Travel-Events × Territory-Discovery, Biome
 | `FoundationSaveData` | 01 | GameComponent | Persistenz, Schema-Version, Migration |
 | `ProgressionGameComponent` | 02 | GameComponent | XP-Sampling, Game-Over-Detection |
 | `MapMarketComponent` | 04 | MapComponent | Per-Map-Markt-Snapshot |
-| `WalletGameComponent` / `SilverGameComponent` / `OutpostService` | 04 | GameComponent | Wallet/Silber/Outpost-Persistenz |
+| `WalletGameComponent` / `OutpostService` | 04 | GameComponent | Wallet/Outpost-Persistenz (`SilverGameComponent` entfernt 2026-08-05 — Credits-Entscheidung „never silver", kein Caller) |
 | `StoryDirector` | 05 | GameComponent | Story-Evaluation, Tick-basiert |
 
 **Weitere bestätigte Audit-Befunde (docs/AUDIT.md §6–§10):** Namespace-Trennung korrekt; Decompile als API-Verifikation etabliert; keine HugsLib-Abhängigkeit; alle 5 Bootstrap nutzen `[StaticConstructorOnStartup]` mit `Current.Game == null`-Guard; HarmonyRimWorld als Shared Dependency (keine eigene DLL in allen 5 Mods).

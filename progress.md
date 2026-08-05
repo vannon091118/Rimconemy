@@ -1,5 +1,14 @@
 # Progress — Rimconemy
 
+## 2026-08-05 — Dead-Code-Sprint A (ausgeführt, committet, gepusht)
+
+- Dead-Code-Audit `docs/falsification/deadcode-audit-2026-08-05.md` — 16 Kandidaten, 3 Root-Cause-Muster (Stub-first ohne Consumer, LogMarker als Lebenserhaltung, Alias ohne Cleanup), Delete-vs-Wire-Matrix, 5-Schritt-Extraktions-Pattern für Klassen-Monolithen + priorisierter Backlog (StoryState-Core, StoryEventCatalog→XML).
+- Sprint A umgesetzt (Delete-Gate vom User freigegeben): entfernt `IncidentStub` (05), `MechadroidUnit` + `MechadroidJobRegistry` (05; `MechadroidJobs.cs`/`MechadroidJobLedger` bleibt), `TerritoryNode` (04), `SilverMaterial.cs`/`SilverLedger`/`SilverService`/`SilverGameComponent` (04, Doku-Widerspruch „never silver"), `OutpostStub`-Alias (04), `tmp-scribe-inspect/`, `.runtime-reports/` aus Git (41 Dateien) + gitignore.
+- Bootstrap-LogMarker auf gelebte Klassen umgestellt (`Outpost.LogMarker`, InfectedRaidWorker/MechadroidJobLedger-Strings).
+- SSOT-Doku nachgezogen: ROADMAP §6, CODE_STATUS, P6-PROGRESS Task 13, DECISIONS, CANONICAL_VANILLA_DOMAIN_MAP, falsification/README + infected__MechadroidJob.md.
+- Versionen: 04 → 0.0.28, 05 → 0.0.41. Gates: Build 5/5 grün, `runtime_test.sh --skip-start` PASS (5/5).
+- Hinweis: Worktree wurde nach der ersten Ausführung neu erstellt → Sprint A am 2026-08-05 erneut ausgeführt (identische pre-Hashes im Delete-Log §7.1).
+
 ## 2026-08-04 (early)
 
 - Persisted implementation plan in `ROADMAP.md §9.4` (integriert, Plan-Datei gelöscht).

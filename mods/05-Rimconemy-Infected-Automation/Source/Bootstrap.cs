@@ -27,9 +27,12 @@ namespace Rimconemy.InfectedAutomation
             Log.Message("[Rimconemy.InfectedAutomation] Vanilla storyteller and Wealth-Raids remain authoritative while API-INCIDENT-01 / API-MECH-01 stay UNVERIFIED.");
 
             var _threatLog = Threat.ThreatAggregator.LogMarker;
-            var _raidLog = Incidents.IncidentStub.LogMarker;
-            var _mechLog = Mechadroids.MechadroidUnit.LogMarker;
-            Log.Message($"[Rimconemy.InfectedAutomation] Domain stubs ready: threat={_threatLog}, raid={_raidLog}, mechadroid={_mechLog}");
+            // IncidentStub / MechadroidUnit removed 2026-08-05 (dead-code audit,
+            // Sprint A): the real raid path is InfectedRaidWorker; mechadroid
+            // jobs live in MechadroidJobs (MechadroidJobLedger).
+            Log.Message(
+                "[Rimconemy.InfectedAutomation] Domain markers ready: threat=" + _threatLog +
+                ", raid=InfectedRaidWorker, mechadroid=MechadroidJobLedger");
 
             // P2/H3 §2: CollectiveDefense tracker is a GameComponent subclass -
             // RimWorld auto-registers any GameComponent subclass on mod load.
