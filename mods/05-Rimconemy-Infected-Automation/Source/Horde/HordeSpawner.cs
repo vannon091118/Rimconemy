@@ -72,8 +72,10 @@ namespace Rimconemy.InfectedAutomation.Horde
                 return Rimconemy.Foundation.Maps.MapRegistry.GetPrimaryPlayerHomeMap()
                     ?? Find.AnyPlayerHomeMap;
             }
-            catch
+            catch (System.Exception ex)
             {
+                Log.Warning("[Rimconemy.InfectedAutomation] HordeSpawner: MapRegistry.GetPrimaryPlayerHomeMap failed: "
+                    + ex.GetType().Name + ": " + ex.Message + " — falling back to Find.AnyPlayerHomeMap.");
                 return Find.AnyPlayerHomeMap;
             }
         }

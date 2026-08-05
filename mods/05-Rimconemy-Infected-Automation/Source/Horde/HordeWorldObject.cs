@@ -5,7 +5,6 @@
 // Mirrors OutpostWorldObject pattern from Mod 04.
 
 using RimWorld.Planet;
-using Verse;
 
 namespace Rimconemy.InfectedAutomation.Horde
 {

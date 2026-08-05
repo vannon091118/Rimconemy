@@ -51,18 +51,26 @@ namespace Rimconemy.InfectedAutomation.Horde
             return effectiveCount >= threshold;
         }
 
-        /// <summary>Pulse-Phase in 0..1, Sinusoid over
-        /// <see cref="PulseCycleTicks"/>. Render-Paths multiply this by
-        /// their per-layer alpha-max to get the current alpha. Pure API:
-        /// same currentTick → same phase. Returns 0 for non-positive tick
-        /// (cold-start) so initial render is at minimum-alpha (no flash).</summary>
+        /// <summary>Pulse-Phase in 0..1, two-breath Sinusoid over
+        /// <see cref="PulseCycleTicks"/> (one breath per half-cycle).
+        /// Render-Paths multiply this by their per-layer alpha-max to
+        /// get the current alpha. Pure API: same currentTick → same
+        /// phase. Returns 0 for non-positive tick (cold-start) so initial
+        /// render is at minimum-alpha (no flash).
+        ///
+        /// D6 spec: pattern 0 → 1 → 0 → 1 → 0 over 120 ticks (two peaks).
+        /// Implementation: <c>|sin(angle)|</c> with <c>angle = mod/120 · 2π</c>:
+        /// tick=0  → |sin(0)|=0        — trough/start
+        /// tick=30 → |sin(π/2)|=1      — peak 1
+        /// tick=60 → |sin(π)|=0        — trough
+        /// tick=90 → |sin(3π/2)|=1     — peak 2
+        /// tick=120→ |sin(2π)|=0       — trough/end.</summary>
         public static float ComputePulsePhase(long currentTick)
         {
             if (currentTick <= 0) return 0f;
             int mod = (int)(currentTick % PulseCycleTicks);
             float angle = (float)mod / PulseCycleTicks * 2f * (float)System.Math.PI;
-            // 1 - cos produces 0 at start, 1 at half-cycle, 0 at full cycle.
-            return 1f - (float)System.Math.Cos(angle);
+            return (float)System.Math.Abs(System.Math.Sin(angle));
         }
     }
 }
