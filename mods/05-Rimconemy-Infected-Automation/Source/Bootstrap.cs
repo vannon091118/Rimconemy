@@ -23,6 +23,7 @@ namespace Rimconemy.InfectedAutomation
         static Bootstrap()
         {
             Log.Message("[Rimconemy.InfectedAutomation] Standalone bootstrap starting...");
+            World.DarknessSectionLayerLifecycle.Install();
             Log.Message("[Rimconemy.InfectedAutomation] Faction, PawnKind, Incident and Mechadroid defs registered (one provider per Full Profile).");
             Log.Message("[Rimconemy.InfectedAutomation] Vanilla storyteller and Wealth-Raids remain authoritative while API-INCIDENT-01 / API-MECH-01 stay UNVERIFIED.");
 
@@ -78,8 +79,15 @@ namespace Rimconemy.InfectedAutomation
             Tests.Sprint2BehaviorRegressionTests.RunAll();
             // Sprint 2.5 (2026-08-05) — Colonist sight cone / darkness overlay:
             // Directional vision, light-level-scaling, Project-Zomboid-style
-            // dimming. MapComponent auto-registered; rendering via MapComponentOnGUI.
+            // dimming. MapComponent auto-registered; rendering via the
+            // existing world-space SectionLayer_Darkness lifecycle.
             Tests.ColonistSightSystemRegressionTests.RunAll();
+            Tests.DarknessSectionLayerRegressionTests.RunAll();
+            // Phase A (2026-08-05) — Population-Ledger data layer. Pure-data,
+            // no AI or Spawn yet; lays the SSOT before Phase B (Daily-Growth
+            // tick integration) and Phase C (RandomInoculationService).
+            Tests.PopulationProfileMultipliersRegressionTests.RunAll();
+            Tests.PopulationLedgerRegressionTests.RunAll();
             Log.Message("[Rimconemy.InfectedAutomation] Building threat adapter available; Mechadroid job contracts are gated for Milestone B; no incident or raid is spawned.");
 
             // Phase-5 (2026-08-05) — IncidentClassifier summary log. Validates the

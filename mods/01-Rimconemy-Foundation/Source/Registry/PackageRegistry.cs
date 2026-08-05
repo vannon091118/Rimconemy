@@ -213,7 +213,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.SurvivalProgression",
                 packageId: "rimconemy.survivalprogression",
-                packageVersion: "0.1.35",
+                packageVersion: "0.1.37",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.survivalprogression.needs", 1),
@@ -234,7 +234,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.EconomyTerritory",
                 packageId: "rimconemy.economyterritory",
-                packageVersion: "0.0.28",
+                packageVersion: "0.0.29",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.economyterritory.wallet", 1),
@@ -246,12 +246,18 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.InfectedAutomation",
                 packageId: "rimconemy.infectedautomation",
-                packageVersion: "0.0.41",
+                packageVersion: "0.0.58",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.infectedautomation.threat", 1),
                     new Capability("rimconemy.infectedautomation.automation", 1),
                     new Capability("rimconemy.infectedautomation.mechadroid_jobs", 1),
+                    // Phase A (2026-08-05): PopulationLedger SSOT reads from
+                    // Mod 02/03/05. Consumers check
+                    // rimconemy.infectedautomation.population before
+                    // calling PopulationLedger.Get(), so standalone 05 users
+                    // without the ledger still see the legacy Threat path.
+                    new Capability("rimconemy.infectedautomation.population", 1),
                 });
         }
 
