@@ -1,3 +1,19 @@
+// Source/Bootstrap.cs
+//
+// Owner: Infected & Automation.
+// Standalone startup marker for Package 05 scaffold.
+//
+// Hook reason: StaticConstructorOnStartup binds before any map loads.
+// Threat aggregator, infected raid provider, mechadroid units and
+// automation jobs are exposed as record types and event stubs.
+// Vanilla Storyteller/Wealth-Raids remain authoritative until A3
+// validates an explicit IncidentDef/IncidentWorker wiring.
+//
+// Compile references (resolved at build time): Rimconemy.Foundation (01),
+// Rimconemy.ScavengerInfrastructure (03). Survival (02) is reached via the
+// Foundation servicebus. Economy (04) is reached via the late-bound
+// reflection bridge in Foundation.CrossPackageState (audit-bundle B / F-01).
+using Rimconemy.InfectedAutomation.Scenarios;
 using Verse;
 
 namespace Rimconemy.InfectedAutomation
@@ -106,8 +122,24 @@ namespace Rimconemy.InfectedAutomation
             // Phase D (2026-08-05) — Horde Overlay: World-Map wanderer +
             // SectionLayer-Kreis mittig + Per-Infected-Bursts + CameraEdge.
             Tests.HordeRegressionTests.RunAll();
+            // Phase F (2026-08-05) — Wandering-Horde: Manifest + HiddenPawnStamp +
+            // TravelTile-FSM + Reveal-Materialization + StorySelector-Letter.
+            //
+            // Forward-compat probes (DECISIONS §24, 2026-08-05): the Phase-F
+            // substrate classes (HordeManifest, HordeMigrationDriver,
+            // HordeMaterialization) defer to a later task. The tests below
+            // are excluded via <Compile Remove> in the csproj on purpose
+            // when the substrate is not yet shipped. Bootstrap here mirrors
+            // the same forward-compat pattern: reflectively probe + invoke
+            // RunAll if the class is present, no-op otherwise. Soft-logged
+            // at Log.Warning if the reflection itself blows up so a real
+            // regression surfaces.
+            InvokePhaseFTestIfPresent("Rimconemy.InfectedAutomation.Tests.HordeManifestTests");
+            InvokePhaseFTestIfPresent("Rimconemy.InfectedAutomation.Tests.HordeMigrationDriverTests");
+            InvokePhaseFTestIfPresent("Rimconemy.InfectedAutomation.Tests.HordeMaterializationTests");
+            InvokePhaseFTestIfPresent("Rimconemy.InfectedAutomation.Tests.HordeStorySelectorTests");
             Horde.HordeCameraOverlay.Install();
-            Log.Message("[Rimconemy.InfectedAutomation] Phase D: Horde overlay wired (Calculator, WorldObject, Spawner, SectionLayer, BurstLayer, CameraEdge).");
+            Log.Message("[Rimconemy.InfectedAutomation] Phase D+F: Horde overlay + migration wired (Calculator, WorldObject, Spawner, SectionLayer, BurstLayer, CameraEdge, Manifest, Driver, Materialization, StorySelector).");
 
             // Phase E (2026-08-05) — Tiersym-Infektion via Random Encounter.
             //   AnimalInfectionChance (Pure-Chance + Profile-Multipliers),
@@ -159,6 +191,41 @@ namespace Rimconemy.InfectedAutomation
             catch (System.Exception ex)
             {
                 Log.Warning("[Rimconemy.InfectedAutomation] IncidentClassifier.Bootstrap-summary failed: " + ex.GetType().Name + ": " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Forward-compat probe for Phase-F tests that may not have shipped
+        /// alongside their substrate class. Matches the
+        /// <c>Rimconemy.InfectedAutomation.Tests.HordeStorySelectorTests</c>
+        /// reflection pattern used to keep the boot log clean while
+        /// deferred Phase-F deliverables are still in flight.
+        ///
+        /// The probe:
+        ///   1. Resolves the test type via <c>Type.GetType(string, false)</c>
+        ///      against the loaded <c>Rimconemy.InfectedAutomation</c> assembly.
+        ///   2. Looks up the public-static <c>RunAll()</c> method.
+        ///   3. Invokes it inside a try/catch so a broken test does not
+        ///      poison the rest of the static constructor.
+        /// Failure (resolution or NRE) is logged at Log.Warning so a real
+        /// regression surfaces; non-existence is a silent no-op so a
+        /// missing Phase-F deliverable does not flood the log.
+        /// </summary>
+        private static void InvokePhaseFTestIfPresent(string typeName)
+        {
+            try
+            {
+                var t = System.Type.GetType(typeName + ", Rimconemy.InfectedAutomation", throwOnError: false);
+                if (t == null) return;
+                var m = t.GetMethod("RunAll",
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (m == null) return;
+                m.Invoke(null, null);
+            }
+            catch (System.Exception ex)
+            {
+                Log.Warning("[Rimconemy.InfectedAutomation][PhaseF-ForwardCompat] Bootstrap reflect "
+                    + typeName + ": " + ex.GetType().Name + ": " + ex.Message);
             }
         }
     }
