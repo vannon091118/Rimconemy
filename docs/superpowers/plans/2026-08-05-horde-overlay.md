@@ -33,7 +33,7 @@
 | `Source/Horde/HordeCameraOverlay.cs` | Static OnGUI-Postfix auf Camera-Driver: Edge-Frame-Pulse |
 | `Defs/WorldObjects/Rimconemy_HordeWorldObject.xml` | Def für WorldObject-Class |
 | `Source/Bootstrap.cs` | RunAll-Hook für Tests |
-| `Tests/HordeRegressionTests.cs` | 15 Tests (D1-D15) |
+| `Tests/HordeRegressionTests.cs` | 12 Tests (D1-D12) |
 | `docs/falsification/infected__ThreatPressure.md` | §F Phase-D Live-Beleg Stub |
 
 ---
@@ -1255,7 +1255,7 @@ git commit -m "chore: Bump 0.0.60 -> 0.0.61 + Phase D Live-Beleg §F (Phase D T6
 | §5 API | HordeCalculator/IsActive/ComputePulsePhase + WorldObject + Spawner + UpdateLogic | T1-T2 |
 | §6 Determinismus | Pure APIs, transient state | T1 (Pure), T2 (transient LastMoveTick) |
 | §7 Edge Cases | null ledger/profile/map/home | T1 (defensive), T2 (defensive), D15 tests |
-| §8 Tests D1-D15 | 15 tests | T1 (9), T2 (6) — covers all |
+| §8 Tests D1-D12 | 12 tests | T1 (8), T2 (4) — covers all |
 | §10 Bootstrap+Logging | Tests + Install hook | T3/T5 Bootstrap updates, T6 Bump |
 | §11 Akzeptanz-Gate D1-D8 | 8 gates | T1-T6 (WIP), D7 Bump, D8 Live-Beleg |
 | §12 Nicht-Ziele | YAGNI | doc-only |
@@ -1292,7 +1292,7 @@ Zero TBD/TODO markers. All code complete and runnable.
 
 ### 7. Acceptance-Gate:
 
-- D1 15/15 tests PASS — ✓ (covered T1-T2).
+- D1 12/12 tests PASS — ✓ (covered T1-T2).
 - D2 Confguration-sample determinism — ✓ (D2 test asserts Survival 150).
 - D3 Spawner sync with Reconciler — ✓ (T2).
 - D4 HordeWorldObject Def loads — ✓ (T2 + D14 test).

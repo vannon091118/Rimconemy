@@ -10,7 +10,7 @@
 > - `Source/Horde/HordeSectionLayer.cs` (Pulsierender Kreis mittig, 3 Ringe)
 > - `Source/Horde/HordeBurstLayer.cs` (Per-Infected Radial-Bursts)
 > - `Source/Horde/HordeCameraOverlay.cs` (UIRoot Postfix, 4 Edge-Borders)
-> - `Tests/HordeRegressionTests.cs` (D1–D15)
+> - `Tests/HordeRegressionTests.cs` (D1–D12)
 
 ## A — Def-Liste (XML-Defs)
 
@@ -22,20 +22,19 @@
 
 ## B — Code-Pfad (Build + Boot)
 
-`Source/Horde/HordeCameraOverlay.Install()` läuft im `Bootstrap.cs` Static-Constructor.
+`Source/Horde/HordeCameraOverlay.cs` lädt via `[HarmonyPatch]`-Attribut (kein expliziter Install-Aufruf nötig).
 
-- Bootstrap-Klasse: `Rimconemy.InfectedAutomation.Bootstrap.RunAll()` ruft sequentiell alle `Tests.*RegressionTests.RunAll()` auf, dann `HordeCameraOverlay.Install()`,最后 log: `[Rimconemy.InfectedAutomation] Phase D: Horde overlay wired (…).`
+- Bootstrap-Klasse: `Rimconemy.InfectedAutomation.Bootstrap.RunAll()` ruft sequentiell alle `Tests.*RegressionTests.RunAll()` auf, dann log: `[Rimconemy.InfectedAutomation] Phase D: Horde overlay wired (…).`
 - Patch-Klassen: `Source/Horde/HordeCameraOverlay.cs` (Harmony Postfix `[HarmonyPatch(typeof(UIRoot), nameof(UIRoot.UIRootOnGUI))]`)
 
 ## C — Selbsttest (RunAll)
 
-`Tests.HordeRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen. ExpectedPassCount = 15.
+`Tests.HordeRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen. 12 Tests (D1–D12).
 
 - D1–D6: HordeCalculator (Effective-Count, IsActive-Surface, PulsePhase two-breath sinusoid)
 - D7–D10: HordeUpdateLogic (despawn / spawn / move / interval)
-- D11–D13: StripRimconemyPrefix-Routing + Threshold-Lookup
-- D14: `Rimconemy_HordeWorldObject` Def lädt + worldObjectClass == typeof(HordeWorldObject)
-- D15: Spawner defensive (homeTile=-1 → no-op)
+- D11: Hybrid-Count-Route (AnimalHalfCap) bei Refuge-Threshold
+- D12: `Rimconemy_HordeWorldObject` Def lädt + worldObjectClass == typeof(HordeWorldObject)
 
 ## D — Phase-D Live-Beleg (User Live-Test erforderlich)
 

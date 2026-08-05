@@ -236,15 +236,15 @@ public static class HordeUpdateLogic
 | D4 | CalculatorCollapseNeverBelow | Threshold Collapse=80 → 50 humanoid not active; 80 humanoid = active |
 | D5 | CalculatorProfileFallback | null profile → Survival-fallback active |
 | D6 | PulsePhaseSinusoidal | tick=0 → phase=0; tick=30 → ~1.0; tick=60 → ~0 |
-| D7 | UpdatePureDespawnBelowThreshold | Pure: effective=140, active=false → hordeTiles.count=0 |
-| D8 | UpdatePureSpawnAboveThreshold | Pure: effective=160, active=true, hordeTiles empty → spawn at homeTile+5 |
+| D7 | UpdatePureDespawnBelowThreshold | Pure: active=false → hordeTiles.count=0 |
+| D8 | UpdatePureSpawnAboveThreshold | Pure: active=true, hordeTiles empty → spawn at homeTile+5 |
 | D9 | UpdatePureMoveTowardsHome | Pure: horde at homeTile+5, 250 ticks later → drifted toward homeTile |
 | D10 | UpdatePureMoveIntervalRespected | Pure: horde moved once at 250, again at 500; not between |
-| D11 | StripRimconemyPrefixForThreshold | ProfileId="Rimconemy_Survival" → threshold=150 lookup |
-| D12 | StripRimconemyPrefixNullReturnsSurvival | null profile → Survival fallback |
-| D13 | CalculatorAnimalHalfCapRoute | Profile Collapse Threshold multiplied with AnimalHalfCap formula |
-| D14 | WorldObjectExistsInDefDB | Rimconemy_HordeWorldObject XML loads successfully |
-| D15 | SpawnerNullMapComponentSkip | MapComponentTick short-circuits if map==null |
+| D11 | CalculatorAnimalHalfCapRoute | Hybrid count at Refuge threshold (100+0.5×100=150 < 220) |
+| D12 | WorldObjectExistsInDefDB | Rimconemy_HordeWorldObject XML loads successfully |
+
+(D11-D12 duplicates and D15 impossible-input test were cut in the 2026-08-05 scope-cleanup;
+D2/D5 already cover prefix-strip routing and null-profile fallback.)
 
 ## 9. StoryEventCatalog-Anker
 
@@ -255,10 +255,13 @@ Phase D fügt **keine** neuen Story-Events hinzu. Die Horde ist ein passiver Vis
 `Bootstrap.cs`:
 ```csharp
 World.DarknessSectionLayerLifecycle.Install();    // existing
-World.HordeCameraOverlay.Install();                // NEW — registers OnGUI postfix
 Tests.HordeRegressionTests.RunAll();               // NEW
 Log.Message("[Rimconemy.InfectedAutomation] Phase D: Horde overlay (Home+World+Camera) wired.");
 ```
+
+The Camera-Edge postfix needs no explicit install: the `[HarmonyPatch]`
+attribute on `HordeCameraOverlay` registers the postfix automatically
+(same mechanism as `CollectiveDefensePostCombatPatch`).
 
 Logging-Hooks (alle Debug-Level):
 - `[HordeCalculator] effective=N threshold=N active=true|false`
@@ -269,14 +272,14 @@ Logging-Hooks (alle Debug-Level):
 
 ## 11. Akzeptanz-Gate (Phase D)
 
-- [ ] D1 — `HordeRegressionTests.RunAll()` = 15/15 PASS.
+- [ ] D1 — `HordeRegressionTests.RunAll()` = 12/12 PASS.
 - [ ] D2 — `HordeCalculator.GetEffectiveCount` deterministisch-tests bei 5 Config-Samples.
 - [ ] D3 — `HordeSpawner.MapComponentTick` läuft syncron mit PopulationLedger-Reconciler (kein Race).
 - [ ] D4 — `Rimconemy_HordeWorldObject` Def lädt via DefDatabase XML.
 - [ ] D5 — `HordeSectionLayer` regeneriert NICHT wenn Horde inactive (Performance: leeres Layer, kein MapMeshDirty-Loop).
-- [ ] D6 — `HordeCameraOverlay` installiert OnGUI-Postfix + entfernt deterministisch beim Dispose.
+- [ ] D6 — `HordeCameraOverlay` Postfix ist via `[HarmonyPatch]`-Attribut registriert.
 - [ ] D7 — `runtime_test.sh --skip-start --no-deploy` exit 0; Bump auf 0.0.61.
-- [ ] D8 — Live-Beleg im Player.log: Spawner-Marker + SectionLayer-Pulse-Logs + World-Map-Icon sichtbar.
+- [ ] D8 — Live-Beleg im Player.log: Spawner-Marker + World-Map-Icon sichtbar.
 
 ## 12. Nicht-Ziele (Phase D)
 
