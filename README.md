@@ -7,6 +7,7 @@
   <img src="https://img.shields.io/badge/RimWorld-1.6.4566-9cf?style=for-the-badge&logo=steam" alt="RimWorld 1.6"/>
   <img src="https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge&logo=dotnet" alt="Build"/>
   <img src="https://img.shields.io/badge/packages-5-blueviolet?style=for-the-badge" alt="5 Packages"/>
+  <img src="https://img.shields.io/badge/tests-35+-success?style=for-the-badge" alt="35+ Tests"/>
   <img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="MIT"/>
 </p>
 
@@ -18,164 +19,187 @@
 </p>
 
 <p align="center">
-  <a href="#-was-ist-rimconemy">Über das Mod</a> ·
-  <a href="#-die-fünf-pakete">Pakete</a> ·
+  <a href="#-gameplay-loop">Gameplay Loop</a> ·
+  <a href="#-pakete">Pakete</a> ·
+  <a href="#-ressourcenketten">Ressourcen</a> ·
   <a href="#-installation">Installation</a> ·
-  <a href="#-für-entwickler">Developer Guide</a> ·
-  <a href="#-aktueller-stand">Status</a> ·
+  <a href="#-status">Status</a> ·
   <a href="ROADMAP.md">Roadmap</a>
 </p>
 
 ---
 
-## 🧭 Was ist Rimconemy?
+## 🎮 Gameplay Loop
 
-Rimconemy ist ein **modularer RimWorld-Overhaul**, der das klassische Colony-Building mit einem echten Wirtschaftssystem, Story-Druck und deterministischer Automatisierung verknüpft. Alles dreht sich um einen einzigen Überlebenden, eine zerstörte Welt — und den klassischen Irrtum, man könne ein Problem lösen, indem man eine größere Basis baut.
-
-> **Je stärker deine Basis wird, desto lauter fragt die Welt, ob du das wirklich durchdacht hast.**
-
-Die Spielschleife führt vom Sammeln und Bauen über Wirtschaft und Expansion bis zu Story-Druck und Verteidigung:
-
+```mermaid
+flowchart TD
+    SURVIVE["🪓 Überleben<br/>1 Survivor, knappe Ressourcen"] --> SCAVENGE["🔍 Bergen<br/>Bauschutt, Stahlreste, Sammeln"]
+    SCAVENGE --> BUILD["🏗️ Bauen<br/>Barrikade → Campfire → Schutz"]
+    BUILD --> POWER["⚡ Energie<br/>Kohle-Brennstoff → Generator → Strom"]
+    POWER --> CRAFT["🔧 Verarbeiten<br/>Maschinenteile → Waffenkomponenten → Munition"]
+    CRAFT --> ECON["💰 Wirtschaft<br/>Credits-Wallet, lokale Märkte, Handel"]
+    ECON --> EXPAND["🗺️ Expandieren<br/>Outposts, Territorium, Weltkarte"]
+    EXPAND --> AUTO["⚙️ Automatisieren<br/>Mechadroids, Proxy-Graph, Aufträge"]
+    AUTO --> DEFEND["🛡️ Verteidigen<br/>Story-Events, Infizierte, Raids"]
+    DEFEND --> SURVIVE
 ```
-🪓 Überleben → 🏗️ Aufbauen → 💰 Wirtschaften → 🗺️ Expandieren → ⚙️ Automatisieren → 🛡️ Verteidigen
-```
 
-| Schritt | Was das bedeutet |
-|---|---|
-| 🪓 **Überleben** | Ein Siedler, knappe Ressourcen, echte Prioritäten. Luxus ist zunächst: wenn nichts brennt. |
-| 🏗️ **Aufbauen** | Bauschutt → Strukturen. Jeder Schritt kostet. Strom, Wasser, Treibstoff — kein magisches Grid. |
-| 💰 **Wirtschaften** | Credits als Wallet, Silber als physisches Material. Lokale Preise statt universeller Tauschlogik. |
-| 🗺️ **Expandieren** | Outposts, Weltkarte und Territorium. Mehr Besitz = mehr Arbeit = mehr Angriffsfläche. |
-| ⚙️ **Automatisieren** | Mechadroids, automatisierte Raids, Outpost-Proxy-Graph — wenn du überlebt hast, fängst du an zu skalieren. |
-| 🛡️ **Verteidigen** | Deterministische Story-Events, ideologische Reaktionen, Bedrohungsdruck mit erklärbaren Regeln. Und die Infizierten kommen sowieso. |
+### Spielphasen
 
-## 👁️‍🗨️ Vision
-
-Unsere Vision ist es, RimWorld in eine tiefgreifende Überlebenssimulation zu verwandeln, in der jedes Entscheidungsgewicht trägt und emergent narratives aus der Interaktion von Wirtschaft, Ökologie und Sozialdynamik entstehen. Wir streben danach, dass Spieler nicht nur überleben, sondern bedeutende Geschichten schreiben – wo Ressourcenknappheit, moralische Dilemmata und emergentende Bedrohungen jedes Spiel zu einer einzigartigen Odyssee machen.
+| Phase | Name | Beschreibung |
+|---|---|---|
+| 🪓 | **Überleben** | Ein Siedler, knappe Ressourcen, echte Prioritäten. Luxus ist: wenn nichts brennt. |
+| 🏗️ | **Aufbauen** | Bauschutt → Strukturen. Strom, Wasser, Brennstoff — kein magisches Grid. |
+| 💰 | **Wirtschaften** | Credits-Wallet, Silber als physisches Material. Lokale Preise statt universeller Tauschlogik. |
+| 🗺️ | **Expandieren** | Outposts, Weltkarte, Territorium. Mehr Besitz = mehr Arbeit = mehr Angriffsfläche. |
+| ⚙️ | **Automatisieren** | Mechadroids, automatisierte Raids, Outpost-Proxy-Graph. |
+| 🛡️ | **Verteidigen** | Deterministische Story-Events, Bedrohungsdruck mit erklärbaren Regeln. |
 
 ---
 
-## 📦 Die fünf Pakete
+## 🏛️ Vision
 
-Rimconemy ist in **5 unabhängige Pakete** aufgeteilt. Jedes Paket kann einzeln geladen werden; zusammen bauen sie das vollständige Overhaul-Profil auf.
+Rimconemy verwandelt RimWorld in eine tiefgreifende Überlebenssimulation, in der jedes Entscheidungsgewicht trägt. Emergente Narrative entstehen aus der Interaktion von **Wirtschaft, Ökologie und Sozialdynamik** — kein RNG ohne Erklärung, kein Wachstum ohne Aufmerksamkeit.
 
-<table>
-<thead>
-<tr>
-<th>Nr.</th>
-<th>Paket</th>
-<th>Was es macht</th>
-<th>Status</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>01</code></td>
-<td><strong>🏛️ Foundation</strong></td>
-<td>Unified Hub-Dashboard, Diagnose, Eventlog, DLC-Erkennung, Vanilla Quick-Nav, gemeinsame Verträge</td>
-<td>✅ BOOT</td>
-</tr>
-<tr>
-<td><code>02</code></td>
-<td><strong>🛡️ Survival & Progression</strong></td>
-<td>Bedürfnisse, Charakter-Setup, Arbeitserfahrung, Forschungspfad, Save-Migration, Game-Over-Erkennung</td>
-<td>✅ BOOT · Save-Migration first-class</td>
-</tr>
-<tr>
-<td><code>03</code></td>
-<td><strong>⚡ Scavenger Infrastructure</strong></td>
-<td>Bauschutt, Lagerbestände, Farm-/Wasser-/Power-Grundlagen, Storage-Snapshots, Power-Chain</td>
-<td>✅ BOOT · Loops offen</td>
-</tr>
-<tr>
-<td><code>04</code></td>
-<td><strong>💰 Economy & Territory</strong></td>
-<td>Credits-Wallet, lokale Märkte, Outposts, Weltkarte, Territorial-Expansion</td>
-<td>✅ BOOT · Logistik offen</td>
-</tr>
-<tr>
-<td><code>05</code></td>
-<td><strong>☣️ Infected & Automation</strong></td>
-<td>Deterministische Story-Events, Infizierte, Mechadroids, Ideologie-Integration, Dev-Auswertung</td>
-<td>✅ BOOT · Raids offen</td>
-</tr>
-</tbody>
-</table>
+> **Je stärker deine Basis wird, desto lauter fragt die Welt, ob du das wirklich durchdacht hast.**
 
-> Die Paketgrenzen sind Absicht. Fünf kleine Probleme sind leichter zu debuggen als ein großes Problem mit fünf Logos.
+---
+
+## 📦 Pakete
+
+Rimconemy ist in **5 unabhängige Pakete** aufgeteilt. Jedes Paket kann einzeln geladen werden; zusammen bilden sie das **Full-Overhaul-Profil**.
+
+```mermaid
+flowchart LR
+    01["🏛️ 01 Foundation<br/>Registry, Diagnose, UI Toolkit"] --> 02["🛡️ 02 Survival<br/>Bedürfnisse, Skills, Progression"]
+    01 --> 03["⚡ 03 Scavenger<br/>Storage, Power, Bauschutt"]
+    01 --> 04["💰 04 Economy<br/>Credits, Märkte, Outposts"]
+    01 --> 05["☣️ 05 Infected<br/>Story, Threat, Mechadroids"]
+    03 -.->|"Capability-Bridge"| 05
+```
+
+| Nr. | Paket | Verantwortung | Status |
+|---|---|---|---|
+| `01` | **🏛️ Foundation** | Registry, Diagnose, Capabilities, Save-Metadaten, UI-Toolkit, DLC-Filter, ColonialReader | ✅ BOOT |
+| `02` | **🛡️ Survival & Progression** | Charakter-Setup (Alter 18, Skill-Budget, Traits), Bedürfnisse, XP-Baum, Game-Over, Save-Migration | ✅ BOOT |
+| `03` | **⚡ Scavenger Infrastructure** | Physische Lagerbestände (StorageSnapshot), Power-Chain (Generator→Netz), Bauschutt, Building-Snapshots, Coal-Kette | ✅ BOOT |
+| `04` | **💰 Economy & Territory** | Credits-Wallet (Ledger), deterministische Märkte, Outposts (State-Machine), Territorium, Weltkarte | ✅ BOOT |
+| `05` | **☣️ Infected & Automation** | Story-Director (deterministisch), Threat-Aggregator, Infizierten-Raids, Mechadroid-Aufträge, Ideologie-Adapter | ✅ BOOT |
+
+> **Package-Isolation:** Keine Projekt-Referenzen zwischen den Paketen. Cross-Package-Kommunikation läuft über das **Capability-System** in Foundation.
+
+---
+
+## ⛓️ Ressourcenketten
+
+### Coal Chain (P0 — implementiert)
+
+```mermaid
+flowchart LR
+    WOOD["🪵 WoodLog<br/>3×"] -->|"Campfire<br/>MakeCoal"| COAL["🪨 Coal<br/>4×"]
+    HEMP["🌿 HempLeafy<br/>2×"] -->|"Campfire<br/>MakeCoal"| COAL
+    COAL -->|"Refuelable<br/>0.67× Rate"| GEN["⚡ Generator<br/>1.5× Effizienz"]
+    STEEL["🔩 SteelScraps<br/>5×"] -->|"Campfire<br/>Salvage"| PARTS["⚙️ MachineParts<br/>1×"]
+```
+
+### StainlessSteel Chain (P1 — implementiert)
+
+```mermaid
+flowchart LR
+    STEEL2["🔩 Steel"] -->|"Electric Smelter"| SS["🔧 StainlessSteel"]
+    PARTS2["⚙️ MachineParts"] -->|"Electric Smelter"| SS
+    SS -->|"Crafting"| TOWER["🏹 ArrowTurret"]
+```
+
+### Bauschutt → Bauen
+
+```mermaid
+flowchart LR
+    DEBRIS["🧱 ConstructionDebris<br/>aus Ruinen"] -->|"Salvage"| WCOMP["🔫 WeaponComponent"]
+    DEBRIS -->|"Blueprint"| WALL["🧱 Wall / Door / Barricade"]
+    WCOMP -->|"Crafting"| TURRET["🏹 Turret"]
+```
+
+### Crafting → Verteidigung (geplant)
+
+```mermaid
+flowchart LR
+    IRON["⛏️ Iron"] -->|"Hochofen T2<br/>⬜ geplant"| AMMO["💥 Munition"]
+    COAL3["🪨 Coal"] -->|"Hochofen T2<br/>⬜ geplant"| AMMO
+    AMMO -->|"ScrapRifle"| DEFEND2["🛡️ Verteidigung"]
+```
 
 ---
 
 ## 🎮 Das Hub-Dashboard
 
-Das **Rimconemy Hub-Fenster** ersetzt die 5 separaten Bottom-Bar-Buttons durch **einen einzigen Einstiegspunkt** — ohne RimWorlds native UI zu überfluten.
+Das **Rimconemy Hub-Fenster** ersetzt 5 separate Bottom-Bar-Buttons durch **einen einzigen Einstiegspunkt**:
 
 - **🏛️ Kolonie** — Foundation-Status, DLC-Erkennung, Log, Paketübersicht
 - **🛡️ Überleben** — Progression, Bedürfnisse, Ressourcen-Snapshot
-- **⚡ Infrastruktur** — Power-Grid, Storage, Baupfade
+- **⚡ Infrastruktur** — Power-Grid, Storage, Baufortschritt
 - **💰 Wirtschaft** — Credits-Wallet, Märkte, Live-Handelsaktionen
 - **☣️ Bedrohung** — Threat-Pegel, Story-Snapshot, Dev-Auswertung
 
-**Vanilla Quick-Nav:** Per Klick direkt in Weltkarte, Quests, Forschung, Arbeit oder Verlauf — ohne den Hub zu schließen.
+**Vanilla Quick-Nav:** Per Klick in Weltkarte, Quests, Forschung, Arbeit oder Verlauf — ohne den Hub zu schließen.
 
 ---
 
-## ✅ Aktueller Stand
+## ✅ Status
 
-> **Pre-Alpha:** Alle 5 Pakete bauen, booten und testen sauber. Ein vollständiger Gameplay-Loop-Nachweis steht noch aus.
+> **Pre-Alpha:** Alle 5 Pakete bauen, booten und testen sauber. 35+ Regression-Test-Summaries grün. `runtime_test.sh`-Gate: **PASS**.
 
 | Bereich | Status |
 |---|---|
-| RimWorld 1.6.4566 Build | ✅ alle 5 Pakete kompilieren sauber |
-| Runtime-Boot | ✅ Foundation erkennt Full-Overhaul-Profil |
-| Hub-Dashboard (5 Sub-Tabs) | ✅ funktionsfähig |
+| RimWorld 1.6.4566 Build | ✅ 5/5 Pakete |
+| Runtime-Boot | ✅ FullOverhaul erkannt |
+| Hub-Dashboard (5 Tabs) | ✅ funktionsfähig |
 | Vanilla Quick-Nav | ✅ funktionsfähig |
-| Wallet / Credits | ✅ Lesen + Live-Handelskäufe/-verkäufe |
-| Power-Grid-Scan | ✅ Vanilla-Generatoren werden erkannt |
-| Story-Director (Dev-Mode) | ✅ manueller Trigger via Dev-Button |
-| Ideologie-Regeln (H3) | ✅ CollectiveDefense + Transparency fertig |
-| Character-Setup-State | ✅ code-fertig |
-| ISchemaMigratable First-Class-Domain | ✅ 4 Migratoren + Walker + Registry |
-| Save/Load-Roundtrip (Logic-Tests) | ✅ T1–T6 in 3 Paketen |
-| Save/Load-Roundtrip (Runtime-Save-File) | 🔄 offen |
-| vollständige Gameplay-Loops | ⬜ in Arbeit |
+| Credits-Wallet | ✅ Lesen + Live-Handel |
+| Power-Grid-Scan | ✅ Vanilla-Generatoren erkannt |
+| Story-Director | ✅ deterministisch, 8 Events |
+| Ideologie-Regeln (3) | ✅ ResourceFairness, CollectiveDefense, Transparency |
+| Character-Setup | ✅ Alter 18, Skill-Budget 30, Trait-Zuweisung |
+| Rollen-System | ✅ Animals/Artistic → Hunting/Smithing, BuilderDurability |
+| Cooking-System | ✅ CookSkill-Comp, MealSimple/Fine/Lavish/SurvivalPack |
+| ISchemaMigratable | ✅ 4 Pakete + Walker + Registry |
+| Coal Chain (MakeCoal, Salvage) | ✅ DEF + Rezepte + Generator |
+| StainlessSteel Chain | ✅ DEF + Rezepte + Turret |
+| Save/Load-Roundtrip (Logic-Tests) | ✅ T1–T6 in 4 Paketen |
+| Save/Load-Roundtrip (Runtime) | 🔄 offen |
+| Vollständige Gameplay-Loops | ⬜ in Arbeit |
 | Raid-Auflösung live | ⬜ in Arbeit |
 
-Die vollständige Beleggrenze: [`docs/CODE_STATUS.md`](docs/CODE_STATUS.md)
+→ **[Vollständige Beleggrenze](docs/CODE_STATUS.md)** · **[Falsifikations-Berichte](docs/falsification/README.md)**
 
 ---
 
 ## 🚀 Installation
 
-### Voraussetzungen
-
-| Anforderung | Details |
+| Voraussetzung | Details |
 |---|---|
-| **RimWorld** | 1.6.4566 (Entwicklungsziel) |
+| **RimWorld** | 1.6.4566 |
 | **Harmony** | Pflicht |
-| **Anomaly + Odyssey DLC** | Pflicht für das Full-Overhaul-Profil |
-| Royalty / Ideology / Biotech | Optional — über DLC-Policy behandelt |
+| **DLC** | Anomaly + Odyssey für Full-Overhaul; Royalty/Ideology/Biotech optional |
 
 ### Ladefolge
 
 ```
-Core / DLCs  →  Harmony  →  01 Foundation  →  02 Survival  →  03 Scavenger  →  04 Economy  →  05 Infected
+Core / DLCs → Harmony → 01 Foundation → 02 Survival → 03 Scavenger → 04 Economy → 05 Infected
 ```
 
-### Lokaler Build (für Entwickler)
+### Developer Build
 
 ```bash
-# Alle 5 Pakete bauen & direkt in RimWorld deployen
+# Alle 5 Pakete bauen & deployen
 ./scripts/deploy.sh
 
-# Statischer Check ohne Spielstart
+# Statischer Check (kein Spielstart)
 ./scripts/runtime_test.sh --skip-start --no-deploy
 
-# Vollständiger Runtime-Gate-Test
+# Vollständiger Runtime-Gate (RimWorld-Boot + 35+ Regression-Summaries)
 ./scripts/runtime_test.sh
 ```
-
-> **Hinweis:** Das Repository enthält Source-Code und Definitionen, keine vorkompilierten DLLs. Build erforderlich.
 
 ---
 
@@ -183,61 +207,27 @@ Core / DLCs  →  Harmony  →  01 Foundation  →  02 Survival  →  03 Scaveng
 
 ### Architektur
 
-Rimconemy folgt dem Prinzip der **Package-Isolation**: Paket `01` kennt `02`–`05` nicht zur Compilezeit. Alle Cross-Package-Kommunikation läuft über:
+| Prinzip | Beschreibung |
+|---|---|
+| **Package-Isolation** | Keine Compile-Abhängigkeiten zwischen 02–05 |
+| **Capability-System** | Feature-Abfrage via `HasCapabilityOrWarn()` |
+| **DLL-Cross-Ref** | Nur `<Reference>` auf Foundation.dll, kein ProjectReference |
+| **Harmony-Minimierung** | `Defs/XML` > `StaticConstructorOnStartup` > `GameComponent` > `Harmony` |
 
-- **Capability-System** (`CapabilityRegistry` in Foundation) — optionale Feature-Abfrage
-- **Reflection-Loading** — für UI-Delegation ohne harte Assembly-Referenzen
-- **Interface-Verträge** (`docs/INTERFACE_CONTRACT.md`) — maschinenlesbare API-Grenzen
-
-### Wichtige Vertragsfiles
+### Wichtige Docs
 
 | Datei | Inhalt |
 |---|---|
-| [`docs/CODE_STATUS.md`](docs/CODE_STATUS.md) | Belegstufen (CODE / DEF / BUILD / BOOT / LIVE) |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Warum das System bestimmte Dinge absichtlich *nicht* tut |
-| [`docs/INTERFACE_CONTRACT.md`](docs/INTERFACE_CONTRACT.md) | Paketgrenzen und Capabilities |
-| [`docs/SAVE_CONTRACT.md`](docs/SAVE_CONTRACT.md) | Save-Schema, Migration und kein stilles Vergessen |
-| [`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.md) | RimWorld-/DLC-Kompatibilität |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Beitragsrichtlinien |
-| [`ROADMAP.md`](ROADMAP.md) | Vollständiger Entwicklungsplan |
+| [`CODE_STATUS.md`](docs/CODE_STATUS.md) | Belegstufen (CODE/DEF/COMPILES/BOOT/LIVE) |
+| [`DECISIONS.md`](docs/DECISIONS.md) | Architekturentscheidungen mit Begründung |
+| [`INTERFACE_CONTRACT.md`](docs/INTERFACE_CONTRACT.md) | Capabilities, Package-Grenzen |
+| [`SAVE_CONTRACT.md`](docs/SAVE_CONTRACT.md) | Schema-Versionierung, Migration, kein stilles Vergessen |
+| [`COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.md) | RimWorld-/DLC-Kompatibilität |
+| [`ROADMAP.md`](ROADMAP.md) | Entwicklungsplan |
 
 ### Paket-BLUEPRINTs
 
-Jedes Paket hat eine `BLUEPRINT.md` mit Eigentumsgrenzen, öffentlicher API und Falsifizierungsregeln:
-
 [01 Foundation](mods/01-Rimconemy-Foundation/BLUEPRINT.md) · [02 Survival](mods/02-Rimconemy-Survival-Progression/BLUEPRINT.md) · [03 Scavenger](mods/03-Rimconemy-Scavenger-Infrastructure/BLUEPRINT.md) · [04 Economy](mods/04-Rimconemy-Economy-Territory/BLUEPRINT.md) · [05 Infected](mods/05-Rimconemy-Infected-Automation/BLUEPRINT.md)
-
----
-
-## 🗺️ Roadmap (Kurzversion)
-
-**Jetzt:**
-- Save/Load-Roundtrip und Statusmigration verifizieren
-- Storage-Snapshot über Kartenwechsel und Caravans absichern
-- Story-Events bis zur Live-Ingame-Auflösung verifizieren
-
-**Als Nächstes:**
-- Bauschutt → Wand/Tür als erste sichtbare Gameplay-Mechanik
-- Nahrung, Hanf, Wasser, Brennstoff, Strom als physische Pfade
-- Character-Setup-Save-State und Generator-Gates abschließen
-
-**Später, wenn die Infizierten zustimmen:**
-- Echte Infizierten-Raids und Mechadroid-Aufträge
-- Outposts, Proxy-Graph und Weltkarten-Endgame
-- Automatisierte Raids und die Art von Logistik, die aus „nur ein kleiner Außenposten" eine neue Vollzeitstelle macht
-
-→ **[Vollständige Roadmap](ROADMAP.md)**
-
----
-
-## 🤝 Beitragen
-
-Neue Beiträge bitte zuerst [`CONTRIBUTING.md`](CONTRIBUTING.md) lesen. Das Wichtigste in Kürze:
-
-- Paket-Grenzen respektieren — kein harter Assembly-Verweis von `01` auf `02`–`05`
-- Jede neue öffentliche API braucht einen Eintrag in `INTERFACE_CONTRACT.md`
-- Neue Live-Belege in `docs/falsification/` dokumentieren
-- Build muss sauber bleiben: `./scripts/deploy.sh` vor dem PR
 
 ---
 
