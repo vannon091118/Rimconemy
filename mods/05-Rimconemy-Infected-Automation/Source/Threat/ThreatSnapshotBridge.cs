@@ -7,16 +7,17 @@ namespace Rimconemy.InfectedAutomation.Threat
     /// <summary>
     /// Owner: Infected &amp; Automation (Package 05).
     ///
-    /// Audit-Finding 6 (2026-08-04) — Doppel-Snapshot-Pfad:
-    /// Vor dem Bridge hatten <see cref="InfectedRaidSpawnService.GetCurrentThreatSnapshot"/>
-    /// und <see cref="WorldRaidCoordinator.LatestThreatSnapshot"/> je eine eigene
+    /// Audit-Finding 6 (2026-08-04) — Single-Source-Read-Pfad:
+    /// Vor dem Bridge hatten <see cref="Incidents.InfectedRaidSpawnService.GetCurrentThreatSnapshot"/>
+    /// und <see cref="World.WorldRaidCoordinator.LatestThreatSnapshot"/> je eine eigene
     /// <c>new ThreatAggregator { TotalPressure = d.LastSnapshot.ThreatPressure }</c>-Zeile.
-    /// Sobald beide Stubs ihre Druckberechnung live schalten, würde jeder Pfad
-    /// einzeln lesen und doppelt konstruieren — eine Quelle, zwei Pfade.
+    /// Mit jedem Live-Pfad wäre die ThreatAggregator-Sicht doppelt konstruiert worden —
+    /// eine Quelle, zwei Pfade.
     ///
-    /// Der Bridge liefert stattdessen den **einen** Konstruktionspunkt für die
+    /// Der Bridge ist stattdessen der **eine** Konstruktionspunkt für die
     /// ThreatAggregator-Sicht auf den StoryDirector-Read-Modell. Die beiden
-    /// Stubs delegieren über <see cref="GetLatest"/>.
+    /// Konsumenten delegieren über <see cref="GetLatest"/> und teilen sich
+    /// denselben Read-through-Cache.
     ///
     /// Design (Stand 2026-08-04, nach Tick-Stamp-Refactor):
     ///   * Read-through cache: <see cref="GetLatest"/> builds a fresh

@@ -10,16 +10,16 @@ namespace Rimconemy.ScavengerInfrastructure.Plants
     /// Owner: Scavenger and Infrastructure (Package 03).
     /// Read-only plant helper for the Survive setting.
     ///
-    /// C-T3: extends the historical <c>PlantHelper</c> stub with a
-    /// live read-model: <see cref="ResolvePlant"/> resolves a
-    /// <see cref="ThingDef"/> (with a <c>&lt;plant&gt;</c> sub-block) via
-    /// DefDatabase and yields its yield/soil/growth settings;
-    /// <see cref="CollectSpawnedPlants"/> walks the map to count live
-    /// plants of each known Setting-def.
-    ///
-    /// Hemp stays deliberately NON-FOOD: this is enforced via the
-    /// EdibleCategory check so future tweaks cannot accidentally make
-    /// it a food plant.
+    /// Live Read-Model Service resolving Setting-plant configurations and
+    /// counting live plants on the map:
+    ///   * <see cref="ResolvePlant"/> resolves a <see cref="ThingDef"/>
+    ///     (with a <c>&lt;plant&gt;</c> sub-block) via DefDatabase and
+    ///     yields its yield/soil/growth settings.
+    ///   * <see cref="CollectSpawnedPlants"/> walks each player-home map
+    ///     to count live plants of each known Setting-def.
+    ///   * <see cref="ClassifyPlant"/> + <see cref="IsFoodPlant"/> enforce
+    ///     the Hemp-is-Not-Food contract so future tweaks cannot
+    ///     accidentally re-market hemp as food.
     /// </summary>
     public static class PlantHelper
     {

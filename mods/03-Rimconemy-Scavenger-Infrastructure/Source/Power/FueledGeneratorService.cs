@@ -8,11 +8,12 @@ namespace Rimconemy.ScavengerInfrastructure.Power
     /// Owner: Scavenger Infrastructure (Package 03).
     /// P6 — Task 10: Wasser-/Brennstoff als physischer Pfad zum Generator.
     ///
-    /// Phase-6 Stub: aggregates fuel + water totals from the storage
+    /// Read-Model Service: aggregates fuel + water totals from the storage
     /// snapshot so the generator's power gate can refuse to come Online
-    /// when no fuel is present. The mechanical connection between
-    /// generator fuel tank and storage is owned by the User Live-Test
-    /// phase.
+    /// when no fuel is present and exposes a `HasAnyCombustibleFuel`
+    /// predicate for downstream gating. Read-only; does not mutate world
+    /// state. The mechanical connection between generator fuel tank and
+    /// storage is owned by the User Live-Test phase.
     ///
     /// Specification: docs/P6-PROGRESS.md Task 10.
     /// </summary>

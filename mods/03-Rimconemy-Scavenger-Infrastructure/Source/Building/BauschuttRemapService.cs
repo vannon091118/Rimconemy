@@ -8,14 +8,13 @@ namespace Rimconemy.ScavengerInfrastructure.Building
     /// Owner: Scavenger Infrastructure (Package 03).
     /// P6 — Task 8: Bauschutt → Wand/Tür-Remap.
     ///
-    /// Phase-6 Gameplay-Stub: converts a defined Bauschutt amount into Wall
-    /// material via the existing storage system. The actual mechanic gates
-    /// (zone placement, blueprint construction, quality carry-over) belong
-    /// to a User Live-Test phase.
-    ///
-    /// Service does NOT mutate the world. It produces a
-    /// <see cref="RemapProposal"/> the workbench UI can subsequently
-    /// confirm and apply.
+    /// Read-Model Service: plans the conversion of a discovered Bauschutt
+    /// amount into Wall / Door material via the existing storage system
+    /// and emits a <see cref="RemapProposal"/> carrying a 1:1 wall + 10:1
+    /// door ratio. Service does NOT mutate the world; the workbench UI
+    /// confirms and applies the proposal downstream. The actual mechanic
+    /// gates (zone placement, blueprint construction, quality carry-over)
+    /// belong to a User Live-Test phase.
     ///
     /// Specification: docs/P6-PROGRESS.md Task 8; H4-§3 storage contract
     /// is the single source of resource counts.

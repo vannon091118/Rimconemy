@@ -9,10 +9,12 @@ namespace Rimconemy.EconomyTerritory.Outposts
     /// Owner: Economy &amp; Territory (Package 04).
     /// P6 — Task 14: Outposts &amp; Proxy-Graph (Drei-Tage-Countdown).
     ///
-    /// Phase-6 Stub: tracks the "parent ↔ outpost" edges and the contract
-    /// that each link must report within 180,000 ticks (3 in-game days).
-    /// Outpost definition expansion and the proxy-graph 3-day countdown
-    /// mechanic are owned by a User Live-Test phase.
+    /// Live Edge-Tracker Service: maintains the "parent ↔ outpost" edge
+    /// list plus the 180,000-tick (3 in-game-day) report-window invariant,
+    /// and exposes <see cref="GetOverdueOutposts"/> so the UI / raid
+    /// escalation paths can flag stale links. Outpost definition expansion
+    /// and the proxy-graph 3-day countdown mechanic are owned by a User
+    /// Live-Test phase.
     ///
     /// Spec: docs/P6-PROGRESS.md Task 14; ROADMAP 4.6 / Drei-Tage-Countdown.
     /// </summary>

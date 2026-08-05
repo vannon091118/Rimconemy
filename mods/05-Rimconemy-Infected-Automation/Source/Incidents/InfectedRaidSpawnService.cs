@@ -9,25 +9,22 @@ namespace Rimconemy.InfectedAutomation.Incidents
     /// Owner: Infected &amp; Automation (Package 05).
     /// P6 — Task 12: Infizierten-Raids (echter Spawn-Pfad).
     ///
-    /// Phase-6 Stub: prepares an idempotent SpawnPlan for
-    /// <see cref="InfectedRaidWorker"/> so a future iteration can drop
-    /// real infected colonists near the colony. The plan is derived
-    /// from the threat aggregator so the spawn scales with pressure.
-    ///
-    /// The actual TryExecuteWorker determines spawn positions and
-    /// deploys the infected pawn. This service is read-only: it
-    /// produces numbers + categories. No exceptions escape so
-    /// <see cref="InfectedRaidWorker"/> stays safe.
-    ///
-    /// Audit-Finding 6 (2026-08-04): the snapshot read now delegates to
-    /// <see cref="ThreatSnapshotBridge"/> so neither this service nor
-    /// <see cref="WorldRaidCoordinator"/> constructs duplicate
-    /// ThreatAggregator instances.
-    ///
-    /// Phase B (2026-08-05): the plan now honours a revenge-pending
-    /// quota sourced from <see cref="StoryDirector.LastPendingRevenge"/>.
+    /// Idempotent SpawnPlan-Builder for <see cref="InfectedRaidWorker"/>:
+    /// derives the next-tick plan from the threat aggregator so the
+    /// spawn scales with pressure, then merges in a Phase-B revenge-pending
+    /// quota sourced from <see cref="Story.StoryDirector.LastPendingRevenge"/>.
     /// Pawn count is the higher of pressure-plan and revenge-floor; the
     /// reason string distinguishes which path drove the merge.
+    ///
+    /// The actual TryExecuteWorker still determines spawn positions and
+    /// deploys the infected pawn; this service is read-only — it produces
+    /// numbers + categories and swallows no exceptions so
+    /// <see cref="InfectedRaidWorker"/> stays safe.
+    ///
+    /// Audit-Finding 6 (2026-08-04): the snapshot read delegates to
+    /// <see cref="Threat.ThreatSnapshotBridge"/> so neither this service
+    /// nor <see cref="World.WorldRaidCoordinator"/> constructs duplicate
+    /// ThreatAggregator instances.
     ///
     /// Spec: docs/P6-PROGRESS.md Task 12; docs/superpowers/specs/2026-08-05-daily-growth-revenge-design.md §5+§6.
     /// </summary>
