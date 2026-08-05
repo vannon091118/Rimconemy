@@ -8,7 +8,7 @@
 -->
 <Defs>
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.raid.pirate_scouts</defName>
+    <defName>rimconemy_raid_pirate_scouts</defName>
     <label>Piraten-Scout</label>
     <description>Piraten erkunden die Gegend auf Beute.</description>
 

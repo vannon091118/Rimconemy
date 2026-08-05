@@ -8,7 +8,7 @@
 -->
 <Defs>
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.collapse.betrayal</defName>
+    <defName>rimconemy_collapse_betrayal</defName>
     <label>Verrat</label>
     <description>Ein Kolonist verrät die Gruppe an Feinde.</description>
 

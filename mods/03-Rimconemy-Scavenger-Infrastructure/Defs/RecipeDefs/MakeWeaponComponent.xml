@@ -29,7 +29,7 @@
 <Defs>
   <RecipeDef>
     <defName>Rimconemy_MakeWeaponComponent</defName>
-    <label>{Rimconemy.Scavenger.MakeWeaponComponent}</label>
+    <label>Make Weapon Component</label>
     <description>{Rimconemy.Scavenger.MakeWeaponComponent.Desc}</description>
     <jobString>Fitting weapon components</jobString>
     <workAmount>600</workAmount>

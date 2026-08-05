@@ -8,7 +8,7 @@
 -->
 <Defs>
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.supply.bountiful_harvest</defName>
+    <defName>rimconemy_supply_bountiful_harvest</defName>
     <label>Üppige Ernte</label>
     <description>Die Felder liefern mehr als erwartet. Die Moral steigt.</description>
 

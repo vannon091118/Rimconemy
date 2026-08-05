@@ -25,8 +25,8 @@
 <Defs>
   <ThingDef ParentName="ResourceBase">
     <defName>Rimconemy_WeaponComponent</defName>
-    <label>{Rimconemy.Scavenger.WeaponComponent}</label>
-    <description>{Rimconemy.Scavenger.WeaponComponent.Desc}</description>
+    <label>Weapon Component</label>
+    <description>A salvaged weapon part used in crafting turrets and advanced equipment.</description>
     <graphicData>
       <texPath>Things/Item/Resource/Steel</texPath>
       <graphicClass>Graphic_StackCount</graphicClass>

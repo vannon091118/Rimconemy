@@ -8,7 +8,7 @@
 -->
 <Defs>
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.social.wanderer_arrives</defName>
+    <defName>rimconemy_social_wanderer_arrives</defName>
     <label>Wanderer</label>
     <description>Ein Fremder bittet um Aufnahme in die Gruppe.</description>
 

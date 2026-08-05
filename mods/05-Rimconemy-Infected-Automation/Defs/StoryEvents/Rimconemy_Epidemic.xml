@@ -8,7 +8,7 @@
 -->
 <Defs>
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.collapse.epidemic</defName>
+    <defName>rimconemy_collapse_epidemic</defName>
     <label>Seuchen-Ausbruch</label>
     <description>Eine Krankheit breitet sich unter den Kolonisten aus.</description>
 

@@ -904,7 +904,7 @@ namespace Rimconemy.InfectedAutomation.Story
         // ── Band 1 — Refuge: positive supply event ──────────
         public static readonly StoryEventSpec BountifulHarvest = new StoryEventSpec
         {
-            EventId = "rimconemy.supply.bountiful_harvest",
+            EventId = "rimconemy_supply_bountiful_harvest",
             EventVersion = 1,
             EventFamily = "Supply",
             Label = "Üppige Ernte",
@@ -964,7 +964,7 @@ namespace Rimconemy.InfectedAutomation.Story
         // ── Band 2 — Survival: resource decay ────────────────
         public static readonly StoryEventSpec ResourceSpoilage = new StoryEventSpec
         {
-            EventId = "rimconemy.supply.resource_spoilage",
+            EventId = "rimconemy_supply_resource_spoilage",
             EventVersion = 1,
             EventFamily = "Supply",
             Label = "Vorratsverderb",
@@ -1022,7 +1022,7 @@ namespace Rimconemy.InfectedAutomation.Story
         // ── Band 1-2 — Social: new colonist ──────────────────
         public static readonly StoryEventSpec WandererArrives = new StoryEventSpec
         {
-            EventId = "rimconemy.social.wanderer_arrives",
+            EventId = "rimconemy_social_wanderer_arrives",
             EventVersion = 1,
             EventFamily = "Social",
             Label = "Wanderer",
@@ -1082,7 +1082,7 @@ namespace Rimconemy.InfectedAutomation.Story
         // ── Band 3 — Social: power challenge ─────────────────
         public static readonly StoryEventSpec LeadershipChallenge = new StoryEventSpec
         {
-            EventId = "rimconemy.social.leadership_challenge",
+            EventId = "rimconemy_social_leadership_challenge",
             EventVersion = 1,
             EventFamily = "Social",
             Label = "Führungskrise",
@@ -1139,7 +1139,7 @@ namespace Rimconemy.InfectedAutomation.Story
         // ── Band 2 — Raid: pirate scouts ─────────────────────
         public static readonly StoryEventSpec PirateRaid = new StoryEventSpec
         {
-            EventId = "rimconemy.raid.pirate_scouts",
+            EventId = "rimconemy_raid_pirate_scouts",
             EventVersion = 1,
             EventFamily = "Raid",
             Label = "Piraten-Scout",
@@ -1199,7 +1199,7 @@ namespace Rimconemy.InfectedAutomation.Story
         // ── Band 3 — Raid: mechanoid surge ───────────────────
         public static readonly StoryEventSpec MechSwarm = new StoryEventSpec
         {
-            EventId = "rimconemy.raid.mech_swarm",
+            EventId = "rimconemy_raid_mech_swarm",
             EventVersion = 1,
             EventFamily = "Raid",
             Label = "Mechanoidenschwarm",
@@ -1258,7 +1258,7 @@ namespace Rimconemy.InfectedAutomation.Story
         // ── Band 3 — Collapse: epidemic ──────────────────────
         public static readonly StoryEventSpec Epidemic = new StoryEventSpec
         {
-            EventId = "rimconemy.collapse.epidemic",
+            EventId = "rimconemy_collapse_epidemic",
             EventVersion = 1,
             EventFamily = "Collapse",
             Label = "Seuchen-Ausbruch",
@@ -1315,7 +1315,7 @@ namespace Rimconemy.InfectedAutomation.Story
         // ── Band 3 — Collapse: betrayal ──────────────────────
         public static readonly StoryEventSpec Betrayal = new StoryEventSpec
         {
-            EventId = "rimconemy.collapse.betrayal",
+            EventId = "rimconemy_collapse_betrayal",
             EventVersion = 1,
             EventFamily = "Collapse",
             Label = "Verrat",

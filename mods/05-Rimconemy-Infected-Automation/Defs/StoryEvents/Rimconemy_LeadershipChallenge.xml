@@ -8,7 +8,7 @@
 -->
 <Defs>
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.social.leadership_challenge</defName>
+    <defName>rimconemy_social_leadership_challenge</defName>
     <label>Führungskrise</label>
     <description>{PawnName} fordert die Führung offen heraus.</description>
 

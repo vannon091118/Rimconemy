@@ -23,8 +23,8 @@
 <Defs>
   <ThingDef ParentName="ResourceBase">
     <defName>Rimconemy_ConstructionDebris</defName>
-    <label>{Rimconemy.Scavenger.ConstructionDebris}</label>
-    <description>{Rimconemy.Scavenger.ConstructionDebris.Desc}</description>
+    <label>Construction Debris</label>
+    <description>Debris from ruined structures, usable for salvaging components.</description>
     <graphicData>
       <texPath>Things/Item/Resource/StoneBlocks</texPath>
       <graphicClass>Graphic_StackCount</graphicClass>
