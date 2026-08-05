@@ -8,8 +8,10 @@
     RandomInoculationService.ApplyLiveConversion).
   - humanlikeFaction=false (so 1.6 ConfigErrors around backstory ranges
     don't fire, mirroring the existing Rimconemy_InfectedRavager).
-  - combatPower=30 means every wild-animal kind shares the same combat
-    multiplier for raid-wealth calculations.
+    - combatPower=50 (Phase E) means every wild-animal kind shares the
+    same combat multiplier for raid-wealth calculations. Phase E bumped
+    30 → 50 because the animal AI now actively attacks colonists via the
+    Harmony JobDriver-Patch; raid-wealth should reflect that.
   - Race is overwritten at runtime by RandomInoculationService (1.6
     allows '.' = any')?  No — RimWorld 1.6 does not allow runtime
     Race-swap; instead the original pawn keeps its Race (Wolf/Bear etc.)
@@ -25,6 +27,6 @@
     <race>Human</race>
     <initialResistanceRange>0~0</initialResistanceRange>
     <initialWillRange>0.4~0.6</initialWillRange>
-    <combatPower>30</combatPower>
+    <combatPower>50</combatPower>
   </PawnKindDef>
 </Defs>
