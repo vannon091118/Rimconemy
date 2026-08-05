@@ -22,17 +22,26 @@
 
 ## B — Code-Pfad (Build + Boot)
 
-`Source/Horde/HordeCameraOverlay.cs` lädt via `[HarmonyPatch]`-Attribut (kein expliziter Install-Aufruf nötig).
+`Source/Horde/HordeCameraOverlay.cs` wird EXPLIZIT via `HordeCameraOverlay.Install()`
+(harmony.Patch auf `UIRoot.UIRootOnGUI`) aus `Bootstrap` registriert. Package 05 hat
+kein `Harmony.PatchAll` — ein nacktes `[HarmonyPatch]`-Attribut wäre inert (verifiziert
+an Assembly-CSharp: einziger Patch-Mechanismus in 05 ist `DarknessSectionLayerLifecycle`
+mit explizitem `harmony.Patch(...)`).
 
-- Bootstrap-Klasse: `Rimconemy.InfectedAutomation.Bootstrap.RunAll()` ruft sequentiell alle `Tests.*RegressionTests.RunAll()` auf, dann log: `[Rimconemy.InfectedAutomation] Phase D: Horde overlay wired (…).`
-- Patch-Klassen: `Source/Horde/HordeCameraOverlay.cs` (Harmony Postfix `[HarmonyPatch(typeof(UIRoot), nameof(UIRoot.UIRootOnGUI))]`)
+- Bootstrap: `Tests.HordeRegressionTests.RunAll()` + `Horde.HordeCameraOverlay.Install()`, dann log: `[Rimconemy.InfectedAutomation] Phase D: Horde overlay wired (…).`
+- Patch-Klassen: `Source/Horde/HordeCameraOverlay.cs` (Postfix auf `UIRoot.UIRootOnGUI`)
+- Layer-Regen-Driver: `HordeSpawner.MapComponentTick` ruft alle 15 Ticks
+  `map.mapDrawer.RegenerateLayerNow(HordeSectionLayer)` + `RegenerateLayerNow(HordeBurstLayer)`.
+  Custom SectionLayer werden zwar auto-instantiiert (`GenTypes.AllSubclassesNonAbstract`),
+  aber VANILLA regeneriert nur dirty Layers — ohne den expliziten Driver bliebe der Kreis leer.
+  (60-Tick-Regen wäre falsch: |sin| bei θ und θ+π ist gleich → Puls friert ein.)
 
 ## C — Selbsttest (RunAll)
 
 `Tests.HordeRegressionTests.RunAll()` ist in `Bootstrap` aufgerufen. 12 Tests (D1–D12).
 
 - D1–D6: HordeCalculator (Effective-Count, IsActive-Surface, PulsePhase two-breath sinusoid)
-- D7–D10: HordeUpdateLogic (despawn / spawn / move / interval)
+- D7–D10: HordeUpdateLogic.ComputeHordeTile (Spawn + 5 / Drift 1 pro 250 / Clamp bei home / deterministisch)
 - D11: Hybrid-Count-Route (AnimalHalfCap) bei Refuge-Threshold
 - D12: `Rimconemy_HordeWorldObject` Def lädt + worldObjectClass == typeof(HordeWorldObject)
 
@@ -41,11 +50,12 @@
 **Erwartet im Player.log nach Phase D (2026-08-05):**
 
 ```
+[Rimconemy.InfectedAutomation] HordeCameraOverlay: edge-frame postfix installed.
 [Rimconemy.InfectedAutomation] HordeSpawner: Spawning HordeWorldObject at tile=N (home=N)
 ```
 
-(Der Spawn-Marker ist der einzige Horde-Log; Drift ist über die World-Map-
-Icon-Position beobachtbar, nicht über Log-Zeilen.)
+(Der Spawn-Marker ist der einzige Horde-WorldObject-Log; Drift ist über die World-Map-
+Icon-Position beobachtbar — tile = home + max(0, 5 − floor(tick/250)), keine Log-Zeilen.)
 
 **Verifikation (User-Pflicht):**
 
@@ -69,7 +79,7 @@ Icon-Position beobachtbar, nicht über Log-Zeilen.)
 ## E — Save/Load Roundtrip
 
 <!-- Step: Spielstand speichern → neu laden → HordeWorldObject neu positioniert via currentTick-Drift-Berechnung -->
-<!-- Transient: kein Scribe (kein State-Persistenz). Rebuild aus Find.WorldObjects + HordeUpdateLogic.RunOncePure mit currentTick. -->
+<!-- Transient: kein Scribe (kein State-Persistenz). Rebuild aus Find.WorldObjects + HordeUpdateLogic.ComputeHordeTile mit currentTick. -->
 
 ## F — Cross-Package READ
 
@@ -83,10 +93,10 @@ Schreibt:
 
 ## G — Performance-Kennzahl
 
-- HordeSpawner: 250-tick cadence → 1 MapComponent-Spawner-Call pro ~4 Sekunden.
-- HordeSectionLayer: 32 Segmente × 3 Ringe = 96 Triangles, nur in Sections innerhalb des äußersten Rings (um Map-Mitte) gezeichnet. ~30 fps.
+- HordeSpawner: 250-tick WorldObject-Cadence + 15-tick Layer-Regen-Driver (nur bei active, nur Home-Map).
+- HordeSectionLayer: 32 Segmente × 3 Ringe = 96 Triangles, gezeichnet NUR aus der einzelnen Section, die `map.Center` enthält (world-space Vertices). Keine 9×-Überlagerung/Z-Fighting mehr.
 - HordeBurstLayer: 16 Segmente pro HiddenInfected-Pawn je Section. Bei 20 Bursts × 30 sections = ~600 Triangles. Akzeptabel.
-- HordeCameraOverlay: 4 GUI-Draw-Aufrufe pro Frame (Top/Bottom/Left/Right).
+- HordeCameraOverlay: 4 GUI-Draw-Aufrufe pro Frame (Top/Bottom/Left/Right), 1 Postfix-Aufruf pro Frame (early-out wenn inactive).
 
 ## User-Aktion Pflicht
 

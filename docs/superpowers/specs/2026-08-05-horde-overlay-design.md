@@ -48,14 +48,14 @@ Phase D liefert:
 | `HordeCalculator.IsActive(ledger, profile)` | Method | True wenn Effective >= HordeThreshold(profileId) |
 | `HordeSectionLayer` | SectionLayer subclass | Pulsierender Kreis (Alpha-getrieben) auf Home-Map |
 | `HordeBurstLayer` | SectionLayer subclass | Pro infiziertem Pawn ein 5-Tile-Radius Soft-Glow |
-| `HordeCameraOverlay` | static class | HUD-Edge-Border Pulse via Postfix auf `CameraDriver.Draw` |
+| `HordeCameraOverlay` | static class | HUD-Edge-Border Pulse via Postfix auf `UIRoot.UIRootOnGUI` |
 | `HordeWorldObject` | Verse.WorldObject subclass | Wanderer-Horde mit Position + Movement |
 | `HordeSpawner` | MapComponent | Positioniert/updated HordeWorldObject jeden 250 Ticks |
 
 ## 4. Datenfluss
 
 ```
-Tick 250-Tick-Loop (HordeSpawner.MapComponentTick):
+HordeSpawner.MapComponentTick (nur auf der primären Player-Home-Map):
   1. ledger = PopulationLedger.Get()
   2. profile = StoryDirector.Get()?.ActiveProfile ?? SettingProfile.Survival
   3. effective = HordeCalculator.GetEffectiveCount(ledger, profile)
@@ -65,18 +65,25 @@ Tick 250-Tick-Loop (HordeSpawner.MapComponentTick):
             ho.Destroy();
         return;
      }
-  5. homes = MapRegistry.GetPlayerHomeMaps(); if empty → return
-  6. wo = Find.WorldObjects.AllWorldObjects.OfType<HordeWorldObject>().FirstOrDefault()
-       ?? HordeSpawner.SpawnHordeAtEdgeTile(homes[0].Tile)
-  7. wo.MoveTowardsHome(homes[0].Tile, currentTick)  // deterministische Drift
+  5. homeMap = MapRegistry.GetPrimaryPlayerHomeMap(); null → return
+  6. alle 250 Ticks: tile = HordeUpdateLogic.ComputeHordeTile(homeMap.Tile, now)
+     (rein tick-abgeleitet, keine Drift-Persistenz — spec §6)
+     → HordeWorldObject auf tile setzen/spawnen
+  7. alle 15 Ticks: map.mapDrawer.RegenerateLayerNow(HordeSectionLayer) +
+     RegenerateLayerNow(HordeBurstLayer)  // Custom-Layer regenerieren NICHT automatisch
 
-Tick 60-tick-Loop (HordeSectionLayer SumoMesh-Update + HordeBurstLayer SumoMesh-Update):
-  - Lerp pulse-alpha zwischen [0.0, 0.35] (Kreis) und [0.0, 0.5] (Burst) basierend auf currentTick % 120 (Sinus-Welle)
-  - Update nur wenn Horde active; sonst Layer.Empty()
+WICHTIG (verifiziert an Assembly-CSharp 1.6.4566):
+  - Section-Layer-Subclasses werden pro Section automatisch instantiiert
+    (GenTypes.AllSubclassesNonAbstract(typeof(SectionLayer)) + Activator.CreateInstance),
+    aber Regenerate() läuft nur bei Dirty-Markierung durch Vanilla-Flags oder expliziten
+    RegenerateLayerNow(Type)-Aufruf. Ohne den 15-Tick-Driver wäre der Kreis leer.
+  - 60-Tick-Regen wäre falsch: die 120-Tick-|sin|-Pulse-Phase liefert bei θ und θ+π
+    gleiche Alphas → der Puls würde einfrieren. 15 Ticks = 8 Samples/Zyklus.
 
-Tick Frame (HordeCameraOverlay OnGUI):
-  - Postfix auf UIDrawRoot oder camera-driver Draw → Malt 4 Edge-Bänder mit pulse-alpha
-  - Pulse-Phase aus currentTick % 90
+Tick Frame (HordeCameraOverlay Postfix auf UIRoot.UIRootOnGUI):
+  - Malt 4 Edge-Bänder mit pulse-alpha; Pulse-Phase aus ComputePulsePhase (120-Tick-Zyklus)
+  - Postfix wird explizit via HordeCameraOverlay.Install() (harmony.Patch) registriert —
+    Package 05 hat kein PatchAll, ein nacktes [HarmonyPatch]-Attribut wäre inert
 ```
 
 ## 5. API / Interface
@@ -155,18 +162,32 @@ public class HordeWorldObject : Verse.WorldObject
 ```csharp
 public sealed class HordeSpawner : MapComponent
 {
-    private const int TickInterval = 250;
-    private int _lastTick = -TickInterval;
+    // Layer-Regen-Cadence: 15 Ticks (8 Samples pro 120-Tick-Puls).
+    // 60 Ticks wären falsch — θ und θ+π liefern gleiche |sin|-Alphas.
+    private const int LayerRegenIntervalTicks = 15;
+    private int _lastTick = -HordeUpdateLogic.TickInterval;
+    private int _nextLayerRegenTick;
 
     public override void MapComponentTick()
     {
         base.MapComponentTick();
         if (map == null) return;
         if (Scribe.mode != LoadSaveMode.Inactive) return;
+        Map homeMap = MapRegistry.GetPrimaryPlayerHomeMap();
+        if (homeMap == null || map != homeMap) return;
         int now = Find.TickManager?.TicksGame ?? 0;
-        if (now < _lastTick + TickInterval) return;
-        _lastTick = now;
-        HordeUpdateLogic.RunOnce(now);
+        if (!HordeCalculator.IsActiveNow()) { DespawnAllHordes(); return; }
+        if (now >= _lastTick + HordeUpdateLogic.TickInterval)
+        {
+            _lastTick = now;
+            SyncHordeAtTile(HordeUpdateLogic.ComputeHordeTile(homeMap.Tile, now), homeMap.Tile);
+        }
+        if (now >= _nextLayerRegenTick)
+        {
+            _nextLayerRegenTick = now + LayerRegenIntervalTicks;
+            map.mapDrawer?.RegenerateLayerNow(typeof(HordeSectionLayer));
+            map.mapDrawer?.RegenerateLayerNow(typeof(HordeBurstLayer));
+        }
     }
 }
 ```
@@ -176,31 +197,15 @@ public sealed class HordeSpawner : MapComponent
 ```csharp
 public static class HordeUpdateLogic
 {
-    public static void RunOnce(long currentTick)
-    {
-        var ledger = PopulationLedger.Get();
-        var profile = Story.StoryDirector.Get()?.ActiveProfile ?? SettingProfile.Survival;
-        int effective = HordeCalculator.GetEffectiveCount(ledger);
-        if (!HordeCalculator.IsActive(effective, profile))
-        {
-            DespawnAllHordes();
-            return;
-        }
-        var homes = MapRegistry.GetPlayerHomeMaps();
-        if (homes.Count == 0) return;
-        int homeTile = homes[0].Tile;
-        EnsureSingleHordeNear(homeTile, currentTick);
-        MoveExistingHordesToward(homeTile, currentTick);
-    }
+    public const int TickInterval = 250;
+    public const int InitialDistanceFromHome = 5;
 
-    // Test-helper pure version (no Find calls)
-    internal static void RunOncePure(
-        int effective, bool active, int homeTile, long currentTick,
-        ref List<int> hordeTiles)
+    /// tile = homeTile + max(0, 5 − floor(tick/250))
+    /// Rein tick-abgeleitet — keine Persistenz, Save/Load-resistent.
+    public static int ComputeHordeTile(int homeTile, long currentTick)
     {
-        if (!active) { hordeTiles.Clear(); return; }
-        if (hordeTiles.Count == 0) hordeTiles.Add(homeTile + 5);
-        MoveTowardsPure(hordeTiles, homeTile, currentTick);
+        int drifted = (int)(currentTick / TickInterval);
+        return homeTile + Math.Max(0, InitialDistanceFromHome - drifted);
     }
 }
 ```
@@ -236,10 +241,10 @@ public static class HordeUpdateLogic
 | D4 | CalculatorCollapseNeverBelow | Threshold Collapse=80 → 50 humanoid not active; 80 humanoid = active |
 | D5 | CalculatorProfileFallback | null profile → Survival-fallback active |
 | D6 | PulsePhaseSinusoidal | tick=0 → phase=0; tick=30 → ~1.0; tick=60 → ~0 |
-| D7 | UpdatePureDespawnBelowThreshold | Pure: active=false → hordeTiles.count=0 |
-| D8 | UpdatePureSpawnAboveThreshold | Pure: active=true, hordeTiles empty → spawn at homeTile+5 |
-| D9 | UpdatePureMoveTowardsHome | Pure: horde at homeTile+5, 250 ticks later → drifted toward homeTile |
-| D10 | UpdatePureMoveIntervalRespected | Pure: horde moved once at 250, again at 500; not between |
+| D7 | UpdatePureSpawnAtInitialDistance | ComputeHordeTile(50, 0) == 55 (home + 5) |
+| D8 | UpdatePureDriftsOnePerInterval | 249→55, 250→54, 500→53 (floor(tick/250) moves) |
+| D9 | UpdatePureArrivesAndClampsAtHome | 1249→51, 1250→50, 100000→50 (nie unter home) |
+| D10 | UpdatePureDeterministicFromTick | gleiche (tile,tick) → gleiches Ergebnis; home=7,tick=250 → 11 |
 | D11 | CalculatorAnimalHalfCapRoute | Hybrid count at Refuge threshold (100+0.5×100=150 < 220) |
 | D12 | WorldObjectExistsInDefDB | Rimconemy_HordeWorldObject XML loads successfully |
 
@@ -256,12 +261,15 @@ Phase D fügt **keine** neuen Story-Events hinzu. Die Horde ist ein passiver Vis
 ```csharp
 World.DarknessSectionLayerLifecycle.Install();    // existing
 Tests.HordeRegressionTests.RunAll();               // NEW
+Horde.HordeCameraOverlay.Install();                // NEW — expliziter harmony.Patch
 Log.Message("[Rimconemy.InfectedAutomation] Phase D: Horde overlay (Home+World+Camera) wired.");
 ```
 
-The Camera-Edge postfix needs no explicit install: the `[HarmonyPatch]`
-attribute on `HordeCameraOverlay` registers the postfix automatically
-(same mechanism as `CollectiveDefensePostCombatPatch`).
+The Camera-Edge postfix REQUIRES the explicit `Install()` call:
+Package 05 has no `Harmony.PatchAll`, so a bare `[HarmonyPatch]`
+attribute would never be applied (verified: only
+`DarknessSectionLayerLifecycle` patches, and it does so explicitly
+with `harmony.Patch(...)`). Same explicit-install pattern applies.
 
 Logging-Hooks (alle Debug-Level):
 - `[HordeCalculator] effective=N threshold=N active=true|false`
@@ -276,8 +284,8 @@ Logging-Hooks (alle Debug-Level):
 - [ ] D2 — `HordeCalculator.GetEffectiveCount` deterministisch-tests bei 5 Config-Samples.
 - [ ] D3 — `HordeSpawner.MapComponentTick` läuft syncron mit PopulationLedger-Reconciler (kein Race).
 - [ ] D4 — `Rimconemy_HordeWorldObject` Def lädt via DefDatabase XML.
-- [ ] D5 — `HordeSectionLayer` regeneriert NICHT wenn Horde inactive (Performance: leeres Layer, kein MapMeshDirty-Loop).
-- [ ] D6 — `HordeCameraOverlay` Postfix ist via `[HarmonyPatch]`-Attribut registriert.
+- [ ] D5 — `HordeSectionLayer` regeneriert NICHT wenn Horde inactive (RegenerateLayerNow prüft Visible pro Section; Spawner ruft den Driver nur bei active).
+- [ ] D6 — `HordeCameraOverlay` Postfix via explizitem `HordeCameraOverlay.Install()` (harmony.Patch auf UIRoot.UIRootOnGUI) registriert.
 - [ ] D7 — `runtime_test.sh --skip-start --no-deploy` exit 0; Bump auf 0.0.61.
 - [ ] D8 — Live-Beleg im Player.log: Spawner-Marker + World-Map-Icon sichtbar.
 

@@ -7,7 +7,8 @@
 // Owner: Infected & Automation (Package 05).
 //
 // Calculator-side tests cover Pure-Logic only.
-// UpdateLogic tests cover pure spawn / drift / despawn.
+// UpdateLogic tests cover the pure tick-derived tile (spawn / drift /
+// arrival). Despawn is the Spawner's IsActive gate (covered by D1-D5).
 // D11-D12 verify the hybrid-count route and the WorldObject Def load.
 
 using Rimconemy.InfectedAutomation.Horde;
@@ -41,11 +42,11 @@ namespace Rimconemy.InfectedAutomation.Tests
             Check(D5_CalculatorProfileFallbackNull(),                "D5.CalculatorProfileFallbackNull");
             Check(D6_PulsePhaseSinusoidal(),                         "D6.PulsePhaseSinusoidal");
 
-            // ── D7-D10: UpdateLogic Pure ─────────────────────
-            Check(D7_UpdatePureDespawnBelowThreshold(),              "D7.UpdatePureDespawnBelowThreshold");
-            Check(D8_UpdatePureSpawnAboveThreshold(),                "D8.UpdatePureSpawnAboveThreshold");
-            Check(D9_UpdatePureMoveTowardsHome(),                    "D9.UpdatePureMoveTowardsHome");
-            Check(D10_UpdatePureMoveIntervalRespected(),             "D10.UpdatePureMoveIntervalRespected");
+            // ── D7-D10: UpdateLogic Pure (tick-derived tile) ──────
+            Check(D7_UpdatePureSpawnAtInitialDistance(),             "D7.UpdatePureSpawnAtInitialDistance");
+            Check(D8_UpdatePureDriftsOnePerInterval(),               "D8.UpdatePureDriftsOnePerInterval");
+            Check(D9_UpdatePureArrivesAndClampsAtHome(),             "D9.UpdatePureArrivesAndClampsAtHome");
+            Check(D10_UpdatePureDeterministicFromTick(),             "D10.UpdatePureDeterministicFromTick");
 
             // ── D11-D12: hybrid route + Def load ─────────────
             Check(D11_AnimalHalfCapRoute(),                          "D11.AnimalHalfCapRoute");
@@ -134,50 +135,37 @@ namespace Rimconemy.InfectedAutomation.Tests
                 && System.Math.Abs(p120) < 0.01f;
         }
 
-        // ── D7: pure despawn when below threshold ────────────────
-        private static bool D7_UpdatePureDespawnBelowThreshold()
+        // ── D7: tick 0 → spawn at home + 5 ────────────────────
+        private static bool D7_UpdatePureSpawnAtInitialDistance()
         {
-            var hordeTiles = new System.Collections.Generic.List<int> { 100, 105 };
-            HordeUpdateLogic.RunOncePure(
-                active: false,
-                homeTile: 50,
-                currentTick: 5000L,
-                hordeTiles: hordeTiles);
-            return hordeTiles.Count == 0;
+            // Spec §6: tile = home + max(0, 5 − floor(tick/250)).
+            return HordeUpdateLogic.ComputeHordeTile(homeTile: 50, currentTick: 0L) == 55;
         }
 
-        // ── D8: pure spawn when above threshold ─────────────────
-        private static bool D8_UpdatePureSpawnAboveThreshold()
+        // ── D8: floor(tick/250) moves, 1 tile per interval ──────
+        private static bool D8_UpdatePureDriftsOnePerInterval()
         {
-            var hordeTiles = new System.Collections.Generic.List<int>();
-            HordeUpdateLogic.RunOncePure(
-                active: true,
-                homeTile: 50,
-                currentTick: 5000L,
-                hordeTiles: hordeTiles);
-            // First spawn at homeTile + 5
-            return hordeTiles.Count == 1 && hordeTiles[0] == 55;
+            // tick 249 → 0 moves (still 55); tick 250 → 1 move (54).
+            return HordeUpdateLogic.ComputeHordeTile(50, 249L) == 55
+                && HordeUpdateLogic.ComputeHordeTile(50, 250L) == 54
+                && HordeUpdateLogic.ComputeHordeTile(50, 500L) == 53;
         }
 
-        // ── D9: at tick 500, drift count = 2, position 60 → 58 ───
-        private static bool D9_UpdatePureMoveTowardsHome()
+        // ── D9: reaches home at tick 1250 and clamps, never below ──
+        private static bool D9_UpdatePureArrivesAndClampsAtHome()
         {
-            var hordeTiles = new System.Collections.Generic.List<int> { 60 };
-            HordeUpdateLogic.RunOncePure(
-                active: true, homeTile: 50,
-                currentTick: 500L, hordeTiles: hordeTiles);
-            // 500/250 = 2 moves; 60 - 2 = 58
-            return hordeTiles.Count == 1 && hordeTiles[0] == 58;
+            return HordeUpdateLogic.ComputeHordeTile(50, 1249L) == 51
+                && HordeUpdateLogic.ComputeHordeTile(50, 1250L) == 50
+                && HordeUpdateLogic.ComputeHordeTile(50, 100000L) == 50;
         }
 
-        // ── D10: tick 251 = floor(251/250) = 1 move; 60 → 59 ───────
-        private static bool D10_UpdatePureMoveIntervalRespected()
+        // ── D10: deterministic — same tick → same tile, no state ──
+        private static bool D10_UpdatePureDeterministicFromTick()
         {
-            var hordeTiles = new System.Collections.Generic.List<int> { 60 };
-            HordeUpdateLogic.RunOncePure(
-                active: true, homeTile: 50,
-                currentTick: 251L, hordeTiles: hordeTiles);
-            return hordeTiles[0] == 59;
+            // Pure function of (homeTile, tick): repeated calls agree and
+            // a different home tile shifts the result by the same delta.
+            return HordeUpdateLogic.ComputeHordeTile(50, 500L) == HordeUpdateLogic.ComputeHordeTile(50, 500L)
+                && HordeUpdateLogic.ComputeHordeTile(7, 250L) == 11; // 7 + (5 − 1)
         }
 
         // ── D11: hybrid route at Refuge threshold 220 ────────────

@@ -1,12 +1,10 @@
 // Source/Horde/HordeUpdateLogic.cs
 //
-// Phase D — Pure Spawn/Move/Despawn state-machine for the wandering
-// HordeWorldObject. No IO, no Verse.* types, no DefDatabase read — a
-// test seam for the production Spawner. Pure-API design lets regression
-// tests cover "spawn at threshold", "drift toward home", "despawn below
-// threshold" without spinning up a GameComponent.
-
-using System.Collections.Generic;
+// Phase D — Pure spawn/drift math for the wandering HordeWorldObject.
+// No IO, no Verse.* types, no DefDatabase read — a test seam for the
+// production Spawner. Pure-API design lets regression tests cover
+// "spawn at initial distance", "drift toward home", "arrival at home"
+// without spinning up a GameComponent.
 
 namespace Rimconemy.InfectedAutomation.Horde
 {
@@ -16,29 +14,21 @@ namespace Rimconemy.InfectedAutomation.Horde
         public const int InitialDistanceFromHome = 5;
 
         /// <summary>
-        /// Pure entry-point: spawn / drift / despawn one Horde per home tile.
-        /// Mutates <paramref name="hordeTiles"/> in place to keep
-        /// "where the horde is" as an externalized state. The Spawner
-        /// (MapComponent) translates the result into actual Verse.WorldObject
-        /// placement; the tests inspect the list directly.
+        /// Pure position function (spec §6): the horde's world tile is
+        /// derived ONLY from the game tick — no persisted state, so
+        /// Save/Load resumes at the same tile and any activation moment
+        /// yields a consistent position.
+        ///
+        /// <c>tile = homeTile + max(0, InitialDistanceFromHome − floor(tick/250))</c>
+        ///
+        /// tick 0–249   → home + 5  (initial spawn distance)
+        /// tick 500     → home + 3  (2 tiles drifted)
+        /// tick 1250+   → home      (arrived; clamped, never below home)
         /// </summary>
-        public static void RunOncePure(
-            bool active, int homeTile, long currentTick, List<int> hordeTiles)
+        public static int ComputeHordeTile(int homeTile, long currentTick)
         {
-            if (!active)
-            {
-                hordeTiles.Clear();
-                return;
-            }
-            // First spawn: place at homeTile + InitialDistanceFromHome.
-            if (hordeTiles.Count == 0)
-            {
-                hordeTiles.Add(homeTile + InitialDistanceFromHome);
-                return;
-            }
-            // Drift: each TickInterval, move 1 tile toward home.
-            hordeTiles[0] = homeTile + System.Math.Max(0,
-                hordeTiles[0] - homeTile - (int)(currentTick / TickInterval));
+            int drifted = (int)(currentTick / TickInterval);
+            return homeTile + System.Math.Max(0, InitialDistanceFromHome - drifted);
         }
     }
 }
