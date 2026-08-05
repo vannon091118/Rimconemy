@@ -45,7 +45,7 @@ Im gemeinsamen Profil:
 - Scavenger-Arbeiten melden standardisierte Arbeitstypen für XP.
 - Bauschutt-, Farm-, Energie- und Verteidigungsarbeit nutzt dieselbe Progression.
 - Wissen und organische Freigaben schalten Wasser, Strom, Pfeilturm, Mechadroids, Credits und Outposts frei.
-- Der T2-Energy-Pfad umfasst später den elektrischen Hochofen für physische Munitionsproduktion; die Freigabe darf diese Aktion erst öffnen, wenn Def, Rezept, Arbeitsweg und Save-Verhalten belegt sind.
+- Der T2-Strom-Pfad umfasst später den elektrischen Hochofen für physische Munitionsproduktion; die Freigabe darf diese Aktion erst öffnen, wenn Def, Rezept, Arbeitsweg und Save-Verhalten belegt sind.
 - Sicherheit verarbeitet Basiszustand, Infizierten-Druck und territoriale Verbindung.
 - Game Over bleibt an direkt kontrollierbare Spielerbewohner gebunden.
 - Foundation zeigt Needs, XP, Forschung, Modus und Blockadegründe in gemeinsamen Snapshots.

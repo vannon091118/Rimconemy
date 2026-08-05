@@ -173,8 +173,11 @@ namespace Rimconemy.InfectedAutomation.Threat
                 var s = GetLatest();
                 return s != null ? s.TotalPressure : 0f;
             }
-            catch
+            catch (System.Exception ex)
             {
+                Log.Warning(
+                    "[Rimconemy.InfectedAutomation] ThreatSnapshotBridge.GetLatestPressure: "
+                    + ex.GetType().Name + ": " + ex.Message);
                 return 0f;
             }
         }

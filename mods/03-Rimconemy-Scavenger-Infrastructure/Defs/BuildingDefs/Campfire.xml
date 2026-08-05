@@ -33,6 +33,7 @@
       <li>Rimconemy_MakeCoal</li>
       <li>Rimconemy_SalvageMachineParts</li>
       <li>Rimconemy_MakeStainlessSteel</li>
+      <li>Rimconemy_MakeWeaponComponent</li>
     </recipes>
     <comps>
       <li Class="CompProperties_Glower">

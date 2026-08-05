@@ -1,6 +1,8 @@
 using System.Linq;
 using Rimconemy.Foundation.UI;
+using Rimconemy.SurvivalProgression.Character.Roles;
 using Rimconemy.SurvivalProgression.Progression;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -93,6 +95,22 @@ namespace Rimconemy.SurvivalProgression.UI
             RimconemyUi.DrawRow(new Rect(0f, y, width, 22f), "Arbeitseinheiten", snapshot.CompletedWorkUnits.ToString());
             y += 28f;
 
+            // Rimconemy role layer: Animals and Artistic stay hidden as
+            // vanilla source skills; the player sees the derived roles that
+            // actually matter to the new character system.
+            RimconemyUi.DrawSectionTitle(new Rect(0f, y, width, 26f), "Rimconemy.Role.Title", GameFont.Medium);
+            y += 30f;
+            DrawRoleRow(new Rect(0f, y, width, 22f), "Rimconemy.Role.Farming", RoleSkillResolver.SkillOf(pawn, SkillDefOf.Plants));
+            y += 22f;
+            DrawRoleRow(new Rect(0f, y, width, 22f), "Rimconemy.Role.Cooking", RoleSkillResolver.SkillOf(pawn, SkillDefOf.Cooking));
+            y += 22f;
+            DrawRoleRow(new Rect(0f, y, width, 22f), "Rimconemy.Role.Hunting", RoleSkillResolver.HuntingLevel(pawn));
+            y += 22f;
+            DrawRoleRow(new Rect(0f, y, width, 22f), "Rimconemy.Role.Smithing", RoleSkillResolver.SmithingLevel(pawn));
+            y += 22f;
+            DrawRoleRow(new Rect(0f, y, width, 22f), "Rimconemy.Role.Intellectual", RoleSkillResolver.SkillOf(pawn, SkillDefOf.Intellectual));
+            y += 28f;
+
             if (pawn.skills?.skills != null)
             {
                 foreach (var skill in pawn.skills.skills.Where(s => s.Level > 0).OrderByDescending(s => s.Level).Take(4))
@@ -132,6 +150,11 @@ namespace Rimconemy.SurvivalProgression.UI
 
             Widgets.EndScrollView();
             RimconemyUi.ResetTextFontAndColor();
+        }
+
+        private static void DrawRoleRow(Rect rect, string labelKey, int level)
+        {
+            RimconemyUi.DrawRow(rect, labelKey.Translate(), "Level " + level);
         }
 
         private static void DrawNeed(Rect rect, string label, float value)

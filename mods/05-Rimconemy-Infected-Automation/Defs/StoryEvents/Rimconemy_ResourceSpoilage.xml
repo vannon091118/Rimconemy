@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Rimconemy_ResourceSpoilage — Vorratsverderb
+  Owner: Infected & Automation (Story-Domäne)
+  Status: ACTIVE — wird vom StoryEventCatalog.MergeFromDefDatabase() geladen.
+  Band: 2 (Survival), Familie: Supply
+  Reagiert auf: ThreatPressure > 0.25
+-->
+<Defs>
+  <Rimconemy.InfectedAutomation.Story.StoryEventDef>
+    <defName>rimconemy_supply_resource_spoilage</defName>
+    <label>Vorratsverderb</label>
+    <description>Hitze und Feuchtigkeit haben einen Teil der Vorräte ruiniert.</description>
+
+    <eventVersion>1</eventVersion>
+    <eventFamily>Supply</eventFamily>
+    <escalationBand>2</escalationBand>
+    <escalationTarget>ThreatPressure</escalationTarget>
+    <escalationModifier>0.04</escalationModifier>
+
+    <prerequisites>
+      <li>MaxActiveEvents()</li>
+      <li>NOT ActiveEvent(Supply)</li>
+      <li>ThreatAbove(0.25)</li>
+    </prerequisites>
+
+    <exclusions>
+      <li>DaysSinceLastEventBelow(1.5)</li>
+    </exclusions>
+
+    <weights>
+      <li>Rimconemy_Survival=35</li>
+      <li>Rimconemy_Collapse=45</li>
+    </weights>
+
+    <cooldownDays>
+      <li>Rimconemy_Survival=4.0</li>
+      <li>Rimconemy_Collapse=2.0</li>
+    </cooldownDays>
+
+    <textKey>Rimconemy_ResourceSpoilage_Letter</textKey>
+    <letterLabel>Vorräte verdorben</letterLabel>
+    <letterText>{PawnName} stellt fest, dass ein Teil der Vorräte ungenießbar geworden ist. Der Verlust betrifft hauptsächlich Lebensmittel.</letterText>
+
+    <choices>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Salvage</choiceId>
+        <label>Reste retten</label>
+        <effects>
+          <li>ResourceLoss:Food-30%</li>
+          <li>MoodModifier:-2 for 1 day</li>
+        </effects>
+      </li>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Disinfect</choiceId>
+        <label>Aufbereiten</label>
+        <effects>
+          <li>ResourceLoss:Food-15%</li>
+          <li>WalletCost:20 Credits</li>
+          <li>MoodModifier:-1 for 1 day</li>
+        </effects>
+      </li>
+    </choices>
+
+    <followUpIds />
+    <determinismKey>{ProfileId}+{EventId}+{StorageHash}+{GameTickDay}</determinismKey>
+  </Rimconemy.InfectedAutomation.Story.StoryEventDef>
+</Defs>

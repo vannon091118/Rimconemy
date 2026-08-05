@@ -20,7 +20,7 @@
 <Patch>
 
   <Operation Class="PatchOperationFindMod">
-    <mods><li>Core</li></mods>
+    <mods><li>Ludeon.RimWorld</li></mods>
     <match Class="PatchOperationSequence">
       <success>Normal</success>
       <operations>

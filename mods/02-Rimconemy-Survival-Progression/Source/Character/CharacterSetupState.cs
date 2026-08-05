@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using RimWorld;
 using Rimconemy.Foundation.Save;
+using Rimconemy.SurvivalProgression.Character.Roles;
 using Rimconemy.SurvivalProgression.Character;
 using Verse;
 
@@ -252,7 +253,8 @@ namespace Rimconemy.SurvivalProgression.Character
                     // The scorecard mirrors the applied H5 budget, not every
                     // mod-added/disabled skill that may exist on the pawn.
                     if (s?.def == null || s.TotallyDisabled
-                        || !CharacterSetup.EligibleSkills.Contains(s.def)) continue;
+                        || !CharacterSetup.EligibleSkills.Contains(s.def)
+                        || RoleSkillCatalog.HiddenFromCharacterWindow(s.def)) continue;
                     SkillDefNames.Add(s.def.defName);
                     SkillLevels.Add(s.Level);
                     spentPoints += SkillBudgetCalculator.CostForLevel(s.Level);

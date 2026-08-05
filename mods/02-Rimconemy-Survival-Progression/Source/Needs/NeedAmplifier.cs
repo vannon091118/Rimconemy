@@ -1,5 +1,6 @@
 using Rimconemy.Foundation.Canonical;
 using UnityEngine;
+using Verse;
 
 namespace Rimconemy.SurvivalProgression.Needs
 {
@@ -131,8 +132,9 @@ namespace Rimconemy.SurvivalProgression.Needs
                 if (float.IsNaN(pct) || float.IsInfinity(pct)) return 1.0f;
                 return AmplifierFactor(pct);
             }
-            catch
+            catch (System.Exception ex)
             {
+                Log.Warning("[Rimconemy.SurvivalProgression] HungerRateFor exception: " + ex.GetType().Name + ": " + ex.Message + " — returning neutral 1.0f");
                 return 1.0f;
             }
         }

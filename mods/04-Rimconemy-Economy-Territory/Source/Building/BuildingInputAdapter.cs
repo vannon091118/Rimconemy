@@ -35,6 +35,7 @@ namespace Rimconemy.EconomyTerritory.Building
                 "Rimconemy_Coal",
                 "Rimconemy_MachineParts",
                 "Rimconemy_StainlessSteel",
+                "Rimconemy_WeaponComponent",
             };
 
         private static readonly HashSet<string> CreditInputs

@@ -5,6 +5,7 @@ using Rimconemy.Foundation.Colonials;
 using Rimconemy.Foundation.CrossPackage;
 using Rimconemy.Foundation.Registry;
 using Rimconemy.SurvivalProgression.Character;
+using Rimconemy.SurvivalProgression.Character.Roles;
 using Rimconemy.SurvivalProgression.Needs;
 using RimWorld;
 using UnityEngine;
@@ -380,6 +381,11 @@ namespace Rimconemy.SurvivalProgression.Progression
             snapshot.NeedSocialLevel = NeedMappingService.SampleByName(pawn, NeedMappingService.SocialSetting);
             // Finding 5: RecreationAvailable hoisted out of loop — use the pre-computed value.
             snapshot.WorkDomain = ClassifyJobCached(pawn);
+            snapshot.FarmingLevel = RoleSkillResolver.SkillOf(pawn, SkillDefOf.Plants);
+            snapshot.CookingLevel = RoleSkillResolver.SkillOf(pawn, SkillDefOf.Cooking);
+            snapshot.HuntingLevel = RoleSkillResolver.HuntingLevel(pawn);
+            snapshot.SmithingLevel = RoleSkillResolver.SmithingLevel(pawn);
+            snapshot.IntellectualLevel = RoleSkillResolver.SkillOf(pawn, SkillDefOf.Intellectual);
             snapshot.Efficiency = CalculateEfficiency(snapshot, RecreationAvailable);
             snapshot.LastUpdatedTick = LastUpdateTick;
             UpdateWorkEpisode(snapshot, pawn);
@@ -430,8 +436,10 @@ namespace Rimconemy.SurvivalProgression.Progression
                 // Commit once when a meaningful job episode ends or changes.
                 // This prevents idle polling and duplicate XP for one episode.
                 snapshot.CompletedWorkUnits++;
-                snapshot.Experience += ExperiencePerWorkSample
+                float baseExperience = ExperiencePerWorkSample
                     * Math.Max(1f, Math.Min(8f, snapshot.ActiveJobTicks / (float)UpdateIntervalTicks));
+                int intellectual = RoleSkillResolver.SkillOf(pawn, SkillDefOf.Intellectual);
+                snapshot.Experience += RoleSkillResolver.ScaleExperience(baseExperience, intellectual);
             }
 
             snapshot.CurrentJobDefName = validWork ? currentJob : "";

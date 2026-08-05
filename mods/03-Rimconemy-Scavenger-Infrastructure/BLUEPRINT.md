@@ -34,7 +34,7 @@ Artefakte:
 
 Nicht belegt (Live-Gates): MakeCoal-Durchlauf, Salvage-Ausbeute, Save/Load
 
-### Geplanter T2-Energy-Schritt: elektrischer Hochofen
+### Geplanter T2-Strom-Schritt: elektrischer Hochofen
 
 Der elektrische Hochofen folgt erst nach dem stabilen Survival-/Power-Fundament:
 

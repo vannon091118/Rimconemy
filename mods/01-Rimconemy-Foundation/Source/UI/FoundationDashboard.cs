@@ -411,6 +411,10 @@ namespace Rimconemy.Foundation.UI
 
             // Lazy one-shot capture. Safe to call repeatedly.
             FoundationDefInventory.EnsureCaptured();
+            // Phase-5 (2026-08-05) late-bind Storyteller-Probe: if the static-ctor
+            // capture found an empty DefDatabase, re-run here, when every mod's
+            // Defs are fully parsed (dashboard runs after game load).
+            StorytellerInventory.EnsureCaptured();
 
             var titleMap = FoundationDefInventory.OwnerTitles;
             var counts = FoundationDefInventory.OwnerDefCounts;

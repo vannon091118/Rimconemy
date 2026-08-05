@@ -121,6 +121,28 @@ namespace Rimconemy.InfectedAutomation.Story
         /// <summary>Days since last turn point.</summary>
         public float DaysSinceLastTurnPoint;
 
+        // ── colony context (event pool expansion) ──────────
+        /// <summary>Total colony wealth across all player home maps.</summary>
+        public float ColonyWealth;
+
+        /// <summary>Average mood percentage of all survivors (0-1).</summary>
+        public float AverageColonistMood;
+
+        /// <summary>Number of currently active research projects.</summary>
+        public int ActiveResearchCount;
+
+        /// <summary>True when the colony has a powered electric grid.</summary>
+        public bool PowerGridActive;
+
+        /// <summary>Number of hostile factions with positive goodwill (angry enough to raid).</summary>
+        public int HostileFactionCount;
+
+        /// <summary>Days since the last story event fired (convenience shortcut).</summary>
+        public float DaysSinceLastEvent;
+
+        /// <summary>True if any colonist has a major (non-trivial) injury.</summary>
+        public bool AnyColonistInjured;
+
         // ── active events ────────────────────────────────────
         /// <summary>Currently active event IDs (not yet resolved).</summary>
         public List<string> ActiveEventIds;

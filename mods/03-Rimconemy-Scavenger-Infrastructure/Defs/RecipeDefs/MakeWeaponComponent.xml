@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Scavenger Infrastructure
+  Stable defName: Rimconemy_MakeWeaponComponent
+  DLC condition: none (Core recipe)
+  Load order: Core/DLCs -> Foundation -> Survival -> Scavenger -> later
+  Vanilla anchor: RecipeDef (smelting/salvaging).
+
+  D3-Harmonisierung (2026-08-05, DECISIONS §29):
+    Diese Recipe ist explizit auf Phase 3 (Automation) getaktet — also erst
+    sichtbar, wenn Smithing (bzw. die Phase-3-Marker `stainless-smelted`)
+    abgeschlossen sind. Die Sprung-Directive zu T3 ist über researchPrerequisites
+    + den recipeUsers-Block klar: Campfire (Phase-1-Zugang für Early-Survival-
+    Survival-Skip-Routen, gated) UND FueledSmithy (Phase-2/3-Vanilla-Pfad).
+
+  Material-Ökonomie: 3 Rimconemy_ConstructionDebris -> 2 Rimconemy_WeaponComponent.
+    - 3 weil Debris vor T3 nur gefundet wird und eine Craft-Wertschöpfung
+      spürbar sein muss.
+    - 2 ist ein günstiger Yield (66 %), geprüft mit SalvageMachineParts-
+      Pattern (5 Stahlreste -> 1 Maschinenteile = 20 %).
+
+  Phase-Gate (XML, real):
+    researchPrerequisites: Smithing (T3-Marker für Phase 3 Automation, da
+    der Edelstahl-Turm die gleiche Voraussetzung trägt). Kein Vanilla-
+    Munitions-Forschungsprojekt — wenn ein zukünftiges Patch eine eigene
+    Phase-3-Munitions-Research einführt, wird diese Recipe darauf
+    umgehängt.
+-->
+<Defs>
+  <RecipeDef>
+    <defName>Rimconemy_MakeWeaponComponent</defName>
+    <label>Make Weapon Component</label>
+    <description>{Rimconemy.Scavenger.MakeWeaponComponent.Desc}</description>
+    <jobString>Fitting weapon components</jobString>
+    <workAmount>600</workAmount>
+    <!-- Audit-fix E1 (2026-08-05): SkillDef "Smithing" merged into "Crafting"
+         in 1.6 Core. researchPrerequisites is unchanged. -->
+    <workSkill>Crafting</workSkill>
+    <researchPrerequisites>
+      <li>Smithing</li>
+    </researchPrerequisites>
+    <ingredients>
+      <li>
+        <filter>
+          <thingDefs>
+            <li>Rimconemy_ConstructionDebris</li>
+          </thingDefs>
+        </filter>
+        <count>3</count>
+      </li>
+    </ingredients>
+    <fixedIngredientFilter>
+      <thingDefs>
+        <li>Rimconemy_ConstructionDebris</li>
+      </thingDefs>
+    </fixedIngredientFilter>
+    <products>
+      <Rimconemy_WeaponComponent>2</Rimconemy_WeaponComponent>
+    </products>
+    <recipeUsers>
+      <li>Rimconemy_Campfire</li>
+      <li>FueledSmithy</li>
+    </recipeUsers>
+  </RecipeDef>
+</Defs>

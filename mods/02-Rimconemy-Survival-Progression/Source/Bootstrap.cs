@@ -75,6 +75,9 @@ namespace Rimconemy.SurvivalProgression
             RimconemyStartStateRegressionTests.RunAll();
             // Phase-Progress overlay (PHASE_PROGRESSION_CONTRACT §10) regression gate.
             PhaseProgressResolverTests.RunAll();
+            // D-Harmo 2026-08-05: retired construction-speed layer (durability instead).
+            ConstructionSpeedRegressionTests.RunAll();
+            RoleMechanicsRegressionTests.RunAll();
             // Phase-8 (2026-08-04): organic XP tree — Domain, Unlock, Bridge.
             DomainXpStateTests.RunAll();
             UnlockServiceTests.RunAll();

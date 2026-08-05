@@ -169,7 +169,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             }
         }
 
-        /// <summary>S8: Tower cost includes StainlessSteel + MachineParts + Steel.</summary>
+        /// <summary>S8: Tower cost includes StainlessSteel + MachineParts + Steel + WeaponComponent (D3-Harmonisierung 2026-08-05).</summary>
         private static void TestS8_TowerCost()
         {
             var def = DefDatabase<ThingDef>.GetNamedSilentFail("Rimconemy_StainlessSteelTower");
@@ -178,14 +178,17 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 bool hasSS = def.costList.Any(c => c.thingDef != null && c.thingDef.defName == "Rimconemy_StainlessSteel" && c.count == 30);
                 bool hasParts = def.costList.Any(c => c.thingDef != null && c.thingDef.defName == "Rimconemy_MachineParts" && c.count == 4);
                 bool hasSteel = def.costList.Any(c => c.thingDef != null && c.thingDef.defName == "Steel" && c.count == 20);
-                Log.Message("[StainlessSteelChainRegression] S8 Tower costList count=" + def.costList.Count + 
-                    ", hasSS=" + hasSS + ", hasParts=" + hasParts + ", hasSteel=" + hasSteel);
+                bool hasWC = def.costList.Any(c => c.thingDef != null && c.thingDef.defName == "Rimconemy_WeaponComponent" && c.count >= 1);
+                Log.Message("[StainlessSteelChainRegression] S8 Tower costList count=" + def.costList.Count +
+                    ", hasSS=" + hasSS + ", hasParts=" + hasParts + ", hasSteel=" + hasSteel + ", hasWC=" + hasWC);
                 if (!hasSS) Log.Error("[StainlessSteelChainRegression] S8.Tower cost includes 30 StainlessSteel - MISSING");
                 if (!hasParts) Log.Error("[StainlessSteelChainRegression] S8.Tower cost includes 4 MachineParts - MISSING");
                 if (!hasSteel) Log.Error("[StainlessSteelChainRegression] S8.Tower cost includes 20 Steel - MISSING");
+                if (!hasWC) Log.Error("[StainlessSteelChainRegression] S8.Tower cost includes WeaponComponent - MISSING (D3-Harmonisierung)");
                 AssertTrue(hasSS, "S8.Tower cost includes 30 StainlessSteel");
                 AssertTrue(hasParts, "S8.Tower cost includes 4 MachineParts");
                 AssertTrue(hasSteel, "S8.Tower cost includes 20 Steel");
+                AssertTrue(hasWC, "S8.Tower cost includes WeaponComponent (D3-Harmonisierung)");
             }
             else
             {

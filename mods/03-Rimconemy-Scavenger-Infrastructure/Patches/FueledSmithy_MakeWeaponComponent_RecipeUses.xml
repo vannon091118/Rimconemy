@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Phase-First Vanilla Patch (Task 7 — Vanilla-Patches Stufe 1).
+
+  Purpose:
+    Fügt `Rimconemy_MakeWeaponComponent` zur Vanilla-`FueledSmithy`-Recipes-
+    Liste hinzu. Idempotent über `not(... li[...])`-Guard, defensive Belt-and-
+    braces auf `<recipes>` sowie `<recipeUsers>`.
+  Vanilla anchor: game/Data/Core/Defs/ThingDefs_Buildings/Buildings_Production.xml (FueledSmithy).
+
+  D3-Harmonisierung (2026-08-05, DECISIONS §29): Komponente ist das
+  T3-craftbare Surrogat für ConstructionDebris als Wand-Stuff. Ohne
+  FueledSmithy-Patch wäre das Rezept zwar über recipeUsers gefunden, aber
+  der Vanilla-FueledSmithy-Recipes-Slot würde leer bleiben — wir nehmen
+  defensiv beide Anchors mit.
+-->
+<Patch>
+
+  <Operation Class="PatchOperationFindMod">
+    <mods><li>Ludeon.RimWorld</li></mods>
+    <match Class="PatchOperationSequence">
+      <success>Normal</success>
+      <operations>
+
+        <li Class="PatchOperationTest">
+          <xpath>/Defs/ThingDef[defName="FueledSmithy"]</xpath>
+        </li>
+
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/ThingDef[defName="FueledSmithy"][not(recipes/li[text()="Rimconemy_MakeWeaponComponent"])]/recipes</xpath>
+          <order>Prepend</order>
+          <value>
+            <li>Rimconemy_MakeWeaponComponent</li>
+          </value>
+        </li>
+
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/ThingDef[defName="FueledSmithy"][not(recipeUsers/li[text()="Rimconemy_MakeWeaponComponent"])]/recipeUsers</xpath>
+          <order>Prepend</order>
+          <value>
+            <li>Rimconemy_MakeWeaponComponent</li>
+          </value>
+        </li>
+
+      </operations>
+    </match>
+  </Operation>
+
+</Patch>

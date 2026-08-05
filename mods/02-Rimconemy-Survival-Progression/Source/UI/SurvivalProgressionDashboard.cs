@@ -193,6 +193,14 @@ namespace Rimconemy.SurvivalProgression.UI
             Widgets.Label(new Rect(rect.x + 8f, y + 10f, rect.width - 16f, 18f),
                 "XP " + snapshot.Experience.ToString("0.0") + "  ·  L" + snapshot.Level.ToString("0.0")
                 + "  ·  Effizienz " + snapshot.Efficiency.ToString("P0"));
+            y += 28f;
+            GUI.color = RimconemyTheme.Muted;
+            Widgets.Label(new Rect(rect.x + 8f, y, rect.width - 16f, 18f),
+                "Rollen  Landwirtschaft " + snapshot.FarmingLevel
+                + " · Kochen " + snapshot.CookingLevel
+                + " · Jagd " + snapshot.HuntingLevel
+                + " · Schmied " + snapshot.SmithingLevel
+                + " · Intelligenz " + snapshot.IntellectualLevel);
             GUI.color = Color.white;
         }
 

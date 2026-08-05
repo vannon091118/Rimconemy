@@ -166,7 +166,7 @@ namespace Rimconemy.Foundation.Registry
             // the Full Overhaul profile truthful when all packages are loaded.
             Register(new PackageDescriptor(
                 packageId: "rimconemy.foundation",
-                packageVersion: "0.1.38",
+                packageVersion: "0.1.39",
                 saveSchemaVersion: 1,
                 capabilities: new List<Capability>
                 {
@@ -213,7 +213,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.SurvivalProgression",
                 packageId: "rimconemy.survivalprogression",
-                packageVersion: "0.1.32",
+                packageVersion: "0.1.34",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.survivalprogression.needs", 1),
@@ -223,7 +223,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.ScavengerInfrastructure",
                 packageId: "rimconemy.scavengerinfrastructure",
-                packageVersion: "0.0.25",
+                packageVersion: "0.0.26",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.scavengerinfrastructure.resources", 1),

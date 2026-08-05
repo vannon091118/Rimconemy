@@ -1,84 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Owner: Scavenger Infrastructure (Package 03).
-  Task 3.11 + PHASE_PROGRESSION_CONTRACT §11 (hardening 2026-08-05).
+  D2/D3-Harmonisierung (2026-08-05, DECISIONS §28/§29).
 
-  Vanilla RimWorld 1.6.4566 confirmed (Python ElementTree inspection of
-  game/Data/Core/Defs/ThingDefs_Buildings/Buildings_Structure.xml +
-  Buildings_Security.xml):
+  Status: NEUTRAL. Diese Patch-Datei trägt keinen aktiven Inhalt mehr.
 
-    - Wall      stuffCategories = [Metallic, Woody, Stony]
-    - DoorBase  stuffCategories = [Metallic, Woody, Stony] (inherited by Door,
-                                                   Autodoor, OrnateDoor, …)
-    - Barricade stuffCategories = [Metallic, Woody, Stony]
-    - Sandbag   NOT IN VANILLA 1.6 (grep -rln 'defName="Sandbag"' game/Data/ → 0
-                                  hits in Core, Royalty, Biotech, Anomaly,
-                                  Odyssey). Sandbag-targeted operations are
-                                  therefore REMOVED here.
+    Früherer Part-1 (Designator-Registrierung Designator_BuildWallBauschutt)
+    wurde entfernt (C6), damit kein toter Architect-Button entsteht.
+    Früherer Part-2 (Woody-Removal PatchOperationRemove) wurde entfernt
+    (B1): Woody ist wieder Stuff-Material für Wall/Door/Barricade.
 
-  Since all ConstructionDebris materials already declare <li>Stony</li> in
-  their stuffProps.categories (verified for Rimconemy_ConstructionDebris),
-  the verbatim Vanille stuffCategories already accepts Bauschutt. The ONLY
-  wall/door/barricade remediation we need is to REMOVE Woody so that Phase-1
-  players can no longer chain cheap wooden walls (Phase-Contract §5 rule:
-  no repeatable combustible mass-easy mass production).
+  Belassen als Drift-Marker, damit zukünftige Bearbeiter sehen, dass hier
+  ehemals Direction-Logik lag. Wer wirklich etwas patchen muss, soll eine
+  themenspezifische Datei anlegen (z.B. Woody_Reenable.xml) und diese
+  hier nicht wieder bevölkern.
 
-  Idempotency contract (§11):
-    - Stufe-3 Pattern: <PatchOperationReplace> on stuffCategories is
-      FORBIDDEN here (collides with other mods).
-    - Stufe-2 Pattern: <PatchOperationRemove> with a node-targeted XPath
-      is engine-native auto-idempotent: if the node is absent, the engine
-      simply skips — no Log.Error.
-    - The Conditional+Add idiom is reserved for container-creation
-      patches (door in PhaseContractGate_Additions.xml).
-
-  Revocation path: removing PhaseContractGate from these defs (Mod-02/Source)
-  causes all dependent Mod-03 patches to silently no-op.
-
-  Sandbag is not handled here. A community-author who insists on bringing
-  Sandbag back should restore the line in a separate Sandbag-targeted file
-  guarded by <MayRequire="Ludeon.RimWorld.Royalty"> so that only Royalty
-  consumers see the rewrite.
+  Frühere Operation (zur Nachvollziehbarkeit, NICHT aktiv):
+    Part-1 PatchOperationConditional+PatchOperationAdd für
+      `-Defs/DesignationCategoryDef[defName='Structure']/specialDesignatorClasses`
+    Part-2 PatchOperationRemove auf `<li>Woody</li>` für Wall, DoorBase, Barricade.
 -->
 <Patch>
-
-  <!-- ══════════════ PART 1 \u2014 DESIGNATOR REGISTRATION (unchanged; idempotent) ══════════════ -->
-
-  <Operation Class="PatchOperationConditional">
-    <xpath>Defs/DesignationCategoryDef[defName="Structure"]/specialDesignatorClasses[not(li[text()="Rimconemy.ScavengerInfrastructure.Building.Designator_BuildWallBauschutt"])]</xpath>
-    <match Class="PatchOperationAdd">
-      <xpath>Defs/DesignationCategoryDef[defName="Structure"]/specialDesignatorClasses</xpath>
-      <value><li>Rimconemy.ScavengerInfrastructure.Building.Designator_BuildWallBauschutt</li></value>
-    </match>
-  </Operation>
-
-  <Operation Class="PatchOperationConditional">
-    <xpath>Defs/DesignationCategoryDef[defName="Structure"][not(specialDesignatorClasses)]</xpath>
-    <match Class="PatchOperationAdd">
-      <xpath>Defs/DesignationCategoryDef[defName="Structure"]</xpath>
-      <value>
-        <specialDesignatorClasses>
-          <li>Rimconemy.ScavengerInfrastructure.Building.Designator_BuildWallBauschutt</li>
-        </specialDesignatorClasses>
-      </value>
-    </match>
-  </Operation>
-
-  <!-- ══════════════ PART 2 \u2014 STUFE-2 <PatchOperationRemove> WOODY (auto-idempotent) ══════════════
-       Vanilla 1.6 Wall/DoorBase/Barricade stuffCategories all contain Woody.
-       Node-targeted XPath removes the single <li>Woody</li> node only.
-       If the node is NOT present, the engine skips silently. -->
-
-  <Operation Class="PatchOperationRemove" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Wall"]/stuffCategories/li[text()="Woody"]</xpath>
-  </Operation>
-
-  <Operation Class="PatchOperationRemove" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[@Name="DoorBase"]/stuffCategories/li[text()="Woody"]</xpath>
-  </Operation>
-
-  <Operation Class="PatchOperationRemove" MayRequire="rimconemy.scavengerinfrastructure,rimconemy.survivalprogression">
-    <xpath>Defs/ThingDef[defName="Barricade"]/stuffCategories/li[text()="Woody"]</xpath>
-  </Operation>
-
+  <!-- Bewusst leere Patch-Datei (siehe Header). -->
 </Patch>

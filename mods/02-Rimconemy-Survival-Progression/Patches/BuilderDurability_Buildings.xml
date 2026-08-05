@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
+    <xpath>/Defs/ThingDef[@Name="BuildingBase"]/comps[not(li[@Class="Rimconemy.SurvivalProgression.Character.Construction.CompProperties_BuilderDurability"])]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[@Name="BuildingBase"]/comps[not(li[@Class="Rimconemy.SurvivalProgression.Character.Construction.CompProperties_BuilderDurability"])]</xpath>
+      <value><li Class="Rimconemy.SurvivalProgression.Character.Construction.CompProperties_BuilderDurability" /></value>
+    </match>
+  </Operation>
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
+    <xpath>/Defs/ThingDef[@Name="BuildingBase"][not(comps)]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[@Name="BuildingBase"]</xpath>
+      <value><comps><li Class="Rimconemy.SurvivalProgression.Character.Construction.CompProperties_BuilderDurability" /></comps></value>
+    </match>
+  </Operation>
+</Patch>

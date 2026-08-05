@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <TraitDef>
+    <defName>Rimconemy_Trait_CookingUnsteady</defName>
+    <label>unsicherer Koch</label>
+    <description>Wenig Kocherfahrung führt zu unzuverlässigen Mahlzeiten.</description>
+    <degreeDatas>
+      <li>
+        <label>unsicherer Koch</label>
+        <description>Beim Kochen entstehen häufiger misslungene Mahlzeiten.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+    <commonality>0</commonality>
+  </TraitDef>
+</Defs>

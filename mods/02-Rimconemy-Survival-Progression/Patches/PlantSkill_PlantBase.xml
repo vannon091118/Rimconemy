@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
+    <xpath>/Defs/ThingDef[@Name="PlantBase"]/comps[not(li[@Class="Rimconemy.SurvivalProgression.Character.Farming.CompProperties_PlanterSkill"])]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[@Name="PlantBase"]/comps[not(li[@Class="Rimconemy.SurvivalProgression.Character.Farming.CompProperties_PlanterSkill"])]</xpath>
+      <value><li Class="Rimconemy.SurvivalProgression.Character.Farming.CompProperties_PlanterSkill" /></value>
+    </match>
+  </Operation>
+  <Operation Class="PatchOperationConditional" MayRequire="rimconemy.survivalprogression">
+    <xpath>/Defs/ThingDef[@Name="PlantBase"][not(comps)]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[@Name="PlantBase"]</xpath>
+      <value><comps><li Class="Rimconemy.SurvivalProgression.Character.Farming.CompProperties_PlanterSkill" /></comps></value>
+    </match>
+  </Operation>
+</Patch>

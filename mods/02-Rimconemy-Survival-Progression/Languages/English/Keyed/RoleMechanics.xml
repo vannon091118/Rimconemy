@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <Rimconemy.BuilderDurability.Inspect>Builder construction skill {0}: +{1} building durability</Rimconemy.BuilderDurability.Inspect>
+  <Rimconemy.Farming.PlantedBy>Planted by a Plants {0} pawn: {1} growth rate</Rimconemy.Farming.PlantedBy>
+  <Rimconemy.Intellectual.LearningFactor>Intellectual {0}: {1} learning factor</Rimconemy.Intellectual.LearningFactor>
+  <Rimconemy.Role.Title>Roles</Rimconemy.Role.Title>
+  <Rimconemy.Role.Preview>Role preview for the chosen distribution</Rimconemy.Role.Preview>
+  <Rimconemy.Role.Level>Level {0}</Rimconemy.Role.Level>
+  <Rimconemy.Role.Smithing>Smithing</Rimconemy.Role.Smithing>
+  <Rimconemy.Role.Hunting>Hunting</Rimconemy.Role.Hunting>
+  <Rimconemy.Role.Farming>Farming</Rimconemy.Role.Farming>
+  <Rimconemy.Role.Cooking>Cooking</Rimconemy.Role.Cooking>
+  <Rimconemy.Role.Intellectual>Intellectual</Rimconemy.Role.Intellectual>
+  <Rimconemy.Role.Preview>Derived roles use hidden Animals/Artistic source skills.</Rimconemy.Role.Preview>
+  <Rimconemy.Role.Level>Level {0}</Rimconemy.Role.Level>
+</LanguageData>

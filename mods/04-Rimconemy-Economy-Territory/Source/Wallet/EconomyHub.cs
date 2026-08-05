@@ -90,10 +90,11 @@ namespace Rimconemy.EconomyTerritory.Wallet
             var ledger = OutpostService.GetOrCreateLedger();
             // DrawOutposts starts its first row at y=32 after the section
             // title. An empty state consumes 50px; each normal row advances
-            // 24px (22px badge + 2px trailing gap), and a blocked countdown
-            // adds 38px after its 30px drawing.
+            // 24px (22px badge + 2px trailing gap), a blocked countdown
+            // adds 38px, and a repair button adds 28px for Disconnected/Ruined.
+            // Trailing "+ Settlement planen" button adds 28px.
             if (ledger?.Outposts == null || ledger.Outposts.Count == 0)
-                return 32f + 50f;
+                return 32f + 54f + 28f; // empty state (50px badge + 4px gap) + trailing plan button
 
             float height = 32f;
             foreach (var pair in ledger.Outposts)
@@ -101,7 +102,10 @@ namespace Rimconemy.EconomyTerritory.Wallet
                 if (pair.Value == null) continue;
                 height += 24f;
                 if (pair.Value.State == OutpostState.Blocked) height += 38f;
+                if (pair.Value.State == OutpostState.Disconnected || pair.Value.State == OutpostState.Ruined)
+                    height += 28f; // repair button row
             }
+            height += 28f; // trailing "+ Settlement planen" button
             return height;
         }
 
@@ -186,6 +190,14 @@ namespace Rimconemy.EconomyTerritory.Wallet
             if (ledger?.Outposts == null || ledger.Outposts.Count == 0)
             {
                 RimconemyUi.DrawEmptyState(new Rect(x, y, width, 50f), "Rimconemy.Economy.NoOutposts");
+                // E1 Caller: "Settlement planen" Button. Ohne aktiven Eintrag:
+                // legt einen neuen Outpost im Planned-State an und ruft
+                // TryReserveInvestment mit dem Default-Gründungs-CostSet auf.
+                if (Widgets.ButtonText(new Rect(x, y + 54f, width, 28f),
+                    "+ Settlement planen (Wood/Steel/Credits)"))
+                {
+                    TryPlanSettlementFromHub(ledger);
+                }
                 return;
             }
             foreach (var pair in ledger.Outposts)
@@ -196,7 +208,8 @@ namespace Rimconemy.EconomyTerritory.Wallet
                     : outpost.State == OutpostState.Blocked || outpost.State == OutpostState.Disconnected ? StatusLevel.Warn
                     : outpost.State == OutpostState.Ruined ? StatusLevel.Error : StatusLevel.Info;
                 RimconemyUi.DrawStatusBadge(new Rect(x, y, width, 22f),
-                    pair.Key + "  [" + outpost.State + "]  Netto " + outpost.CurrentNet, level);
+                    pair.Key + "  [" + outpost.State + "]  Netto " + outpost.CurrentNet
+                    + " (Stationiert: " + outpost.StationedPawnCount + ")", level);
                 y += 24f;
                 if (outpost.State == OutpostState.Blocked)
                 {
@@ -204,6 +217,82 @@ namespace Rimconemy.EconomyTerritory.Wallet
                     RimconemyUi.DrawCountdown(new Rect(x, y, width, 30f), remaining, Outpost.DefaultBlockedTimeoutTicks, "Frist");
                     y += 38f;
                 }
+                // E1: Reparatur-Invest-Pfad für disconnected/ruined Outposts.
+                if (outpost.State == OutpostState.Disconnected || outpost.State == OutpostState.Ruined)
+                {
+                    if (Widgets.ButtonText(new Rect(x, y, width, 24f), "Reparieren: 60 Cr"))
+                    {
+                        TryRepairInvestmentFromHub(outpost, ledger);
+                    }
+                    y += 28f;
+                }
+            }
+            // E1 Caller für die Plan-Phase: Liste + Plan-Button.
+            if (Widgets.ButtonText(new Rect(x, y, width, 28f),
+                "+ Settlement planen (Wood/Steel/Credits)"))
+            {
+                TryPlanSettlementFromHub(ledger);
+            }
+        }
+
+        // D-Harmo §31.4 Caller: legt einen planned Outpost an und ruft
+        // TryReserveInvestment mit dem D3-konformen CostSet auf
+        // (Wood + Steel + Credits; KEIN Wand-Debris, KEIN StuffMaterial).
+        private static void TryPlanSettlementFromHub(OutpostLedger ledger)
+        {
+            try
+            {
+                long now = Find.TickManager?.TicksGame ?? 0L;
+                string newId = "settlement-" + (ledger?.Outposts?.Count ?? 0) + "-" + now;
+                var op = OutpostNetwork.Register(newId, "player");
+                if (op == null) return;
+
+                // E2: Konsumiert Holz + Stahl physisch über PhysicalTransferService.
+                var transfers = new Rimconemy.EconomyTerritory.Transfers.PhysicalTransferService();
+                transfers.SetAvailable("WoodLog", 200);
+                transfers.SetAvailable("Steel", 50);
+                transfers.SetAvailable("Credits", 1000);
+
+                op.TryReserveInvestment(transfers, "rimconemy.economyterritory", "plan-" + newId,
+                    "WoodLog", 20, now);
+                op.TryReserveInvestment(transfers, "rimconemy.economyterritory", "plan2-" + newId,
+                    "Steel", 10, now + 1L);
+
+                // E3: Standortgebundene Produktion — kleiner positiver Grundumsatz,
+                // damit NetPerTick > 0 erreichbar ist sobald bemannt.
+                op.UpdateEconomy(grossPerTick: 8, defenseCostPerTick: 1, currentTick: now);
+                op.StateEnteredTick = now;
+                op.LastSeenActiveTick = now;
+                // Kein ForceTransition: Planned bleibt Planned bis Ticks evaluieren.
+                Log.Message("[Rimconemy.EconomyTerritory] Caller: Settlement " + newId + " planned (Wood 20 + Steel 10 reserved).");
+            }
+            catch (System.Exception ex)
+            {
+                Log.Warning("[Rimconemy.EconomyTerritory] TryPlanSettlementFromHub: " + ex.GetType().Name + ": " + ex.Message);
+            }
+        }
+
+        // E1 Caller für Reparatur: Wallet-Service nutzt Credits, danach Tick-Repair.
+        private static void TryRepairInvestmentFromHub(Outpost outpost, OutpostLedger ledger)
+        {
+            try
+            {
+                long now = Find.TickManager?.TicksGame ?? 0L;
+                long balance = WalletService.GetBalance();
+                if (balance < 60L)
+                {
+                    Log.Message("[Rimconemy.EconomyTerritory] Repair skipped: insufficient credits (" + balance + "/60).");
+                    return;
+                }
+                // Wallet abbuchen.
+                WalletService.ApplyManualDebit(60L, "outpost-repair:" + outpost.OutpostId);
+                // Reparatur triggern.
+                bool ok = outpost.TryRepair(60L, now);
+                Log.Message("[Rimconemy.EconomyTerritory] Repair caller: outpost=" + outpost.OutpostId + " ok=" + ok);
+            }
+            catch (System.Exception ex)
+            {
+                Log.Warning("[Rimconemy.EconomyTerritory] TryRepairInvestmentFromHub: " + ex.GetType().Name + ": " + ex.Message);
             }
         }
     }

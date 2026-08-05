@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Rimconemy_LeadershipChallenge — Führungskrise
+  Owner: Infected & Automation (Story-Domäne)
+  Status: ACTIVE — wird vom StoryEventCatalog.MergeFromDefDatabase() geladen.
+  Band: 3 (Collapse), Familie: Social
+  Reagiert auf: 3+ Kolonisten, Mood < 0.4
+-->
+<Defs>
+  <Rimconemy.InfectedAutomation.Story.StoryEventDef>
+    <defName>rimconemy_social_leadership_challenge</defName>
+    <label>Führungskrise</label>
+    <description>{PawnName} fordert die Führung offen heraus.</description>
+
+    <eventVersion>1</eventVersion>
+    <eventFamily>Social</eventFamily>
+    <escalationBand>3</escalationBand>
+    <escalationTarget>IdeologyTension</escalationTarget>
+    <escalationModifier>0.07</escalationModifier>
+
+    <prerequisites>
+      <li>MaxActiveEvents()</li>
+      <li>NOT ActiveEvent(Social)</li>
+      <li>ColonistCountAbove(2)</li>
+      <li>MoodBelow(0.4)</li>
+    </prerequisites>
+
+    <exclusions>
+      <li>DaysSinceLastEventBelow(2.0)</li>
+    </exclusions>
+
+    <weights>
+      <li>Rimconemy_Collapse=55</li>
+    </weights>
+
+    <cooldownDays>
+      <li>Rimconemy_Collapse=7.0</li>
+    </cooldownDays>
+
+    <textKey>Rimconemy_LeadershipChallenge_Letter</textKey>
+    <letterLabel>Führungssturz</letterLabel>
+    <letterText>{PawnName} fordert die Führungsrolle heraus und gewinnt rapide an Unterstützung. Die Gruppe steht vor einer Spaltung.</letterText>
+
+    <choices>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Challenge</choiceId>
+        <label>Herausforderung annehmen</label>
+        <effects>
+          <li>PawnMood:-5 for 3 days</li>
+          <li>GroupCohesion:-0.15</li>
+          <li>IdeologyTension:+0.08</li>
+        </effects>
+      </li>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>StepDown</choiceId>
+        <label>Führung abtreten</label>
+        <effects>
+          <li>TransferLeadership</li>
+          <li>MoodModifier:+5 for 5 days</li>
+          <li>GroupCohesion:+0.05</li>
+        </effects>
+      </li>
+    </choices>
+
+    <followUpIds />
+    <determinismKey>{ProfileId}+{EventId}+{IdeologyTension}+{PawnId}+{GameTickDay}</determinismKey>
+  </Rimconemy.InfectedAutomation.Story.StoryEventDef>
+</Defs>

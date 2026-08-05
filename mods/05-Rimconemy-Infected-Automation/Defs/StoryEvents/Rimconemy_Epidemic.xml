@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Rimconemy_Epidemic — Seuchen-Ausbruch
+  Owner: Infected & Automation (Story-Domäne)
+  Status: ACTIVE — wird vom StoryEventCatalog.MergeFromDefDatabase() geladen.
+  Band: 3 (Collapse), Familie: Collapse
+  Reagiert auf: Gesundheit < 60%, 3+ Kolonisten
+-->
+<Defs>
+  <Rimconemy.InfectedAutomation.Story.StoryEventDef>
+    <defName>rimconemy_collapse_epidemic</defName>
+    <label>Seuchen-Ausbruch</label>
+    <description>Eine Krankheit breitet sich unter den Kolonisten aus.</description>
+
+    <eventVersion>1</eventVersion>
+    <eventFamily>Collapse</eventFamily>
+    <escalationBand>3</escalationBand>
+    <escalationTarget>ThreatPressure</escalationTarget>
+    <escalationModifier>0.09</escalationModifier>
+
+    <prerequisites>
+      <li>MaxActiveEvents()</li>
+      <li>NOT ActiveEvent(Collapse)</li>
+      <li>HealthLow</li>
+      <li>ColonistCountAbove(2)</li>
+    </prerequisites>
+
+    <exclusions>
+      <li>DaysSinceLastEventBelow(2.5)</li>
+    </exclusions>
+
+    <weights>
+      <li>Rimconemy_Collapse=50</li>
+    </weights>
+
+    <cooldownDays>
+      <li>Rimconemy_Collapse=6.0</li>
+    </cooldownDays>
+
+    <textKey>Rimconemy_Epidemic_Letter</textKey>
+    <letterLabel>Seuche!</letterLabel>
+    <letterText>Eine unbekannte Krankheit breitet sich aus. {PawnName} zeigt erste Symptome. Ohne Behandlung wird die Situation kritisch.</letterText>
+
+    <choices>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Quarantine</choiceId>
+        <label>Quarantäne verhängen</label>
+        <effects>
+          <li>PawnMood:-10 for 5 days</li>
+          <li>ProductionPenalty:-30% for 3 days</li>
+          <li>IdeologyTension:+0.05</li>
+        </effects>
+      </li>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Treat</choiceId>
+        <label>Behandeln</label>
+        <effects>
+          <li>ResourceCost:Medicine-40</li>
+          <li>PawnHealth:+0.2</li>
+          <li>WalletCost:30 Credits</li>
+        </effects>
+      </li>
+    </choices>
+
+    <followUpIds />
+    <determinismKey>{ProfileId}+{EventId}+{PawnId}+{GameTickDay}</determinismKey>
+  </Rimconemy.InfectedAutomation.Story.StoryEventDef>
+</Defs>

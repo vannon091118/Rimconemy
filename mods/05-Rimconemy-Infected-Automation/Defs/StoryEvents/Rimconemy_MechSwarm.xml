@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Rimconemy_MechSwarm — Mechanoidenschwarm
+  Owner: Infected & Automation (Story-Domäne)
+  Status: ACTIVE — wird vom StoryEventCatalog.MergeFromDefDatabase() geladen.
+  Band: 3 (Collapse), Familie: Raid
+  Reagiert auf: 300k+ Vermögen, ThreatPressure > 0.5, 15+ Tage seit Start
+-->
+<Defs>
+  <Rimconemy.InfectedAutomation.Story.StoryEventDef>
+    <defName>rimconemy_raid_mech_swarm</defName>
+    <label>Mechanoidenschwarm</label>
+    <description>Ein Schwarm Mechanoiden nähert sich der Siedlung.</description>
+
+    <eventVersion>1</eventVersion>
+    <eventFamily>Raid</eventFamily>
+    <escalationBand>3</escalationBand>
+    <escalationTarget>ThreatPressure</escalationTarget>
+    <escalationModifier>0.12</escalationModifier>
+
+    <prerequisites>
+      <li>MaxActiveEvents()</li>
+      <li>NOT ActiveEvent(Raid)</li>
+      <li>WealthAbove(300000)</li>
+      <li>ThreatAbove(0.5)</li>
+      <li>DaysSinceStartAbove(15)</li>
+    </prerequisites>
+
+    <exclusions>
+      <li>HealthAbove(0.8)</li>
+      <li>DaysSinceLastEventBelow(3.0)</li>
+    </exclusions>
+
+    <weights>
+      <li>Rimconemy_Collapse=65</li>
+    </weights>
+
+    <cooldownDays>
+      <li>Rimconemy_Collapse=4.0</li>
+    </cooldownDays>
+
+    <textKey>Rimconemy_MechSwarm_Letter</textKey>
+    <letterLabel>Mechanoiden im Anmarsch!</letterLabel>
+    <letterText>Ein Schwarm Mechanoiden bewegt sich auf die Siedlung zu. Die Bedrohung ist erheblich.</letterText>
+
+    <choices>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>FullDefense</choiceId>
+        <label>Volle Verteidigung</label>
+        <effects>
+          <li>DefenseBonus:+0.40 for 3 days</li>
+          <li>ResourceCost:30%</li>
+          <li>MoodModifier:-5 for 2 days</li>
+        </effects>
+      </li>
+      <li Class="Rimconemy.InfectedAutomation.Story.StoryEventChoiceDef">
+        <choiceId>Evacuate</choiceId>
+        <label>Evakuieren</label>
+        <effects>
+          <li>EvacuateCivilians</li>
+          <li>StorageBlocked:75%</li>
+          <li>IdeologyTension:+0.15</li>
+        </effects>
+      </li>
+    </choices>
+
+    <followUpIds />
+    <determinismKey>{ProfileId}+{EventId}+{ThreatPressure}+{GameTickDay}</determinismKey>
+  </Rimconemy.InfectedAutomation.Story.StoryEventDef>
+</Defs>

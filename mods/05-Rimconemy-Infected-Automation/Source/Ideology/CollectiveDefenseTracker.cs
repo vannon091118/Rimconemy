@@ -146,9 +146,12 @@ namespace Rimconemy.InfectedAutomation.Ideology
                 // duplicate Combat-Aggregate passes stay idempotent.
                 pawn.needs.mood.thoughts.memories.TryGainMemory(def, pawn);
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-                // Defensive: if signature changes we silently no-op rather
+                Log.Warning(
+                    "[Rimconemy.InfectedAutomation] ApplyThoughtIfPossible exception: "
+                    + ex.GetType().Name + ": " + ex.Message);
+                // Defensive: if signature changes we no-op rather
                 // than break the post-combat pass.
             }
         }

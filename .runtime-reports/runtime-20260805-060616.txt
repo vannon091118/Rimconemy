@@ -1,0 +1,17 @@
+Rimconemy runtime test
+run=20260805-060616
+game=/home/vannon/GOG Games/RimWorld/game
+log=/home/vannon/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Player.log
+timeout=90
+deploy=true build=true start=true
+before_log_signature=5648207|256389|2026-08-05 06:05:18.837800363 +0200|1defa7bba3af69f346a7044bfa9c03c2a17812b39ab6fdcd35240ac4f8805f38
+
+after_log_signature=5650077|251267|2026-08-05 06:07:27.465087853 +0200|ec5b4a3830996c8174ae245c94a869e58a959bc641e4501af70aadb8f3762613
+failures=0
+warnings=1
+result=PASS
+failure_details_begin
+failure_details_end
+warning_details_begin
+Scenario contract summary not required; use --require-scenario-tests
+warning_details_end
