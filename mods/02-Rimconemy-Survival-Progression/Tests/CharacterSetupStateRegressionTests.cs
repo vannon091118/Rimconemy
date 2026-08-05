@@ -24,8 +24,8 @@ namespace Rimconemy.SurvivalProgression.Tests
 
         private static void TestSchemaVersion()
         {
-            Assert(CharacterSetupState.CurrentSchemaVersion == 1,
-                "Current schema is v1 (first public release)");
+            Assert(CharacterSetupState.CurrentSchemaVersion == 2,
+                "Current schema is v2 (bundled allocation persistence)");
         }
 
         private static void TestUpsertAndGet()

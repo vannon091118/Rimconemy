@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using RimWorld;
 using Rimconemy.Foundation.Save;
 using Rimconemy.SurvivalProgression.Character.Roles;
@@ -30,15 +32,18 @@ namespace Rimconemy.SurvivalProgression.Character
     /// </summary>
     public sealed class CharacterSetupState : GameComponent, IExposable, ISchemaMigratable
     {
-        public const int CurrentSchemaVersion = 1;
+        public const int CurrentSchemaVersion = 2;
 
         // Schema version for migration. Bump ONLY when fields change shape.
-        public int SchemaVersion = 1;
+        public int SchemaVersion = CurrentSchemaVersion;
 
         // True once the BioRemap+SkillBudget pipeline has been applied at
         // least once for the current save. Saved across Save/Load so we
         // don't re-apply on every load.
         public bool Applied;
+        public int RequiredPawnCount;
+        public List<int> RequiredPawnIds = new List<int>();
+        public List<int> AppliedPawnIds = new List<int>();
 
         // Per-pawn scorecard. Key is pawn.thingIDNumber (stable across Save/Load).
         public Dictionary<int, PawnSetupRecord> Records = new Dictionary<int, PawnSetupRecord>();
@@ -99,11 +104,69 @@ namespace Rimconemy.SurvivalProgression.Character
             }
 
             foreach (var pair in pending)
+            {
                 Records[pair.Key] = pair.Value;
+                AppliedPawnIds.Add(pair.Key);
+                RequiredPawnIds.Add(pair.Key);
+            }
 
             if (pending.Count > 0 && (expectedCount < 0 || pending.Count == expectedCount))
+            {
+                RequiredPawnCount = expectedCount >= 0 ? expectedCount : pending.Count;
                 Applied = true;
+            }
             return pending.Count;
+        }
+
+        public int RecordAppliedBundlePawns(
+            IEnumerable<Pawn> pawns,
+            int expectedCount,
+            IReadOnlyDictionary<string, int> allocation)
+        {
+            if (!BundledSkillAllocation.IsComplete(allocation) || pawns == null || expectedCount <= 0)
+                return 0;
+            if (RequiredPawnIds == null) RequiredPawnIds = new List<int>();
+            if (AppliedPawnIds == null) AppliedPawnIds = new List<int>();
+            if (RequiredPawnCount <= 0) RequiredPawnCount = expectedCount;
+
+            var pending = pawns.Where(pawn => pawn != null && pawn.thingIDNumber != 0)
+                .GroupBy(pawn => pawn.thingIDNumber)
+                .Select(group => group.First())
+                .ToList();
+            if (pending.Count != expectedCount) return 0;
+            if (RequiredPawnIds.Count > 0 && pending.Any(pawn => !RequiredPawnIds.Contains(pawn.thingIDNumber)))
+                return 0;
+            if (Records == null) Records = new Dictionary<int, PawnSetupRecord>();
+
+            foreach (var pawn in pending)
+            {
+                var record = new PawnSetupRecord(pawn);
+                record.BundleIds = BundledSkillAllocation.All.Select(definition => definition.Id).ToList();
+                record.BundlePoints = BundledSkillAllocation.All
+                    .Select(definition => allocation[definition.Id]).ToList();
+                Records[pawn.thingIDNumber] = record;
+                if (!RequiredPawnIds.Contains(pawn.thingIDNumber)) RequiredPawnIds.Add(pawn.thingIDNumber);
+                if (!AppliedPawnIds.Contains(pawn.thingIDNumber)) AppliedPawnIds.Add(pawn.thingIDNumber);
+            }
+
+            Applied = RequiredPawnIds.Count > 0 && RequiredPawnIds.All(id => AppliedPawnIds.Contains(id));
+            return pending.Count;
+        }
+
+        public bool SetRequiredPawnIds(IEnumerable<int> pawnIds)
+        {
+            var ids = (pawnIds ?? Enumerable.Empty<int>()).Where(id => id != 0).Distinct().ToList();
+            if (ids.Count == 0) return false;
+            RequiredPawnIds = ids;
+            RequiredPawnCount = ids.Count;
+            AppliedPawnIds = (AppliedPawnIds ?? new List<int>()).Where(ids.Contains).Distinct().ToList();
+            Applied = RequiredPawnIds.All(id => AppliedPawnIds.Contains(id));
+            return true;
+        }
+
+        public bool IsBundleAppliedFor(Pawn pawn)
+        {
+            return pawn != null && AppliedPawnIds != null && AppliedPawnIds.Contains(pawn.thingIDNumber);
         }
 
         /// <summary>Reads a pawn record. Returns null if absent.</summary>
@@ -126,6 +189,9 @@ namespace Rimconemy.SurvivalProgression.Character
         {
             Scribe_Values.Look(ref SchemaVersion, "charSetupSchema", 1);
             Scribe_Values.Look(ref Applied, "charSetupApplied", false);
+            Scribe_Values.Look(ref RequiredPawnCount, "charSetupRequiredPawnCount", 0);
+            Scribe_Collections.Look(ref RequiredPawnIds, "charSetupRequiredPawnIds", LookMode.Value);
+            Scribe_Collections.Look(ref AppliedPawnIds, "charSetupAppliedPawnIds", LookMode.Value);
             // Dictionary contract: thingIDNumber keys are scalar ints, while
             // PawnSetupRecord values own their nested lists and therefore need
             // Deep mode. Using a single LookMode.Deep makes Scribe treat the
@@ -144,6 +210,8 @@ namespace Rimconemy.SurvivalProgression.Character
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 if (Records == null) Records = new Dictionary<int, PawnSetupRecord>();
+                if (RequiredPawnIds == null) RequiredPawnIds = new List<int>();
+                if (AppliedPawnIds == null) AppliedPawnIds = new List<int>();
                 MigrateIfNeeded();
             }
         }
@@ -187,6 +255,9 @@ namespace Rimconemy.SurvivalProgression.Character
                     new SchemaStep(0, 1,
                         "Initialize Records dictionary if missing (initial CharacterSetupState scorecard).",
                         () => { if (Records == null) Records = new Dictionary<int, PawnSetupRecord>(); }),
+                    new SchemaStep(1, 2,
+                        "Derive bundled allocation from legacy vanilla skill scorecards.",
+                        MigrateLegacyRecordsToBundles),
                 };
                 return _cachedSteps;
             }
@@ -210,6 +281,53 @@ namespace Rimconemy.SurvivalProgression.Character
         {
             this.RunMigration();
         }
+
+        private void MigrateLegacyRecordsToBundles()
+        {
+            if (Records == null) Records = new Dictionary<int, PawnSetupRecord>();
+            if (RequiredPawnIds == null) RequiredPawnIds = new List<int>();
+            if (AppliedPawnIds == null) AppliedPawnIds = new List<int>();
+
+            var validIds = new List<int>();
+            foreach (var entry in Records)
+            {
+                var record = entry.Value;
+                if (record == null) continue;
+                if (record.BundleIds == null) record.BundleIds = new List<string>();
+                if (record.BundlePoints == null) record.BundlePoints = new List<int>();
+
+                var existing = record.BundleIds
+                    .Select((id, index) => new { id, index })
+                    .Where(item => item.index < record.BundlePoints.Count)
+                    .ToDictionary(item => item.id, item => record.BundlePoints[item.index], StringComparer.Ordinal);
+                if (!BundledSkillAllocation.IsComplete(existing))
+                {
+                    var skillLevels = new Dictionary<string, int>(StringComparer.Ordinal);
+                    int count = Math.Min(record.SkillDefNames?.Count ?? 0, record.SkillLevels?.Count ?? 0);
+                    for (int i = 0; i < count; i++)
+                    {
+                        if (!string.IsNullOrEmpty(record.SkillDefNames[i]))
+                            skillLevels[record.SkillDefNames[i]] = record.SkillLevels[i];
+                    }
+                    var allocation = BundledSkillAllocation.FromVanillaSkillNames(skillLevels);
+                    record.BundleIds = BundledSkillAllocation.All.Select(definition => definition.Id).ToList();
+                    record.BundlePoints = BundledSkillAllocation.All.Select(definition => allocation[definition.Id]).ToList();
+                    if (skillLevels.Count > 0 && entry.Key != 0) validIds.Add(entry.Key);
+                }
+                else if (entry.Key != 0)
+                {
+                    validIds.Add(entry.Key);
+                }
+            }
+
+            var valid = new HashSet<int>(validIds);
+            AppliedPawnIds = AppliedPawnIds.Where(valid.Contains).Distinct().ToList();
+            if (Applied && AppliedPawnIds.Count == 0) AppliedPawnIds.AddRange(validIds);
+            if (RequiredPawnIds.Count == 0) RequiredPawnIds.AddRange(AppliedPawnIds);
+            RequiredPawnIds = RequiredPawnIds.Where(valid.Contains).Distinct().ToList();
+            RequiredPawnCount = RequiredPawnIds.Count;
+            Applied = Applied && RequiredPawnIds.Count > 0 && RequiredPawnIds.All(id => AppliedPawnIds.Contains(id));
+        }
     }
 
     /// <summary>Per-pawn scorecard that is persisted across Save/Load.</summary>
@@ -226,6 +344,8 @@ namespace Rimconemy.SurvivalProgression.Character
         public List<int> SkillLevels = new List<int>();
 
         public List<string> TraitDefNames = new List<string>();
+        public List<string> BundleIds = new List<string>();
+        public List<int> BundlePoints = new List<int>();
 
         // Classification band from SkillBudgetCalculator.Classify(balance).
         // Stored as int for forward-compat; matches CharacterSetup.Neutral / PositiveLight
@@ -282,6 +402,8 @@ namespace Rimconemy.SurvivalProgression.Character
             Scribe_Collections.Look(ref SkillDefNames, "skillDefNames", LookMode.Value);
             Scribe_Collections.Look(ref SkillLevels, "skillLevels", LookMode.Value);
             Scribe_Collections.Look(ref TraitDefNames, "traitDefNames", LookMode.Value);
+            Scribe_Collections.Look(ref BundleIds, "bundleIds", LookMode.Value);
+            Scribe_Collections.Look(ref BundlePoints, "bundlePoints", LookMode.Value);
 
             // After-scribe migration guards: missing fields fall to empty
             // list so downstream consumers do not see null entries.
@@ -290,6 +412,8 @@ namespace Rimconemy.SurvivalProgression.Character
                 if (SkillDefNames == null) SkillDefNames = new List<string>();
                 if (SkillLevels == null) SkillLevels = new List<int>();
                 if (TraitDefNames == null) TraitDefNames = new List<string>();
+                if (BundleIds == null) BundleIds = new List<string>();
+                if (BundlePoints == null) BundlePoints = new List<int>();
             }
         }
     }
