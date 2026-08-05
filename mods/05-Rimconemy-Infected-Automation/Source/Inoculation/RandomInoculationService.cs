@@ -242,6 +242,16 @@ namespace Rimconemy.InfectedAutomation.Inoculation
                     livePawn.kindDef = branded;
                 }
                 livePawn.SetFaction(infectedFaction);
+
+                // Phase E — apply MoveSpeed-Booster + Infection-Marker Hediff.
+                // Der Hediff macht das Tier (a) sichtbar als "infiziert" im
+                // Health-Tab und (b) +50% schneller, sodass die aggressive-AI
+                // einen spürbaren Bewegungs-Vorteil gegenüber unbefallenen
+                // Tieren hat. Persistent bis pawn.Destroyed (Health-Hediffs
+                // werden über den Pawn's Scribe-Strom mitgepeichert, daher
+                // save/load-safe).
+                TryApplyInfectionAggressionHediff(livePawn);
+
                 ledger?.NoteInoculation(candidate.KindDefName);
             }
             catch (System.Exception ex)
@@ -256,6 +266,28 @@ namespace Rimconemy.InfectedAutomation.Inoculation
         {
             branded = DefDatabase<PawnKindDef>.GetNamedSilentFail(InoculationConverter.BrandedKindDefName);
             return branded != null;
+        }
+
+        // Phase E — apply the aggression hediff so the converted wildlife
+        // gains +50 % MoveSpeed and a visible "infected wildlife" health-tab
+        // marker. Idempotent: if the pawn already has the hediff, we skip
+        // (HediffSet.GetFirstHediffOfDef) so duplicate calls are no-ops
+        // — important because ApplyLiveConversion runs inside a defensive
+        // try-block that can be retried on partial failure.
+        private const string AggressionHediffDefName = "Rimconemy_InfectedWildlifeAggression";
+        private static void TryApplyInfectionAggressionHediff(Pawn pawn)
+        {
+            if (pawn == null || pawn.health == null) return;
+            var hediffDef = HediffDef.Named(AggressionHediffDefName);
+            if (hediffDef == null) return;
+            if (pawn.health.hediffSet == null) return;
+            // Skip if already present.
+            if (pawn.health.hediffSet.GetFirstHediffOfDef(hediffDef) != null) return;
+            var hediff = HediffMaker.MakeHediff(hediffDef, pawn);
+            if (hediff != null)
+            {
+                pawn.health.AddHediff(hediff);
+            }
         }
 
         private static Pawn TryFindLivePawn(string thingId, Map map)
