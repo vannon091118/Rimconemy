@@ -1,5 +1,6 @@
 using System.Reflection;
 using HarmonyLib;
+using Rimconemy.SurvivalProgression.Bridge;
 using Rimconemy.SurvivalProgression.Needs;
 using Rimconemy.SurvivalProgression.Progression;
 using Rimconemy.SurvivalProgression.Scenarios;
@@ -62,6 +63,14 @@ namespace Rimconemy.SurvivalProgression
                     $"[Rimconemy.SurvivalProgression] Harmony PatchAll failed: " +
                     $"{ex.GetType().Name}: {ex.Message}. Customization-page BioRemap skipped.");
             }
+
+            // UX-Audit 2026-08-06: verbindet die Survival-Trigger-Events
+            // (CampfireManager.OnCampfireBuilt, WallBuilder.OnWallBuilt,
+            // ResourceCollector.OnResourceCollected) via Reflection mit der
+            // optionalen TutorialTriggerBridge in Paket 05.
+            // Ohne diesen Aufruf feuern Vanilla-CompleteConstruction-Postfixe
+            // die Survival-Events, aber TutorialDirector registriert nie dafür.
+            Bridge.SurvivalTutorialBridge.Initialize();
 
             // Phase-5 Bio-Remap regression (2026-08-04): ensure every patch
             // to the age-fix / skill-budget pipeline still passes its invariants
