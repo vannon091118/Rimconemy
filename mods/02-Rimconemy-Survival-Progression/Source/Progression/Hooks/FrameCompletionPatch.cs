@@ -54,6 +54,42 @@ namespace Rimconemy.SurvivalProgression.Progression.Hooks
 
             long tick = Find.TickManager?.TicksGame ?? 0L;
             BuildingCompletionBridge.Submit(xpState, def, map, __instance, worker, tick);
+
+            // Tutorial-Trigger (UX-Audit 2026-08-06): Fertiggestellte Campfires
+            // und defensive Bauten feuern die Tutorial-Bridge-Events. Vorher war
+            // die Kette tot — CampfireManager/WallBuilder wurden nirgends
+            // aufgerufen, sodass Tutorial_Campfire / Tutorial_Wall nie erschienen.
+            TryForwardTutorialTrigger(map, __state.Position, def);
+        }
+
+        /// <summary>
+        /// Leitet einen abgeschlossenen Bau an die Tutorial-Trigger weiter:
+        /// Firecraft-Bauten (Campfire) → CampfireBuilt, Defense-Bauten
+        /// (Wand/Barrikade/Turm) → WallBuilt. Feuert nur, wenn der Bau
+        /// tatsächlich auf der Karte gelandet ist; Defensive-Duplikate werden
+        /// von der TutorialState-Dedup abgefangen.
+        /// </summary>
+        private static void TryForwardTutorialTrigger(Map map, IntVec3 position, ThingDef def)
+        {
+            try
+            {
+                if (map == null || def == null || Current.Game == null) return;
+                ProgressionDomain domain = BuildingCompletionBridge.ClassifyBuilding(def);
+                if (domain == ProgressionDomain.Firecraft)
+                {
+                    CampfireManager.TryBuildCampfire(map, position, def);
+                }
+                else if (domain == ProgressionDomain.Defense)
+                {
+                    WallBuilder.TryBuildWall(map, position, position, def);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                // Non-fatal: Tutorial-Trigger dürfen den Bau-Abschluss nie crashen.
+                Log.Warning("[Rimconemy.SurvivalProgression] TryForwardTutorialTrigger failed: "
+                    + ex.GetType().Name + ": " + ex.Message);
+            }
         }
 
         private static Building FindFinishedBuilding(Map map, IntVec3 position, ThingDef def)

@@ -31,4 +31,14 @@
 
   <!-- Phase F — Wandernde Horde (Raid-Familie) -->
   <Rimconemy_HordeMigrationLetter>Auf den Wegen rings um die Siedlung zieht eine massive Horde Infizierter ihre Bahn. Sie sind noch weit — aber sie kommen näher. Die Horde wird alles niedermachen, was sich ihr in den Weg stellt.</Rimconemy_HordeMigrationLetter>
+
+  <!-- Tutorial (UX-Audit 2026-08-06) -->
+  <Rimconemy.Infected.Tutorial.StepOf>SCHRITT {0} VON {1}</Rimconemy.Infected.Tutorial.StepOf>
+  <Rimconemy.Infected.Tutorial.Objective>NÄCHSTES ZIEL</Rimconemy.Infected.Tutorial.Objective>
+  <Rimconemy.Infected.Tutorial.Unlocks>FREIGESCHALTET</Rimconemy.Infected.Tutorial.Unlocks>
+  <Rimconemy.Infected.Tutorial.SkipAll>TUTORIAL ÜBERSPRINGEN</Rimconemy.Infected.Tutorial.SkipAll>
+  <Rimconemy.Infected.Tutorial.Understand>VERSTANDEN</Rimconemy.Infected.Tutorial.Understand>
+  <Rimconemy.Infected.Tutorial.OpenRimPad>RIMPAD ÖFFNEN</Rimconemy.Infected.Tutorial.OpenRimPad>
+  <Rimconemy.Infected.Tutorial.Status>ANLEITUNG</Rimconemy.Infected.Tutorial.Status>
+  <Rimconemy.Infected.Tutorial.Empty>Keine Anleitungsschritte.</Rimconemy.Infected.Tutorial.Empty>
 </LanguageData>

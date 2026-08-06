@@ -23,11 +23,15 @@ internal static class Program
         "RimWorld.ScenPart_PermaGameCondition",
         "Verse.LetterStack",
         "Verse.LetterDef",
+        "Verse.Letter",
+        "Verse.ListerBuildings",
         "Verse.LookTargets",
         "Verse.TaggedString",
         "RimWorld.IncidentWorker",
         "Verse.GameComponent",
+        "Verse.Game",
         "Verse.Def",
+        "RimWorld.Page",
     };
 
     private static int Main()

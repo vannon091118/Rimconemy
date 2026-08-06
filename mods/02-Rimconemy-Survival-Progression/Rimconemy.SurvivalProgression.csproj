@@ -44,6 +44,33 @@
     </Reference>
   </ItemGroup>
 
+  <!--
+    Phase-4 systematic-debugging (2026-08-06) build contract:
+
+    EnableDefaultCompileItems=true (PropertyGroup above) MUST stay TRUE.
+    The Microsoft.NET.Sdk default **/*.cs glob auto-includes Tests/**/*.cs,
+    which is what ships HasConfigureStartingPawnsWithChoiceAtRuntime (in
+    Tests/ScenarioContractTests.cs) into Rimconemy.SurvivalProgression.dll so
+    the regression-gate for "Could not generate starting map because there is
+    no any player faction base" fires in deployed mods, not just locally.
+
+    DO NOT add an explicit <Compile Include="Tests/**/*.cs"/> while this
+    stays true. The .NET SDK HARD-ABORTS the build with NETSDK1022
+    ("Duplicate Compile items were included") and the deploy script's
+    success message becomes misleading. Earlier copy of this comment
+    (2026-08-06 first draft) recommended this redundancy and the build
+    literally broke; this revision is the post-mortem.
+
+    If a future contributor flips EnableDefaultCompileItems=false, they MUST
+    either
+      (a) re-list Tests/**/*.cs explicitly AND add Source/**/*.cs explicitly,
+          OR
+      (b) relocate the Tests/*.cs files into Source/.
+    Otherwise the regression-gate silently disappears from the deployed DLL.
+    Keep this in sync with the Bootstrap.RunAll + ProgressionGameComponent
+    .FinalizeInit call sites that invoke ScenarioContractTests.RunAll().
+  -->
+
   <Target Name="ValidateReferencePaths" BeforeTargets="ResolveReferences">
     <Error Condition="'$(RimWorldManagedPath)' == ''" Text="RimWorldManagedPath is required. Pass -p:RimWorldManagedPath=.../RimWorldLinux_Data/Managed" />
     <Error Condition="!Exists('$(RimWorldManagedPath)/Assembly-CSharp.dll')" Text="Assembly-CSharp.dll not found under $(RimWorldManagedPath)" />

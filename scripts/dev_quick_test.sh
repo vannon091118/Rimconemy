@@ -105,7 +105,61 @@ for f in "${xml_files[@]}"; do
 done
 pass "XML files well-formed: $VALIDATED/${#xml_files[@]}"
 
-# 3. P0 Coal Chain cross-references (if files exist)
+# 3. GameComponent (Game)-ctor pattern (RimWorld 1.6)
+#    Background: Verse.Game.FillComponents calls
+#      Activator.CreateInstance(compType, new object[] { this })
+#      with the Game instance as the first arg. Subclasses of GameComponent
+#      MUST therefore expose a `public Xxx(Game game) { }` ctor, otherwise
+#      they throw MissingMethodException at game-startup. (Verse.GameComponent
+#      itself in 1.6 has only a parameterless ctor, so the subclass ctor
+#      uses the implicit `base()` parameterless — do NOT forward `: base(game)`,
+#      that fails to compile with CS1729.)
+#
+#    Two false-positive defenses (per code-reviewer-minimax-m3 feedback):
+#      * class-regex requires the `class` keyword, ignoring doc comments
+#        like `/// GameComponent ensures persistence`;
+#      * ctor-regex is anchored at start-of-line and requires indented
+#        `public ...`, so `// public ...` comment lines don't satisfy it.
+#    Tests/ is excluded because tests instantiate GameComponents manually
+#    (`new X()`) and don't go through FillComponents.
+echo
+echo "--- GameComponent (Game)-ctor pattern ---"
+GC_GAPS=()
+declare -A GC_BY_PKG
+while IFS= read -r f; do
+    case "$f" in
+        */Tests/*) continue ;;
+    esac
+    # Real class declaration inheriting GameComponent (not a doc comment).
+    if grep -qE '\bclass\s+\w+\b[^{]*GameComponent\b' "$f"; then
+        # Extract package directory name (e.g. 05-Rimconemy-Infected-Automation)
+        # via parameter expansion — more robust than sed across bash variants.
+        _tmp="${f#*/mods/}"
+        pkg="${_tmp%%/*}"
+        GC_BY_PKG["$pkg"]=$(( ${GC_BY_PKG["$pkg"]:-0} + 1 ))
+        # Canonical ctor: indented `public Xxx(Game game)` on its own line.
+        # Anchored to start-of-line so `// public ...` comment lines
+        # don't satisfy it.
+        if ! grep -qE '^[[:space:]]*public\s+\w+\s*\(\s*Game\s+\w+\s*\)' "$f"; then
+            fail "GameComponent ctor gap: $f declares : GameComponent but no public Xxx(Game X) ctor"
+            GC_GAPS+=("$f")
+        fi
+    fi
+done < <(find "$PROJECT_ROOT/mods" -name '*.cs' -not -path '*/Tests/*' 2>/dev/null)
+
+if [[ ${#GC_GAPS[@]} -eq 0 ]]; then
+    if [[ ${#GC_BY_PKG[@]} -gt 0 ]]; then
+        summary=""
+        for p in $(printf '%s\n' "${!GC_BY_PKG[@]}" | sort); do
+            summary+="$p:${GC_BY_PKG[$p]} "
+        done
+        pass "GameComponent (Game)-ctor consistent (subclasses — ${summary% })"
+    else
+        warn "no GameComponent subclasses found in production code (gate not exercised)"
+    fi
+fi
+
+# 4. P0 Coal Chain cross-references (if files exist)
 echo
 echo "--- P0 Coal Chain Cross-References ---"
 P0_DEFS=(
@@ -127,7 +181,7 @@ for def in "${P0_DEFS[@]}"; do
     fi
 done
 
-# 4. Regression test signatures in Player.log (if log exists)
+# 5. Regression test signatures in Player.log (if log exists)
 if [[ -f "$LOG_PATH" ]]; then
     echo
     echo "--- Runtime Regression Signatures ---"
@@ -165,7 +219,7 @@ else
     warn "Player.log not found at $LOG_PATH (skip runtime signatures)"
 fi
 
-# 5. Strict mode: run XML verification script if available
+# 6. Strict mode: run XML verification script if available
 if [[ "$STRICT_MODE" == true ]]; then
     echo
     echo "--- Strict Mode: XML Verification Script ---"

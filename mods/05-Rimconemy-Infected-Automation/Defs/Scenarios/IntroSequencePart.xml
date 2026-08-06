@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Infected & Automation (Paket 05)
+  Stable defName: Rimconemy_IntroSequencePart (matches SingleSurvivor.xml <def=...>)
+  Rimconemy-1.6 ScenPartDef uses <scenPartClass>, NOT legacy <class>.
+-->
 <Defs>
   <ScenPartDef>
     <defName>Rimconemy_IntroSequencePart</defName>
-    <label>Rimconemy cinematic intro sequence</label>
-    <category>Fixed</category>
+    <label>Cinematic Intro-Sequenz (Kamera-Cuts + RimPad-Aktivierung)</label>
     <scenPartClass>Rimconemy.InfectedAutomation.Scenarios.ScenPart_IntroSequence</scenPartClass>
-    <summaryPriority>800</summaryPriority>
   </ScenPartDef>
 </Defs>

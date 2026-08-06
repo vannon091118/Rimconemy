@@ -24,6 +24,16 @@
         <hide>true</hide>
       </surfaceLayer>
       <parts>
+        <li Class="ScenPart_ConfigPage_ConfigureStartingPawns">
+          <def>ConfigPage_ConfigureStartingPawns</def>
+          <pawnCount>1</pawnCount>
+          <pawnChoiceCount>5</pawnChoiceCount>
+        </li>
+        <li Class="ScenPart_PlayerPawnsArriveMethod">
+          <def>PlayerPawnsArriveMethod</def>
+          <method>DropPods</method>
+          <visible>false</visible>
+        </li>
         <li Class="Rimconemy.SurvivalProgression.Scenarios.ScenPart_StartInSandbox">
           <def>Rimconemy_StartInSandbox</def>
         </li>

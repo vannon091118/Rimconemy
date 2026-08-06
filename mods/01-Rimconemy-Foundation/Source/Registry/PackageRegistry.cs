@@ -166,7 +166,7 @@ namespace Rimconemy.Foundation.Registry
             // the Full Overhaul profile truthful when all packages are loaded.
             Register(new PackageDescriptor(
                 packageId: "rimconemy.foundation",
-                packageVersion: "0.1.39",
+                packageVersion: "0.1.40",
                 saveSchemaVersion: 1,
                 capabilities: new List<Capability>
                 {
@@ -213,7 +213,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.SurvivalProgression",
                 packageId: "rimconemy.survivalprogression",
-                packageVersion: "0.1.40",
+                packageVersion: "0.1.49",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.survivalprogression.needs", 1),
@@ -246,7 +246,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.InfectedAutomation",
                 packageId: "rimconemy.infectedautomation",
-                packageVersion: "0.0.69",
+                packageVersion: "0.0.73",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.infectedautomation.threat", 1),
@@ -258,6 +258,8 @@ namespace Rimconemy.Foundation.Registry
                     // calling PopulationLedger.Get(), so standalone 05 users
                     // without the ledger still see the legacy Threat path.
                     new Capability("rimconemy.infectedautomation.population", 1),
+                    // Tutorial Bridge (2026-08-06): TutorialDirector event source
+                    new Capability("rimconemy.infectedautomation.tutorial_bridge", 1),
                 });
         }
 

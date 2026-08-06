@@ -31,4 +31,14 @@
 
   <!-- Phase F — Wandering Horde migration letter (Raid family) -->
   <Rimconemy_HordeMigrationLetter>On the roads around your settlement, a massive horde of infected makes its way. They are still far away — but they are coming closer. The horde will tear down anything that stands in its path.</Rimconemy_HordeMigrationLetter>
+
+  <!-- Tutorial (UX-Audit 2026-08-06) -->
+  <Rimconemy.Infected.Tutorial.StepOf>STEP {0} OF {1}</Rimconemy.Infected.Tutorial.StepOf>
+  <Rimconemy.Infected.Tutorial.Objective>NEXT OBJECTIVE</Rimconemy.Infected.Tutorial.Objective>
+  <Rimconemy.Infected.Tutorial.Unlocks>UNLOCKED</Rimconemy.Infected.Tutorial.Unlocks>
+  <Rimconemy.Infected.Tutorial.SkipAll>SKIP TUTORIAL</Rimconemy.Infected.Tutorial.SkipAll>
+  <Rimconemy.Infected.Tutorial.Understand>GOT IT</Rimconemy.Infected.Tutorial.Understand>
+  <Rimconemy.Infected.Tutorial.OpenRimPad>OPEN RIMPAD</Rimconemy.Infected.Tutorial.OpenRimPad>
+  <Rimconemy.Infected.Tutorial.Status>TUTORIAL STATUS</Rimconemy.Infected.Tutorial.Status>
+  <Rimconemy.Infected.Tutorial.Empty>No tutorial steps.</Rimconemy.Infected.Tutorial.Empty>
 </LanguageData>

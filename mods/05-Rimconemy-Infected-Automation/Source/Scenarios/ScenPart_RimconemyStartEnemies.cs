@@ -142,7 +142,9 @@ namespace Rimconemy.InfectedAutomation.Scenarios
 
         private static string GetCurrentDifficultyDefName()
         {
-            return Find.Storyteller?.difficultyDef?.defName;
+            if (Find.Storyteller == null) return null;
+            if (Find.Storyteller.difficultyDef == null) return null;
+            return Find.Storyteller.difficultyDef.defName;
         }
 
         private static int SpawnStarterInfected(Map map, int count)

@@ -4,6 +4,8 @@
     <defName>Rimconemy_Ideo_Refuge</defName>
     <label>Zuflucht-Gemeinschaft</label>
     <description>Eine Gemeinschaft von Überlebenden, die auf Zusammenarbeit und Ressourcenteilung setzt.</description>
+    <categoryDef>Mild</categoryDef>
+    <iconPath>UI/HeroArt/RimWorldLogo</iconPath>
     <memes>
       <li>Rimconemy_Communal</li>
     </memes>

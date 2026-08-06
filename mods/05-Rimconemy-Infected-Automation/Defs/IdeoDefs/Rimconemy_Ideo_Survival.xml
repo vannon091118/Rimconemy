@@ -4,6 +4,8 @@
     <defName>Rimconemy_Ideo_Survival</defName>
     <label>Überlebensgruppe</label>
     <description>Eine pragmatische Gruppe, die tut was nötig ist. Gewalt gegen Infizierte ist akzeptiert.</description>
+    <categoryDef>Strong</categoryDef>
+    <iconPath>UI/HeroArt/RimWorldLogo</iconPath>
     <memes>
       <li>Rimconemy_Pragmatic</li>
     </memes>

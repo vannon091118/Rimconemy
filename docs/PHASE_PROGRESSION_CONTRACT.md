@@ -3,7 +3,7 @@
 > **Stand:** 2026-08-05
 > **Rolle:** SSOT für die Gameplay-Phasen. Definiert **wann** ein System spielerisch relevant wird.
 > **Pflicht:** Wer eine Phase-Zuordnung ändert, aktualisiert diese Datei **und** den Eintrag in [ARCHITECTURE.md §7] sowie den Owner-Crosswalk in [INTERFACE_CONTRACT.md §9].
-> **Detail:** Architektur-Einordnung und DLC-Leverage-Pivot stehen in [ARCHITECTURE.md](ARCHITECTURE.md); Vanilla-/DLC-Anker in [CANONICAL_VANILLA_DOMAIN_MAP.md](CANONICAL_VANILLA_DOMAIN_MAP.md); Save-Schema in [SAVE_CONTRACT.md](SAVE_CONTRACT.md); Live-Status in [CODE_STATUS.md](CODE_STATUS.md).
+> **Detail:** Architektur-Einordnung und DLC-Leverage-Pivot stehen in [ARCHITECTURE.md](/home/vannon/Schreibtisch/Rimconemy/docs/ARCHITECTURE.md); Vanilla-/DLC-Anker in [CANONICAL_VANILLA_DOMAIN_MAP.md](/home/vannon/Schreibtisch/Rimconemy/docs/CANONICAL_VANILLA_DOMAIN_MAP.md); Save-Schema in [SAVE_CONTRACT.md](/home/vannon/Schreibtisch/Rimconemy/docs/SAVE_CONTRACT.md); Live-Status in [CODE_STATUS.md](/home/vannon/Schreibtisch/Rimconemy/docs/CODE_STATUS.md).
 
 ---
 
@@ -12,7 +12,7 @@
 Rimconemy definiert **sechs Gameplay-Phasen** in fester Reihenfolge:
 
 | # | Phase | Hauptentscheidung | Frühe Sichtbarkeit erlaubt? |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 | `EarlySurvival` | Brennstoff vs. Bauholz; Risiko vs. Sicherheit | Ja — `ConstructionDebris`, seltene `SteelScraps` |
 | 2 | `Production` | Erste kontrollierte Stahl-Verarbeitung; Werkbank-Wahl | Ja — Rezept-Vorbereitung |
 | 3 | `Automation` | Brennstoff-Wahl (Holz vs. Kohle); Stromallokation | Selten — Coal als seltene Beute möglich |
@@ -27,7 +27,7 @@ Eine Phase darf ein Feature **maximal eine Phase früher** sichtbar machen, niem
 ## §2 Phasen-Matrix (Ressourcen × Verfügbarkeit)
 
 | Resource | EarlySurvival | Production | Automation | Trade | Expansion | Empire |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- |
 | `WoodLog` | Visible + Lootable + Strategic | sichtbar als Brennstoff | Brennstoff + Coal-Vorstufe | handelbar | reisend | massenhaft |
 | `Stone` | Strategic | statisch | statisch | handelbar | outpost-tauglich | statisch |
 | `Rimconemy_ConstructionDebris` | Visible + Lootable + Strategic | Recycling | Recycling | handelbar | gesammelt | verarbeitet |
@@ -42,7 +42,7 @@ Eine Phase darf ein Feature **maximal eine Phase früher** sichtbar machen, niem
 
 **Verfügbarkeits-Stufen sind orthogonal zu Phase-Positionen:**
 
-```text
+```
 Visible       = Spieler sieht die Ressource oder ihre Existenz (Label, Recipe-Label, Hit-Pulse).
 Lootable      = Spieler findet eine begrenzte Menge als Risiko/Belohnung.
 Producible    = Eine wiederholbare Bill/Recipe ist verfügbar (ganze Phase-Zeit verfügbar).
@@ -55,7 +55,7 @@ Eine Ressource darf **eine Phase früher** lootable sein, aber ihre wiederholbar
 
 ## §3 Phasen-Übergänge (Milestones statt Tages-Counts)
 
-```text
+```
 EarlySurvival → Production:
   stabile Behausung + erste Salvage-Station + bestätigte Nahrungsschleife
 
@@ -79,7 +79,7 @@ Kein Übergang allein durch Tag-Count ausgelöst. Übergänge werden über beoba
 ## §4 Ressourcen-SSOT & Owner-Regel (Ownership-Single-Source)
 
 | Resource | Owner-Paket | Kanonische Def-Datei | Rollen |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `WoodLog` | Vanilla (Core) | `game/Data/Core/Defs/ThingDefs_Items/Items_Resource_Stuff.xml` | fuel, construction, Coal input |
 | `Steel` | Vanilla (Core) | `game/Data/Core/Defs/ThingDefs_Items/Items_Resource_Stuff.xml` | construction, power, defense, trade |
 | `Plasteel` | Vanilla (Core) | `game/Data/Core/Defs/ThingDefs_Items/Items_Resource_Stuff.xml` | high-end material (nicht-patch) |
@@ -103,7 +103,7 @@ Kein Übergang allein durch Tag-Count ausgelöst. Übergänge werden über beoba
 ## §5 Negative-Regeln (Anti-Pattern)
 
 | Negativ-Regel | Begründung |
-|---|---|
+| --- | --- |
 | Kein wiederholbares Coal/MachineParts/Steel-Rezept in EarlySurvival | Zerstört sonst die Phase-Dramaturgie |
 | Kein zweiter `CompProperties_Refuelable` auf einem BuildingDef | Vanilla instanziert nur den ersten; weitere sind Dead-Code |
 | Kein `Rimconemy.Masonry` oder neue StuffCategory | Vanilla deckt mit `Stony`/`Metallic`/`Woody`/`Fabric`/`Leathery` ab |
@@ -118,7 +118,7 @@ Kein Übergang allein durch Tag-Count ausgelöst. Übergänge werden über beoba
 ## §6 Phasen-DLC-Strategie (Verstärker, nicht Treiber)
 
 | DLC | Phase-Eintritt | Verstärkung | Fehlende-DLC-Fallback |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **Core** | Phase 1 (EarlySurvival) | Fundament | unverzichtbar |
 | **Ideology** | Phase 1 (Early) → 2 (Mid) | Mood/Thought/HistoryEvent-Auditor | Core-only: Regel 1, 3 via Vanilla-Precepts |
 | **Royalty** | Phase 4 (Trade) | Empire als Handelspartner; Titel als späte Permission | Trade ohne Royalty: Vanilla-Trader reicht |
@@ -126,14 +126,14 @@ Kein Übergang allein durch Tag-Count ausgelöst. Übergänge werden über beoba
 | **Anomaly** | Phase 2 (Production) → 5 (Expansion) | Entity-Beute als Scraps-Quelle | Core-only: Vanilla-Ancient-Ruins reicht |
 | **Odyssey** | Phase 1 (frühe Mini-Ruins) → 5 → 6 | Loot-Stashes, Gravship, Orbit | Core-only: ohne Odyssey endet Expansion bei Vanilla-Caravan |
 
-DLCs sind **Adapter hinter `DLCFilter`**, nie Voraussetzung. Core-only-Pfad ist vollständig.
+DLCs sind **Adapter hinter **`**DLCFilter**`, nie Voraussetzung. Core-only-Pfad ist vollständig.
 
 ---
 
 ## §7 Übergang in Save-/Migration-Vertrag
 
 | Phase-Übergang | Save-Schema-Bump nötig? | Begründung |
-|---|---|---|
+| --- | --- | --- |
 | Early → Production | Nein | Live-Berechnung aus Skills/Bill-Verfügbarkeit |
 | Production → Automation | Nein | Live-Berechnung aus Vanilla-Recipes |
 | Automation → Trade | Nein | Live-Berechnung aus Wallet/Market-State |
@@ -145,7 +145,7 @@ Es existiert **kein** `PhaseProgressSaveData`. Phasen sind beobachtbare Phänome
 ## §7.1 Live-Evidence Open Gates (OPEN)
 
 | Gate | Status | Pfad |
-|---|---|---|
+| --- | --- | --- |
 | Mining-Gate UI-Side (player click) | CODE / DEF / COMPILES ✓ | `mods/02/Source/HarmonyPatches/MiningHookPatch.cs` Postfix auf `Designator_Mine.CanDesignateCell` |
 | Mining-Gate AI-Side (auto-mine) | OPEN | weitere Vanilla-Hook-Evaluation nötig — `WorkGiver_Miner.HasJobOnThing` überschreibt in 1.6 nicht zuverlässig; `Mineable.DestroyMined` ist ein Kandidat |
 | `BuildingInputAdapter` Stuff-Source | CODE ✓; LIVE pending | aktuell liest `def.costList`; `costStuffCount`-Pfad ist noch nicht abgedeckt (siehe Code-Reviewer-MEDIUM-Hinweis) |
@@ -158,7 +158,7 @@ Es existiert **kein** `PhaseProgressSaveData`. Phasen sind beobachtbare Phänome
 Diese Datei muss bei Änderungen synchron sein mit:
 
 | Datei | Was dort aktualisiert wird |
-|---|---|
+| --- | --- |
 | `docs/ARCHITECTURE.md` | Neue Sektion §7 Phasen-Index verlinkt |
 | `docs/INTERFACE_CONTRACT.md` | §9 Owner-Map enthält Owner-Paket pro Phase-Ressource |
 | `docs/CANONICAL_VANILLA_DOMAIN_MAP.md` | Domain-Map spiegelt Phasen-Reihenfolge wider |
@@ -186,7 +186,7 @@ Jede Änderung am Contract bricht den Accept-Status bis zur erneuten Verifikatio
 > **SSOT:** Overlay-Surface (Renderer + Resolver) lives in Mod 02 (`mods/02-Rimconemy-Survival-Progression/Source/Phase/`). Routing entry-point lives in Mod 01 (`FoundationDashboard` hub-tab slot 5) via reflection pattern (no cross-package DLL reference). Widget primitives **all** come from Foundation's existing UI toolkit (`RimconemyUi.*` + `RimconemyTheme.*`) — no forked widget API.
 
 | Aspect | Owner / Path |
-|---|---|
+| --- | --- |
 | Resolver (pure static) | `mods/02/Source/Phase/PhaseProgressResolver.cs` — reads RimconemyStartState + Vanilla research/building/bill state via `DefDatabase<>.GetNamedSilentFail` (never throws) |
 | Window (MainTab) | `mods/02/Source/Phase/PhaseProgressWindow.cs` — extends `RimconemyMainTabWindow` (Foundation chrome parent). Renders 4 cards: header, next-milestone, overall %, tip-row. NO forked widgets. |
 | Tests | `mods/02/Tests/PhaseProgressResolverTests.cs` — Def-level SSOT probes for 12 ThingDef names + 7-enum PhaseId check + null-Map honest-fallback probe. |
@@ -196,23 +196,23 @@ Jede Änderung am Contract bricht den Accept-Status bis zur erneuten Verifikatio
 
 ### Phase-milestone SSOT (Phase 1—3, Phase 4—6 stub)
 
-| Phase | Milestone Key | Predicate (SSOT) |
-|---|---|---|
-| 1: EarlySurvival | `single-survivor-start` | `RimconemyStartState.IsCompletedFor(map, "single-survivor")` |
-| 1: EarlySurvival | `first-cooked-meal` | `Map.resourceCounter.GetCount(MealSimple) >= 1 ∧ Map.listerBuildings.Any(def ∈ {Rimconemy_Campfire \| FueledStove \| ElectricStove})` (truthful conjunction; campfires MUST be counted as a cook station to keep Phase 1 reachable pre-stovetop) |
-| 1: EarlySurvival | `campfire-built` | `Map.listerBuildings.AllBuildings().Any(def == Rimconemy_Campfire)` |
-| 1: EarlySurvival | `three-buildings-built` | `Map.listerBuildings.Count >= 3` |
-| 2: Production | `first-coal-produced` | `Map.resourceCounter.GetCount(Rimconemy_Coal) >= 1` |
-| 2: Production | `smelting-research-finished` | `Rimconemy_SmeltingCoal.IsFinished` (ResearchProjectDef bool property; no CostAmount in 1.6) |
-| 2: Production | `first-steel-smelted` | `ResearchProjectDef("Smithing").IsFinished ∧ Map.listerBuildings.Any(def == FueledSmithy) ∧ Map.resourceCounter.GetCount(Steel) >= 1` (truthful conjunction; tightest possible without RecipeWorker postfix instrumentation) |
-| 2: Production | `smithy-built` | `Map.listerBuildings.Any(def == FueledSmithy)` |
-| 3: Automation | `machine-parts-built` | `Map.resourceCounter.GetCount(ComponentIndustrial) >= 5 ∧ Map.listerBuildings.Any(def ∈ {FueledSmithy \| TableMachining})` (truthful conjunction; counter-only falsely fires on trader side-dump) |
-| 3: Automation | `stainless-smelted` | `Map.resourceCounter.GetCount(Rimconemy_StainlessSteel) >= 1` |
-| 3: Automation | `stainless-tower-built` | `Map.listerBuildings.Any(def == Rimconemy_StainlessSteelTower)` |
-| 3: Automation | `power-grid-online` | `Map.listerBuildings.Any(def == Rimconemy_WoodCoalGenerator)` |
-| 4: Expansion | `outpost-constructed` | `RimconemyStartState.IsCompletedFor(map, "outpost-constructed")` (Mod-03 anchor; deferred) |
-| 5: Trade | `credits-wallet-initialised` | `RimconemyStartState.IsCompletedFor(map, "credits-wallet-initialised")` (Mod-04 anchor; deferred) |
-| 6: Empire | `empire-tribute-paid` | `RimconemyStartState.IsCompletedFor(map, "empire-tribute-paid")` (Mod-04 anchor; deferred) |
+| Phase | Milestone Key | Predicate (SSOT) |  |  |
+| --- | --- | --- | --- | --- |
+| 1: EarlySurvival | `single-survivor-start` | `RimconemyStartState.IsCompletedFor(map, "single-survivor")` |  |  |
+| 1: EarlySurvival | `first-cooked-meal` | `Map.resourceCounter.GetCount(MealSimple) >= 1 ∧ Map.listerBuildings.Any(def ∈ {Rimconemy_Campfire \ | FueledStove \ | ElectricStove})` (truthful conjunction; campfires MUST be counted as a cook station to keep Phase 1 reachable pre-stovetop) |
+| 1: EarlySurvival | `campfire-built` | `Map.listerBuildings.AllBuildings().Any(def == Rimconemy_Campfire)` |  |  |
+| 1: EarlySurvival | `three-buildings-built` | `Map.listerBuildings.Count >= 3` |  |  |
+| 2: Production | `first-coal-produced` | `Map.resourceCounter.GetCount(Rimconemy_Coal) >= 1` |  |  |
+| 2: Production | `smelting-research-finished` | `Rimconemy_SmeltingCoal.IsFinished` (ResearchProjectDef bool property; no CostAmount in 1.6) |  |  |
+| 2: Production | `first-steel-smelted` | `ResearchProjectDef("Smithing").IsFinished ∧ Map.listerBuildings.Any(def == FueledSmithy) ∧ Map.resourceCounter.GetCount(Steel) >= 1` (truthful conjunction; tightest possible without RecipeWorker postfix instrumentation) |  |  |
+| 2: Production | `smithy-built` | `Map.listerBuildings.Any(def == FueledSmithy)` |  |  |
+| 3: Automation | `machine-parts-built` | `Map.resourceCounter.GetCount(ComponentIndustrial) >= 5 ∧ Map.listerBuildings.Any(def ∈ {FueledSmithy \ | TableMachining})` (truthful conjunction; counter-only falsely fires on trader side-dump) |  |
+| 3: Automation | `stainless-smelted` | `Map.resourceCounter.GetCount(Rimconemy_StainlessSteel) >= 1` |  |  |
+| 3: Automation | `stainless-tower-built` | `Map.listerBuildings.Any(def == Rimconemy_StainlessSteelTower)` |  |  |
+| 3: Automation | `power-grid-online` | `Map.listerBuildings.Any(def == Rimconemy_WoodCoalGenerator)` |  |  |
+| 4: Expansion | `outpost-constructed` | `RimconemyStartState.IsCompletedFor(map, "outpost-constructed")` (Mod-03 anchor; deferred) |  |  |
+| 5: Trade | `credits-wallet-initialised` | `RimconemyStartState.IsCompletedFor(map, "credits-wallet-initialised")` (Mod-04 anchor; deferred) |  |  |
+| 6: Empire | `empire-tribute-paid` | `RimconemyStartState.IsCompletedFor(map, "empire-tribute-paid")` (Mod-04 anchor; deferred) |  |  |
 
 Per-milestone localisation: `Rimconemy.PhaseProgress.Milestone.<Key>` for human-readable names.
 
@@ -228,7 +228,7 @@ Per-milestone localisation: `Rimconemy.PhaseProgress.Milestone.<Key>` for human-
 Every predicate in the SSOT table above MUST be a **truthful conjunction** of distinct signals — never a single signal that admits trader-deposits or blueprint-not-yet-built edge cases. The four signals available are:
 
 | Signal | Truth-class | Beispiel |
-|---|---|---|
+| --- | --- | --- |
 | **Research** | `ResearchProjectDef("Foo").IsFinished` | True iff the player has fully completed the research (not just queued); research completion is a save-persisted Vanilla fact. |
 | **Counter** | `Map.resourceCounter.GetCount(Mat) >= N` | True iff ≥N units of `Mat` are present in the player-home storage; truthful only when combined with another signal. |
 | **Building** | `Map.listerBuildings.allBuildingsColonist.Any(def == X)` | True iff a colonist-built building of def `X` exists; truthful only when combined with another signal. |
@@ -237,7 +237,7 @@ Every predicate in the SSOT table above MUST be a **truthful conjunction** of di
 Three forms are canonical:
 
 | Form | Beispiel-Slot | Warum |
-|---|---|---|
+| --- | --- | --- |
 | **single-signal** | `campfire-built`, `smithy-built`, `smelting-research-finished`, `power-grid-online` | One signal is sufficient when that signal alone is truthful (e.g. building exists means it was built; research finished means it was researched). |
 | **conjunction(N)** | `first-cooked-meal`, `first-steel-smelted`, `machine-parts-built` | Multiple signals ANDed together; each side rules out a distinct false-positive class. |
 | **StartState** | `single-survivor-start`, `outpost-constructed`, `empire-tribute-paid` | Predicate reads an explicit event mark; the writer is upstream (scenario, outpost-builder, tribute-pay). |
@@ -248,7 +248,7 @@ A predicate that is just Counter-only or Building-only on a resource the player 
 
 - [x] Mod 02 build: 0 warnings, 0 errors.
 - [x] Mod 01 build: 0 warnings, 0 errors.
-- [x] Bash `-n` on runtime_test.sh, dev_quick_test.sh.
+- [x] Bash `-n` on runtime*test.sh, dev*quick_test.sh.
 - [x] XML well-formedness on all changed language files.
 - [x] PhaseProgressResolverTests summary line emitted during runtime-test (`PhaseProgress regression tests: N passed, M failed`).
 - [x] `required_summaries` gate in `runtime_test.sh` includes the new summary line.
@@ -265,7 +265,7 @@ A predicate that is just Counter-only or Building-only on a resource the player 
 ### Stufen-Übersicht
 
 | Stufe | Idiom | Erlaubt? | Beispiel-Pfad |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 0 | keine Modifikation an BuildableDef-Listen | ✓ | (z. B. das Trial selbst) |
 | 1 | XML-DOM-add via `<li>`/`XML-DOM-add via xpath`-Additions ohne Listen-Replace | ✓ | `mods/03-Rimconemy-Scavenger-Infrastructure/Patches/WallDoorBarricade_Bauschutt_Patches.xml` Part 3 |
 | 2 | `<PatchOperationRemove>` mit Node-targeted Xpath; auto-idempotent | ✓ | `WallDoorBarricade_Bauschutt_Patches.xml` Part 2 (`<li[text()="Woody"]</li>` direkt entfernen) |
@@ -276,7 +276,7 @@ A predicate that is just Counter-only or Building-only on a resource the player 
 ### KonstruktionsDebris als Steel-Alternative (Phase-Contract Gate)
 
 | Aspekt | Wert |
-|---|---|
+| --- | --- |
 | Def | `mods/03-Rimconemy-Scavenger-Infrastructure/Defs/ThingDefs/Resources/ConstructionDebris.xml` |
 | StuffCategory der Debris | **Stony** (Canonical-Vanilla) |
 | Idiom | `<li>Stony</li>` als StuffCategory in Wall/Door/Barricade/Sandbag addieren |
@@ -294,7 +294,7 @@ A predicate that is just Counter-only or Building-only on a resource the player 
 ### Was NICHT erlaubt ist (Phase-Contract-Stufe-3-Falle)
 
 | Aktion | Warum verboten | Ausweich-Pfad |
-|---|---|---|
+| --- | --- | --- |
 | `<PatchOperationReplace xpath="…/costList">` mit komplett neuer Liste | löscht den ursprünglichen costList-Tag, kollidiert mit anderen Mods die Material-Kosten ergänzen | `<PatchOperationAdd>` mit `<li>`-Element additiv |
 | `<PatchOperationFindMod modId="…">` + Mehrfach-Patch (Layer) | Stufe 4 — Patch-Load-Order chaos | DefModExt-Gate stattdessen |
 | C#-Resolver-Callback aus XML-Patch | zur Load-Time nicht verfügbar | DefModExt-Wert als Marker |
@@ -303,7 +303,7 @@ A predicate that is just Counter-only or Building-only on a resource the player 
 
 - [x] Mod 02 build: 0 warnings, 0 errors.
 - [x] Mod 03 build: 0 warnings, 0 errors. XML well-formedness geprüft.
-- [x] Bauschutt_Remap_Patches.xml umbenannt in `WallDoorBarricade_Bauschutt_Patches.xml` mit `PatchOperationTest` + `PatchOperationAdd`.
+- [x] Bauschutt*Remap*Patches.xml umbenannt in `WallDoorBarricade_Bauschutt_Patches.xml` mit `PatchOperationTest` + `PatchOperationAdd`.
 - [x] Barricade / Sandbag nun erfasst (vorher Vanilla-for-MVP-Skip laut docs/falsification).
 - [x] PhaseContractGate DefModExt installiert (Mod 02 / Source / Phase / PhaseContractGate.cs).
 - [ ] **OPEN — Live-Evidence:** RimWorld-Boot mit ersten Walls auf Bauschutt (ConstructionDebris-Material) muss visuell den Hügel-Charakter eines Stein-Buildings zeigen. Closable by `scripts/runtime_test.sh` post-deploy.

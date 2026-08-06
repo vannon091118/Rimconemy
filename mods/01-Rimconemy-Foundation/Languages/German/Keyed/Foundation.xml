@@ -95,5 +95,23 @@
   <!-- Survival -->
   <Rimconemy.Survival.Unavailable>Überlebens-System nicht verfügbar.</Rimconemy.Survival.Unavailable>
   <Rimconemy.Survival.Empty>Keine Kolonisten erfasst.</Rimconemy.Survival.Empty>
+
+  <!-- Cinematic Intro (UX-Audit 2026-08-06) -->
+  <Rimconemy.Intro.Skip>Überspringen</Rimconemy.Intro.Skip>
+  <Rimconemy.Intro.Flow.0>DU, {PawnName}, bist nach 5 Jahren außerhalb der Atmosphäre...</Rimconemy.Intro.Flow.0>
+  <Rimconemy.Intro.Flow.1>von der ISS zur Erde zurückgekehrt.</Rimconemy.Intro.Flow.1>
+  <Rimconemy.Intro.Flow.2>Du freust dich auf deine Familie, deine Freunde...</Rimconemy.Intro.Flow.2>
+  <Rimconemy.Intro.Flow.3>Doch etwas ist anders. Die Stille ist zu laut.</Rimconemy.Intro.Flow.3>
+  <Rimconemy.Intro.Flow.4>Willkommen in der neuen Welt.</Rimconemy.Intro.Flow.4>
+
+  <!-- RimPad Guide-Tab (UX-Audit 2026-08-06) -->
+  <Rimconemy.RimPad.Tab.Guide>Anleitung</Rimconemy.RimPad.Tab.Guide>
+  <Rimconemy.RimPad.Tab.Survival>Überleben</Rimconemy.RimPad.Tab.Survival>
+  <Rimconemy.RimPad.Tab.Infrastructure>Infrastruktur</Rimconemy.RimPad.Tab.Infrastructure>
+  <Rimconemy.RimPad.Tab.Economy>Wirtschaft</Rimconemy.RimPad.Tab.Economy>
+  <Rimconemy.RimPad.Tab.Threat>Bedrohung</Rimconemy.RimPad.Tab.Threat>
+  <Rimconemy.RimPad.Tab.Diagnostics>Diagnose</Rimconemy.RimPad.Tab.Diagnostics>
+  <Rimconemy.RimPad.Tab.Todo>Dieser Tab wird gerade gebaut.</Rimconemy.RimPad.Tab.Todo>
+  <Rimconemy.RimPad.Guide.Empty>Noch keine Anleitung registriert.</Rimconemy.RimPad.Guide.Empty>
 </LanguageData>
 

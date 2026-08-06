@@ -4,8 +4,9 @@
     <defName>Rimconemy_Communal</defName>
     <label>Gemeinschaftsgeist</label>
     <description>Die Gruppe hält zusammen. Ressourcen werden geteilt, Konflikte durch Dialog gelöst.</description>
-    <category>Structure</category>
-    <impact>0</impact>
+    <iconPath>UI/Memes/Animist</iconPath>
+    <groupDef>Misc</groupDef>
+    <impact>2</impact>
     <generalRules>
       <rulesStrings>
         <li>memeLeaderNoun->Sprecher</li>
@@ -13,10 +14,5 @@
       </rulesStrings>
     </generalRules>
     <worshipRoomLabel>Versammlungsraum</worshipRoomLabel>
-    <descriptionMaker>
-      <patterns>
-        <li><def>AnimistDescription</def></li>
-      </patterns>
-    </descriptionMaker>
   </MemeDef>
 </Defs>

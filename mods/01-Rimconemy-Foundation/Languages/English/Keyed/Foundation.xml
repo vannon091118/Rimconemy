@@ -96,5 +96,23 @@
   <!-- Survival -->
   <Rimconemy.Survival.Unavailable>Survival system unavailable.</Rimconemy.Survival.Unavailable>
   <Rimconemy.Survival.Empty>No colonists tracked.</Rimconemy.Survival.Empty>
+
+  <!-- Cinematic Intro (UX-Audit 2026-08-06) -->
+  <Rimconemy.Intro.Skip>Skip</Rimconemy.Intro.Skip>
+  <Rimconemy.Intro.Flow.0>YOU, {PawnName}, have returned to Earth after 5 years beyond the atmosphere...</Rimconemy.Intro.Flow.0>
+  <Rimconemy.Intro.Flow.1>Back from the ISS.</Rimconemy.Intro.Flow.1>
+  <Rimconemy.Intro.Flow.2>You're looking forward to your family, your friends...</Rimconemy.Intro.Flow.2>
+  <Rimconemy.Intro.Flow.3>But something is different. The silence is too loud.</Rimconemy.Intro.Flow.3>
+  <Rimconemy.Intro.Flow.4>Welcome to the new world.</Rimconemy.Intro.Flow.4>
+
+  <!-- RimPad Guide-Tab (UX-Audit 2026-08-06) -->
+  <Rimconemy.RimPad.Tab.Guide>Guide</Rimconemy.RimPad.Tab.Guide>
+  <Rimconemy.RimPad.Tab.Survival>Survival</Rimconemy.RimPad.Tab.Survival>
+  <Rimconemy.RimPad.Tab.Infrastructure>Infrastructure</Rimconemy.RimPad.Tab.Infrastructure>
+  <Rimconemy.RimPad.Tab.Economy>Economy</Rimconemy.RimPad.Tab.Economy>
+  <Rimconemy.RimPad.Tab.Threat>Threat</Rimconemy.RimPad.Tab.Threat>
+  <Rimconemy.RimPad.Tab.Diagnostics>Diagnostics</Rimconemy.RimPad.Tab.Diagnostics>
+  <Rimconemy.RimPad.Tab.Todo>This tab is under construction.</Rimconemy.RimPad.Tab.Todo>
+  <Rimconemy.RimPad.Guide.Empty>No guide content registered yet.</Rimconemy.RimPad.Guide.Empty>
 </LanguageData>
 

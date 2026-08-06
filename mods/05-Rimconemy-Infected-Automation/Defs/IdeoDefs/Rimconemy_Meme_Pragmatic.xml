@@ -4,8 +4,9 @@
     <defName>Rimconemy_Pragmatic</defName>
     <label>Pragmatismus</label>
     <description>Überleben rechtfertigt die Mittel. Entscheidungen werden nach Nützlichkeit getroffen.</description>
-    <category>Structure</category>
-    <impact>0</impact>
+    <iconPath>UI/Memes/Transhumanist</iconPath>
+    <groupDef>Misc</groupDef>
+    <impact>2</impact>
     <generalRules>
       <rulesStrings>
         <li>memeLeaderNoun->Anführer</li>
@@ -13,10 +14,5 @@
       </rulesStrings>
     </generalRules>
     <worshipRoomLabel>Versammlungsraum</worshipRoomLabel>
-    <descriptionMaker>
-      <patterns>
-        <li><def>AnimistDescription</def></li>
-      </patterns>
-    </descriptionMaker>
   </MemeDef>
 </Defs>

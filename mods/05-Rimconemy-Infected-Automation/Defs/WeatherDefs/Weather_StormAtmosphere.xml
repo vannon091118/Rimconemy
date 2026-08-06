@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Infected & Automation (Paket 05)
+  RimWorld 1.6 WeatherDef fix:
+    * SkyColorSet is the 4-tuple (sky, shadow, overlay, saturation) — NOT colorMid/colorEdge.
+    * saturation MUST be > 0 (RimWorld rejects saturation of 0 in ErrorCheckAllDefs).
+    * `lightningBias` is not a 1.6 WeatherDef field. Lightning is driven by <eventMakers>.
+    * No vanilla `WeatherOverlay_Darkness` exists — atmosphere darkness comes from
+      <maxGlow> clamp + dark skyColors + (optional) overlay like WeatherOverlay_Fog.
+    * `Verse.WeatherOverlay_Darkness` does NOT exist. We use the visible-fog overlay
+      `WeatherOverlay_Fog` (vanilla, Core) for the oppressive grey look.
+-->
+<Defs>
+  <WeatherDef>
+    <defName>Rimconemy_StormAtmosphere</defName>
+    <label>Sturm-Atmosphäre</label>
+    <workerClass>Verse.WeatherWorker</workerClass>
+    <durationRange>
+      <min>3000</min>
+      <max>6000</max>
+    </durationRange>
+    <repeatable>False</repeatable>
+    <isBad>True</isBad>
+    <favorability>VeryBad</favorability>
+    <perceivePriority>3</perceivePriority>
+    <temperatureRange>
+      <min>-10</min>
+      <max>25</max>
+    </temperatureRange>
+    <rainRate>0.05</rainRate>
+    <snowRate>0</snowRate>
+    <windSpeedFactor>1.5</windSpeedFactor>
+    <windSpeedOffset>1.25</windSpeedOffset>
+    <moveSpeedMultiplier>0.8</moveSpeedMultiplier>
+    <accuracyMultiplier>0.9</accuracyMultiplier>
+    <maxGlow>0.3</maxGlow>
+    <preventSkygaze>True</preventSkygaze>
+    <ambientSounds>
+      <li>Ambient_Wind_Storm</li>
+    </ambientSounds>
+    <!-- Oppressive overcast / dust haze overlay (vanilla class, no Verse. prefix) -->
+    <overlayClasses>
+      <li>WeatherOverlay_Fog</li>
+    </overlayClasses>
+    <skyColorsDay>
+      <sky>(0.25,0.18,0.18)</sky>
+      <shadow>(0.85,0.85,0.85)</shadow>
+      <overlay>(0.6,0.6,0.6)</overlay>
+      <saturation>0.7</saturation>
+    </skyColorsDay>
+    <skyColorsDusk>
+      <sky>(0.20,0.12,0.12)</sky>
+      <shadow>(0.85,0.85,0.85)</shadow>
+      <overlay>(0.5,0.5,0.5)</overlay>
+      <saturation>0.7</saturation>
+    </skyColorsDusk>
+    <skyColorsNightEdge>
+      <sky>(0.15,0.08,0.08)</sky>
+      <shadow>(0.85,0.85,0.85)</shadow>
+      <overlay>(0.4,0.4,0.4)</overlay>
+      <saturation>0.6</saturation>
+    </skyColorsNightEdge>
+    <skyColorsNightMid>
+      <sky>(0.10,0.05,0.05)</sky>
+      <shadow>(0.85,0.85,0.85)</shadow>
+      <overlay>(0.35,0.35,0.35)</overlay>
+      <saturation>0.6</saturation>
+    </skyColorsNightMid>
+  </WeatherDef>
+</Defs>

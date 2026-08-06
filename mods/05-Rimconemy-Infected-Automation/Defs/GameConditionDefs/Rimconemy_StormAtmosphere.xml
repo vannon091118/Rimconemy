@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Owner: Infected & Automation (Paket 05)
+
+  Permanent storm atmosphere as a GameConditionDef.
+
+  RimWorld 1.6 API (verified via tools/inspect/logfix Cecil spike against
+  local Assembly-CSharp.dll):
+    * ScenarioDef/Scenario has NO `permaGameConditions` field. Permanent
+      game conditions are added via ScenPart_PermaGameCondition (ScenarioDef
+      "PermanentGameCondition") + a GameConditionDef.
+    * `ScenPart_PermaGameCondition` fields: gameCondition (GameConditionDef),
+      PermaGameConditionTag (string). GenerateIntoMap calls
+      GameConditionMaker.MakeConditionPermanent + GameConditionManager.RegisterCondition.
+    * The worker class that forces a specific weather is
+      `GameCondition_ForceWeather` (vanilla, used by Royalty
+      Buildings_ConditionCausers.xml with <weatherDef>).
+    * This def shares the defName `Rimconemy_StormAtmosphere` with the
+      WeatherDef — legal: DefNames are unique per Def TYPE, and the two
+      defs live in different DefDatabase<T>s. The ScenarioDef crossref
+      `Rimconemy_StormAtmosphere` is typed GameConditionDef here.
+-->
+<Defs>
+  <GameConditionDef>
+    <defName>Rimconemy_StormAtmosphere</defName>
+    <label>Sturm-Atmosphäre</label>
+    <description>Ein permanenter Sturm liegt über der Region. Dämmerlicht und Pechschwarz kennzeichnen die Infizierten-Nächte.</description>
+    <conditionClass>GameCondition_ForceWeather</conditionClass>
+    <canBePermanent>true</canBePermanent>
+    <weatherDef>Rimconemy_StormAtmosphere</weatherDef>
+    <natural>true</natural>
+  </GameConditionDef>
+</Defs>

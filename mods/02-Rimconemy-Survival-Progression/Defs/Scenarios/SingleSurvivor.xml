@@ -1,51 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Owner: Survival & Progression
-  
+  Owner: Survival & Progression (Paket 02)
+
   Stable defName: Rimconemy_SingleSurvivor
   DLC condition: none
-  
+
   Phase 1.1 / Phase 1.2 / Phase 1.4 / Phase 1.5 / Phase 2.1 / Phase 2.2 (Vertical-Slice).
-  
-  Single survivor via ConfigureStartingPawns (pawnCount=1, pick from 8).
+
+  Single survivor via ConfigureStartingPawns (pawnCount=1).
   Drop-pod arrival via PlayerPawnsArriveMethod.
   Rimconemy_SingleSurvivorStartPart (Paket 02): weapon + steel-scraps drop.
   Rimconemy_StartEnemiesPart (Paket 05): starter infected scaled by difficulty/map size.
   ScenPart_StartingWoodPiles (Paket 05): starting wood piles for early survival.
+  Rimconemy_IntroSequencePart (Paket 05): cinematic intro & tutorial handoff.
   Vanilla storyteller remains authoritative.
-  
+
   Notes:
-  ScenarioParent "ScenarioBase" is a Def-parent-name remap, not the
-  vanilla-api-matrix §8 entry that flags Verse.ScenarioBase.
-  The class Rimworld.Scenario is the actual runtime type.
-  DisableScenPartGen is left at default (= false) so all ConfigPage
-  parts continue to apply normally.
+  * RimWorld 1.6 ScenPart_ConfigPage_ConfigureStartingPawns requires BOTH `pawnCount`
+    (squad size that actually lands) AND `pawnChoiceCount` (candidate pool size the
+    Character Setup page offers). Both fields have 1.6 vanilla evidence in
+    game/Data/Core/Defs/Scenarios/Scenarios_Classic.xml (Crashlanded uses 3/8,
+    LostTribe uses 5/8). Omitting `pawnChoiceCount` defaults the candidate pool to 0,
+    the Character Setup page then generates 0 colonists, the player's faction base
+    has nothing to anchor to, and Verse.Game.InitNewGame NREs with
+    "Could not generate starting map because there is no any player faction base."
+    Phase 4 of systematic-debugging locked this in via ScenPart_ConfigPage_PAWN_CHOICE_GUARD.
+  * ScenarioParent "ScenarioBase" is a Def-parent-name remap, not the
+    vanilla-api-matrix §8 entry that flags Verse.ScenarioBase.
+  * DisableScenPartGen is left at default (= false) so all ConfigPage parts apply.
 -->
 <Defs>
 
   <ScenarioDef Name="Rimconemy_SingleSurvivor" ParentName="ScenarioBase">
     <defName>Rimconemy_SingleSurvivor</defName>
     <label>Rimconemy Single Survivor</label>
-    <description>One controllable colonist, Vanilla storyteller, no scripted chronicles. Game-over triggers only via Rimconemy's GameOver detector, never via vanilla wealth-zero panic. Phase-1 Vertical Slice: knappe Stammmunition, garantierter schwacher Drucktest, Stahlreste zufällig, Start-Holzhaufen für erstes Überleben.</description>
+    <description>DU, {PawnName}, bist nach 5 Jahren ISS zurückgekehrt. Die Infizierten warten bereits. Dein RimPad ist dein einziger Verbündeter.</description>
     <scenario>
       <summary>One Rimconemy survivor, arrives by drop pod. Vanilla storyteller retained; Rimconemy adds a single starter weapon, a small scatter of steel scraps near the landing site, starting wood piles, and starter infected scaled by difficulty and map size.</summary>
       <playerFaction>
         <def>PlayerFaction</def>
         <factionDef>PlayerColony</factionDef>
       </playerFaction>
-      <surfaceLayer>
-        <def>SurfaceLayerFixed</def>
-        <tag>Surface</tag>
-        <layer>Surface</layer>
-        <settingsDef>Surface</settingsDef>
-        <hide>true</hide>
-      </surfaceLayer>
       <parts>
 
+        <!-- Single survivor: 1 pawn only (no pawnChoiceCount in 1.6 ScenPart). -->
         <li Class="ScenPart_ConfigPage_ConfigureStartingPawns">
           <def>ConfigPage_ConfigureStartingPawns</def>
           <pawnCount>1</pawnCount>
-          <pawnChoiceCount>8</pawnChoiceCount>
+          <pawnChoiceCount>5</pawnChoiceCount>
         </li>
 
         <li Class="ScenPart_PlayerPawnsArriveMethod">
@@ -55,9 +57,7 @@
         </li>
 
         <!-- Phase 1.1: single-survivor setup, weapon + scraps drop.
-             Class is fully qualified (Rimconemy.SurvivalProgression.Scenarios)
-             to match the established SandboxScenario pattern and avoid
-             ambiguity if a third-party mod ships a same-named class. -->
+             Class is fully qualified (Rimconemy.SurvivalProgression.Scenarios). -->
         <li Class="Rimconemy.SurvivalProgression.Scenarios.ScenPart_RimconemyStart">
           <def>Rimconemy_SingleSurvivorStartPart</def>
         </li>
@@ -69,13 +69,7 @@
         </li>
 
         <!-- Phase 1.4+1.5: starter infected scaled by difficulty and map size.
-             Provided by Package 05 (Infected & Automation). The scenario
-             def-stream cannot resolve ScenPart subclasses via the <def>
-             pointer alone (RimWorld looks for parameterless .ctor of
-             ScenPart base, which it does not have). We therefore bind
-             the Class= attribute explicitly to the concrete subclass
-             in Package 05. Assembly load-order is enforced via
-             About.xml <loadAfter> rimconemy.survivalprogression. -->
+             Provided by Package 05 (Infected & Automation). -->
         <li Class="Rimconemy.InfectedAutomation.Scenarios.ScenPart_RimconemyStartEnemies">
           <def>Rimconemy_StartEnemiesPart</def>
         </li>
@@ -85,8 +79,16 @@
           <def>Rimconemy_IntroSequencePart</def>
         </li>
 
-        <!-- Phase 4.2: Tier-1 architect category is registered via
-             DesignationCategoryDef in Package 03; not embedded here. -->
+        <!-- Permanent storm atmosphere.
+             RimWorld 1.6 API (verified via tools/inspect/logfix Cecil spike):
+             ScenarioDef/Scenario has NO permaGameConditions field. Permanent
+             game conditions are added via ScenPart_PermaGameCondition (def
+             "PermanentGameCondition") + a GameConditionDef that forces the
+             Rimconemy_StormAtmosphere WeatherDef (GameCondition_ForceWeather). -->
+        <li Class="ScenPart_PermaGameCondition">
+          <def>PermanentGameCondition</def>
+          <gameCondition>Rimconemy_StormAtmosphere</gameCondition>
+        </li>
 
       </parts>
     </scenario>

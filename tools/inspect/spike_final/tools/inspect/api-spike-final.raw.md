@@ -411,6 +411,75 @@ new LetterDef();
 | UnityEngine.Texture2D | Icon | yes |  |  |
 
 
+## Verse.Letter
+BaseType: System.Object · Sealed: False · Abstract: True
+
+### Constructors
+```csharp
+new Letter();
+```
+
+### Public/Protected Methods
+| Return | Name | Params | Static | Notes |
+|---|---|---|---|---|
+| System.Void | CheckForMouseOverTextAt | Single topY |  | virtual |
+| System.Void | DrawButtonAt | Single topY |  | virtual |
+| System.Void | ExposeData |  |  | virtual |
+| System.Boolean | get_ArchivedOnly |  |  |  |
+| System.Boolean | get_CanDismissWithRightClick |  |  | virtual |
+| System.Boolean | get_CanShowInLetterStack |  |  | virtual |
+| Verse.TaggedString | get_Label |  |  |  |
+| Verse.IThingHolder | get_ParentHolder |  |  |  |
+| System.Boolean | get_ShouldAutomaticallyOpenLetter |  |  | virtual |
+| System.String | GetMouseoverText |  |  | virtual abstract |
+| System.String | GetUniqueLoadID |  |  | virtual final |
+| System.Void | OpenLetter |  |  | virtual abstract |
+| System.String | PostProcessedLabel |  |  | virtual |
+| System.Void | Received |  |  | virtual |
+| System.Void | Removed |  |  | virtual |
+| System.Void | set_Label | TaggedString value |  |  |
+
+### Public/Protected Properties
+| Type | Name | Get | Set | Static |
+|---|---|---|---|---|
+| System.Boolean | CanShowInLetterStack | yes |  |  |
+| System.Boolean | CanDismissWithRightClick | yes |  |  |
+| System.Boolean | ArchivedOnly | yes |  |  |
+| Verse.IThingHolder | ParentHolder | yes |  |  |
+| System.Boolean | ShouldAutomaticallyOpenLetter | yes |  |  |
+| Verse.TaggedString | Label | yes | yes |  |
+
+
+## Verse.ListerBuildings
+BaseType: System.Object · Sealed: True · Abstract: False
+
+### Constructors
+```csharp
+new ListerBuildings();
+```
+
+### Public/Protected Methods
+| Return | Name | Params | Static | Notes |
+|---|---|---|---|---|
+| System.Void | Add | Building b |  |  |
+| System.Collections.Generic.IEnumerable`1<T> | AllBuildingsColonistOfClass |  |  |  |
+| System.Collections.Generic.List`1<Verse.Building> | AllBuildingsColonistOfDef | ThingDef def |  |  |
+| System.Collections.Generic.List`1<Verse.Building> | AllBuildingsColonistOfGroup | ThingRequestGroup group |  |  |
+| System.Collections.Generic.IEnumerable`1<Verse.Building> | AllBuildingsNonColonistOfDef | ThingDef def |  |  |
+| System.Collections.Generic.IEnumerable`1<T> | AllColonistBuildingsOfType |  |  |  |
+| System.Boolean | ColonistsHaveBuilding | ThingDef def |  |  |
+| System.Boolean | ColonistsHaveBuilding | Func`2 predicate |  |  |
+| System.Boolean | ColonistsHaveBuildingWithPowerOn | ThingDef def |  |  |
+| System.Boolean | ColonistsHaveResearchBench |  |  |  |
+| System.Void | DeregisterInstallBlueprint | Blueprint_Install blueprint |  |  |
+| System.Void | Dispose |  |  | virtual final |
+| System.Void | Notify_FactionRemoved | Faction faction |  |  |
+| System.Void | RegisterInstallBlueprint | Blueprint_Install blueprint |  |  |
+| System.Void | Remove | Building b |  |  |
+| Verse.ListerBuildings/TrackingScope | Track | Predicate`1 predicate |  |  |
+| System.Boolean | TryGetReinstallBlueprint | Thing building, Blueprint_Install& bp |  |  |
+
+
 ## Verse.LookTargets
 BaseType: System.Object · Sealed: False · Abstract: False
 
@@ -563,6 +632,72 @@ new GameComponent();
 | System.Void | StartedNewGame |  |  | virtual |
 
 
+## Verse.Game
+BaseType: System.Object · Sealed: False · Abstract: False
+
+### Constructors
+```csharp
+new Game();
+```
+
+### Public/Protected Methods
+| Return | Name | Params | Static | Notes |
+|---|---|---|---|---|
+| System.Void | AddMap | Map map |  |  |
+| System.Void | ClearCaches |  | YES | static |
+| System.String | DebugString |  |  |  |
+| System.Void | DeinitAndRemoveMap | Map map, Boolean notifyPlayer |  |  |
+| System.Void | Dispose |  |  | virtual final |
+| System.Void | ExposeData |  |  | virtual final |
+| System.Void | FinalizeInit |  |  |  |
+| Verse.Map | FindMap | MapParent mapParent |  |  |
+| Verse.Map | FindMap | PlanetTile tile |  |  |
+| Verse.Map | get_AnyPlayerHomeMap |  |  |  |
+| Verse.Map | get_CurrentMap |  |  |  |
+| RimWorld.Planet.Gravship | get_Gravship |  |  |  |
+| Verse.GameInfo | get_Info |  |  |  |
+| Verse.GameInitData | get_InitData |  |  |  |
+| System.Collections.Generic.List`1<Verse.Map> | get_Maps |  |  |  |
+| System.Boolean | get_PlayerHasControl |  |  |  |
+| System.Collections.Generic.IReadOnlyList`1<Verse.Map> | get_PlayerHomeMaps |  |  |  |
+| Verse.Map | get_RandomPlayerHomeMap |  |  |  |
+| Verse.Map | get_RandomRootSurfacePlayerHomeMap |  |  |  |
+| Verse.Map | get_RandomSurfacePlayerHomeMap |  |  |  |
+| RimWorld.GameRules | get_Rules |  |  |  |
+| RimWorld.Scenario | get_Scenario |  |  |  |
+| RimWorld.Planet.World | get_World |  |  |  |
+| T | GetComponent |  |  |  |
+| Verse.GameComponent | GetComponent | Type type |  |  |
+| System.Void | InitNewGame |  |  |  |
+| System.Boolean | IsPlayerTile | PlanetTile tile |  |  |
+| System.Void | LoadGame |  |  |  |
+| System.Void | set_CurrentMap | Map value |  |  |
+| System.Void | set_Gravship | Gravship value |  |  |
+| System.Void | set_InitData | GameInitData value |  |  |
+| System.Void | set_Scenario | Scenario value |  |  |
+| System.Void | set_World | World value |  |  |
+| System.Void | UpdateEntry |  |  |  |
+| System.Void | UpdatePlay |  |  |  |
+
+### Public/Protected Properties
+| Type | Name | Get | Set | Static |
+|---|---|---|---|---|
+| RimWorld.Scenario | Scenario | yes | yes |  |
+| RimWorld.Planet.World | World | yes | yes |  |
+| Verse.Map | CurrentMap | yes | yes |  |
+| Verse.Map | AnyPlayerHomeMap | yes |  |  |
+| System.Boolean | PlayerHasControl | yes |  |  |
+| System.Collections.Generic.IReadOnlyList`1<Verse.Map> | PlayerHomeMaps | yes |  |  |
+| Verse.Map | RandomPlayerHomeMap | yes |  |  |
+| Verse.Map | RandomRootSurfacePlayerHomeMap | yes |  |  |
+| Verse.Map | RandomSurfacePlayerHomeMap | yes |  |  |
+| System.Collections.Generic.List`1<Verse.Map> | Maps | yes |  |  |
+| Verse.GameInitData | InitData | yes | yes |  |
+| Verse.GameInfo | Info | yes |  |  |
+| RimWorld.GameRules | Rules | yes |  |  |
+| RimWorld.Planet.Gravship | Gravship | yes | yes |  |
+
+
 ## Verse.Def
 BaseType: Verse.Editable · Sealed: False · Abstract: False
 
@@ -591,5 +726,35 @@ new Def();
 | Type | Name | Get | Set | Static |
 |---|---|---|---|---|
 | Verse.TaggedString | LabelCap | yes |  |  |
+
+
+## RimWorld.Page
+BaseType: Verse.Window · Sealed: False · Abstract: True
+
+### Constructors
+```csharp
+new Page();
+```
+
+### Public/Protected Methods
+| Return | Name | Params | Static | Notes |
+|---|---|---|---|---|
+| System.Boolean | CanDoBack |  |  | virtual |
+| System.Boolean | CanDoNext |  |  | virtual |
+| System.Void | DoBack |  |  | virtual |
+| System.Void | DoBottomButtons | Rect rect, String nextLabel, String midLabel, Action midAct, Boolean showNext, Boolean doNextOnKeypress |  |  |
+| System.Void | DoNext |  |  | virtual |
+| System.Void | DrawPageTitle | Rect rect |  |  |
+| UnityEngine.Vector2 | get_InitialSize |  |  | virtual |
+| System.String | get_PageTitle |  |  | virtual |
+| UnityEngine.Rect | GetMainRect | Rect rect, Single extraTopSpace, Boolean ignoreTitle |  |  |
+| System.Void | OnAcceptKeyPressed |  |  | virtual |
+| System.Void | OnCancelKeyPressed |  |  | virtual |
+
+### Public/Protected Properties
+| Type | Name | Get | Set | Static |
+|---|---|---|---|---|
+| UnityEngine.Vector2 | InitialSize | yes |  |  |
+| System.String | PageTitle | yes |  |  |
 
 

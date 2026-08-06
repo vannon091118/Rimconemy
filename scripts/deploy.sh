@@ -84,12 +84,13 @@ build_one() {
 
     echo ""
     echo "🔨 Baue ${pkg_name} …"
-    dotnet build "$csproj" "${DOTNET_BUILD_ARGS[@]}" \
-        | grep -E '(error|warning|Build succeeded|Build FAILED)' \
+    build_output=$(dotnet build "$csproj" "${DOTNET_BUILD_ARGS[@]}" 2>&1)
+    local build_exit=$?
+    echo "$build_output" | grep -E '(error|warning|Build succeeded|Build FAILED)' \
         || true
 
-    if [ ${PIPESTATUS[0]} -ne 0 ]; then
-        echo "❌ Build fehlgeschlagen für ${pkg_name}"
+    if [ $build_exit -ne 0 ]; then
+        echo "❌ Build fehlgeschlagen für ${pkg_name} (dotnet exit=$build_exit)"
         return 1
     fi
     echo "✅ Build erfolgreich: ${pkg_name}"
