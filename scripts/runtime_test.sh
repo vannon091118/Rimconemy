@@ -446,6 +446,19 @@ main() {
   runtime_gates
   finish_report
 
+  # ── Parser Preflight: validates parser_config.json completeness ──
+  local preflight_script="$SCRIPT_DIR/test_parser_preflight.py"
+  if [[ -f "$preflight_script" ]] && command_exists python3; then
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "🔬 Parser Preflight (parser_config.json)..."
+    if python3 "$preflight_script" --log "$LOG_PATH" 2>&1; then
+      pass "parser preflight: all patterns found"
+    else
+      fail "parser preflight: missing patterns (update scripts/parser_config.json)"
+    fi
+  fi
+
   # ── Structured debug summary (parse_runtime_log.py) ──
   local parser_script="$SCRIPT_DIR/parse_runtime_log.py"
   if [[ -f "$parser_script" ]] && command_exists python3; then
