@@ -1,24 +1,22 @@
 using Verse;
-using RimWorld;
-using Rimconemy.Foundation.Bridge;
 
 namespace Rimconemy.Foundation
 {
     /// <summary>
-    /// Static constructor on startup to initialize foundation systems.
-    /// Registers foundation capabilities in the CapabilityAudit.
+    /// [StaticConstructorOnStartup] anchor only. Capabilities are managed
+    /// internally in <see cref="Rimconemy.Foundation.Registry.PackageRegistry"/>
+    /// + vordeklarierte Liste aus <c>INTERFACE_CONTRACT.md §2</c>
+    /// (profile, colonials, eventlog). Der frühere
+    /// <c>Rimconemy.Foundation.Bridge.CapabilityAudit</c> wurde im Audit-Sprint
+    /// 2026-08-04 (F-V4) entfernt; diese Klasse bleibt nur als Bootstrap-Log-Anker
+    /// für MainTab-/HUD-Listener, die auf "Foundation war schon vor mir da" prüfen.
     /// </summary>
     [StaticConstructorOnStartup]
     public static class FoundationInitializer
     {
         static FoundationInitializer()
         {
-            // Register foundation capabilities
-            CapabilityAudit.RegisterCapability("rimconemy.foundation", "event.bridge");
-            CapabilityAudit.RegisterCapability("rimconemy.foundation", "capability.audit");
-            CapabilityAudit.RegisterCapability("rimconemy.foundation", "rimpad.ui");
-            
-            Verse.Log.Message("[Rimconemy.Foundation] FoundationInitializer: Capabilities registered.");
+            Log.Message("[Rimconemy.Foundation] Anchor: PackageRegistry + INTERFACE_CONTRACT §2 capabilities live; downstream listeners may subscribe.");
         }
     }
 }
