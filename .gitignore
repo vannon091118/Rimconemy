@@ -36,3 +36,4 @@ mods/__pycache__/
 .DS_Store
 Thumbs.db
 .aider*
+docs/runtime-parsed/
