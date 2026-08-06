@@ -5,7 +5,14 @@
 > **Zielplattform:** RimWorld 1.6.4566; Royalty, Ideology, Biotech, Anomaly, Odyssey
 > **Status:** Phase 1 Coding-Cut mit Runtime-Boot-Gates belegt. Alle 5 Mods laden, Foundation erkennt FullOverhaul, alle Bootstraps und Regression-Summaries laufen; `runtime_test.sh`: **PASS** (35+ Summaries, 0 Failures).
 >
-> **Operativer Plan:** → [WORKPLAN.md](WORKPLAN.md) (kristallisierter Master-Plan, DELETE → WIRE → NEW)
+> **Operativer Plan:** → [WORKPLAN.md](docs/WORKPLAN.md) (kristallisierter Master-Plan, DELETE → WIRE → NEW)
+>
+> **Pro Mod (Abhängigkeitsmatrix + Stand + Roadmap):**
+> [01-Foundation](mods/01-Rimconemy-Foundation/MOD_INDEX.md) ·
+> [02-Survival](mods/02-Rimconemy-Survival-Progression/MOD_INDEX.md) ·
+> [03-Scavenger](mods/03-Rimconemy-Scavenger-Infrastructure/MOD_INDEX.md) ·
+> [04-Economy](mods/04-Rimconemy-Economy-Territory/MOD_INDEX.md) ·
+> [05-Infected](mods/05-Rimconemy-Infected-Automation/MOD_INDEX.md)
 
 ---
 
