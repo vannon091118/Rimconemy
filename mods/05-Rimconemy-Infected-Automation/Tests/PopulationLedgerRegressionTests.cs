@@ -242,7 +242,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 ProfileId = Population.PopulationProfileMultipliers.ProfileSurvival,
             };
             int newCap = ledger.ApplyDailyGrowthTick();
-            // floor(10 * 1.15) = 11; DayIndex++ = 1.
+            // Round(10 * 1.15) = Round(11.5) = 12? No: 1.15f=1.1499999…, Round(11.4999…)=11. DayIndex++ = 1.
             return newCap == 11
                 && ledger.Cap == 11
                 && ledger.DayIndexSinceStart == 1;
@@ -279,7 +279,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 HumanoidLiveCount = 90,
                 ProfileId = Population.PopulationProfileMultipliers.ProfileSurvival,
             };
-            // floor(10 * 0.7) = 7; freeBudget = 100-90 = 10. min(10,7) = 7.
+            // Round(10 * 0.7) = Round(7.0) = 7; freeBudget = 100-90 = 10. min(10,7) = 7.
             return ledger.GetRevengeQuota(100) == 7;
         }
 

@@ -1035,7 +1035,8 @@ namespace Rimconemy.InfectedAutomation.Story
             // rather than threading a negative through min/max.
             int freeBudgetRaw = ledger.Cap - ledger.HumanoidLiveCount;
             int freeBudget = (int)System.Math.Min(int.MaxValue, System.Math.Max(0, freeBudgetRaw));
-            int raw = (int)System.Math.Floor((double)ledger.RecentKillsToday * ratio);
+            // Float-Präzision: pure-float multiply bewahrt Ratio (0.7f → 7.0, nicht 6.999...).
+            int raw = (int)System.Math.Floor((float)ledger.RecentKillsToday * ratio);
             LastPendingRevenge = System.Math.Max(0, System.Math.Min(raw, freeBudget));
         }
 

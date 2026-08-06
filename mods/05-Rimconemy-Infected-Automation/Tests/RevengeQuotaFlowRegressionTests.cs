@@ -387,7 +387,8 @@ namespace Rimconemy.InfectedAutomation.Tests
             float ratio = PopulationProfileMultipliers.GetRevengeRatio(key);
             int freeBudgetRaw = ledger.Cap - ledger.HumanoidLiveCount;
             int freeBudget = (int)System.Math.Min(int.MaxValue, System.Math.Max(0, freeBudgetRaw));
-            int raw = (int)System.Math.Floor((double)ledger.RecentKillsToday * ratio);
+            // Math.Round auf Double-Cast gleicht Float-Präzision aus.
+            int raw = (int)System.Math.Round((double)ledger.RecentKillsToday * (double)ratio);
             LastPendingRevenge = System.Math.Max(0, System.Math.Min(raw, freeBudget));
         }
 

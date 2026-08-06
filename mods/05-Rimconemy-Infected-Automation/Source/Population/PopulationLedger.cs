@@ -238,7 +238,10 @@ namespace Rimconemy.InfectedAutomation.Population
         public int ApplyDailyGrowthTick()
         {
             float m = PopulationProfileMultipliers.GetDailyGrowth(ProfileId);
-            int newCap = (int)System.Math.Floor((double)Cap * (double)m);
+            // Math.Round auf Double-Cast: Float-Präzision (0.7f ≠ 0.7)
+            // verfälscht Floor/Ceiling: 10*1.15f=11.4999→Floor=11, Ceil=12.
+            // Round(double*double) liefert den mathematisch korrekten Wert (11).
+            int newCap = (int)System.Math.Round((double)Cap * (double)m);
             const int CapCeiling = int.MaxValue / 1000;
             if (newCap > CapCeiling) newCap = CapCeiling;
             if (newCap < Cap) newCap = Cap;  // never shrink Cap (defensive)
@@ -297,7 +300,9 @@ namespace Rimconemy.InfectedAutomation.Population
         {
             if (maxCap <= 0) return 0;
             float ratio = PopulationProfileMultipliers.GetRevengeRatio(ProfileId);
-            int raw = (int)System.Math.Floor((double)RecentKillsToday * (double)ratio);
+            // Math.Round auf Double-Cast: Float-0.7f ist 0.699999988…
+            // Floor(10*0.7f)=6, Round(10*(double)0.7f)=7 = mathematisch korrekt.
+            int raw = (int)System.Math.Round((double)RecentKillsToday * (double)ratio);
             int freeBudget = System.Math.Max(0, maxCap - GetTotalLiveCount());
             return System.Math.Min(freeBudget, raw);
         }

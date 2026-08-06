@@ -62,7 +62,22 @@ namespace Rimconemy.InfectedAutomation.Incidents
             };
             try
             {
-                if (Current.Game == null) return plan;
+                // Test-Seam: StubDirector erlaubt Revenge-Only-Plan ohne
+                // Current.Game/Map (Regression-Tests). Live-Pfad braucht
+                // Current.Game für ThreatSnapshot + Map-Read.
+                if (Current.Game == null)
+                {
+                    if (StubDirector != null)
+                    {
+                        int revengeOnly = ReadRevengePending();
+                        plan.PawnCount = revengeOnly;
+                        plan.RevengeQuotaComponent = revengeOnly;
+                        plan.Reason = revengeOnly > 0 ? "revenge-dominant" : "ok";
+                        return plan;
+                    }
+                    return plan;
+                }
+
                 Map canonical = Find.AnyPlayerHomeMap;
                 if (canonical == null && Find.Maps != null && Find.Maps.Count > 0)
                     canonical = Find.Maps[0];

@@ -133,18 +133,21 @@ namespace Rimconemy.InfectedAutomation.Tests
 
         private static bool T20_AdvanceTileFsmStageDown()
         {
+            // Collapse stagingDuration = 500 ticks. After 250-tick advance
+            // (timer not yet exhausted, 250 < 500), staging should NOT
+            // transition. ActiveStagingTicksLeft stays at 500 (the FSM
+            // sets it once during Migrating→Staging and only clears it
+            // on transition to Attacking — no incremental decrement).
             var rec = new TravelTileRecord
             {
                 Tile = 50, Status = TravelTileStatus.Staging,
-                LastTransitionTick = 60000L, ActiveStagingTicksLeft = 250,
+                LastTransitionTick = 60000L, ActiveStagingTicksLeft = 500,
                 LastSeenAtTick = 60000L
             };
-            // Caller controls the elapsed-since-transition via currentTick arg.
             HordeMigrationDriver.AdvanceTileFSM(ref rec, "Collapse", 60250L);
-            // Collapse stagingDuration = 500 ticks. After 250-tick advance
-            // (timer not yet exhausted), stagingLeft should decrement to 250.
+            // elapsed = 250 < 500 → no transition, stagingLeft unchanged
             return rec.Status == TravelTileStatus.Staging
-                && rec.ActiveStagingTicksLeft <= 250;
+                && rec.ActiveStagingTicksLeft == 500;
         }
 
         private static bool T21_HealthPercentPreservedAcrossCycle()
