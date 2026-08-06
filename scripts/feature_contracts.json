@@ -1,7 +1,6 @@
 {
   "_schema": "1.0",
   "_description": "Feature-Contracts: Jedes Feature deklariert ein beobachtbares Verhalten. Der Gate prüft deskriptiv: 'Feature deklariert → gibt es einen Beleg im Log?' — nie 'Feature sollte X tun'. Status: 'active' (prüfen), 'dormant' (ignorieren), 'retired' (historisch).",
-
   "contracts": {
     "FC-01": {
       "feature": "ProfileDetector — FullOverhaul recognition",
@@ -51,6 +50,95 @@
       "observable": "\\[Rimconemy\\.Foundation\\] DLCPolicyConfig: def=",
       "declared_in": "mods/01/Source/DLC/DLCContentPolicyDef.cs",
       "status": "active"
+    },
+    "TD-01": {
+      "feature": "RimPad — UI-Toolkit geladen (RimconemyTheme + RimconemyUi)",
+      "observable": "\\[Rimconemy\\.Foundation\\] UI-Toolkit loaded",
+      "declared_in": "mods/01/Source/Bootstrap.cs:58",
+      "status": "active"
+    },
+    "TD-02": {
+      "feature": "RimPad — Survival-Tab (NeedMappingService)",
+      "observable": "\\[Rimconemy\\.SurvivalProgression\\] NeedMappingService active",
+      "declared_in": "mods/02/Source/Bootstrap.cs:36",
+      "status": "active"
+    },
+    "TD-03": {
+      "feature": "RimPad — Guide-Tab registriert (TutorialDirector)",
+      "observable": "\\[Rimconemy\\.InfectedAutomation\\] RimPad Guide-Tab registered",
+      "declared_in": "mods/05/Source/Bootstrap.cs:80",
+      "status": "active"
+    },
+    "TD-04": {
+      "feature": "RimPad — FoundationDashboard (StorytellerInventory)",
+      "observable": "\\[Rimconemy\\.Foundation\\] StorytellerInventory",
+      "declared_in": "mods/01/Source/Bootstrap.cs:151",
+      "status": "active"
+    },
+    "TD-05": {
+      "feature": "RimPad — Theme-Override (RimThemes probe)",
+      "observable": "\\[Rimconemy\\.Foundation\\] Theme-override requested|\\[Rimconemy\\.Foundation\\] RimThemes",
+      "declared_in": "mods/01/Source/UI/GlobalThemeOverride.cs:48",
+      "status": "dormant",
+      "_note": "Nur aktiv wenn RimThemes Mod installiert ist"
+    },
+    "TD-17": {
+      "feature": "CollectiveDefense — PostApplyDamage postfix installed",
+      "observable": "\\[Rimconemy\\.InfectedAutomation\\] CollectiveDefense setting rule",
+      "declared_in": "mods/05/Source/Bootstrap.cs:67",
+      "status": "active"
+    },
+    "TD-18": {
+      "feature": "Transparency — Setting Rule (H3 §3)",
+      "observable": "\\[Rimconemy\\.InfectedAutomation\\] Transparency",
+      "declared_in": "mods/05/Source/Bootstrap.cs:95",
+      "status": "active"
+    },
+    "TD-19": {
+      "feature": "Horde Overlay — Phase D+F wired (Calculator, WorldObject, Spawner, SectionLayer)",
+      "observable": "\\[Rimconemy\\.InfectedAutomation\\] Phase D\\+F: Horde overlay \\+ migration wired",
+      "declared_in": "mods/05/Source/Bootstrap.cs:170",
+      "status": "active"
+    },
+    "TD-20": {
+      "feature": "AnimalInfection — Phase E pipeline wired",
+      "observable": "\\[Rimconemy\\.InfectedAutomation\\] Phase E: AnimalInfection pipeline wired",
+      "declared_in": "mods/05/Source/Bootstrap.cs:190",
+      "status": "active"
+    },
+    "TD-21": {
+      "feature": "Daily-Growth + Revenge coupling — Phase B wired",
+      "observable": "\\[Rimconemy\\.InfectedAutomation\\] Phase B: Daily-Growth\\+Reset\\+Revenge coupling wired",
+      "declared_in": "mods/05/Source/Bootstrap.cs:192",
+      "status": "active"
+    },
+    "TD-22": {
+      "feature": "PhaseProgress — Def SSOT probe (referenced ThingDefs resolved)",
+      "observable": "\\[Rimconemy\\.SurvivalProgression\\] PhaseProgress Def SSOT",
+      "declared_in": "mods/02/Source/Phase/PhaseProgressResolver.cs",
+      "status": "dormant",
+      "_note": "Nur sichtbar wenn DefDatabase initialisiert ist"
+    },
+    "TD-23": {
+      "feature": "StorageQuery — ReadStorage fallback (FNV-1a of tick)",
+      "observable": "\\[Rimconemy\\.InfectedAutomation\\] StorageQuery\\.ReadStorage",
+      "declared_in": "mods/05/Source/Story/StoryDirector.cs:690",
+      "status": "dormant",
+      "_note": "Nur bei Fehlerpfad sichtbar"
+    },
+    "TD-24": {
+      "feature": "TEST-DEFERRED — CampfireScraps environment-gated checks",
+      "observable": "\\[Rimconemy\\.ScavengerInfrastructure\\] CampfireScraps TEST-DEFERRED",
+      "declared_in": "mods/03/Tests/CampfireScrapsRegressionTests.cs",
+      "status": "dormant",
+      "_note": "Nur sichtbar wenn DefDatabase nicht vollständig geladen"
+    },
+    "TD-25": {
+      "feature": "TEST-DEFERRED — BuildingCore source-gated checks",
+      "observable": "\\[Rimconemy\\.ScavengerInfrastructure\\] BuildingCore TEST-DEFERRED",
+      "declared_in": "mods/03/Tests/BuildingCoreRegressionTests.cs",
+      "status": "dormant",
+      "_note": "Nur sichtbar in deployed mod (Source nicht verfügbar)"
     }
   }
 }

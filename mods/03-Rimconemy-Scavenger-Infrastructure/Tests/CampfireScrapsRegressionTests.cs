@@ -81,7 +81,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             var wall = DefDatabase<ThingDef>.GetNamedSilentFail("Wall");
             if (wall == null || wall.stuffCategories == null)
             {
-                Log.Message("[Rimconemy.ScavengerInfrastructure] CampfireScraps I4: Wall not loaded or no stuffCategories; defDatabase gate deferred.");
+                Log.Message("[Rimconemy.ScavengerInfrastructure] CampfireScraps TEST-DEFERRED I4: Wall not loaded or no stuffCategories.");
                 return;
             }
             bool hasWoody = wall.stuffCategories.Exists(c => c != null && c.defName == "Woody");
@@ -96,7 +96,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             var door = DefDatabase<ThingDef>.GetNamedSilentFail("Door");
             if (door == null || door.stuffCategories == null)
             {
-                Log.Message("[Rimconemy.ScavengerInfrastructure] CampfireScraps I5: Door not loaded or no stuffCategories; defDatabase gate deferred.");
+                Log.Message("[Rimconemy.ScavengerInfrastructure] CampfireScraps TEST-DEFERRED I5: Door not loaded or no stuffCategories.");
                 return;
             }
             bool hasWoody = door.stuffCategories.Exists(c => c != null && c.defName == "Woody");
@@ -109,7 +109,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             var wall = DefDatabase<ThingDef>.GetNamedSilentFail("Wall");
             if (wall == null || wall.stuffCategories == null)
             {
-                Log.Message("[Rimconemy.ScavengerInfrastructure] CampfireScraps I6: Wall not loaded; defDatabase gate deferred.");
+                Log.Message("[Rimconemy.ScavengerInfrastructure] CampfireScraps TEST-DEFERRED I6: Wall not loaded.");
                 return;
             }
             bool hasStony = wall.stuffCategories.Exists(c => c != null && c.defName == "Stony");
@@ -122,7 +122,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             var door = DefDatabase<ThingDef>.GetNamedSilentFail("Door");
             if (door == null || door.stuffCategories == null)
             {
-                Log.Message("[Rimconemy.ScavengerInfrastructure] CampfireScraps I7: Door not loaded; defDatabase gate deferred.");
+                Log.Message("[Rimconemy.ScavengerInfrastructure] CampfireScraps TEST-DEFERRED I7: Door not loaded.");
                 return;
             }
             bool hasStony = door.stuffCategories.Exists(c => c != null && c.defName == "Stony");
@@ -144,7 +144,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             var recipe = DefDatabase<RecipeDef>.GetNamedSilentFail("Rimconemy_BurnSteelScraps");
             if (recipe == null)
             {
-                Log.Message("[Rimconemy.ScavengerInfrastructure] CampfireScraps I9: Recipe not loaded; defDatabase gate deferred.");
+                Log.Message("[Rimconemy.ScavengerInfrastructure] CampfireScraps TEST-DEFERRED I9: Recipe not loaded.");
                 return;
             }
             AssertTrue(recipe.products != null && recipe.products.Count > 0,
@@ -163,7 +163,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             var campfire = DefDatabase<ThingDef>.GetNamedSilentFail("Rimconemy_Campfire");
             if (campfire == null)
             {
-                Log.Message("[Rimconemy.ScavengerInfrastructure] CampfireScraps I10: Campfire not loaded; defDatabase gate deferred.");
+                Log.Message("[Rimconemy.ScavengerInfrastructure] CampfireScraps TEST-DEFERRED I10: Campfire not loaded.");
                 return;
             }
             AssertTrue(campfire.recipes != null, "I10.Campfire has recipes list");

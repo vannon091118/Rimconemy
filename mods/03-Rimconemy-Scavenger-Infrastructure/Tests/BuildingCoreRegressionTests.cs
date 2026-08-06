@@ -107,7 +107,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 || !File.Exists(applyPath)
                 || !File.Exists(dashboardPath))
             {
-                Log.Message("[Rimconemy.ScavengerInfrastructure] BuildingCore tests: Bauschutt UI source unavailable in deployed mod; runtime DefDatabase gates remain authoritative.");
+                Log.Message("[Rimconemy.ScavengerInfrastructure] BuildingCore TEST-DEFERRED T_BauschuttUI: source unavailable in deployed mod.");
                 return;
             }
 
@@ -135,7 +135,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 "Patches", "Bauschutt_Remap_Patches.xml");
             if (!File.Exists(path))
             {
-                Log.Message("[Rimconemy.ScavengerInfrastructure] BuildingCore tests: source patch unavailable in deployed mod; DefDatabase gates remain authoritative.");
+                Log.Message("[Rimconemy.ScavengerInfrastructure] BuildingCore TEST-DEFERRED T_PatchContract: source patch unavailable in deployed mod.");
                 return;
             }
 
