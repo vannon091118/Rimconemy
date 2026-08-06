@@ -10,13 +10,14 @@ namespace Rimconemy.Foundation.UI
     /// </summary>
     public enum RimPadTab
     {
+        Guide,
         Survival,
         Infrastructure,
         Economy,
         Threat,
         Diagnostics
     }
-    
+
     /// <summary>
     /// Simple wrapper for tab record with drawing callback.
     /// </summary>
@@ -25,7 +26,7 @@ namespace Rimconemy.Foundation.UI
         public RimPadTab Tab;
         public string Label;
         public System.Action<Rect> DrawContent;
-        
+
         public RimPadTabRecord(RimPadTab tab, string label, System.Action<Rect> drawContent)
         {
             Tab = tab;
