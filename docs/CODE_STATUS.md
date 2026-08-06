@@ -102,6 +102,7 @@
 - `MechadroidJobLedger` (State-Machine für Mechadroid-Aufträge), Threat-/Automation-Record-Typen und Ideology-ResourceFairness-Adapter sind vorhanden. (`MechadroidUnit`/`MechadroidJobRegistry`-Stubs entfernt 2026-08-05, siehe `docs/falsification/deadcode-audit-2026-08-05.md`.)
 - Bootstrap führt StorySelector-, StoryState- und Building-Threat-Regressionstests aus; der Threat-Adapter ist bounded/deterministisch und erzeugt in A weder Incident noch Raid.
 - **Neu (Phase-5 IncidentClassifier 2026-08-05):** `IncidentClassifier.EnumerateAll()` bucketiert jeden `IncidentDef` (Rimconemy/Vanilla/DLC/Quest), `ValidateOneInfectedProvider()` prüft die Single-Provider-Invariante (`Rimconemy_InfectedRaidIncident` genau 1×). Bootstrap emittiert die Summary-Line mit per-Source-Counts. Vanilla-Storyteller und Wealth-Raids bleiben autoritativ (DECISIONS §34).
+- **Intro/Tutorial-Pipeline (2026-08-06):** `ScenPart_IntroSequence` (Cinematic-Intro-Bridge), `TutorialDirector` (GameComponent-orchestriert), `Dialog_TutorialStep`, `RimconemyTutorialLetter`. `TutorialTriggerBridge.Initialize()` in Bootstrap 05 aufgerufen. SurvivalTutorialBridge.Initialize() in Bootstrap 02 per TD-14 verdrahtet. `RimPadWindow.GuideTabDrawer` von 05 registriert. Status: CODE/COMPILES — LIVE-Beleg ausstehend.
 
 **Nicht belegt:** vollständige Raid-Skalierung und -Auflösung (der Arbeitsstand ist auf maximal einen Pawn begrenzt), eigener `StorytellerDef`/`StorytellerComp`, vollständiger World-Map-Raid-Lifecycle, Mechadroid-Aufträge und interaktiver Save/Load-/Event-Fire-Live-Test.
 
@@ -147,6 +148,12 @@ Der sichere lokale Installationscheck ohne Spielstart ist:
 - vollständige Ideology-Einflussmatrix: aktuell ist `ResourceFairness` der belegte Code-Adapter; weitere Regeln sind Spezifikation.
 - vollständige Scavenger-Bau-/Farm-/Wasser-/Turmmechanik.
 - Economy-WorldObject-/Transfer-/Territory-Lifecycle.
+- **RimPad-Tab-Inhalte (TD-01–TD-06):** Die 5 Tabs `Survival/Infrastructure/Economy/Threat/Diagnostics` in `mods/01/Source/UI/RimPadWindow.cs:91-97` rendern aktuell `Rimconemy.RimPad.Tab.Todo`-Strings. Echte Verkabelung offen: Survival → `NeedMappingService.SampleAggregate` (Paket 02), Infrastructure → `StorageSnapshot + PowerChainSnapshot` (03), Economy → `CreditsLedger + MarketSnapshot` (04), Threat → `ThreatAggregator.TotalPressure` (05), Diagnostics → `EventLog + ProfileDetector` (01). Guide-Tab (TD-06) zeigt Platzhalter ohne TutorialDirector-Status.
+- **Tutorial/Story-Trigger-Pipeline (TD-07, TD-14):** Vanilla-`Frame.CompleteConstruction` → `FrameCompletionPatch.NotifyCompletion` → `TryForwardTutorialTrigger` → `CampfireManager.TryBuildCampfire`/`WallBuilder.TryBuildWall`. Der Survival→Tutorial-Bridge-Pfad war bis 2026-08-06 unterbrochen. **Gefixt:** `SurvivalTutorialBridge.Initialize()` in `mods/02/Source/Bootstrap.cs` hinzugefügt (TD-14). `ResourceCollector`-Pfad (TD-07) bleibt echt OPEN-Gate — kein Vanilla-Hook verdrahtet.
+- **FoundationInitializer Bridge-Cleanup (TD-13):** `Rimconemy.Foundation.Bridge.CapabilityAudit` (DUMMY-Dict) parallel zum echten `Registry.CapabilityAudit`. Audit-Sprint 2026-08-04 identifiziert; `git rm`-Patch steht für Phase F-V4 aus.
+- **IntroFlowWindow Horde-Spawn-NRE (TD-08):** `FlashHorde()`-Callback `SpawnHordePawn?.Invoke()` ließ ungefangene `NullReferenceException` durch. Fix: try/catch um den Callback, loggt Warning statt Crash. 4× NRE in Player.log reproduziert (Z. 3195-3198).
+- **Infected-Start-Spawn (TD-09):** `ScenPart_RimconemyStartEnemies.PostMapGenerate` berechnet korrekt Spawn-Count via Difficulty×MapSize-Multiplier, aber `IntroFlowWindow`-Callback wirft NRE bevor Spawn abgeschlossen ist. Nach TD-08-Fix evaluieren.
+- **Endzeit-Atmosphäre (TD-15–TD-17):** Wildlife-Dichte 90% reduzierbar via Harmony-Patch auf `WildAnimalSpawner` (Spike-Pflicht). Sichtweite via `DarknessSectionLayer` (aktiv, aber ohne echte Fog-Modifikation). StoryDirector-Hochfrequenz für Endgame offen.
 
 ## 5. Änderungsregel für diese Statusdatei
 

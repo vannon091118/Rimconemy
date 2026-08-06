@@ -1,9 +1,11 @@
 # Rimconemy — Root Roadmap
 
 > **SSOT-Owner für:** Master-Plan, 5-Paket-Übersicht, Phase-Hierarchie, Paket-Identitäten, Backlog.
-> **Stand:** 2026-08-05
+> **Stand:** 2026-08-06
 > **Zielplattform:** RimWorld 1.6.4566; Royalty, Ideology, Biotech, Anomaly, Odyssey
 > **Status:** Phase 1 Coding-Cut mit Runtime-Boot-Gates belegt. Alle 5 Mods laden, Foundation erkennt FullOverhaul, alle Bootstraps und Regression-Summaries laufen; `runtime_test.sh`: **PASS** (35+ Summaries, 0 Failures).
+>
+> **Operativer Plan:** → [WORKPLAN.md](WORKPLAN.md) (kristallisierter Master-Plan, DELETE → WIRE → NEW)
 
 ---
 
@@ -227,6 +229,9 @@ Startcharakter + knappes Inventar
 - Bauschutt-Baukosten
 - Produktionsketten (Munition, Waffen)
 - World-Map-Endgame
+- **TD-09:** Infected-Start-Spawn via `ScenPart_RimconemyStartEnemies` (nach TD-08-Fix re-evaluieren)
+- **TD-10:** Wildlife-Dichte via Harmony-Patch auf `WildAnimalSpawner` (Spike-Pflicht)
+- **TD-15–TD-17:** Endzeit-Atmosphäre (Sichtweite, Hochfrequenz-StoryDirector, Tier-Infected-Balance)
 
 ---
 
@@ -337,6 +342,20 @@ Ohne `SURVIVED`-Berichte mit A–G-Belegen gilt keine Übergabe:
 - Mechadroid-Grundsystem + Automation-Aufträge
 - Hauptstädte/Endgame
 
+### Tech-Debt (konsolidiert in docs/TECH_DEBT.md)
+
+| ID | Bereich | Status |
+|----|---------|--------|
+| TD-01–TD-06 | RimPad-Tabs (TODO-Strings) | OPEN |
+| TD-07 | ResourceCollector Vanilla-Integration | OPEN |
+| TD-08 | IntroFlowWindow Horde-Spawn-NRE | FIXED 2026-08-06 |
+| TD-09 | Infected-Start-Spawn | NEEDS RE-EVAL |
+| TD-10 | Wildlife-Dichte Tuning | OPEN |
+| TD-11 | TutorialState Save/Load | CODE, LIVE offen |
+| TD-13 | Doppeltes CapabilityAudit | PENDING (F1a) |
+| TD-14 | SurvivalTutorialBridge.Initialize() | FIXED 2026-08-06 |
+| TD-15–TD-17 | Endzeit-Vision (Sichtweite, Threat, Wildlife) | OPEN |
+
 ### Qualitäts-Backlog
 
 - **A:** Mutation-Testing-Setup (mutmut/Stryker)
@@ -359,9 +378,11 @@ Ohne `SURVIVED`-Berichte mit A–G-Belegen gilt keine Übergabe:
 
 ---
 
-## 9. Empfohlener Nächster Sprint
+## 9. Empfohlener Nächster Sprint (aktualisiert 2026-08-06)
 
-1. **Fog-of-War (Sprint 2)** — ChunkController + InfectedBehavior (Dormant→Roaming→Investigating→Assault), Scribe-persisted, 8 Test-Blöcke
-2. **Save/Load-Roundtrip** via Runtime-Save-File
-3. **Story-Event-Feuerung** live: Auswahl → Queue → Letter → Spawn → Save/Load
-4. Danach: **Vertikale Full-Profile-Kette** statt horizontalem Fertigstellen einzelner Pakete
+1. **F1a-Push:** Hygiene-Commit + Bridge-Löschung + FoundationInitializer (TD-13) → Build grün
+2. **TD-09 Re-Eval:** Infected-Start-Spawn nach TD-08-Fix via Live-Test prüfen
+3. **Fog-of-War (Sprint 2)** — ChunkController + InfectedBehavior (Dormant→Roaming→Investigating→Assault), Scribe-persisted, 8 Test-Blöcke
+4. **Save/Load-Roundtrip** via Runtime-Save-File
+5. **Story-Event-Feuerung** live: Auswahl → Queue → Letter → Spawn → Save/Load
+6. Danach: **Vertikale Full-Profile-Kette** + Endzeit-Vision (TD-15–TD-17)
