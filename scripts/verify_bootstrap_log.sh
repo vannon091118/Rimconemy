@@ -40,7 +40,7 @@
 
 set -uo pipefail
 
-DEFAULT_LOG="/home/vannon/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Player.log"
+DEFAULT_LOG="$HOME/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Player.log"
 SCRIPT_NAME="$(basename "$0")"
 LOG_PATH=""
 LOG_SET_COUNT=0

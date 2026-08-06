@@ -227,7 +227,7 @@ namespace Rimconemy.InfectedAutomation.Tests
         private static void AssertTrue(bool condition, string label)
         {
             if (condition) _passed++;
-            else { _failed++; Log.Error("[ColonistSightRegression] " + label); }
+            else { _failed++; Log.Error("[Rimconemy.InfectedAutomation] " + label); }
         }
 
         private static void AssertFloat(float expected, float actual, float tolerance, string label)
@@ -236,7 +236,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             else
             {
                 _failed++;
-                Log.Error("[ColonistSightRegression] " + label + ": expected " + expected
+                Log.Error("[Rimconemy.InfectedAutomation] " + label + ": expected " + expected
                     + ", got " + actual);
             }
         }

@@ -78,7 +78,7 @@ namespace Rimconemy.Foundation.Tests
         private static void AssertTrue(bool condition, string label)
         {
             if (condition) _passed++;
-            else { _failed++; Log.Error("[FoundationBuildingCapability] " + label); }
+            else { _failed++; Log.Error("[Rimconemy.Foundation] " + label); }
         }
 
         private static void AssertFalse(bool condition, string label) { AssertTrue(!condition, label); }
@@ -89,7 +89,7 @@ namespace Rimconemy.Foundation.Tests
             else
             {
                 _failed++;
-                Log.Error("[FoundationBuildingCapability] " + label + ": expected " + expected + ", got " + actual);
+                Log.Error("[Rimconemy.Foundation] " + label + ": expected " + expected + ", got " + actual);
             }
         }
     }

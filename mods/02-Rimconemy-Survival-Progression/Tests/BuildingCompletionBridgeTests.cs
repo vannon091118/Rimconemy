@@ -131,7 +131,7 @@ namespace Rimconemy.SurvivalProgression.Tests
         private static void AssertTrue(bool condition, string label)
         {
             if (condition) _passed++;
-            else { _failed++; Log.Error("[BuildingCompletionBridgeTests] " + label); }
+            else { _failed++; Log.Error("[Rimconemy.SurvivalProgression] " + label); }
         }
         private static void AssertFalse(bool condition, string label) { AssertTrue(!condition, label); }
         private static void AssertEqual<T>(T expected, T actual, string label)
@@ -140,7 +140,7 @@ namespace Rimconemy.SurvivalProgression.Tests
             else
             {
                 _failed++;
-                Log.Error("[BuildingCompletionBridgeTests] " + label + ": expected " + expected + ", got " + actual);
+                Log.Error("[Rimconemy.SurvivalProgression] " + label + ": expected " + expected + ", got " + actual);
             }
         }
     }

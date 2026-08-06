@@ -41,7 +41,7 @@ namespace Rimconemy.SurvivalProgression.Tests
         {
             if (condition) return;
             failures++;
-            Log.Error("[Construction] FAIL: " + label);
+            Log.Error("[Rimconemy.SurvivalProgression] FAIL: " + label);
         }
     }
 }

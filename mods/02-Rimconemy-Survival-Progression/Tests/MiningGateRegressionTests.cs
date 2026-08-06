@@ -19,33 +19,33 @@ namespace Rimconemy.SurvivalProgression.Tests
 
             // 1. SSOT: only one Def owns Rimconemy_MiningGateExt class binder.
             var compactSteel = DefDatabase<ThingDef>.GetNamedSilentFail("CompactMineableSteel");
-            if (compactSteel == null) { Log.Warning("[MiningGate] FAIL: CompactMineableSteel missing from DefDatabase"); failures++; }
+            if (compactSteel == null) { Log.Warning("[Rimconemy.SurvivalProgression] FAIL: CompactMineableSteel missing from DefDatabase"); failures++; }
             else
             {
                 var ext = MiningGateResolver.GetExt(compactSteel);
-                if (ext == null) { Log.Warning("[MiningGate] FAIL: CompactMineableSteel missing MiningGateExt"); failures++; }
-                else if (ext.minMiningLevel != 8) { Log.Warning("[MiningGate] FAIL: CompactMineableSteel expected minLevel=8, got " + ext.minMiningLevel); failures++; }
+                if (ext == null) { Log.Warning("[Rimconemy.SurvivalProgression] FAIL: CompactMineableSteel missing MiningGateExt"); failures++; }
+                else if (ext.minMiningLevel != 8) { Log.Warning("[Rimconemy.SurvivalProgression] FAIL: CompactMineableSteel expected minLevel=8, got " + ext.minMiningLevel); failures++; }
             }
 
             // 2. Vanilla non-steel mineables are NOT blocking.
             var chunkGranite = DefDatabase<ThingDef>.GetNamedSilentFail("ChunkGranite");
             if (chunkGranite != null && MiningGateResolver.IsBlockingMineable(chunkGranite))
             {
-                Log.Warning("[MiningGate] FAIL: ChunkGranite unexpectedly blocking"); failures++;
+                Log.Warning("[Rimconemy.SurvivalProgression] FAIL: ChunkGranite unexpectedly blocking"); failures++;
             }
             else if (chunkGranite != null)
             {
-                Log.Message("[MiningGate] OK: ChunkGranite has no MiningGateExt (no false-positive)");
+                Log.Message("[Rimconemy.SurvivalProgression] OK: ChunkGranite has no MiningGateExt (no false-positive)");
             }
 
             // 3. Vanilla non-blocked confirms CanMine still returns true.
             if (chunkGranite != null && !MiningGateResolver.CanMine(chunkGranite))
             {
-                Log.Warning("[MiningGate] FAIL: CanMine(ChunkGranite) returned false"); failures++;
+                Log.Warning("[Rimconemy.SurvivalProgression] FAIL: CanMine(ChunkGranite) returned false"); failures++;
             }
             else if (chunkGranite != null)
             {
-                Log.Message("[MiningGate] OK: CanMine(ChunkGranite) returns true");
+                Log.Message("[Rimconemy.SurvivalProgression] OK: CanMine(ChunkGranite) returns true");
             }
 
             // 4. With no Pawn, CanMine is conservative (requirePawn=true blocks boundary).
@@ -56,11 +56,11 @@ namespace Rimconemy.SurvivalProgression.Tests
                 {
                     if (MiningGateResolver.CanMine(compactSteel, null))
                     {
-                        Log.Warning("[MiningGate] FAIL: CanMine(CompactSteel, null) returned true (requirePawn=true expected opposite)"); failures++;
+                        Log.Warning("[Rimconemy.SurvivalProgression] FAIL: CanMine(CompactSteel, null) returned true (requirePawn=true expected opposite)"); failures++;
                     }
                     else
                     {
-                        Log.Message("[MiningGate] OK: CanMine(CompactSteel, null) returns false (requirePawn=enforced)");
+                        Log.Message("[Rimconemy.SurvivalProgression] OK: CanMine(CompactSteel, null) returns false (requirePawn=enforced)");
                     }
                 }
             }

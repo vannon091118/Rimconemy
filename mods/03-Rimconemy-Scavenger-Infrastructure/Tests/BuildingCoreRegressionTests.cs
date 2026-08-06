@@ -169,7 +169,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
         private static void AssertTrue(bool condition, string label)
         {
             if (condition) _passed++;
-            else { _failed++; Log.Error("[BuildingCoreRegression] " + label); }
+            else { _failed++; Log.Error("[Rimconemy.ScavengerInfrastructure] " + label); }
         }
 
         private static void AssertFalse(bool condition, string label)
@@ -183,7 +183,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             else
             {
                 _failed++;
-                Log.Error("[BuildingCoreRegression] " + label + ": expected " + expected + ", got " + actual);
+                Log.Error("[Rimconemy.ScavengerInfrastructure] " + label + ": expected " + expected + ", got " + actual);
             }
         }
     }

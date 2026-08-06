@@ -37,7 +37,7 @@ namespace Rimconemy.SurvivalProgression.Tests
         private static void AssertTrue(bool value, string label)
         {
             if (value) _passed++;
-            else { _failed++; Log.Error("[BuildingProgressionPersistenceRegression] " + label); }
+            else { _failed++; Log.Error("[Rimconemy.SurvivalProgression] " + label); }
         }
 
         private static void AssertFalse(bool value, string label) { AssertTrue(!value, label); }
@@ -48,7 +48,7 @@ namespace Rimconemy.SurvivalProgression.Tests
             else
             {
                 _failed++;
-                Log.Error("[BuildingProgressionPersistenceRegression] " + label + ": expected " + expected + ", got " + actual);
+                Log.Error("[Rimconemy.SurvivalProgression] " + label + ": expected " + expected + ", got " + actual);
             }
         }
     }

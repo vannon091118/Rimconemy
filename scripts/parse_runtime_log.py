@@ -311,6 +311,15 @@ def check_conflicts(parsed: dict, log_text: str) -> dict:
     if not parsed.get("test_suites") and not has_deferred and parsed.get("rimconemy_lines", 0) > 0:
         conflicts.append({"id": "K5", "msg": "Rimconemy lines present but no suite summaries or TEST-DEFERRED found"})
 
+    # K4: Dedup-Bruch — more than one "Profile detected:" line with identical content
+    #   (delegates to verify_bootstrap_log.sh I3 for full-string dedup check)
+    profile_lines = [l for l in log_text.split('\n') if 'Profile detected:' in l and '[Rimconemy.Foundation]' in l]
+    if len(profile_lines) > 1:
+        # Check for exact duplicates (I3 violation)
+        unique = set(profile_lines)
+        if len(unique) < len(profile_lines):
+            conflicts.append({"id": "K4", "msg": f"Dedup-Bruch: {len(profile_lines)} Profile-detected lines, only {len(unique)} unique — I3 invariant violated"})
+
     # K6: TEST-FAIL before any suite summary
     first_summary_idx = -1
     for i, line in enumerate(log_text.split('\n')):

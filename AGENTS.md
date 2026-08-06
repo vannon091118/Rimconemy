@@ -4,7 +4,7 @@ Rimconemy is a 5-package RimWorld 1.6 mod suite (Foundation, Survival, Scavenger
 
 > **Vision**: Total Overhaul → Survival RPG + Base Builder mit **Infected Horde** (Zombies sammeln sich über Zeit, bilden Horden, infizieren Tiere, jagen) + **Faction Territory War** (Überlebende Fraktionen kämpfen um Rohstoffe, die einem helfen, sich besser zu verteidigen) + **Growth = Attention** (Wachstum zieht Verteidigung nach sich).
 >
-> **Status**: Phase 0-4 CODE/DEF/COMPILES/BOOT belegt. Phase 5-6 (Gameplay-Schichten) OPEN. `runtime_test.sh`: PASS (35+ Summaries, 0 Failures).
+> **Status**: Phase 0-4 CODE/DEF/COMPILES/BOOT belegt. Phase 5-6 (Gameplay-Schichten) OPEN. `runtime_test.sh`: PASS (44 Suites, 0 Failures, 0 Contradictions). SSOT: `scripts/parser_config.json`.
 
 ---
 
@@ -90,6 +90,9 @@ Each package contains: `Source/` (C#), `Defs/` (XML), `Patches/` (Harmony patch 
 - **Evidence tiers**: `CODE` (written) → `DEF` (defined) → `COMPILES` → `BOOT` (loads) → `LIVE` (runtime verified). Claim only what's proven.
 - **XML Defs**: RimWorld 1.6 structure. Invalid 1.6 fields blocked: `surfacePosition`, `defaultIngredientCount`, `showInInterface`.
 - **Load order**: Core → DLCs → Harmony → 01 Foundation → 02 Survival → 03 Scavenger → 04 Economy → 05 Infected
+- **Test envelope**: All test log lines MUST use `[Rimconemy.<Pkg>]` prefix. Bare `[SuiteName]` prefixes are envelope drift — caught by AntiSlopGuard Pattern 5 (WARNING). Summary format: `<Suite>: N passed, M failed (min=E).` Individual failures: `TEST-FAIL <Suite> <name> @<file>:<line>`. Environment-blocked suites use `TEST-DEFERRED <reason>` via `TestSuite.Defer()`.
+- **Deskriptive Wahrheit**: The gate is descriptive, never prescriptive. It checks internal contradictions (K1-K6), not expectations about the world. `min=` is a lower execution bound, not a correctness claim. `TEST-DEFERRED` counts as "nicht geprüft" — never a bug. No test may induce a failure that is then "fixed" in production (phantom bugs verboten).
+- **Swallow-Verbot**: Test failures that use `Log.Warning` instead of `Log.Error`, `try/catch` without rethrow/Log.Error, `--skip` flags, or magic-number summaries are gate-fails. Use `TestSuite` harness in Foundation for canonical format.
 
 ---
 
@@ -100,7 +103,7 @@ Each package contains: `Source/` (C#), `Defs/` (XML), `Patches/` (Harmony patch 
 - **Build requires env vars**: `RimWorldManagedPath` and `HarmonyAssembliesPath` must point to valid DLLs. `dotnet build` fails fast with clear errors if missing.
 - **Runtime test expects fresh Player.log**: It signatures the log before/after start. If log doesn't change, gate fails.
 - **Forbidden log patterns**: `Config error in Rimconemy_Campfire`, XML errors for removed 1.6 fields, `CA9011A3` (abstract Need), Sandbox/Market/Patch errors — all cause runtime gate failure.
-- **Required regression summaries**: 35+ specific "X tests: N passed, 0 failed" lines must appear in Player.log for runtime PASS.
+- **Required regression summaries**: 44 specific "X tests: N passed, 0 failed" patterns defined in `scripts/parser_config.json` (SSOT). Generated dynamically — never hardcoded.
 - **No prebuilt DLLs in repo**: Must build locally before testing.
 - **Harmony Mod required** in RimWorld Mods folder for both build and runtime.
 - **Anomaly + Odyssey DLCs required** for Full Overhaul profile detection.

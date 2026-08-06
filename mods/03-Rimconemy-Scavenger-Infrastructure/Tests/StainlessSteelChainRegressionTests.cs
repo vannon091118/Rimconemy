@@ -158,7 +158,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                     // Use reflection to access basePowerConsumption field
                     var powerConsumptionField = power.GetType().GetField("basePowerConsumption", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                     var powerConsumption = powerConsumptionField != null ? (float)powerConsumptionField.GetValue(power) : 0f;
-                    Log.Message("[StainlessSteelChainRegression] S7 Tower power consumption = " + powerConsumption);
+                    Log.Message("[Rimconemy.ScavengerInfrastructure] S7 Tower power consumption = " + powerConsumption);
                     AssertTrue(powerConsumption == 150f,
                         "S7.Tower power consumption is 150W");
                 }
@@ -179,12 +179,12 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 bool hasParts = def.costList.Any(c => c.thingDef != null && c.thingDef.defName == "Rimconemy_MachineParts" && c.count == 4);
                 bool hasSteel = def.costList.Any(c => c.thingDef != null && c.thingDef.defName == "Steel" && c.count == 20);
                 bool hasWC = def.costList.Any(c => c.thingDef != null && c.thingDef.defName == "Rimconemy_WeaponComponent" && c.count >= 1);
-                Log.Message("[StainlessSteelChainRegression] S8 Tower costList count=" + def.costList.Count +
+                Log.Message("[Rimconemy.ScavengerInfrastructure] S8 Tower costList count=" + def.costList.Count +
                     ", hasSS=" + hasSS + ", hasParts=" + hasParts + ", hasSteel=" + hasSteel + ", hasWC=" + hasWC);
-                if (!hasSS) Log.Error("[StainlessSteelChainRegression] S8.Tower cost includes 30 StainlessSteel - MISSING");
-                if (!hasParts) Log.Error("[StainlessSteelChainRegression] S8.Tower cost includes 4 MachineParts - MISSING");
-                if (!hasSteel) Log.Error("[StainlessSteelChainRegression] S8.Tower cost includes 20 Steel - MISSING");
-                if (!hasWC) Log.Error("[StainlessSteelChainRegression] S8.Tower cost includes WeaponComponent - MISSING (D3-Harmonisierung)");
+                if (!hasSS) Log.Error("[Rimconemy.ScavengerInfrastructure] S8.Tower cost includes 30 StainlessSteel - MISSING");
+                if (!hasParts) Log.Error("[Rimconemy.ScavengerInfrastructure] S8.Tower cost includes 4 MachineParts - MISSING");
+                if (!hasSteel) Log.Error("[Rimconemy.ScavengerInfrastructure] S8.Tower cost includes 20 Steel - MISSING");
+                if (!hasWC) Log.Error("[Rimconemy.ScavengerInfrastructure] S8.Tower cost includes WeaponComponent - MISSING (D3-Harmonisierung)");
                 AssertTrue(hasSS, "S8.Tower cost includes 30 StainlessSteel");
                 AssertTrue(hasParts, "S8.Tower cost includes 4 MachineParts");
                 AssertTrue(hasSteel, "S8.Tower cost includes 20 Steel");
@@ -192,7 +192,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             }
             else
             {
-                Log.Error("[StainlessSteelChainRegression] S8.Tower costList check failed - def or costList null");
+                Log.Error("[Rimconemy.ScavengerInfrastructure] S8.Tower costList check failed - def or costList null");
                 AssertTrue(false, "S8.Tower costList check failed");
             }
         }
@@ -202,12 +202,12 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             if (condition)
             {
                 _passed++;
-                Log.Message("[StainlessSteelChainRegression] PASS: " + label);
+                Log.Message("[Rimconemy.ScavengerInfrastructure] PASS: " + label);
             }
             else
             {
                 _failed++;
-                Log.Error("[StainlessSteelChainRegression] FAIL: " + label);
+                Log.Error("[Rimconemy.ScavengerInfrastructure] FAIL: " + label);
             }
         }
 
@@ -217,7 +217,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             var recipe = DefDatabase<RecipeDef>.GetNamedSilentFail("Rimconemy_MakeStainlessSteel");
             if (recipe == null)
             {
-                Log.Message("[StainlessSteelChainRegression] S9: MakeStainlessSteel not loaded yet; deferred.");
+                Log.Message("[Rimconemy.ScavengerInfrastructure] S9: MakeStainlessSteel not loaded yet; deferred.");
                 return;
             }
             AssertTrue(recipe.researchPrerequisites != null && recipe.researchPrerequisites.Count > 0,

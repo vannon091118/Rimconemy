@@ -125,13 +125,13 @@ namespace Rimconemy.InfectedAutomation.Tests
         private static void AssertTrue(bool condition, string label)
         {
             if (condition) _passed++;
-            else { _failed++; Log.Error("[ThreatSnapshotBridgeRegressionTests] " + label); }
+            else { _failed++; Log.Error("[Rimconemy.InfectedAutomation] " + label); }
         }
         private static void AssertFalse(bool condition, string label) { AssertTrue(!condition, label); }
         private static void AssertNull<T>(T value, string label) where T : class
         {
             if (value == null) _passed++;
-            else { _failed++; Log.Error("[ThreatSnapshotBridgeRegressionTests] " + label + " (expected null, got " + value + ")"); }
+            else { _failed++; Log.Error("[Rimconemy.InfectedAutomation] " + label + " (expected null, got " + value + ")"); }
         }
         private static void AssertEqual<T>(T expected, T actual, string label)
         {
@@ -139,7 +139,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             else
             {
                 _failed++;
-                Log.Error("[ThreatSnapshotBridgeRegressionTests] " + label + ": expected " + expected + ", got " + actual);
+                Log.Error("[Rimconemy.InfectedAutomation] " + label + ": expected " + expected + ", got " + actual);
             }
         }
     }

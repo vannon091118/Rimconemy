@@ -218,7 +218,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
         private static void AssertTrue(bool condition, string label)
         {
             if (condition) _passed++;
-            else { _failed++; Log.Error("[CoalChainRegression] " + label); }
+            else { _failed++; Log.Error("[Rimconemy.ScavengerInfrastructure] " + label); }
         }
     }
 }
