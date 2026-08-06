@@ -74,7 +74,8 @@
       "abstract class",
       "Exception loading def from file",
       "marketSnapshot",
-      "is not a valid value for Verse.ThingCategory"
+      "is not a valid value for Verse.ThingCategory",
+      "non-power-of-two dimensions"
     ]
   },
 
