@@ -3,14 +3,14 @@
 // Owner: Infected & Automation (Package 05).
 // Phase A — P6-PROGRESS §12.
 //
-// Framework: static RunAll(). Pattern matches the package's existing
-// regression suites (StoryStateRegressionTests etc.). Failure-mode: log
-// + counter, do NOT throw — keep Bootstrap-Crash-Safe.
+// Framework: static RunAll() using Foundation.Tests.TestSuite harness.
+// Failure-mode: Log.Error via TestSuite.Check() — do NOT throw,
+// keep Bootstrap-Crash-Safe.
 //
 // Coverage-target: T1-T16 from spec. Tasks 2-6 implement the missing
-// tests; this file is the home for them. Tests added by later tasks
-// wired into the same RunAll() switch.
+// tests; this file is the home for them.
 
+using Rimconemy.Foundation.Tests;
 using RimWorld;
 using Verse;
 
@@ -18,62 +18,47 @@ namespace Rimconemy.InfectedAutomation.Tests
 {
     public static class PopulationLedgerRegressionTests
     {
-        private static int _passed;
-        private static int _failed;
+        private const int MinExpected = 24;
 
         public static void RunAll()
         {
-            _passed = 0;
-            _failed = 0;
-            string firstFailure = null;
+            var ts = new TestSuite("InfectedAutomation", "PopulationLedger regression tests (Phase A subset)");
 
-            void Check(bool ok, string name)
-            {
-                if (ok) { _passed++; return; }
-                _failed++;
-                if (firstFailure == null) firstFailure = name;
-                Log.Warning("[Rimconemy.InfectedAutomation] PopulationLedger test FAILED: " + name
-                    + " | file=PopulationLedgerRegressionTests.cs | condition returned false");
-            }
+            // T1 (Schema-Bump), T2 (Scribe), T15 (Total)
+            ts.Check(TestSchemaVersionIsOne(),                              "T1.SchemaVersionIsOne");
+            ts.Check(TestProfileIdDefaultsToSurvivalInDefaultCtor(),       "T1b.ProfileIdDefaultsToSurvivalInDefaultCtor");
+            ts.Check(TestScribeRoundTripPreservesFields(),                 "T2.ScribeRoundTripPreservesFields");
+            ts.Check(TestGetTotalLiveCountSumsHumanoidAndAnimal(),         "T15.GetTotalLiveCountSumsHumanoidAndAnimal");
+            ts.Check(TestHumanoidOnlyCount(),                              "T15b.HumanoidOnlyCount");
+            ts.Check(TestAnimalOnlyCount(),                                "T15c.AnimalOnlyCount");
+            ts.Check(TestEmptyLedgerHasZeroTotalLiveCount(),               "T15d.EmptyLedgerHasZeroTotalLiveCount");
 
-            // T1 (Schema-Bump), T2 (Scribe), T15 (Total) kommen aus Task 2
-            Check(TestSchemaVersionIsOne(),                              "T1.SchemaVersionIsOne");
-            Check(TestProfileIdDefaultsToSurvivalInDefaultCtor(),       "T1b.ProfileIdDefaultsToSurvivalInDefaultCtor");
-            Check(TestScribeRoundTripPreservesFields(),                 "T2.ScribeRoundTripPreservesFields");
-            Check(TestGetTotalLiveCountSumsHumanoidAndAnimal(),         "T15.GetTotalLiveCountSumsHumanoidAndAnimal");
-            Check(TestHumanoidOnlyCount(),                              "T15b.HumanoidOnlyCount");
-            Check(TestAnimalOnlyCount(),                                "T15c.AnimalOnlyCount");
-            Check(TestEmptyLedgerHasZeroTotalLiveCount(),               "T15d.EmptyLedgerHasZeroTotalLiveCount");
+            // T3-T5 RegisterKill
+            ts.Check(TestRegisterKillNullPawnNoOp(),                        "T3.RegisterKillNullPawnNoOp");
+            ts.Check(TestRegisterKillHumanoidPawnDecrementsHumanoid(),     "T4.RegisterKillHumanoidPawnDecrementsHumanoid");
+            ts.Check(TestRegisterKillAnimalPawnDecrementsAnimal(),         "T5.RegisterKillAnimalPawnDecrementsAnimal");
+            ts.Check(TestRegisterKillTwiceSameIdIsIdempotent(),            "T4b.RegisterKillTwiceSameIdIsIdempotent");
 
-            // T3-T5 RegisterKill (Task 3)
-            Check(TestRegisterKillNullPawnNoOp(),                        "T3.RegisterKillNullPawnNoOp");
-            Check(TestRegisterKillHumanoidPawnDecrementsHumanoid(),     "T4.RegisterKillHumanoidPawnDecrementsHumanoid");
-            Check(TestRegisterKillAnimalPawnDecrementsAnimal(),         "T5.RegisterKillAnimalPawnDecrementsAnimal");
-            Check(TestRegisterKillTwiceSameIdIsIdempotent(),            "T4b.RegisterKillTwiceSameIdIsIdempotent");
+            // T6-T9 Daily-Growth + Revenge-Quote + Reset
+            ts.Check(TestApplyDailyGrowthTickSurvivalBaseline(),           "T6.ApplyDailyGrowthTickSurvivalBaseline");
+            ts.Check(TestApplyDailyGrowthTickProfileVariance30Days(),      "T7.ApplyDailyGrowthTickProfileVariance30Days");
+            ts.Check(TestGetRevengeQuotaSurvival(),                        "T8.GetRevengeQuotaSurvival");
+            ts.Check(TestGetRevengeQuotaClippedByFreeBudget(),             "T9.GetRevengeQuotaClippedByFreeBudget");
+            ts.Check(TestResetDailyCountersResetsRecentOnly(),             "T9b.ResetDailyCountersResetsRecentOnly");
 
-            // T6-T9 Daily-Growth + Revenge-Quote + Reset (Task 4)
-            Check(TestApplyDailyGrowthTickSurvivalBaseline(),           "T6.ApplyDailyGrowthTickSurvivalBaseline");
-            Check(TestApplyDailyGrowthTickProfileVariance30Days(),      "T7.ApplyDailyGrowthTickProfileVariance30Days");
-            Check(TestGetRevengeQuotaSurvival(),                        "T8.GetRevengeQuotaSurvival");
-            Check(TestGetRevengeQuotaClippedByFreeBudget(),             "T9.GetRevengeQuotaClippedByFreeBudget");
-            Check(TestResetDailyCountersResetsRecentOnly(),             "T9b.ResetDailyCountersResetsRecentOnly");
+            // T11/T12/T16 Reconciler
+            ts.Check(TestReconcilerCountSurvivingInfectedBasic(),           "T11.ReconcilerCountSurvivingInfectedBasic");
+            ts.Check(TestReconcilerExcludesDeadInfected(),                 "T11b.ReconcilerExcludesDeadInfected");
+            ts.Check(TestReconcilerExcludesNonHiddenFaction(),             "T12.ReconcilerExcludesNonHiddenFaction");
+            ts.Check(TestReconcilerApplyCountsReplacesLedger(),            "T11c.ReconcilerApplyCountsReplacesLedger");
+            ts.Check(TestReconcilerAnimalDeathDoesNotAffectHumanoid(),     "T16.ReconcilerAnimalDeathDoesNotAffectHumanoid");
 
-            // T11/T12/T16 Reconciler (Task 5)
-            Check(TestReconcilerCountSurvivingInfectedBasic(),           "T11.ReconcilerCountSurvivingInfectedBasic");
-            Check(TestReconcilerExcludesDeadInfected(),                 "T11b.ReconcilerExcludesDeadInfected");
-            Check(TestReconcilerExcludesNonHiddenFaction(),             "T12.ReconcilerExcludesNonHiddenFaction");
-            Check(TestReconcilerApplyCountsReplacesLedger(),            "T11c.ReconcilerApplyCountsReplacesLedger");
-            Check(TestReconcilerAnimalDeathDoesNotAffectHumanoid(),     "T16.ReconcilerAnimalDeathDoesNotAffectHumanoid");
+            // T13/T14 NoteInoculation
+            ts.Check(TestNoteInoculationStampsTickAndIncrements(),         "T13.NoteInoculationStampsTickAndIncrements");
+            ts.Check(TestNoteInoculationNullKindDefNoOp(),                 "T13b.NoteInoculationNullKindDefNoOp");
+            ts.Check(TestInoculationCooldownHonorsProfile(),               "T14.InoculationCooldownHonorsProfile");
 
-            // T13/T14 NoteInoculation (Task 6)
-            Check(TestNoteInoculationStampsTickAndIncrements(),         "T13.NoteInoculationStampsTickAndIncrements");
-            Check(TestNoteInoculationNullKindDefNoOp(),                 "T13b.NoteInoculationNullKindDefNoOp");
-            Check(TestInoculationCooldownHonorsProfile(),               "T14.InoculationCooldownHonorsProfile");
-
-            Log.Message(
-                "[Rimconemy.InfectedAutomation] PopulationLedger regression tests (Phase A subset): "
-                + _passed + " passed, " + _failed + " failed."
-                + (firstFailure != null ? " First failure: " + firstFailure : ""));
+            ts.RunSummary(MinExpected);
         }
 
         // ── T1 Schema-Bump / Schema-Version ─────────────────
@@ -92,10 +77,6 @@ namespace Rimconemy.InfectedAutomation.Tests
         // ── T2 Scribe Roundtrip ──────────────────────────────
         private static bool TestScribeRoundTripPreservesFields()
         {
-            // The ScribeRoundTripHelper.RoundTrip() mutates the instance
-            // (save → load). It writes all 10 fields through the same
-            // Scribe_Values.Look pipeline that ExposeData uses, then loads
-            // them back. If preserved, all values are equal afterwards.
             var ledger = new Population.PopulationLedger
             {
                 HumanoidLiveCount = 7,
@@ -105,7 +86,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 RecentKillsToday = 2,
                 DayIndexSinceStart = 4,
                 LastDayTick = 240_000L,
-                ProfileId = "Collapse",  // != Default ("Survival") so Scribe-Persistenz wirklich getestet
+                ProfileId = "Collapse",
                 CumulativeInoculations = 1,
                 LastInoculationTick = 100_000L,
             };
@@ -168,7 +149,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 && ledger.GetAnimalLiveCount() == 0;
         }
 
-        // ── T3 RegisterKill null-Pawn (Task 3) ─────────────────────
+        // ── T3 RegisterKill null-Pawn ─────────────────────
         private static bool TestRegisterKillNullPawnNoOp()
         {
             var ledger = new Population.PopulationLedger
@@ -178,7 +159,6 @@ namespace Rimconemy.InfectedAutomation.Tests
                 RecentKillsToday = 3,
             };
             ledger.RegisterKill(null);
-            // All counters must remain unchanged.
             return ledger.HumanoidLiveCount == 5
                 && ledger.AnimalLiveCount == 0
                 && ledger.GetCumulativeKills() == 3
@@ -211,8 +191,8 @@ namespace Rimconemy.InfectedAutomation.Tests
                 RecentKillsToday = 0,
             };
             ledger.RegisterKillForTest("animal-pawn-1", isHumanlike: false);
-            return ledger.HumanoidLiveCount == 5      // human untouched
-                && ledger.AnimalLiveCount == 2         // animal decremented
+            return ledger.HumanoidLiveCount == 5
+                && ledger.AnimalLiveCount == 2
                 && ledger.GetCumulativeKills() == 1
                 && ledger.GetRecentKillsToday() == 1;
         }
@@ -227,7 +207,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             };
             ledger.RegisterKillForTest("repeat-id", isHumanlike: true);
             ledger.RegisterKillForTest("repeat-id", isHumanlike: true);
-            return ledger.HumanoidLiveCount == 4      // decremented only once
+            return ledger.HumanoidLiveCount == 4
                 && ledger.GetCumulativeKills() == 1
                 && ledger.GetRecentKillsToday() == 1;
         }
@@ -242,7 +222,6 @@ namespace Rimconemy.InfectedAutomation.Tests
                 ProfileId = Population.PopulationProfileMultipliers.ProfileSurvival,
             };
             int newCap = ledger.ApplyDailyGrowthTick();
-            // Round(10 * 1.15) = Round(11.5) = 12? No: 1.15f=1.1499999…, Round(11.4999…)=11. DayIndex++ = 1.
             return newCap == 11
                 && ledger.Cap == 11
                 && ledger.DayIndexSinceStart == 1;
@@ -254,7 +233,6 @@ namespace Rimconemy.InfectedAutomation.Tests
             int refuge = SimulateGrowth("Refuge");
             int survival = SimulateGrowth("Survival");
             int collapse = SimulateGrowth("Collapse");
-            // Harder profile grows faster → Collapse > Survival > Refuge.
             return refuge < survival && survival < collapse;
         }
 
@@ -279,7 +257,6 @@ namespace Rimconemy.InfectedAutomation.Tests
                 HumanoidLiveCount = 90,
                 ProfileId = Population.PopulationProfileMultipliers.ProfileSurvival,
             };
-            // Round(10 * 0.7) = Round(7.0) = 7; freeBudget = 100-90 = 10. min(10,7) = 7.
             return ledger.GetRevengeQuota(100) == 7;
         }
 
@@ -293,7 +270,6 @@ namespace Rimconemy.InfectedAutomation.Tests
                 HumanoidLiveCount = 5,
                 ProfileId = Population.PopulationProfileMultipliers.ProfileCollapse,
             };
-            // floor(100 * 0.9) = 90; freeBudget = 5-5 = 0. min(90,0) = 0.
             return ledger.GetRevengeQuota(5) == 0;
         }
 
@@ -354,7 +330,7 @@ namespace Rimconemy.InfectedAutomation.Tests
         {
             var ledger = new Population.PopulationLedger
             {
-                HumanoidLiveCount = 99,  // stale, will be replaced
+                HumanoidLiveCount = 99,
                 AnimalLiveCount = 33,
             };
             Population.ReconciliationLogic.ApplyCounts(ledger, humanoid: 7, animal: 3);
@@ -363,9 +339,6 @@ namespace Rimconemy.InfectedAutomation.Tests
 
         private static bool TestReconcilerAnimalDeathDoesNotAffectHumanoid()
         {
-            // Phase-A spec §6 invariant: animal-only kill/reconciliation
-            // never touches HumanoidLiveCount. We model that by reconciling
-            // a snapshot list containing only animal pawns; humanoid stays.
             var ledger = new Population.PopulationLedger
             {
                 HumanoidLiveCount = 5,
@@ -377,10 +350,8 @@ namespace Rimconemy.InfectedAutomation.Tests
             };
             Population.ReconciliationLogic.CountSurvivingInfected(snapshots, out int humanoid, out int animal);
             Population.ReconciliationLogic.ApplyCounts(ledger, humanoid, animal);
-            return ledger.HumanoidLiveCount == 0  // the ledger tracks only infected; 5 humans (non-infected) drop out
+            return ledger.HumanoidLiveCount == 0
                 && ledger.AnimalLiveCount == 1
-                // important invariant: reconcile() does NOT introduce
-                // noise into RecentKillsToday or CumulativeKills.
                 && ledger.RecentKillsToday == 0
                 && ledger.CumulativeKills == 0;
         }
@@ -398,12 +369,6 @@ namespace Rimconemy.InfectedAutomation.Tests
         }
 
         // ── T13 NoteInoculation stamps tick + increments ───────────
-        // Acceptance criterion: the call must (a) bump CumulativeInoculations
-        // by exactly 1 and (b) NOT throw. The actual stamped tick may be 0L
-        // when the test runs outside an active game session (Static-ctor
-        // regression path); the Production InoculationCooldown gate uses the
-        // timestamp only for an interval comparison, so 0L is acceptable
-        // here and is signalled via "cooldown elapsed" downstream.
         private static bool TestNoteInoculationStampsTickAndIncrements()
         {
             var ledger = new Population.PopulationLedger
@@ -426,23 +391,18 @@ namespace Rimconemy.InfectedAutomation.Tests
             ledger.NoteInoculation(null);
             ledger.NoteInoculation("");
             return ledger.CumulativeInoculations == 2
-                && ledger.LastInoculationTick == 100_000L;  // unchanged
+                && ledger.LastInoculationTick == 100_000L;
         }
 
         // ── T14 Cooldown-Eligibility via profile ────────────────────
         private static bool TestInoculationCooldownHonorsProfile()
         {
-            // Survival profile: 7 days = 420_000 ticks. We simulate
-            // LastInoculationTick = 100_000 and verify a "currentTime" of
-            // 100_000 + 420_000 = 520_000 yields IsCooldownElapsed=true.
-            // Using direct test of the spec formula rather than the
-            // TickManager-driven production path.
             var ledger = new Population.PopulationLedger
             {
                 ProfileId = Population.PopulationProfileMultipliers.ProfileSurvival,
                 LastInoculationTick = 100_000L,
             };
-            const long interval = 60_000L * 7;  // Survival baseline
+            const long interval = 60_000L * 7;
             long now = ledger.LastInoculationTick + interval;
             return (now - ledger.LastInoculationTick) >= interval;
         }

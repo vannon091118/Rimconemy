@@ -297,47 +297,27 @@ runtime_gates() {
   if has_match '\[Rimconemy\.Foundation\] Bootstrap complete\.' "$LOG_PATH"; then pass "Foundation bootstrap complete"; else fail "Foundation bootstrap marker missing"; fi
   if has_match 'Profile detected: FullOverhaul' "$LOG_PATH"; then pass "FullOverhaul profile"; else fail "FullOverhaul profile missing"; fi
   if has_match 'Registry: 5 package\(s\) registered' "$LOG_PATH"; then pass "five packages registered"; else fail "registry did not report five packages"; fi
-  local required_summaries=(
-      'CapabilityGate tests: [0-9]+ passed, 0 failed'
-      'ColonialReader tests: [0-9]+ passed, 0 failed'
-      'CrossPackageState tests: [0-9]+ passed, 0 failed'
-      'EventLog regression tests: [0-9]+ passed, 0 failed'
-      'Profile refresh tests: [0-9]+ passed, 0 failed'
-      'Profile detector dedup tests: [0-9]+ passed, 0 failed'
-      'BioRemap tests: [0-9]+ passed, 0 failed'
-      'NeedMappingService tests: [0-9]+ passed, 0 failed'
-      'DomainXpState tests: [0-9]+ passed, 0 failed'
-      'UnlockService tests: [0-9]+ passed, 0 failed'
-      'BuildingCompletionBridge tests: [0-9]+ passed, 0 failed'
-      'SchemaBump tests: [0-9]+ passed, 0 failed'
-      'ThreatSnapshotBridge regression tests: [0-9]+ passed, 0 failed'
-      'StartEnemies regression tests: [0-9]+ passed, 0 failed'
-      'Canonical layer tests: [0-9]+ passed, 0 failed'
-      'Honest-Banner-Audit tests: [0-9]+/[0-9]+ passed, 0 failed'
-      'CreditsLedger regression tests: [0-9]+ passed, 0 failed'
-      'Market persistence tests: [0-9]+ passed, 0 failed'
-      'StorySelector tests: [0-9]+ passed, 0 failed'
-      'StoryState regression tests: [0-9]+ passed, 0 failed'
-      'TutorialDirector tests: [0-9]+ passed, 0 failed'
-      'PopulationLedger regression tests \(Phase A subset\): [0-9]+ passed, 0 failed'
-      'Revenge-quota flow regression tests: [0-9]+ passed, 0 failed'
-      'HordeManifest tests: [0-9]+ passed, 0 failed'
-      'Building capability tests: [0-9]+ passed, 0 failed'
-      'Building progression regression tests: [0-9]+ passed, 0 failed'
-      'Building progression persistence tests: [0-9]+ passed, 0 failed'
-      'BuildingCore regression tests: [0-9]+ passed, 0 failed'
-      'Building input regression tests: [0-9]+ passed, 0 failed'
-      'Physical transfer regression tests: [0-9]+ passed, 0 failed'
-      'Outpost investment regression tests: [0-9]+ passed, 0 failed'
-      'Building threat regression tests: [0-9]+ passed, 0 failed'
-      'Mechadroid job regression tests: [0-9]+ passed, 0 failed'
-      'CampfireScraps regression tests: [0-9]+ passed, 0 failed'
-      'BauschuttRemapApply tests: [0-9]+ passed, 0 failed'
-      'ArrowTurretBlock tests: [0-9]+ passed, 0 failed'
-      'CoalChain regression tests: [0-9]+ passed, 0 failed'
-      'StainlessSteelChain regression tests: [0-9]+ passed, 0 failed'
-      'PhaseProgress regression tests: [0-9]+ passed, 0 failed'
-    )
+  # ── required_summaries generated from parser_config.json (SSOT) ──
+  local required_summaries=()
+  local config_json="$SCRIPT_DIR/parser_config.json"
+  if [[ -f "$config_json" ]] && command_exists python3; then
+    while IFS= read -r pattern; do
+      [[ -n "$pattern" ]] && required_summaries+=("$pattern")
+    done < <(python3 -c "
+import json, sys
+with open('$config_json') as f:
+    config = json.load(f)
+for suite in config.get('test_suites', {}).get('required', []):
+    pat = suite['pattern']
+    pat = pat.replace('\\\\d+', '[0-9]+')
+    print(pat)
+" 2>/dev/null)
+  fi
+  if [[ ${#required_summaries[@]} -eq 0 ]]; then
+    fail 'Could not generate required_summaries from parser_config.json'
+    return
+  fi
+  pass "required_summaries: ${#required_summaries[@]} patterns loaded from parser_config.json (SSOT)"
     local summary
     for summary in "${required_summaries[@]}"; do
       if has_match "$summary" "$LOG_PATH"; then pass "summary: $summary"; else fail "missing summary: $summary"; fi

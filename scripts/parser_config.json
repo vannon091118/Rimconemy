@@ -39,6 +39,11 @@
       {"package": "02", "pattern": "BuildingCompletionBridge tests: \\d+ passed, 0 failed"},
       {"package": "02", "pattern": "SchemaBump tests: \\d+ passed, 0 failed"},
       {"package": "02", "pattern": "PhaseProgress regression tests: \\d+ passed, 0 failed"},
+      {"package": "02", "pattern": "UnlockExtension tests: \\d+ passed, 0 failed"},
+      {"package": "02", "pattern": "Role mechanics regression tests: \\d+ passed, 0 failed"},
+      {"package": "02", "pattern": "StartState regression tests: \\d+ passed, 0 failed"},
+      {"package": "02", "pattern": "Scenario contract tests: \\d+ passed, 0 failed"},
+      {"package": "02", "pattern": "HungerAmplifier tests: \\d+ passed, 0 failed"},
       {"package": "03", "pattern": "ArrowTurretBlock tests: \\d+ passed, 0 failed"},
       {"package": "03", "pattern": "BauschuttRemapApply tests: \\d+ passed, 0 failed"},
       {"package": "03", "pattern": "BuildingCore regression tests: \\d+ passed, 0 failed"},
@@ -61,8 +66,8 @@
       {"package": "05", "pattern": "Building threat regression tests: \\d+ passed, 0 failed"},
       {"package": "05", "pattern": "Mechadroid job regression tests: \\d+ passed, 0 failed"},
       {"package": "05", "pattern": "StartEnemies regression tests: \\d+ passed, 0 failed"},
-      {"package": "05", "pattern": "Building progression regression tests: \\d+ passed, 0 failed"},
-      {"package": "05", "pattern": "Building progression persistence tests: \\d+ passed, 0 failed"}
+      {"package": "02", "pattern": "Building progression regression tests: \\d+ passed, 0 failed"},
+      {"package": "02", "pattern": "Building progression persistence tests: \\d+ passed, 0 failed"}
     ]
   },
 

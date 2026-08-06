@@ -9,20 +9,26 @@ Extrahiert aus dem RimWorld Player.log eine übersichtliche Debug-Übersicht:
   - Cross-Reference-Fehler (vanilla + Rimconemy)
   - Harmony/Patch-Status
   - Nicht-Rimconemy Fehler (NullReference, XML error, etc.)
+  - Completeness check against parser_config.json (SSOT)
 
 Usage:
   python3 scripts/parse_runtime_log.py [--log PATH] [--out PATH] [--json]
+  python3 scripts/parse_runtime_log.py --focused 05
 
 Output:
   --print:  Markdown-Tabelle nach stdout (default)
   --json:   JSON nach stdout
+  --focused: Nur Suiten eines Pakets prüfen (01-05)
   --out:    Datei schreiben (default: docs/runtime-parsed/<timestamp>.md)
 """
 
 import re, sys, json, os
 from datetime import datetime
+from pathlib import Path
 
 # ── Konfiguration ──────────────────────────────────────────────
+SCRIPT_DIR = Path(__file__).resolve().parent
+DEFAULT_CONFIG = SCRIPT_DIR / "parser_config.json"
 DEFAULT_LOG = os.path.expanduser(
     "~/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Player.log"
 )
@@ -63,6 +69,7 @@ def parse_player_log(path: str) -> dict:
         "harmony_status": [],
         "vanilla_errors": [],
         "packages": {},
+        "_raw_log": "".join(lines),  # cached for completeness check
     }
 
     pending_failures = []
@@ -272,18 +279,108 @@ def format_json(result: dict) -> str:
     return json.dumps(result, indent=2, default=str)
 
 
+def load_config(path: str) -> dict:
+    """Load parser_config.json as SSOT."""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        return {"_error": str(e)}
+
+
+def check_completeness(parsed: dict, config: dict, focused_pkg: str = None) -> dict:
+    """Cross-check parsed log against parser_config.json SSOT.
+    Directly greps the raw log text for each config pattern — same
+    approach as runtime_test.sh, ensuring consistent results.
+    Returns dict with: missing_suites, config_count, parsed_count, ok.
+    """
+    if "_error" in config:
+        return {"missing_suites": [], "config_count": 0, "parsed_count": 0,
+                "ok": False, "error": config["_error"]}
+
+    suite_entries = config.get("test_suites", {}).get("required", [])
+    parsed_suites = parsed.get("test_suites", [])
+
+    # Use cached raw log text from parser (avoids double I/O)
+    log_text = parsed.get("_raw_log", "")
+
+    missing = []
+    for entry in suite_entries:
+        pkg = entry.get("package", "??")
+        if focused_pkg and pkg != focused_pkg:
+            continue
+        pattern = entry.get("pattern", "")
+        # Convert \\d+ to [0-9]+ for grep-compatible matching (same as runtime_test.sh)
+        grep_pattern = pattern.replace("\\d+", "[0-9]+")
+        if not re.search(grep_pattern, log_text):
+            missing.append({"package": pkg, "pattern": pattern})
+
+    config_count = len([e for e in suite_entries
+                        if not focused_pkg or e.get("package") == focused_pkg])
+
+    return {
+        "missing_suites": missing,
+        "config_count": config_count,
+        "parsed_count": len(parsed_suites),
+        "ok": len(missing) == 0,
+    }
+
+
+def format_completeness_markdown(completeness: dict) -> str:
+    """Format the completeness check as markdown table."""
+    out = []
+    out.append("## 📋 Completeness vs SSOT (parser_config.json)")
+
+    if "error" in completeness:
+        out.append(f"⚠️ Config load error: {completeness['error']}")
+        out.append("")
+        return "\n".join(out)
+
+    config_count = completeness["config_count"]
+    parsed_count = completeness["parsed_count"]
+    missing = completeness["missing_suites"]
+
+    icon = "✅" if completeness["ok"] else "❌"
+    out.append(f"**{icon} Completeness:** {parsed_count}/{config_count} suites found in log")
+
+    if missing:
+        out.append("")
+        out.append("### ❌ Missing Suites (in config but not in log)")
+        out.append("| Package | Pattern |")
+        out.append("|---|---|")
+        for m in missing:
+            out.append(f"| {m['package']} | `{m['pattern'][:100]}` |")
+    else:
+        out.append("")
+        out.append("✅ All configured suites present in log.")
+
+    out.append("")
+    return "\n".join(out)
+
+
 def main():
     import argparse
     p = argparse.ArgumentParser(description="Rimconemy Player.log Parser")
     p.add_argument("--log", default=DEFAULT_LOG, help="Path to Player.log")
+    p.add_argument("--config", default=str(DEFAULT_CONFIG), help="Path to parser_config.json")
     p.add_argument("--out", default=None, help="Output file")
     p.add_argument("--json", action="store_true", help="Output as JSON")
     p.add_argument("--print", action="store_true", help="Print to stdout")
+    p.add_argument("--focused", default=None, choices=["01","02","03","04","05"],
+                   help="Only check suites for this package")
     args = p.parse_args()
 
     result = parse_player_log(args.log)
+    config = load_config(args.config)
+    completeness = check_completeness(result, config, args.focused)
+    result["completeness"] = completeness
 
-    output = format_json(result) if args.json else format_markdown(result)
+    if args.json:
+        output = format_json(result)
+    else:
+        md = format_markdown(result)
+        cm = format_completeness_markdown(completeness)
+        output = md + "\n" + cm
 
     if args.out:
         outpath = args.out

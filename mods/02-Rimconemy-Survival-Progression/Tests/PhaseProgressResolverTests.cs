@@ -14,7 +14,7 @@ namespace Rimconemy.SurvivalProgression.Tests
     /// </summary>
     public static class PhaseProgressResolverTests
     {
-        public const string TestGroup = "PhaseProgress";
+        public const string TestGroup = "Rimconemy.SurvivalProgression";
 
         public static int RunAll()
         {
@@ -28,18 +28,18 @@ namespace Rimconemy.SurvivalProgression.Tests
                 var snap = PhaseProgressResolver.Resolve(null);
                 if (snap == null)
                 {
-                    Log.Error("[PhaseProgress] FAIL: Resolve(null) returned null");
+                    Log.Error("[Rimconemy.SurvivalProgression] PhaseProgress FAIL: Resolve(null) returned null");
                     failures++;
                 }
                 else if (snap.EmptyReason == null || snap.TotalMilestonesAcrossPhases <= 0)
                 {
-                    Log.Error("[PhaseProgress] FAIL: Resolve(null) must set EmptyReason with a positive milestone count");
+                    Log.Error("[Rimconemy.SurvivalProgression] PhaseProgress FAIL: Resolve(null) must set EmptyReason with a positive milestone count");
                     failures++;
                 }
             }
             catch (Exception ex)
             {
-                Log.Error("[PhaseProgress] FAIL: Resolve(null) threw: " + ex.GetType().Name + ": " + ex.Message);
+                Log.Error("[Rimconemy.SurvivalProgression] PhaseProgress FAIL: Resolve(null) threw: " + ex.GetType().Name + ": " + ex.Message);
                 failures++;
             }
 
@@ -48,7 +48,7 @@ namespace Rimconemy.SurvivalProgression.Tests
             int phaseCount = Enum.GetValues(typeof(PhaseId)).Length;
             if (phaseCount != 7)
             {
-                Log.Error("[PhaseProgress] FAIL: expected 7 PhaseId entries (None + 6 phases), got " + phaseCount);
+                Log.Error("[Rimconemy.SurvivalProgression] PhaseProgress FAIL: expected 7 PhaseId entries (None + 6 phases), got " + phaseCount);
                 failures++;
             }
 
@@ -72,23 +72,23 @@ namespace Rimconemy.SurvivalProgression.Tests
                 }
                 if (present == 0)
                 {
-                    Log.Error("[PhaseProgress] FAIL: no referenced ThingDefs resolved — DefDatabase may not be initialised yet");
+                    Log.Error("[Rimconemy.SurvivalProgression] PhaseProgress FAIL: no referenced ThingDefs resolved — DefDatabase may not be initialised yet");
                     failures++;
                 }
                 else
                 {
-                    Log.Message("[PhaseProgress] Def SSOT: " + present + "/" + refs.Length + " referenced ThingDefs resolved");
+                    Log.Message("[Rimconemy.SurvivalProgression] PhaseProgress Def SSOT: " + present + "/" + refs.Length + " referenced ThingDefs resolved");
                 }
             }
             catch (Exception ex)
             {
-                Log.Error("[PhaseProgress] FAIL: Def SSOT probe threw: " + ex.Message);
+                Log.Error("[Rimconemy.SurvivalProgression] PhaseProgress FAIL: Def SSOT probe threw: " + ex.Message);
                 failures++;
             }
 
             int passed = probes - failures;
             Log.Message(string.Format(
-                "[PhaseProgress] PhaseProgress regression tests: {0} passed, {1} failed",
+                "[Rimconemy.SurvivalProgression] PhaseProgress regression tests: {0} passed, {1} failed",
                 passed, failures));
 
             return failures;
