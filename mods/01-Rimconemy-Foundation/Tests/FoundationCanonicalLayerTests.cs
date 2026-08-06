@@ -111,7 +111,7 @@ namespace Rimconemy.Foundation.Tests
 
             Log.Message(
                 "[Rimconemy.Foundation] Canonical layer tests: " + passed + " passed, " + failed +
-                " failed (expected=" + ExpectedPassCount + ")." +
+                " failed (min=" + ExpectedPassCount + ")." +
                 (firstFailure == null ? "" : " First failure: " + firstFailure));
             return failed;
         }

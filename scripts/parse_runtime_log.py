@@ -275,6 +275,70 @@ def format_markdown(result: dict) -> str:
     return "\n".join(out)
 
 
+
+def check_conflicts(parsed: dict, log_text: str) -> dict:
+    """Check for contradictions within the runtime evidence (K1-K6).
+    Returns dict with: conflicts (list), ok (bool).
+    These are the only hard FAILs — they detect internal contradictions,
+    never prescribed expectations."""
+    conflicts = []
+
+    # K1: "PatchAll failed" + "Bootstrap complete" → FAIL
+    #   Exclude known non-critical SurvivalProgression BioRemap PostOpen patch
+    #   ("Non-critical; game continues.")
+    patch_lines = [l for l in log_text.split('\n') if re.search(r'PatchAll.*failed|Harmony.*patching exception', l, re.IGNORECASE)]
+    critical_patch_fails = [l for l in patch_lines if 'Non-critical; game continues' not in l]
+    has_bootstrap_complete = parsed.get("bootstrap", {}).get("complete", False)
+    if critical_patch_fails and has_bootstrap_complete:
+        conflicts.append({"id": "K1", "msg": f"Critical patch-failure ({len(critical_patch_fails)} line(s)) + Bootstrap complete — contradiction"})
+
+    # K2: "0 failed" in Summary + TEST-FAIL lines exist → FAIL
+    test_fail_lines = [l for l in log_text.split('\n') if 'TEST-FAIL' in l and '[Rimconemy.' in l]
+    suites_with_zero_failed = [s for s in parsed.get("test_suites", []) if s["failed"] == 0]
+    if test_fail_lines and suites_with_zero_failed:
+        conflicts.append({"id": "K2", "msg": f"TEST-FAIL lines ({len(test_fail_lines)}) exist but summaries claim 0 failed"})
+
+    # K3: Duplicate suite summaries (same name, different packages)
+    seen = {}
+    for s in parsed.get("test_suites", []):
+        name = s["suite"]
+        if name in seen:
+            conflicts.append({"id": "K3", "msg": f"Duplicate suite: '{name}' in {seen[name]} and {s['package']}"})
+        seen[name] = s["package"]
+
+    # K5: Suite not complete (no summary, no TEST-DEFERRED)
+    has_deferred = 'TEST-DEFERRED' in log_text
+    if not parsed.get("test_suites") and not has_deferred and parsed.get("rimconemy_lines", 0) > 0:
+        conflicts.append({"id": "K5", "msg": "Rimconemy lines present but no suite summaries or TEST-DEFERRED found"})
+
+    # K6: TEST-FAIL before any suite summary
+    first_summary_idx = -1
+    for i, line in enumerate(log_text.split('\n')):
+        if 'tests:' in line and 'passed' in line and 'failed' in line and '[Rimconemy.' in line:
+            first_summary_idx = i
+            break
+    for i, line in enumerate(log_text.split('\n')):
+        if 'TEST-FAIL' in line and '[Rimconemy.' in line:
+            if first_summary_idx == -1 or i < first_summary_idx:
+                conflicts.append({"id": "K6", "msg": f"TEST-FAIL before first suite summary at line {i+1}"})
+                break
+
+    return {"conflicts": conflicts, "ok": len(conflicts) == 0}
+
+
+def format_conflicts_markdown(conflicts_result: dict) -> str:
+    """Format conflict check results as markdown."""
+    out = []
+    out.append("## ⚠️ Conflict Checks (K1-K6)")
+    if conflicts_result["ok"]:
+        out.append("✅ No internal contradictions detected.")
+    else:
+        out.append("❌ Contradictions found in runtime evidence:")
+        for c in conflicts_result["conflicts"]:
+            out.append(f"- **{c['id']}**: {c['msg']}")
+    out.append("")
+    return "\n".join(out)
+
 def format_json(result: dict) -> str:
     return json.dumps(result, indent=2, default=str)
 
@@ -374,13 +438,16 @@ def main():
     config = load_config(args.config)
     completeness = check_completeness(result, config, args.focused)
     result["completeness"] = completeness
+    conflicts = check_conflicts(result, result.get("_raw_log", ""))
+    result["conflicts"] = conflicts
 
     if args.json:
         output = format_json(result)
     else:
         md = format_markdown(result)
         cm = format_completeness_markdown(completeness)
-        output = md + "\n" + cm
+        kx = format_conflicts_markdown(conflicts)
+        output = md + "\n" + cm + "\n" + kx
 
     if args.out:
         outpath = args.out

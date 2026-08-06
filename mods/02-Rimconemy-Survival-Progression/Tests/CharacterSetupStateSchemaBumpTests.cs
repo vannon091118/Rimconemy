@@ -80,7 +80,7 @@ namespace Rimconemy.SurvivalProgression.Tests
 
             Log.Message(
                 "[Rimconemy.SurvivalProgression] SchemaBump tests: " + passed + " passed, " +
-                failed + " failed (expected=" + ExpectedPassCount + ")." +
+                failed + " failed (min=" + ExpectedPassCount + ")." +
                 (firstFailure == null ? "" : " First failure: " + firstFailure));
             return failed;
         }

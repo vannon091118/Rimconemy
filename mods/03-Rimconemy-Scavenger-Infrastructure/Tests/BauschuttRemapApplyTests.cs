@@ -66,7 +66,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
 
             Log.Message(
                 "[Rimconemy.ScavengerInfrastructure] BauschuttRemapApply tests: " +
-                passed + " passed, " + failed + " failed (expected=" + ExpectedPassCount + ")." +
+                passed + " passed, " + failed + " failed (min=" + ExpectedPassCount + ")." +
                 (firstFailure == null ? "" : " First failure: " + firstFailure));
             return failed;
         }

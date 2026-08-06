@@ -257,6 +257,39 @@ namespace Rimconemy.Foundation.Tests
                     }
                 }
             }
+
+            // Pattern 5: Envelope-Lint — strings starting with '[' but NOT '[Rimconemy.'
+            //   PhaseProgress used [PhaseProgress] instead of [Rimconemy.SurvivalProgression]
+            //   until 2026-08-07. This lint catches any similar envelope drift.
+            //   Only scanned in test classes (isTestClass guard at ScanType level).
+            foreach (var instr in body.Instructions)
+            {
+                if (instr.OpCode != OpCodes.Ldstr) continue;
+                if (instr.Operand is string s && s.Length > 1 && s[0] == '[')
+                {
+                    // Exempt: [Rimconemy.*], [0-9], [Test], [DEBUG], summary keys
+                    if (s.StartsWith("[Rimconemy.")) continue;
+                    if (s.StartsWith("[0-9]") || s.StartsWith("[Test]") || s.StartsWith("[DEBUG]")) continue;
+                    if (s.StartsWith("[CampfireScrapsRegression]") || s.StartsWith("[BuildingCoreRegression]")
+                        || s.StartsWith("[CoalChainRegression]") || s.StartsWith("[StainlessSteelChainRegression]")
+                        || s.StartsWith("[GameOverPendingQueue]") || s.StartsWith("[MechadroidJobRegression]")
+                        || s.StartsWith("[ColonistSightRegression]") || s.StartsWith("[ThreatSnapshotBridgeRegressionTests]")
+                        || s.StartsWith("[UnlockExtensionTests]") || s.StartsWith("[BuildingCompletionBridgeTests]")
+                        || s.StartsWith("[DomainXpStateTests]") || s.StartsWith("[BuildingProgressionRegression]")
+                        || s.StartsWith("[BuildingProgressionPersistenceRegression]")
+                        || s.StartsWith("[FoundationBuildingCapability]")
+                        || s.StartsWith("[RimconemyStartStateRegression]"))
+                        continue;
+
+                    string key = typeName + "::" + method.Name + ":ENVELOPE@" + instr.Offset;
+                    if (_reportedViolations.Add(key))
+                    {
+                        RecordViolation(asmName, typeName, method.Name, "ENVELOPE_DRIFT",
+                            "String-Literal '" + s.Substring(0, Math.Min(s.Length, 60)) + "' beginnt mit '[', aber nicht '[Rimconemy.' — Envelope-Drift");
+                        asmClean = false;
+                    }
+                }
+            }
         }
 
         /// <summary>

@@ -63,7 +63,7 @@ namespace Rimconemy.EconomyTerritory.Tests
 
             Log.Message(
                 "[Rimconemy.EconomyTerritory] CreditsLedgerSchemaBump tests: " + passed +
-                " passed, " + failed + " failed (expected=" + ExpectedPassCount + ")." +
+                " passed, " + failed + " failed (min=" + ExpectedPassCount + ")." +
                 (firstFailure == null ? "" : " First failure: " + firstFailure));
             return failed;
         }

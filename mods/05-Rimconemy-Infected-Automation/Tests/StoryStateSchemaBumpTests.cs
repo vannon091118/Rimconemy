@@ -63,7 +63,7 @@ namespace Rimconemy.InfectedAutomation.Tests
 
             Log.Message(
                 "[Rimconemy.InfectedAutomation] StoryStateSchemaBump tests: " + passed +
-                " passed, " + failed + " failed (expected=" + ExpectedPassCount + ")." +
+                " passed, " + failed + " failed (min=" + ExpectedPassCount + ")." +
                 (firstFailure == null ? "" : " First failure: " + firstFailure));
             return failed;
         }
