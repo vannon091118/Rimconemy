@@ -1,0 +1,56 @@
+{
+  "_schema": "1.0",
+  "_description": "Feature-Contracts: Jedes Feature deklariert ein beobachtbares Verhalten. Der Gate prüft deskriptiv: 'Feature deklariert → gibt es einen Beleg im Log?' — nie 'Feature sollte X tun'. Status: 'active' (prüfen), 'dormant' (ignorieren), 'retired' (historisch).",
+
+  "contracts": {
+    "FC-01": {
+      "feature": "ProfileDetector — FullOverhaul recognition",
+      "observable": "Profile detected: FullOverhaul",
+      "declared_in": "mods/01/Source/Profile/ProfileDetector.cs",
+      "status": "active"
+    },
+    "FC-02": {
+      "feature": "PackageRegistry — 5 packages registered",
+      "observable": "Registry: 5 package\\(s\\) registered",
+      "declared_in": "mods/01/Source/Registry/PackageRegistry.cs",
+      "status": "active"
+    },
+    "FC-03": {
+      "feature": "Foundation Bootstrap complete",
+      "observable": "\\[Rimconemy\\.Foundation\\] Bootstrap complete\\.",
+      "declared_in": "mods/01-Rimconemy-Foundation/Source/Bootstrap.cs",
+      "status": "active"
+    },
+    "FC-04": {
+      "feature": "NeedMappingService active",
+      "observable": "\\[Rimconemy\\.SurvivalProgression\\] NeedMappingService active",
+      "declared_in": "mods/02/Source/Bootstrap.cs",
+      "status": "active"
+    },
+    "FC-05": {
+      "feature": "InfectedAutomation bootstrap complete",
+      "observable": "\\[Rimconemy\\.InfectedAutomation\\].*bootstrap COMPLETE",
+      "declared_in": "mods/05-Rimconemy-Infected-Automation/Source/Bootstrap.cs",
+      "status": "active"
+    },
+    "FC-06": {
+      "feature": "IncidentClassifier — InfectedProvider-1-of-1",
+      "observable": "InfectedProvider-1-of-1=OK",
+      "declared_in": "mods/05/Source/Incidents/IncidentClassifier.cs",
+      "status": "active"
+    },
+    "FC-07": {
+      "feature": "RimThemes integration detected",
+      "observable": "\\[Rimconemy\\.Foundation\\] RimThemes.*(detected|package)",
+      "declared_in": "mods/01/Source/UI/GlobalThemeOverride.cs",
+      "status": "dormant",
+      "_note": "Nur aktiv wenn RimThemes Mod installiert ist"
+    },
+    "FC-08": {
+      "feature": "DLCPolicyConfig — Phase-1 defaults active",
+      "observable": "\\[Rimconemy\\.Foundation\\] DLCPolicyConfig: def=",
+      "declared_in": "mods/01/Source/DLC/DLCContentPolicyDef.cs",
+      "status": "active"
+    }
+  }
+}

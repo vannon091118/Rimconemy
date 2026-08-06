@@ -129,12 +129,16 @@ def parse_player_log(path: str) -> dict:
         # Test summaries — flush pending failures
         tsm = RX_TEST_SUMMARY.search(msg)
         if tsm:
+            # Close previous suite's line range
+            if last_suite and "line_end" not in last_suite:
+                last_suite["line_end"] = lineno - 1
             suite = {
                 "package": pkg,
                 "suite": tsm.group("suite").strip(),
                 "passed": int(tsm.group("passed")),
                 "failed": int(tsm.group("failed")),
                 "failures": list(pending_failures),
+                "line_start": lineno,
             }
             pending_failures.clear()
             result["test_suites"].append(suite)
@@ -150,6 +154,9 @@ def parse_player_log(path: str) -> dict:
         if "Harmony" in msg or "PatchAll" in msg:
             result["harmony_status"].append({"line": lineno, "message": msg})
 
+    # Close last suite's line range
+    if last_suite and "line_end" not in last_suite:
+        last_suite["line_end"] = len(lines)
     # Leftover failures → last suite
     if pending_failures and last_suite:
         last_suite["failures"].extend(pending_failures)
@@ -332,13 +339,41 @@ def check_conflicts(parsed: dict, log_text: str) -> dict:
                 conflicts.append({"id": "K6", "msg": f"TEST-FAIL before first suite summary at line {i+1}"})
                 break
 
+    # K7: Causal link — cross-ref errors attributed to failing suites
+    for cr in parsed.get("cross_refs", []):
+        cr_line = cr["line"]
+        cr_name = cr["name"]
+        for s in parsed.get("test_suites", []):
+            ls = s.get("line_start", 0)
+            le = s.get("line_end", 0)
+            if ls <= cr_line <= le:
+                cr["caused_by_suite"] = s["suite"]
+                conflicts.append({
+                    "id": "K7",
+                    "msg": f"Cross-ref '{cr['type']} {cr_name}' (L{cr_line}) in suite window of '{s['suite']}' (L{ls}-L{le})"
+                })
+                break
+        # K7b: Check if any suite failure message mentions the cross-ref def name
+        if "caused_by_suite" not in cr:
+            for s in parsed.get("test_suites", []):
+                for f_detail in s.get("failures", []):
+                    if cr_name.lower() in f_detail.lower():
+                        cr["caused_by_suite"] = s["suite"]
+                        conflicts.append({
+                            "id": "K7b",
+                            "msg": f"Cross-ref '{cr['type']} {cr_name}' matches failure in suite '{s['suite']}': '{f_detail[:80]}'"
+                        })
+                        break
+                if "caused_by_suite" in cr:
+                    break
+
     return {"conflicts": conflicts, "ok": len(conflicts) == 0}
 
 
 def format_conflicts_markdown(conflicts_result: dict) -> str:
     """Format conflict check results as markdown."""
     out = []
-    out.append("## ⚠️ Conflict Checks (K1-K6)")
+    out.append("## ⚠️ Conflict Checks (K1-K7)")
     if conflicts_result["ok"]:
         out.append("✅ No internal contradictions detected.")
     else:
@@ -431,6 +466,68 @@ def format_completeness_markdown(completeness: dict) -> str:
     return "\n".join(out)
 
 
+
+def load_feature_contracts(path: str) -> dict:
+    """Load feature_contracts.json."""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        return {"_error": str(e)}
+
+
+def check_feature_contracts(log_text: str, contracts: dict) -> dict:
+    """Check declared features against observable log markers.
+    Descriptive: 'Feature deklariert → Beleg gefunden?' — never prescriptive."""
+    if "_error" in contracts:
+        return {"results": [], "active": 0, "found": 0, "missing": 0,
+                "ok": True, "error": contracts["_error"]}
+
+    results = []
+    active = found = missing = 0
+    for cid, c in contracts.get("contracts", {}).items():
+        if c.get("status") != "active":
+            continue
+        active += 1
+        pattern = c.get("observable", "")
+        feature = c.get("feature", cid)
+        if re.search(pattern, log_text):
+            results.append({"id": cid, "feature": feature, "found": True})
+            found += 1
+        else:
+            results.append({"id": cid, "feature": feature, "found": False})
+            missing += 1
+
+    return {"results": results, "active": active, "found": found,
+            "missing": missing, "ok": missing == 0}
+
+
+def format_feature_contracts_markdown(fc_result: dict) -> str:
+    """Format feature contract results as markdown."""
+    out = []
+    out.append("## 📜 Feature Contracts (feature_contracts.json)")
+    if "error" in fc_result:
+        out.append(f"⚠️ Config load error: {fc_result['error']}")
+        out.append("")
+        return "\n".join(out)
+
+    active = fc_result["active"]
+    found = fc_result["found"]
+    missing = fc_result["missing"]
+    icon = "✅" if fc_result["ok"] else "⚠️"
+    out.append(f"**{icon} Contracts:** {found}/{active} active features have observable evidence")
+
+    if missing > 0:
+        out.append("")
+        out.append("### ⚠️ Missing Evidence (feature declared but no log marker)")
+        out.append("| ID | Feature |")
+        out.append("|---|---|")
+        for r in fc_result["results"]:
+            if not r["found"]:
+                out.append(f"| {r['id']} | {r['feature']} |")
+    out.append("")
+    return "\n".join(out)
+
 def main():
     import argparse
     p = argparse.ArgumentParser(description="Rimconemy Player.log Parser")
@@ -445,10 +542,14 @@ def main():
 
     result = parse_player_log(args.log)
     config = load_config(args.config)
+    fc_config_path = str(SCRIPT_DIR / "feature_contracts.json")
+    feature_contracts = load_feature_contracts(fc_config_path)
     completeness = check_completeness(result, config, args.focused)
     result["completeness"] = completeness
     conflicts = check_conflicts(result, result.get("_raw_log", ""))
     result["conflicts"] = conflicts
+    fc_check = check_feature_contracts(result.get("_raw_log", ""), feature_contracts)
+    result["feature_contracts"] = fc_check
 
     if args.json:
         output = format_json(result)
@@ -456,7 +557,8 @@ def main():
         md = format_markdown(result)
         cm = format_completeness_markdown(completeness)
         kx = format_conflicts_markdown(conflicts)
-        output = md + "\n" + cm + "\n" + kx
+        fc = format_feature_contracts_markdown(fc_check)
+        output = md + "\n" + cm + "\n" + kx + "\n" + fc
 
     if args.out:
         outpath = args.out
