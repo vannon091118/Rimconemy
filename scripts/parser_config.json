@@ -75,7 +75,7 @@
       "Exception loading def from file",
       "marketSnapshot",
       "is not a valid value for Verse.ThingCategory",
-      "non-power-of-two dimensions"
+      "Rimconemy.*non-power-of-two dimensions"
     ]
   },
 
