@@ -7,8 +7,10 @@
 > **Prinzip:** Alle Funktionen die `CODE`/`DEF`/`COMPILES` sind, müssen `LIVE` werden.
 > Keine neuen Systeme, solange existierende nicht laufen.
 >
-> **Stand:** 2026-08-06 (updated 23:30) · **Basis:** Live-Test (Player.log) + Dead-Code-Audit + CODE_STATUS.md
-> **Letzter Runtime-Test:** PASS (failures=0, warnings=1) · `runtime-20260806-230543`
+> **Stand:** 2026-08-07 (Session-Handoff) · **Basis:** Live-Test (Player.log) + Dead-Code-Audit + CODE_STATUS.md
+> **Letzter Runtime-Test:** PASS (failures=0, warnings=1) · 39/39 Test-Suiten 0/0
+> **Session-Doku:** → [SESSION_2026-08-06.md](SESSION_2026-08-06.md) (26 Commits, 8→0 Failures)
+> **Parser-Preflight:** `scripts/test_parser_preflight.py` + `scripts/parser_config.json`
 
 ---
 
