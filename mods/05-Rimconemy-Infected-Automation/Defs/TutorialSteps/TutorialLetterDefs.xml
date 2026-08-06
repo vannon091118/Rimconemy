@@ -6,28 +6,28 @@
     <label>Tag 0 – Die Ankunft</label>
     <icon>UI/HeroArt/Storytellers/RimconemyLarge</icon>
   </LetterDef>
-  
+
   <!-- Step 2: Seek Shelter -->
   <LetterDef>
     <defName>Rimconemy_Tutorial_Shelter</defName>
     <label>Schutz suchen</label>
     <icon>UI/HeroArt/Storytellers/RimconemyLarge</icon>
   </LetterDef>
-  
+
   <!-- Step 3: First Fire -->
   <LetterDef>
     <defName>Rimconemy_Tutorial_Fire</defName>
     <label>Erstes Feuer</label>
     <icon>UI/HeroArt/Storytellers/RimconemyLarge</icon>
   </LetterDef>
-  
+
   <!-- Step 4: They Come -->
   <LetterDef>
     <defName>Rimconemy_Tutorial_Threat</defName>
     <label>Sie kommen</label>
     <icon>UI/HeroArt/Storytellers/RimconemyLarge</icon>
   </LetterDef>
-  
+
   <!-- Step 5: Supplies -->
   <LetterDef>
     <defName>Rimconemy_Tutorial_Supplies</defName>
