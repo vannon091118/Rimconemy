@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
   <!--
-    Tutorial-Sequenz (UX-Audit 2026-08-06):
-      * unlockDefs verweisen nur noch auf real existierende Defs. Vorher
-        referenzierte Tutorial_FirstContact "Rimconemy_ArrowTurret" und
-        "Rimconemy_Barricade" — beide existieren nicht (real:
-        Rimconemy_ArrowTurret_Power); kaputte Refs blockierten die Anleitung.
+    Tutorial-Sequenz (UX-Audit 2026-08-06, updated 2026-08-06 23:45):
+      * unlockDefs entfernt — Cross-Package-Referenzen auf Mod-03-Defs
+        (Rimconemy_Campfire, Rimconemy_MakeCoal, etc.) konnten beim
+        XML-Parse nicht aufgelöst werden (Load-Order: Mod 05 vor Mod 03).
+        Tutorial-Hints sind optional; die Steps funktionieren ohne.
       * Jeder Schritt trägt ein kurzes objective für die Ziel-Zeile im Dialog.
   -->
   <Rimconemy.InfectedAutomation.Story.TutorialStepDef>
@@ -16,10 +16,6 @@
     <letterText>Du bist zurück. Die Welt hat sich verändert. Dein RimPad wird dich führen.</letterText>
     <objective>Öffne dein RimPad und erkunde deine Umgebung</objective>
     <portraitTexture>UI/HeroArt/Storytellers/RimconemyLarge</portraitTexture>
-    <unlockDefs>
-      <li>Rimconemy_Campfire</li>
-      <li>Rimconemy_ConstructionDebris</li>
-    </unlockDefs>
     <prerequisiteSteps />
   </Rimconemy.InfectedAutomation.Story.TutorialStepDef>
 
@@ -31,10 +27,6 @@
     <letterText>Das Campfire ist dein Überlebensanker. Koche, wärme dich, schmelze Stahlschrott zu nutzbarem Stahl.</letterText>
     <objective>Baue ein Campfire und verarbeite Stahlschrott</objective>
     <portraitTexture>UI/HeroArt/Storytellers/RimconemyLarge</portraitTexture>
-    <unlockDefs>
-      <li>Rimconemy_MakeCoal</li>
-      <li>Rimconemy_SalvageMachineParts</li>
-    </unlockDefs>
     <prerequisiteSteps>
       <li>Tutorial_Welcome</li>
     </prerequisiteSteps>
@@ -48,9 +40,6 @@
     <letterText>Die Infizierten haben dich bemerkt. Wachstum zieht Aufmerksamkeit. Baue Verteidigungen, bevor die Horde kommt.</letterText>
     <objective>Errichte Verteidigungen gegen die Infizierten</objective>
     <portraitTexture>UI/HeroArt/Storytellers/RimconemyLarge</portraitTexture>
-    <unlockDefs>
-      <li>Rimconemy_ArrowTurret_Power</li>
-    </unlockDefs>
     <prerequisiteSteps>
       <li>Tutorial_Campfire</li>
     </prerequisiteSteps>
@@ -64,9 +53,6 @@
     <letterText>Mauern aus Bauschutt schützen dich. Aber sie brauchen Strom und Wartung.</letterText>
     <objective>Baue Mauern und sichere deine Basis</objective>
     <portraitTexture>UI/HeroArt/Storytellers/RimconemyLarge</portraitTexture>
-    <unlockDefs>
-      <li>Rimconemy_WoodCoalGenerator</li>
-    </unlockDefs>
     <prerequisiteSteps>
       <li>Tutorial_FirstContact</li>
     </prerequisiteSteps>
