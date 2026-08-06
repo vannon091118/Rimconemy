@@ -309,10 +309,11 @@ namespace Rimconemy.SurvivalProgression.Tests
 
         private static void TestCustomizationPageHarmonyPatch_IsDeclared()
         {
-            // The Patch class lives in Rimconemy.SurvivalProgression.Patches.
-            // Without it, the Bio-Remap applies only at FinalizeInit, which is
-            // AFTER the new-game customisation screen has already rendered the
-            // vanilla backstory ages (the symptom the user has reported 4 times).
+            // Phase-5 audit-round-5 (updated 2026-08-06):
+            // Harmony PatchAll cannot resolve inherited methods on Verse.Window
+            // in RimWorld 1.6. The Bio-Remap patch is now applied manually via
+            // Harmony.Patch() in Bootstrap.cs targeting typeof(Verse.Window).PostOpen.
+            // This test verifies both the patch class AND the Postfix method exist.
             var asm = Assembly.GetExecutingAssembly();
             var patchType = asm.GetType("Rimconemy.SurvivalProgression.Patches.Page_ConfigureStartingPawnsBioPatch");
             AssertTrue(patchType != null,
@@ -320,14 +321,11 @@ namespace Rimconemy.SurvivalProgression.Tests
 
             if (patchType == null) return;
 
-            // Doesn't need to import HarmonyLib, just check attribute presence
-            // by simple type-name match (Harmony's attribute lives in
-            // HarmonyLib and is named 'HarmonyPatch').
-            bool hasHarmonyPatchAttr = patchType.GetCustomAttributes(false)
-                .Any(a => (a.GetType().FullName ?? string.Empty)
-                    .Equals("HarmonyLib.HarmonyPatch", System.StringComparison.Ordinal));
-            AssertTrue(hasHarmonyPatchAttr,
-                "BioRemap (audit-R5): Page_ConfigureStartingPawnsBioPatch carries [HarmonyPatch] attribute");
+            // The Postfix method must be public static so Harmony.Patch() can apply it.
+            var postfixMethod = patchType.GetMethod("Postfix",
+                BindingFlags.Static | BindingFlags.Public);
+            AssertTrue(postfixMethod != null,
+                "BioRemap (audit-R5): Page_ConfigureStartingPawnsBioPatch.Postfix is public static (manual Harmony.Patch target)");
         }
     }
 }

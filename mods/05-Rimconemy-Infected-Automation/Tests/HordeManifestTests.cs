@@ -21,7 +21,8 @@ namespace Rimconemy.InfectedAutomation.Tests
                 if (ok) { passed++; return; }
                 failed++;
                 if (firstFailure == null) firstFailure = name;
-                Log.Warning("[Rimconemy.InfectedAutomation] HordeManifest test FAILED: " + name);
+                Log.Warning("[Rimconemy.InfectedAutomation] HordeManifest test FAILED: " + name
+                    + " | file=HordeManifestTests.cs | condition returned false");
             }
 
             // T2/T3 (Constants / Schema Fields)

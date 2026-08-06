@@ -441,6 +441,16 @@ main() {
   run_game
   runtime_gates
   finish_report
+
+  # ── Structured debug summary (parse_runtime_log.py) ──
+  local parser_script="$SCRIPT_DIR/parse_runtime_log.py"
+  if [[ -f "$parser_script" ]] && command_exists python3; then
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "📊 Generating structured debug summary..."
+    python3 "$parser_script" --log "$LOG_PATH" 2>&1 || true
+  fi
+
   if [[ "$FAILURES" -eq 0 ]]; then
     echo "Runtime test result: PASS (warnings=$WARNINGS)"
     return 0

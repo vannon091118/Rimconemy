@@ -32,7 +32,8 @@ namespace Rimconemy.InfectedAutomation.Tests
                 if (ok) { _passed++; return; }
                 _failed++;
                 if (firstFailure == null) firstFailure = name;
-                Log.Warning("[Rimconemy.InfectedAutomation] PopulationLedger test FAILED: " + name);
+                Log.Warning("[Rimconemy.InfectedAutomation] PopulationLedger test FAILED: " + name
+                    + " | file=PopulationLedgerRegressionTests.cs | condition returned false");
             }
 
             // T1 (Schema-Bump), T2 (Scribe), T15 (Total) kommen aus Task 2

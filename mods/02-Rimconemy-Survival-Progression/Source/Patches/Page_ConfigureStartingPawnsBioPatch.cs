@@ -58,7 +58,12 @@ namespace Rimconemy.SurvivalProgression.Patches
     // inside the Postfix. This pattern keeps the Bio-Remap active even
     // if Ludeon renames the hook in a later point-release: only the
     // base-class binding needs updating then.
-    [HarmonyPatch(typeof(Page), nameof(Page.PostOpen))]
+    // Phase-5 audit-round-5 (updated 2026-08-06):
+    // Harmony PatchAll cannot resolve inherited methods on Verse.Window
+    // in RimWorld 1.6 ("Patching exception in method null").
+    // The Bio-Remap is applied manually via Harmony.Patch() in Bootstrap.cs.
+    // This class retains no [HarmonyPatch] attribute; it serves as a
+    // plain static container for the Postfix method.
     public static class Page_ConfigureStartingPawnsBioPatch
     {
         // Phase-5 audit-round-5 fix (harmony reflection-dedup):
@@ -71,6 +76,9 @@ namespace Rimconemy.SurvivalProgression.Patches
         private static readonly HashSet<string> _warnedReflectionKeys
             = new HashSet<string>(System.StringComparer.Ordinal);
 
+        // Postfix is applied manually via Harmony.Patch() in Bootstrap.cs.
+        // The [HarmonyPostfix] attribute is retained so the method signature
+        // is self-documenting as a Harmony postfix.
         [HarmonyPostfix]
         public static void Postfix(Page __instance)
         {

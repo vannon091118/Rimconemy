@@ -7,7 +7,8 @@
 > **Prinzip:** Alle Funktionen die `CODE`/`DEF`/`COMPILES` sind, müssen `LIVE` werden.
 > Keine neuen Systeme, solange existierende nicht laufen.
 >
-> **Stand:** 2026-08-06 · **Basis:** Live-Test (Player.log) + Dead-Code-Audit + CODE_STATUS.md
+> **Stand:** 2026-08-06 (updated 23:30) · **Basis:** Live-Test (Player.log) + Dead-Code-Audit + CODE_STATUS.md
+> **Letzter Runtime-Test:** PASS (failures=0, warnings=1) · `runtime-20260806-230543`
 
 ---
 
@@ -48,28 +49,28 @@ Reflection-Bridges (kein Compile-Ref):
 
 ### 🗑️ DELETE: Dead Code + Altlasten (10 Tasks, 0 Abhängigkeiten)
 
-| ID | Was | Wo | Größe | Warum |
-|----|-----|----|-------|-------|
-| D-01 | `Bridge/CapabilityAudit.cs` löschen | `mods/01/Source/Bridge/` | 50 LOC | DUMMY-Dict, 0 echte Consumer |
-| D-02 | `Bridge/EventBridge.cs` löschen | `mods/01/Source/Bridge/` | 62 LOC | 0 Producer-Caller |
-| D-03 | `Source/Tutorial/*.cs` (5 Files) löschen | `mods/05/Source/Tutorial/` | 319 LOC | verschoben nach `Source/Story/` |
-| D-04 | `TutorialStepDefs.xml` (alt) löschen | `mods/05/Defs/TutorialSteps/` | 52 LOC | ersetzt durch `TutorialSteps.xml` |
-| D-05 | `qa_findings.md` löschen | Repo-Root | ~4 LOC | Working-Notes |
-| D-06 | `log_watcher.py` löschen | Repo-Root | ~16 LOC | ersetzt durch `dev_quick_test.sh` |
-| D-07 | `Ship-Learn-Next Plan…` löschen | Repo-Root | ~200 LOC | Working-Notes (nicht committen) |
-| D-08 | `docs/CHAT_PROTOCOL_2026-08-05.md` löschen | `docs/` | 86 LOC | obsolet |
-| D-09 | `docs/P6-PROGRESS.md` löschen | `docs/` | 55 LOC | obsolet, ersetzt durch TECH_DEBT |
-| D-10 | `RimPadToggle.xml` (KeyBinding) löschen | `mods/01/Defs/KeyBindingDefs/` | ~17 LOC | ersetzt durch RimPadWindow |
+| ID | Was | Wo | Größe | Status |
+|----|-----|----|-------|--------|
+| ~~D-01~~ | `Bridge/CapabilityAudit.cs` löschen | `mods/01/Source/Bridge/` | 50 LOC | ✅ `79407fc` |
+| ~~D-02~~ | `Bridge/EventBridge.cs` löschen | `mods/01/Source/Bridge/` | 62 LOC | ✅ `79407fc` |
+| ~~D-03~~ | `Source/Tutorial/*.cs` (5 Files) löschen | `mods/05/Source/Tutorial/` | 319 LOC | ✅ `e8a02c5` |
+| ~~D-04~~ | `TutorialStepDefs.xml` (alt) löschen | `mods/05/Defs/TutorialSteps/` | 52 LOC | ✅ `e8a02c5` |
+| ~~D-05~~ | `qa_findings.md` löschen | Repo-Root | ~4 LOC | ✅ `e8a02c5` |
+| ~~D-06~~ | `log_watcher.py` löschen | Repo-Root | ~16 LOC | ✅ `e8a02c5` |
+| ~~D-07~~ | `Ship-Learn-Next Plan…` löschen | Repo-Root | ~200 LOC | ✅ lokal gelöscht (nicht committed) |
+| ~~D-08~~ | `docs/CHAT_PROTOCOL_2026-08-05.md` löschen | `docs/` | 86 LOC | ✅ `e8a02c5` |
+| ~~D-09~~ | `docs/P6-PROGRESS.md` löschen | `docs/` | 55 LOC | ✅ `e8a02c5` |
+| ~~D-10~~ | `RimPadToggle.xml` (KeyBinding) löschen | `mods/01/Defs/KeyBindingDefs/` | ~17 LOC | ✅ `e8a02c5` |
 
 ### 🔌 WIRE: Existierende Funktionen verdrahten (11 Tasks, max. 1 Vorgänger)
 
 | ID | Was | Code schon da? | Was fehlt? | Vorgänger |
 |----|-----|----------------|------------|-----------|
-| W-01 | CampfireManager → TutorialDirector | ✅ Vanilla-Hook `Frame.CompleteConstruction` → `FrameCompletionPatch` → `CampfireManager.TryBuildCampfire` | `SurvivalTutorialBridge.Initialize()` in Bootstrap 02 | D-01 (damit Bootstrap sauber) |
-| W-02 | WallBuilder → TutorialDirector | ✅ Gleicher Pfad wie W-01, `domain == Defense` | selbe Initialisierung | W-01 |
-| W-03 | IntroFlowWindow → Horde-Spawn | ✅ `ScenPart_IntroSequence` + `FlashHorde`-Callback | try/catch um `SpawnHordePawn?.Invoke()` (TD-08-Fix) | — |
-| W-04 | ScenPart_RimconemyStartEnemies | ✅ Difficulty×MapSize-Multiplier + `GenSpawn.Spawn` | Funktioniert nach W-03? Live-Test | W-03 |
-| W-05 | RimPad Guide-Tab | ✅ `GuideTabDrawer`-Callback von 05 registriert | `RimPadTab.Guide` enum + `SelectTab` Methode (Build-Fix) | — |
+| ~~W-01~~ | CampfireManager → TutorialDirector | ✅ `FrameCompletionPatch` → `CampfireManager.TryBuildCampfire` | ✅ `SurvivalTutorialBridge.Initialize()` in Bootstrap 02 — `dcc7fd8` | — |
+| ~~W-02~~ | WallBuilder → TutorialDirector | ✅ Gleicher Pfad wie W-01 | selbe Initialisierung (via W-01) | W-01 |
+| ~~W-03~~ | IntroFlowWindow → Horde-Spawn | ✅ `ScenPart_IntroSequence` + `FlashHorde`-Callback | ✅ try/catch — `5422daf` | — |
+| W-04 | ScenPart_RimconemyStartEnemies | ✅ Difficulty×MapSize-Multiplier + `GenSpawn.Spawn` | Live-Test | W-03 |
+| ~~W-05~~ | RimPad Guide-Tab | ✅ `GuideTabDrawer`-Callback von 05 registriert | ✅ `RimPadTab.Guide` enum + `SelectTab` — `dcc87cd` | — |
 | W-06 | Tutorial-Schritte erscheinen | ✅ `TutorialDirector` + `Dialog_TutorialStep` | W-01 + W-02 + W-05 kombinieren | W-01, W-02, W-05 |
 | W-07 | StoryDirector feuert Event | ✅ `StoryDirector.GameComponentTick` (60k-Tick) + `InfectedRaidWorker` | Live-Test: nach 1 Tag sichtbar? | — |
 | W-08 | AnimalInfection Auto-Conversion | ✅ `AnimalInfectionDriver.TryFireOnce` + `PopulationProfileMultipliers` | Live-Test: Tier wird infiziert? | — |
@@ -93,12 +94,12 @@ Reflection-Bridges (kein Compile-Ref):
 
 | # | Widerspruch | Quelle A | Quelle B | Korrektur |
 |---|-------------|----------|----------|-----------|
-| C-01 | `ScenPart_IntroSequence` nicht in CODE_STATUS erwähnt | `git status M` zeigt Datei ist modified | CODE_STATUS.md §2 Paket 05 listet `ScenPart_IntroSequence` nicht | Eintrag hinzufügen unter "Belegt" in 05 |
-| C-02 | Tutorial-Dateien doppelt: `Source/Tutorial/` (gelöscht) vs `Source/Story/` (neu, uncommitted) | `git status D` zeigt 5 gelöschte Tutorial-Dateien | Working-Tree-only: 6 neue in `05/Source/Story/` | D-03+D-04 ausführen, dann Working-Tree committen |
-| C-03 | `IntroFlowWindow` doppelt: `05/Source/UI/` (gelöscht) vs `01/Source/UI/` (neu, uncommitted) | `git status D` zeigt gelöschte 05-Version | Working-Tree-only: neue Version in 01 | Nach D-06+D-07 Working-Tree committen |
-| C-04 | `FoundationInitializer` registriert Capabilities, die nicht im INTERFACE_CONTRACT stehen | FoundationInitializer.cs: `"event.bridge"`, `"capability.audit"`, `"rimpad.ui"` | INTERFACE_CONTRACT §2: `profile`, `colonials`, `eventlog`, ... | D-01+D-02 ausführen + FoundationInitializer umlenken |
-| C-05 | TECH_DEBT.md listet TD-14 als FIXED, aber CODE_STATUS §4 sagt noch OPEN | TECH_DEBT.md §3: TD-14 FIXED | CODE_STATUS §4: Tutorial/Story-Trigger-Pipeline als OPEN gelistet | Synchronisieren: beide auf FIXED setzen |
-| C-06 | ROADMAP.md §9 Sprint-Liste überlappt mit TECH_DEBT §6 Abarbeitungs-Plan | ROADMAP §9: 6 Tasks | TECH_DEBT §6: 3 Phasen | Konsolidieren → WORKPLAN.md ist jetzt SSOT |
+| C-01 | ✅ Behoben (2026-08-06) | CODE_STATUS §2 aktualisiert |
+| C-02 | ✅ Behoben — D-03+D-04 + Working-Tree-Commit `804f2e5` |
+| C-03 | ✅ Behoben — Working-Tree-Commit `804f2e5` |
+| C-04 | ✅ Behoben — D-01+D-02 + FoundationInitializer `79407fc` |
+| C-05 | ✅ Behoben (2026-08-06) — TECH_DEBT.md + CODE_STATUS.md synchronisiert, TD-14/TD-13/TD-08 alle FIXED |
+| C-06 | ✅ Behoben (2026-08-06) — WORKPLAN.md ist SSOT; ROADMAP.md + TECH_DEBT.md referenzieren hierher |
 
 ---
 

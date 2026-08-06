@@ -38,6 +38,7 @@ namespace Rimconemy.InfectedAutomation
     {
         static Bootstrap()
         {
+            Log.Message("[Rimconemy.InfectedAutomation] ═══ bootstrap START (05-InfectedAutomation) ═══");
             Log.Message("[Rimconemy.InfectedAutomation] Standalone bootstrap starting...");
             World.DarknessSectionLayerLifecycle.Install();
             Log.Message("[Rimconemy.InfectedAutomation] Faction, PawnKind, Incident and Mechadroid defs registered (one provider per Full Profile).");
@@ -168,6 +169,7 @@ namespace Rimconemy.InfectedAutomation
             Log.Message("[Rimconemy.InfectedAutomation] Phase E: AnimalInfection pipeline wired (Profile-Chance, Ledger, Service, Driver-Seam, Overlay-Predikat).");
             Log.Message("[Rimconemy.InfectedAutomation] Phase B: Daily-Growth+Reset+Revenge coupling wired.");
             Log.Message("[Rimconemy.InfectedAutomation] Building threat adapter available; Mechadroid job contracts are gated for Milestone B; no incident or raid is spawned.");
+            Log.Message("[Rimconemy.InfectedAutomation] ═══ bootstrap COMPLETE — all test suites finished ═══");
 
             // Phase-5 (2026-08-05) — IncidentClassifier summary log. Validates the
             // single Infected-Provider invariant and emits a per-Source breakdown.

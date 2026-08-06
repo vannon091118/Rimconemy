@@ -8,7 +8,7 @@
         Rimconemy_ArrowTurret_Power); kaputte Refs blockierten die Anleitung.
       * Jeder Schritt trägt ein kurzes objective für die Ziel-Zeile im Dialog.
   -->
-  <TutorialStepDef>
+  <Rimconemy.InfectedAutomation.Story.TutorialStepDef>
     <defName>Tutorial_Welcome</defName>
     <priority>0</priority>
     <trigger>GameStart</trigger>
@@ -21,9 +21,9 @@
       <li>Rimconemy_ConstructionDebris</li>
     </unlockDefs>
     <prerequisiteSteps />
-  </TutorialStepDef>
+  </Rimconemy.InfectedAutomation.Story.TutorialStepDef>
 
-  <TutorialStepDef>
+  <Rimconemy.InfectedAutomation.Story.TutorialStepDef>
     <defName>Tutorial_Campfire</defName>
     <priority>10</priority>
     <trigger>CampfireBuilt</trigger>
@@ -38,9 +38,9 @@
     <prerequisiteSteps>
       <li>Tutorial_Welcome</li>
     </prerequisiteSteps>
-  </TutorialStepDef>
+  </Rimconemy.InfectedAutomation.Story.TutorialStepDef>
 
-  <TutorialStepDef>
+  <Rimconemy.InfectedAutomation.Story.TutorialStepDef>
     <defName>Tutorial_FirstContact</defName>
     <priority>20</priority>
     <trigger>FirstInfectedContact</trigger>
@@ -54,9 +54,9 @@
     <prerequisiteSteps>
       <li>Tutorial_Campfire</li>
     </prerequisiteSteps>
-  </TutorialStepDef>
+  </Rimconemy.InfectedAutomation.Story.TutorialStepDef>
 
-  <TutorialStepDef>
+  <Rimconemy.InfectedAutomation.Story.TutorialStepDef>
     <defName>Tutorial_Wall</defName>
     <priority>30</priority>
     <trigger>WallBuilt</trigger>
@@ -70,5 +70,5 @@
     <prerequisiteSteps>
       <li>Tutorial_FirstContact</li>
     </prerequisiteSteps>
-  </TutorialStepDef>
+  </Rimconemy.InfectedAutomation.Story.TutorialStepDef>
 </Defs>

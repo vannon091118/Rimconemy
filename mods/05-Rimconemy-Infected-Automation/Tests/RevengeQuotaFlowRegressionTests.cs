@@ -40,7 +40,8 @@ namespace Rimconemy.InfectedAutomation.Tests
                 if (ok) { passed++; return; }
                 failed++;
                 firstFailure ??= name;
-                Log.Warning("[Rimconemy.InfectedAutomation] Phase B test FAILED: " + name);
+                Log.Warning("[Rimconemy.InfectedAutomation] Phase B test FAILED: " + name
+                    + " | file=RevengeQuotaFlowRegressionTests.cs | condition returned false");
             }
 
             // ── T1-T5: Tasks 1 ────────────────────────────────────

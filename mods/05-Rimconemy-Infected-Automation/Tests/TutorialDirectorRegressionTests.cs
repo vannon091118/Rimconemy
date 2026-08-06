@@ -182,7 +182,12 @@ namespace Rimconemy.InfectedAutomation.Tests
         private static void AssertTrue(bool condition, string label)
         {
             if (condition) _passed++;
-            else { _failed++; Log.Error("[TutorialDirectorRegression] " + label); }
+            else
+            {
+                _failed++;
+                Log.Error("[Rimconemy.InfectedAutomation] TutorialDirector test FAILED: " + label
+                    + " | file=TutorialDirectorRegressionTests.cs | condition returned false");
+            }
         }
     }
 }

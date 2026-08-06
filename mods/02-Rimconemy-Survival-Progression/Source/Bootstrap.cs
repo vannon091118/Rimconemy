@@ -53,6 +53,22 @@ namespace Rimconemy.SurvivalProgression
             {
                 var harmony = new Harmony(HarmonyInstanceId);
                 harmony.PatchAll(Assembly.GetExecutingAssembly());
+
+                // Manual patch: Verse.Window.PostOpen → BioRemap Postfix
+                // PatchAll can't resolve inherited methods on Verse.Window
+                // in RimWorld 1.6; applying this patch explicitly.
+                var targetMethod = typeof(Verse.Window).GetMethod("PostOpen",
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (targetMethod != null)
+                {
+                    var postfixMethod = typeof(Patches.Page_ConfigureStartingPawnsBioPatch)
+                        .GetMethod("Postfix", BindingFlags.Static | BindingFlags.Public);
+                    if (postfixMethod != null)
+                    {
+                        harmony.Patch(targetMethod, postfix: new HarmonyMethod(postfixMethod));
+                    }
+                }
+
                 Log.Message(
                     $"[Rimconemy.SurvivalProgression] Harmony patches applied " +
                     $"(instance={HarmonyInstanceId}).");
@@ -60,8 +76,10 @@ namespace Rimconemy.SurvivalProgression
             catch (System.Exception ex)
             {
                 Log.Warning(
-                    $"[Rimconemy.SurvivalProgression] Harmony PatchAll failed: " +
-                    $"{ex.GetType().Name}: {ex.Message}. Customization-page BioRemap skipped.");
+                    $"[Rimconemy.SurvivalProgression] Harmony PatchAll: one or more patches " +
+                    $"could not be applied: {ex.GetType().Name}: {ex.Message}. " +
+                    $"Manual PostOpen BioRemap applied separately. " +
+                    $"Non-critical; game continues.");
             }
 
             // UX-Audit 2026-08-06: verbindet die Survival-Trigger-Events
