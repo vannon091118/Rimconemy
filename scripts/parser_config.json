@@ -1,7 +1,6 @@
 {
   "_schema": "1.1",
   "_description": "Preflight-Config für parse_runtime_log.py. Jeder Eintrag definiert, WAS der Parser im Player.log finden MUSS. Neue Funktionen/Umbenennungen: nur hier nachtragen.",
-
   "bootstrap": {
     "min_packages": 5,
     "min_profiles": 1,
@@ -20,57 +19,187 @@
       "FullOverhaul"
     ]
   },
-
   "test_suites": {
     "_note": "Jede Suite MUSS im Log erscheinen mit 'X passed, 0 failed'. package=NUM für --focused Filter.",
     "required": [
-      {"package": "01", "pattern": "CapabilityGate tests: \\d+ passed, 0 failed"},
-      {"package": "01", "pattern": "ColonialReader tests: \\d+ passed, 0 failed"},
-      {"package": "01", "pattern": "CrossPackageState tests: \\d+ passed, 0 failed"},
-      {"package": "01", "pattern": "EventLog regression tests: \\d+ passed, 0 failed"},
-      {"package": "01", "pattern": "Profile refresh tests: \\d+ passed, 0 failed"},
-      {"package": "01", "pattern": "Profile detector dedup tests: \\d+ passed, 0 failed"},
-      {"package": "01", "pattern": "Honest-Banner-Audit tests: \\d+/\\d+ passed, 0 failed"},
-      {"package": "01", "pattern": "Canonical layer tests: \\d+ passed, 0 failed"},
-      {"package": "02", "pattern": "BioRemap tests: \\d+ passed, 0 failed"},
-      {"package": "02", "pattern": "NeedMappingService tests: \\d+ passed, 0 failed"},
-      {"package": "02", "pattern": "DomainXpState tests: \\d+ passed, 0 failed"},
-      {"package": "02", "pattern": "UnlockService tests: \\d+ passed, 0 failed"},
-      {"package": "02", "pattern": "BuildingCompletionBridge tests: \\d+ passed, 0 failed"},
-      {"package": "02", "pattern": "SchemaBump tests: \\d+ passed, 0 failed"},
-      {"package": "02", "pattern": "PhaseProgress regression tests: \\d+ passed, 0 failed"},
-      {"package": "02", "pattern": "UnlockExtension tests: \\d+ passed, 0 failed"},
-      {"package": "02", "pattern": "Role mechanics regression tests: \\d+ passed, 0 failed"},
-      {"package": "02", "pattern": "StartState regression tests: \\d+ passed, 0 failed"},
-      {"package": "02", "pattern": "Scenario contract tests: \\d+ passed, 0 failed"},
-      {"package": "02", "pattern": "HungerAmplifier tests: \\d+ passed, 0 failed"},
-      {"package": "03", "pattern": "ArrowTurretBlock tests: \\d+ passed, 0 failed"},
-      {"package": "03", "pattern": "BauschuttRemapApply tests: \\d+ passed, 0 failed"},
-      {"package": "03", "pattern": "BuildingCore regression tests: \\d+ passed, 0 failed"},
-      {"package": "03", "pattern": "CampfireScraps regression tests: \\d+ passed, 0 failed"},
-      {"package": "03", "pattern": "CoalChain regression tests: \\d+ passed, 0 failed"},
-      {"package": "03", "pattern": "StainlessSteelChain regression tests: \\d+ passed, 0 failed"},
-      {"package": "03", "pattern": "CaravanStorageRegressionTests PASS"},
-      {"package": "04", "pattern": "CreditsLedger regression tests: \\d+ passed, 0 failed"},
-      {"package": "04", "pattern": "Market persistence tests: \\d+ passed, 0 failed"},
-      {"package": "04", "pattern": "Physical transfer regression tests: \\d+ passed, 0 failed"},
-      {"package": "04", "pattern": "Outpost investment regression tests: \\d+ passed, 0 failed"},
-      {"package": "04", "pattern": "Building input regression tests: \\d+ passed, 0 failed"},
-      {"package": "05", "pattern": "StorySelector tests: \\d+ passed, 0 failed"},
-      {"package": "05", "pattern": "StoryState regression tests: \\d+ passed, 0 failed"},
-      {"package": "05", "pattern": "TutorialDirector: \\d+ passed, 0 failed"},
-      {"package": "05", "pattern": "PopulationLedger regression tests \\(Phase A subset\\): \\d+ passed, 0 failed"},
-      {"package": "05", "pattern": "Revenge-quota flow regression: \\d+ passed, 0 failed"},
-      {"package": "05", "pattern": "HordeManifest: \\d+ passed, 0 failed"},
-      {"package": "05", "pattern": "ThreatSnapshotBridge regression tests: \\d+ passed, 0 failed"},
-      {"package": "05", "pattern": "Building threat regression tests: \\d+ passed, 0 failed"},
-      {"package": "05", "pattern": "Mechadroid job regression tests: \\d+ passed, 0 failed"},
-      {"package": "05", "pattern": "StartEnemies regression tests: \\d+ passed, 0 failed"},
-      {"package": "02", "pattern": "Building progression regression tests: \\d+ passed, 0 failed"},
-      {"package": "02", "pattern": "Building progression persistence tests: \\d+ passed, 0 failed"}
+      {
+        "package": "01",
+        "pattern": "CapabilityGate tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "01",
+        "pattern": "ColonialReader tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "01",
+        "pattern": "CrossPackageState tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "01",
+        "pattern": "EventLog regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "01",
+        "pattern": "Profile refresh tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "01",
+        "pattern": "Profile detector dedup tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "01",
+        "pattern": "Honest-Banner-Audit tests: \\d+/\\d+ passed, 0 failed"
+      },
+      {
+        "package": "01",
+        "pattern": "Canonical layer tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "02",
+        "pattern": "BioRemap tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "02",
+        "pattern": "NeedMappingService tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "02",
+        "pattern": "DomainXpState tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "02",
+        "pattern": "UnlockService tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "02",
+        "pattern": "BuildingCompletionBridge tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "02",
+        "pattern": "SchemaBump tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "02",
+        "pattern": "PhaseProgress regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "02",
+        "pattern": "UnlockExtension tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "02",
+        "pattern": "Role mechanics regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "02",
+        "pattern": "StartState regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "02",
+        "pattern": "Scenario contract tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "02",
+        "pattern": "HungerAmplifier tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "03",
+        "pattern": "ArrowTurretBlock tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "03",
+        "pattern": "BauschuttRemapApply tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "03",
+        "pattern": "BuildingCore regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "03",
+        "pattern": "CampfireScraps regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "03",
+        "pattern": "CoalChain regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "03",
+        "pattern": "StainlessSteelChain regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "03",
+        "pattern": "CaravanStorageRegressionTests PASS"
+      },
+      {
+        "package": "04",
+        "pattern": "CreditsLedger regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "04",
+        "pattern": "Market persistence tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "04",
+        "pattern": "Physical transfer regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "04",
+        "pattern": "Outpost investment regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "04",
+        "pattern": "Building input regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "05",
+        "pattern": "StorySelector tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "05",
+        "pattern": "StoryState regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "05",
+        "pattern": "TutorialDirector: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "05",
+        "pattern": "PopulationLedger regression tests \\(Phase A subset\\): \\d+ passed, 0 failed"
+      },
+      {
+        "package": "05",
+        "pattern": "Revenge-quota flow regression: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "05",
+        "pattern": "HordeManifest: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "05",
+        "pattern": "ThreatSnapshotBridge regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "05",
+        "pattern": "Building threat regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "05",
+        "pattern": "Mechadroid job regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "05",
+        "pattern": "StartEnemies regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "02",
+        "pattern": "Building progression regression tests: \\d+ passed, 0 failed"
+      },
+      {
+        "package": "02",
+        "pattern": "Building progression persistence tests: \\d+ passed, 0 failed"
+      }
     ]
   },
-
   "forbidden": {
     "_note": "Patterns die im Log NICHT vorkommen dürfen (Fehler-Indikatoren).",
     "patterns": [
@@ -83,7 +212,6 @@
       "Rimconemy.*non-power-of-two dimensions"
     ]
   },
-
   "runtime_markers": {
     "_note": "Marker die im Log vorhanden sein MÜSSEN für einen gültigen Boot.",
     "required": [
@@ -93,12 +221,10 @@
       "Registry: 5 package\\(s\\) registered"
     ]
   },
-
   "cross_refs": {
     "_note": "Cross-Reference-Warnings — sollten 0 sein. Max akzeptiert = 0.",
     "max_allowed": 0
   },
-
   "focused_packages": {
     "_description": "Focused-Mode: wenn --focused <pkg> gesetzt, nur Suites dieses Pakets prüfen.",
     "package_map": {
