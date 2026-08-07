@@ -205,5 +205,23 @@ namespace Rimconemy.InfectedAutomation.UI
             Widgets.EndScrollView();
             RimconemyUi.ResetTextFontAndColor();
         }
+
+        public static void DrawRimPadContent(Rect rect)
+        {
+            var director = StoryDirector.Get();
+            if (director == null) { Widgets.Label(rect, "No data"); return; }
+            float y = rect.y;
+            Text.Font = GameFont.Small;
+            var snap = director.LastSnapshot;
+            if (snap != null)
+                Widgets.Label(new Rect(rect.x, y, rect.width, 22f), "Threat: " + snap.ThreatPressure.ToString("P0"));
+            y += 24f;
+            Widgets.Label(new Rect(rect.x, y, rect.width, 22f),
+                "Last: " + (director.State?.LastEventId ?? "none"));
+            y += 24f;
+            Widgets.Label(new Rect(rect.x, y, rect.width, 22f),
+                "Profile: " + (director.ActiveProfile?.Label ?? "?"));
+            RimconemyUi.ResetTextFontAndColor();
+        }
     }
 }

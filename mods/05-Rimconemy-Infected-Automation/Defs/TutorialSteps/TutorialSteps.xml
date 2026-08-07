@@ -9,6 +9,19 @@
       * Jeder Schritt trägt ein kurzes objective für die Ziel-Zeile im Dialog.
   -->
   <Rimconemy.InfectedAutomation.Story.TutorialStepDef>
+    <defName>Tutorial_Storyteller</defName>
+    <priority>5</priority>
+    <trigger>GameStart</trigger>
+    <letterLabel>DER RIMCONEMY-STORYTELLER</letterLabel>
+    <letterText>Rimconemy hat seinen eigenen Storyteller. Cassandra, Phoebe und Randy wurden abgelost. Der Rimconemy-Storyteller reagiert auf dein Wachstum, deine Ressourcen und die Infizierten-Bedrohung. Du wachst — sie kommen.</letterText>
+    <objective>Verstehe den neuen Storyteller — Wachstum zieht Aufmerksamkeit nach sich</objective>
+    <portraitTexture>UI/HeroArt/Storytellers/RimconemyLarge</portraitTexture>
+    <prerequisiteSteps>
+      <li>Tutorial_Storyteller</li>
+    </prerequisiteSteps>
+  </Rimconemy.InfectedAutomation.Story.TutorialStepDef>
+
+  <Rimconemy.InfectedAutomation.Story.TutorialStepDef>
     <defName>Tutorial_Welcome</defName>
     <priority>0</priority>
     <trigger>GameStart</trigger>

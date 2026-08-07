@@ -66,18 +66,20 @@ namespace Rimconemy.InfectedAutomation
             Scenarios.TutorialTriggerBridge.Initialize();
             Log.Message("[Rimconemy.InfectedAutomation] TutorialTriggerBridge ready.");
 
-            // RimPad Guide-Tab (UX-Audit 2026-08-06): registriert den
-            // Tutorial-Status als Guide-Inhalt. Foundation bleibt referenzfrei —
-            // Paket 05 liefert den Drawer über die statische Property.
+            // RimPad Tabs (UX-Audit 2026-08-07): Guide, Threat, Diagnostics
             try
             {
                 Rimconemy.Foundation.UI.RimPadWindow.GuideTabDrawer =
                     rect => Story.TutorialDirector.Get()?.DrawGuideContent(rect);
-                Log.Message("[Rimconemy.InfectedAutomation] RimPad Guide-Tab registered.");
+                Rimconemy.Foundation.UI.RimPadWindow.ThreatTabDrawer =
+                    rect => UI.ThreatDashboard.DrawRimPadContent(rect);
+                Rimconemy.Foundation.UI.RimPadWindow.DiagnosticsTabDrawer =
+                    rect => Foundation.UI.RimconemyUi.DrawDiagnosticsContent(rect);
+                Log.Message("[Rimconemy.InfectedAutomation] RimPad tabs registered: Guide, Threat, Diagnostics.");
             }
             catch (System.Exception ex)
             {
-                Log.Warning("[Rimconemy.InfectedAutomation] RimPad Guide-Tab registration failed: "
+                Log.Warning("[Rimconemy.InfectedAutomation] RimPad tab registration failed: "
                     + ex.GetType().Name + ": " + ex.Message);
             }
 

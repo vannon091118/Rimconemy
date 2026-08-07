@@ -90,11 +90,52 @@ namespace Rimconemy.Foundation.UI
             Widgets.Label(rect, "Rimconemy.RimPad.Guide.Empty".Translate());
         }
 
-        // Placeholder draw methods - to be implemented with snapshot data in Task 9
-        private void DrawSurvivalTab(Rect rect) { Widgets.Label(rect, "Rimconemy.RimPad.Tab.Todo".Translate()); }
-        private void DrawInfrastructureTab(Rect rect) { Widgets.Label(rect, "Rimconemy.RimPad.Tab.Todo".Translate()); }
-        private void DrawEconomyTab(Rect rect) { Widgets.Label(rect, "Rimconemy.RimPad.Tab.Todo".Translate()); }
-        private void DrawThreatTab(Rect rect) { Widgets.Label(rect, "Rimconemy.RimPad.Tab.Todo".Translate()); }
-        private void DrawDiagnosticsTab(Rect rect) { Widgets.Label(rect, "Rimconemy.RimPad.Tab.Todo".Translate()); }
+        /// <summary>
+        /// Von anderen Paketen registrierbare Tab-Drawer.
+        /// Foundation bleibt referenzfrei — Pakete registrieren ihre Drawer via Bootstrap.
+        /// </summary>
+        public static System.Action<Rect> SurvivalTabDrawer;
+        public static System.Action<Rect> InfrastructureTabDrawer;
+        public static System.Action<Rect> EconomyTabDrawer;
+        public static System.Action<Rect> ThreatTabDrawer;
+        public static System.Action<Rect> DiagnosticsTabDrawer;
+
+        private void DrawSurvivalTab(Rect rect)
+        {
+            if (SurvivalTabDrawer != null) { SurvivalTabDrawer(rect); return; }
+            DrawTodoPlaceholder(rect, "Survival");
+        }
+
+        private void DrawInfrastructureTab(Rect rect)
+        {
+            if (InfrastructureTabDrawer != null) { InfrastructureTabDrawer(rect); return; }
+            DrawTodoPlaceholder(rect, "Infrastructure");
+        }
+
+        private void DrawEconomyTab(Rect rect)
+        {
+            if (EconomyTabDrawer != null) { EconomyTabDrawer(rect); return; }
+            DrawTodoPlaceholder(rect, "Economy");
+        }
+
+        private void DrawThreatTab(Rect rect)
+        {
+            if (ThreatTabDrawer != null) { ThreatTabDrawer(rect); return; }
+            DrawTodoPlaceholder(rect, "Threat");
+        }
+
+        private void DrawDiagnosticsTab(Rect rect)
+        {
+            if (DiagnosticsTabDrawer != null) { DiagnosticsTabDrawer(rect); return; }
+            DrawTodoPlaceholder(rect, "Diagnostics");
+        }
+
+        private static void DrawTodoPlaceholder(Rect rect, string tabName)
+        {
+            GUI.color = RimconemyTheme.Muted;
+            Text.Font = GameFont.Small;
+            Widgets.Label(rect, "Rimconemy.RimPad.Tab.Todo".Translate() + " (" + tabName + ")");
+            GUI.color = Color.white;
+        }
     }
 }

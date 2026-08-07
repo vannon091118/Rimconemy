@@ -329,6 +329,20 @@ namespace Rimconemy.Foundation.UI
         }
 
         /// <summary>Resets Text.Font and GUI.color to default state.</summary>
+        public static void DrawDiagnosticsContent(Rect rect)
+        {
+            float y = rect.y;
+            Text.Font = GameFont.Small;
+            Widgets.Label(new Rect(rect.x, y, rect.width, 22f), "Rimconemy Mod Suite");
+            y += 24f;
+            Widgets.Label(new Rect(rect.x, y, rect.width, 22f),
+                "Storyteller: Rimconemy (replaces Vanilla)");
+            y += 24f;
+            Widgets.Label(new Rect(rect.x, y, rect.width, 22f),
+                "Save: Clean Break — new game required");
+            ResetTextFontAndColor();
+        }
+
         public static void ResetTextFontAndColor()
         {
             GUI.color = Color.white;
