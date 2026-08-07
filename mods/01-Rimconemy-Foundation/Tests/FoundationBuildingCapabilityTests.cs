@@ -63,10 +63,8 @@ namespace Rimconemy.Foundation.Tests
             // Foundation has completed its first discovery pass. Refresh here
             // so this gate tests the canonical registry, not timing.
             PackageRegistry.RefreshLoadedFeaturePackages();
-            AssertTrue(PackageRegistry.IsRegistered(packageId),
-                "Building capability: loaded Package 03 is registered");
-            AssertTrue(PackageRegistry.HasCapability(packageId, capabilityId, 1),
-                "Building capability: Package 03 exposes v1");
+            ts.Check(PackageRegistry.IsRegistered(packageId), "Building capability: loaded Package 03 is registered");
+            ts.Check(PackageRegistry.HasCapability(packageId, capabilityId, 1), "Building capability: Package 03 exposes v1");
         }
 
         private static void TestMissingCapabilityWarningIsDeduplicated()
@@ -74,30 +72,11 @@ namespace Rimconemy.Foundation.Tests
             CapabilityAudit.ClearWarningCache();
             const string packageId = "rimconemy.synthetic.building-test";
             const string capabilityId = "rimconemy.synthetic.building-test.missing";
-            AssertFalse(CapabilityAudit.HasCapabilityOrWarn(packageId, capabilityId, 1, "BuildingCapabilityTest"),
-                "Building capability: missing gate returns false");
-            AssertFalse(CapabilityAudit.HasCapabilityOrWarn(packageId, capabilityId, 1, "BuildingCapabilityTest"),
-                "Building capability: repeated missing gate remains false");
-            AssertEqual(1, CapabilityAudit.WarningCount(),
-                "Building capability: missing warning is emitted once");
+            ts.Check(!(CapabilityAudit.HasCapabilityOrWarn(packageId, capabilityId, 1, "BuildingCapabilityTest")), "Building capability: missing gate returns false");
+            ts.Check(!(CapabilityAudit.HasCapabilityOrWarn(packageId, capabilityId, 1, "BuildingCapabilityTest")), "Building capability: repeated missing gate remains false");
+            ts.Check(Equals(1, CapabilityAudit.WarningCount()), "Building capability: missing warning is emitted once");
         }
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else { _failed++; Log.Error("[Rimconemy.Foundation] " + label); }
-        }
 
-        private static void AssertFalse(bool condition, string label) { AssertTrue(!condition, label); }
-
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (EqualityComparer<T>.Default.Equals(expected, actual)) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[Rimconemy.Foundation] " + label + ": expected " + expected + ", got " + actual);
-            }
-        }
     }
 }

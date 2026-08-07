@@ -22,17 +22,12 @@ namespace Rimconemy.SurvivalProgression.Tests
 
             string key = "building-regression-run-" + _run;
             BuildingXpAward award;
-            AssertEqual("Building", BuildingProgressionAdapter.BuildingWorkTypeId,
-                "Building XP: stable work type");
-            AssertTrue(BuildingProgressionAdapter.TryCreateAward(key, "pawn-1", 12, out award),
-                "Building XP: valid output creates award");
-            AssertEqual(12, award.Amount, "Building XP: award amount preserved");
-            AssertFalse(BuildingProgressionAdapter.TryCreateAward(key, "pawn-1", 12, out award),
-                "Building XP: duplicate output is rejected");
-            AssertFalse(BuildingProgressionAdapter.TryCreateAward("", "pawn-1", 1, out award),
-                "Building XP: empty idempotency key is rejected");
-            AssertFalse(BuildingProgressionAdapter.TryCreateAward(key + "-zero", "pawn-1", 0, out award),
-                "Building XP: non-positive amount is rejected");
+            ts.Check(Equals("Building", BuildingProgressionAdapter.BuildingWorkTypeId), "Building XP: stable work type");
+            ts.Check(BuildingProgressionAdapter.TryCreateAward(key, "pawn-1", 12, out award), "Building XP: valid output creates award");
+            ts.Check(Equals(12, award.Amount), "Building XP: award amount preserved");
+            ts.Check(!(BuildingProgressionAdapter.TryCreateAward(key, "pawn-1", 12, out award)), "Building XP: duplicate output is rejected");
+            ts.Check(!(BuildingProgressionAdapter.TryCreateAward("", "pawn-1", 1, out award)), "Building XP: empty idempotency key is rejected");
+            ts.Check(!(BuildingProgressionAdapter.TryCreateAward(key + "-zero", "pawn-1", 0, out award)), "Building XP: non-positive amount is rejected");
 
             string summary = "[Rimconemy.SurvivalProgression] Building progression regression tests: "
                 + _passed + " passed, " + _failed + " failed.";
@@ -48,22 +43,6 @@ namespace Rimconemy.SurvivalProgression.Tests
             return true;
         }
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else { _failed++; Log.Error("[Rimconemy.SurvivalProgression] " + label); }
-        }
 
-        private static void AssertFalse(bool condition, string label) { AssertTrue(!condition, label); }
-
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (Equals(expected, actual)) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[Rimconemy.SurvivalProgression] " + label + ": expected " + expected + ", got " + actual);
-            }
-        }
     }
 }

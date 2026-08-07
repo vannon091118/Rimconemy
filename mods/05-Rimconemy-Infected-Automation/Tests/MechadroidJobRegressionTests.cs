@@ -49,13 +49,12 @@ namespace Rimconemy.InfectedAutomation.Tests
                 IdempotencyKey = "jobs|job-lifecycle",
                 CurrentTick = 100L,
             });
-            AssertEqual(MechadroidJobStatus.Queued, job.Status, "Jobs: enqueue creates Queued state");
-            AssertTrue(ledger.TryAssign(job.JobId, 120L), "Jobs: Queued -> Assigned");
-            AssertTrue(ledger.TryBlock(job.JobId, "missing fuel", 130L), "Jobs: Assigned -> Blocked");
-            AssertTrue(ledger.TryAssign(job.JobId, 140L), "Jobs: Blocked -> Assigned after retry");
-            AssertTrue(ledger.TryComplete(job.JobId, 150L), "Jobs: Assigned -> Completed");
-            AssertEqual(MechadroidJobStatus.Completed, ledger.Get(job.JobId).Status,
-                "Jobs: terminal status is Completed");
+            ts.Check(Equals(MechadroidJobStatus.Queued, job.Status), "Jobs: enqueue creates Queued state");
+            ts.Check(ledger.TryAssign(job.JobId, 120L), "Jobs: Queued -> Assigned");
+            ts.Check(ledger.TryBlock(job.JobId, "missing fuel", 130L), "Jobs: Assigned -> Blocked");
+            ts.Check(ledger.TryAssign(job.JobId, 140L), "Jobs: Blocked -> Assigned after retry");
+            ts.Check(ledger.TryComplete(job.JobId, 150L), "Jobs: Assigned -> Completed");
+            ts.Check(Equals(MechadroidJobStatus.Completed, ledger.Get(job.JobId).Status), "Jobs: terminal status is Completed");
         }
 
         private static void TestDuplicateCompletionIsRejected()
@@ -70,10 +69,9 @@ namespace Rimconemy.InfectedAutomation.Tests
                 CurrentTick = 100L,
             });
             ledger.TryAssign("job-once", 110L);
-            AssertTrue(ledger.TryComplete("job-once", 120L), "Jobs: first completion succeeds");
-            AssertFalse(ledger.TryComplete("job-once", 130L), "Jobs: duplicate completion rejected");
-            AssertEqual(120L, ledger.Get("job-once").LastActionTick,
-                "Jobs: duplicate completion does not rewrite action tick");
+            ts.Check(ledger.TryComplete("job-once", 120L), "Jobs: first completion succeeds");
+            ts.Check(!(ledger.TryComplete("job-once", 130L)), "Jobs: duplicate completion rejected");
+            ts.Check(Equals(120L, ledger.Get("job-once").LastActionTick), "Jobs: duplicate completion does not rewrite action tick");
         }
 
         private static void TestBlockedJobHasVisibleReason()
@@ -87,35 +85,17 @@ namespace Rimconemy.InfectedAutomation.Tests
                 IdempotencyKey = "jobs|job-blocked",
                 CurrentTick = 100L,
             });
-            AssertTrue(ledger.TryBlock("job-blocked", "capability unavailable", 110L),
-                "Jobs: queued job can be blocked");
-            AssertEqual("capability unavailable", ledger.Get("job-blocked").BlockReason,
-                "Jobs: blocked reason is persisted in record");
+            ts.Check(ledger.TryBlock("job-blocked", "capability unavailable", 110L), "Jobs: queued job can be blocked");
+            ts.Check(Equals("capability unavailable", ledger.Get("job-blocked").BlockReason), "Jobs: blocked reason is persisted in record");
         }
 
         private static void TestDeterministicJobIdentity()
         {
             string first = MechadroidJobLedger.BuildStableJobId("unit-1", "building-1", "output-1");
             string second = MechadroidJobLedger.BuildStableJobId("unit-1", "building-1", "output-1");
-            AssertEqual(first, second, "Jobs: stable identity is deterministic");
+            ts.Check(Equals(first, second), "Jobs: stable identity is deterministic");
         }
 
-        private static void AssertTrue(bool value, string label)
-        {
-            if (value) _passed++;
-            else { _failed++; Log.Error("[Rimconemy.InfectedAutomation] " + label); }
-        }
 
-        private static void AssertFalse(bool value, string label) { AssertTrue(!value, label); }
-
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (EqualityComparer<T>.Default.Equals(expected, actual)) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[Rimconemy.InfectedAutomation] " + label + ": expected " + expected + ", got " + actual);
-            }
-        }
     }
 }

@@ -71,57 +71,6 @@ namespace Rimconemy.InfectedAutomation.Tests
 
         // ── helper ────────────────────────────────────────────
 
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (!EqualityComparer<T>.Default.Equals(expected, actual))
-            {
-                _failed++;
-                _failures.Add($"{label}: expected {expected}, got {actual}");
-            }
-            else
-            {
-                _passed++;
-            }
-        }
-
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (!condition)
-            {
-                _failed++;
-                _failures.Add($"{label}: expected true, got false");
-            }
-            else
-            {
-                _passed++;
-            }
-        }
-
-        private static void AssertNotNull(object obj, string label)
-        {
-            if (obj == null)
-            {
-                _failed++;
-                _failures.Add($"{label}: expected non-null, got null");
-            }
-            else
-            {
-                _passed++;
-            }
-        }
-
-        private static void AssertNull(object obj, string label)
-        {
-            if (obj != null)
-            {
-                _failed++;
-                _failures.Add($"{label}: expected null, got {obj}");
-            }
-            else
-            {
-                _passed++;
-            }
-        }
 
         /// <summary>
         /// Creates a minimal valid snapshot for testing.
@@ -172,14 +121,14 @@ namespace Rimconemy.InfectedAutomation.Tests
             var state3 = new StoryState();
             var result3 = StorySelector.SelectEvent(profile, snapshot3, state3, catalog, tick);
 
-            AssertNotNull(result1.SelectedEvent, "Det-Refuge: event1");
-            AssertNotNull(result2.SelectedEvent, "Det-Refuge: event2");
-            AssertNotNull(result3.SelectedEvent, "Det-Refuge: event3");
+            ts.Check(result1.SelectedEvent != null, "Det-Refuge: event1");
+            ts.Check(result2.SelectedEvent != null, "Det-Refuge: event2");
+            ts.Check(result3.SelectedEvent != null, "Det-Refuge: event3");
 
-            AssertEqual(result1.SelectedEvent.EventId, result2.SelectedEvent.EventId, "Det-Refuge: eventId 1==2");
-            AssertEqual(result1.SelectedEvent.EventId, result3.SelectedEvent.EventId, "Det-Refuge: eventId 1==3");
-            AssertEqual(result1.DeterminismKey, result2.DeterminismKey, "Det-Refuge: key 1==2");
-            AssertEqual(result1.DeterminismKey, result3.DeterminismKey, "Det-Refuge: key 1==3");
+            ts.Check(Equals(result1.SelectedEvent.EventId, result2.SelectedEvent.EventId), "Det-Refuge: eventId 1==2");
+            ts.Check(Equals(result1.SelectedEvent.EventId, result3.SelectedEvent.EventId), "Det-Refuge: eventId 1==3");
+            ts.Check(Equals(result1.DeterminismKey, result2.DeterminismKey), "Det-Refuge: key 1==2");
+            ts.Check(Equals(result1.DeterminismKey, result3.DeterminismKey), "Det-Refuge: key 1==3");
         }
 
         /// <summary>Gate G2: Determinism with Survival profile.</summary>
@@ -192,10 +141,10 @@ namespace Rimconemy.InfectedAutomation.Tests
             var result1 = StorySelector.SelectEvent(profile, CreateTestSnapshot(tick), new StoryState(), catalog, tick);
             var result2 = StorySelector.SelectEvent(profile, CreateTestSnapshot(tick), new StoryState(), catalog, tick);
 
-            AssertNotNull(result1.SelectedEvent, "Det-Survival: event1");
-            AssertNotNull(result2.SelectedEvent, "Det-Survival: event2");
-            AssertEqual(result1.SelectedEvent.EventId, result2.SelectedEvent.EventId, "Det-Survival: same event");
-            AssertEqual(result1.DeterminismKey, result2.DeterminismKey, "Det-Survival: same key");
+            ts.Check(result1.SelectedEvent != null, "Det-Survival: event1");
+            ts.Check(result2.SelectedEvent != null, "Det-Survival: event2");
+            ts.Check(Equals(result1.SelectedEvent.EventId, result2.SelectedEvent.EventId), "Det-Survival: same event");
+            ts.Check(Equals(result1.DeterminismKey, result2.DeterminismKey), "Det-Survival: same key");
         }
 
         /// <summary>Gate G2: Determinism with Collapse profile.</summary>
@@ -208,10 +157,10 @@ namespace Rimconemy.InfectedAutomation.Tests
             var result1 = StorySelector.SelectEvent(profile, CreateTestSnapshot(tick), new StoryState(), catalog, tick);
             var result2 = StorySelector.SelectEvent(profile, CreateTestSnapshot(tick), new StoryState(), catalog, tick);
 
-            AssertNotNull(result1.SelectedEvent, "Det-Collapse: event1");
-            AssertNotNull(result2.SelectedEvent, "Det-Collapse: event2");
-            AssertEqual(result1.SelectedEvent.EventId, result2.SelectedEvent.EventId, "Det-Collapse: same event");
-            AssertEqual(result1.DeterminismKey, result2.DeterminismKey, "Det-Collapse: same key");
+            ts.Check(result1.SelectedEvent != null, "Det-Collapse: event1");
+            ts.Check(result2.SelectedEvent != null, "Det-Collapse: event2");
+            ts.Check(Equals(result1.SelectedEvent.EventId, result2.SelectedEvent.EventId), "Det-Collapse: same event");
+            ts.Check(Equals(result1.DeterminismKey, result2.DeterminismKey), "Det-Collapse: same key");
         }
 
         // ── idempotency tests ─────────────────────────────────
@@ -238,10 +187,9 @@ namespace Rimconemy.InfectedAutomation.Tests
 
             // First call: should select an event
             var result1 = StorySelector.SelectEvent(profile, CreateTestSnapshot(tick), state, catalog, tick);
-            AssertNotNull(result1.SelectedEvent, "Idem: first call has event");
-            AssertTrue(result1.HasEvent, "Idem: first call HasEvent=true");
-            AssertTrue(!string.IsNullOrEmpty(result1.IdempotencyKey),
-                "Idem: first call carries IdempotencyKey for the caller to commit");
+            ts.Check(result1.SelectedEvent != null, "Idem: first call has event");
+            ts.Check(result1.HasEvent, "Idem: first call HasEvent=true");
+            ts.Check(!string.IsNullOrEmpty(result1.IdempotencyKey), "Idem: first call carries IdempotencyKey for the caller to commit");
 
             // Simulate StoryDirector.GameComponentTick's success path:
             // QueueSelectedIncident returned true → CommitSelection burns
@@ -256,8 +204,8 @@ namespace Rimconemy.InfectedAutomation.Tests
 
             // Second call with SAME state: should be blocked by idempotency
             var result2 = StorySelector.SelectEvent(profile, CreateTestSnapshot(tick + 1000), state, catalog, tick + 1000);
-            AssertNull(result2.SelectedEvent, "Idem: second call blocked");
-            AssertTrue(result2.Reason.Contains("Idempotency"), "Idem: reason mentions idempotency");
+            ts.Check(result2.SelectedEvent == null, "Idem: second call blocked");
+            ts.Check(result2.Reason.Contains("Idempotency"), "Idem: reason mentions idempotency");
         }
 
         /// <summary>
@@ -281,7 +229,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             // "Game session 1": select an event
             var state1 = new StoryState();
             var result1 = StorySelector.SelectEvent(profile, CreateTestSnapshot(tick), state1, catalog, tick);
-            AssertNotNull(result1.SelectedEvent, "Idem-Save: first event");
+            ts.Check(result1.SelectedEvent != null, "Idem-Save: first event");
 
             // Simulate a successful fire: CommitSelection writes the key the
             // selector carried back. Pre-refactor this was burned inside
@@ -304,8 +252,8 @@ namespace Rimconemy.InfectedAutomation.Tests
 
             // "Game session 2": same conditions, should be blocked
             var result2 = StorySelector.SelectEvent(profile, CreateTestSnapshot(tick), state2, catalog, tick);
-            AssertNull(result2.SelectedEvent, "Idem-Save: blocked after simulated load");
-            AssertTrue(result2.Reason.Contains("Idempotency"), "Idem-Save: reason mentions idempotency");
+            ts.Check(result2.SelectedEvent == null, "Idem-Save: blocked after simulated load");
+            ts.Check(result2.Reason.Contains("Idempotency"), "Idem-Save: reason mentions idempotency");
         }
 
         // ── profile tests ─────────────────────────────────────
@@ -316,26 +264,26 @@ namespace Rimconemy.InfectedAutomation.Tests
             var survival = SettingProfile.GetBuiltIn("Rimconemy_Survival");
             var collapse = SettingProfile.GetBuiltIn("Rimconemy_Collapse");
 
-            AssertNotNull(refuge, "Profile: Refuge not null");
-            AssertNotNull(survival, "Profile: Survival not null");
-            AssertNotNull(collapse, "Profile: Collapse not null");
+            ts.Check(refuge != null, "Profile: Refuge not null");
+            ts.Check(survival != null, "Profile: Survival not null");
+            ts.Check(collapse != null, "Profile: Collapse not null");
 
-            AssertEqual("Rimconemy_Refuge", refuge.ProfileId, "Profile: Refuge Id");
-            AssertEqual("Rimconemy_Survival", survival.ProfileId, "Profile: Survival Id");
-            AssertEqual("Rimconemy_Collapse", collapse.ProfileId, "Profile: Collapse Id");
+            ts.Check(Equals("Rimconemy_Refuge", refuge.ProfileId), "Profile: Refuge Id");
+            ts.Check(Equals("Rimconemy_Survival", survival.ProfileId), "Profile: Survival Id");
+            ts.Check(Equals("Rimconemy_Collapse", collapse.ProfileId), "Profile: Collapse Id");
 
             // Verify key fields are non-zero
-            AssertTrue(refuge.MaxEscalationBand == 1, "Profile: Refuge band=1");
-            AssertTrue(survival.MaxEscalationBand == 2, "Profile: Survival band=2");
-            AssertTrue(collapse.MaxEscalationBand == 3, "Profile: Collapse band=3");
-            AssertTrue(collapse.MaxActiveEvents == 2, "Profile: Collapse maxActive=2");
+            ts.Check(refuge.MaxEscalationBand == 1, "Profile: Refuge band=1");
+            ts.Check(survival.MaxEscalationBand == 2, "Profile: Survival band=2");
+            ts.Check(collapse.MaxEscalationBand == 3, "Profile: Collapse band=3");
+            ts.Check(collapse.MaxActiveEvents == 2, "Profile: Collapse maxActive=2");
         }
 
         private static void TestGetBuiltIn_UnknownReturnsNull()
         {
-            AssertNull(SettingProfile.GetBuiltIn("Nonexistent"), "Profile: unknown returns null");
-            AssertNull(SettingProfile.GetBuiltIn(""), "Profile: empty returns null");
-            AssertNull(SettingProfile.GetBuiltIn(null), "Profile: null returns null");
+            ts.Check(SettingProfile.GetBuiltIn("Nonexistent") == null, "Profile: unknown returns null");
+            ts.Check(SettingProfile.GetBuiltIn("") == null, "Profile: empty returns null");
+            ts.Check(SettingProfile.GetBuiltIn(null) == null, "Profile: null returns null");
         }
 
         // ── RNG tests ─────────────────────────────────────────
@@ -357,14 +305,14 @@ namespace Rimconemy.InfectedAutomation.Tests
             float v4 = rng.NextFloat();
 
             // Verify they are in [0,1)
-            AssertTrue(v0 >= 0f && v0 < 1f, "RNG: v0 in range");
-            AssertTrue(v1 >= 0f && v1 < 1f, "RNG: v1 in range");
+            ts.Check(v0 >= 0f && v0 < 1f, "RNG: v0 in range");
+            ts.Check(v1 >= 0f && v1 < 1f, "RNG: v1 in range");
 
             // Re-seed and verify reproducibility
             var rng2 = new DeterministicRng(42);
-            AssertEqual(v0, rng2.NextFloat(), "RNG: v0 reproducible");
-            AssertEqual(v1, rng2.NextFloat(), "RNG: v1 reproducible");
-            AssertEqual(v2, rng2.NextFloat(), "RNG: v2 reproducible");
+            ts.Check(Equals(v0, rng2.NextFloat()), "RNG: v0 reproducible");
+            ts.Check(Equals(v1, rng2.NextFloat()), "RNG: v1 reproducible");
+            ts.Check(Equals(v2, rng2.NextFloat()), "RNG: v2 reproducible");
 
             // Advance to 1000 and verify it doesn't crash/loop
             var rng3 = new DeterministicRng(42);
@@ -373,7 +321,7 @@ namespace Rimconemy.InfectedAutomation.Tests
 
             // After 1000 calls, should still produce valid values
             float v1000 = rng3.NextFloat();
-            AssertTrue(v1000 >= 0f && v1000 < 1f, "RNG: v1000 in range");
+            ts.Check(v1000 >= 0f && v1000 < 1f, "RNG: v1000 in range");
         }
 
         /// <summary>NextInt(n) must return values in [0, n).</summary>
@@ -385,14 +333,14 @@ namespace Rimconemy.InfectedAutomation.Tests
             for (int i = 0; i < 700; i++)
             {
                 int val = rng.NextInt(7);
-                AssertTrue(val >= 0 && val < 7, $"RNG-NextInt: val={val} in [0,7)");
+                ts.Check(val >= 0 && val < 7, $"RNG-NextInt: val={val} in [0,7)");
                 buckets[val]++;
             }
 
             // Every bucket should have at least some hits
             // (statistically impossible to have zero with 700 samples for 7 buckets)
             for (int i = 0; i < 7; i++)
-                AssertTrue(buckets[i] > 0, $"RNG-NextInt: bucket[{i}]={buckets[i]} > 0");
+                ts.Check(buckets[i] > 0, $"RNG-NextInt: bucket[{i}]={buckets[i]} > 0");
         }
 
         // ── diagnostics tests ─────────────────────────────────
@@ -406,11 +354,11 @@ namespace Rimconemy.InfectedAutomation.Tests
 
             var result = StorySelector.SelectEvent(profile, CreateTestSnapshot(tick), state, catalog, tick);
 
-            AssertTrue(!string.IsNullOrEmpty(result.Reason), "Diag: reason not empty");
-            AssertTrue(result.Reason.Contains("Selected"), "Diag: reason contains 'Selected'");
-            AssertTrue(result.CandidateCount > 0, "Diag: candidateCount > 0");
-            AssertTrue(result.TotalWeight > 0f, "Diag: totalWeight > 0");
-            AssertTrue(!string.IsNullOrEmpty(result.DeterminismKey), "Diag: determinismKey not empty");
+            ts.Check(!string.IsNullOrEmpty(result.Reason), "Diag: reason not empty");
+            ts.Check(result.Reason.Contains("Selected"), "Diag: reason contains 'Selected'");
+            ts.Check(result.CandidateCount > 0, "Diag: candidateCount > 0");
+            ts.Check(result.TotalWeight > 0f, "Diag: totalWeight > 0");
+            ts.Check(!string.IsNullOrEmpty(result.DeterminismKey), "Diag: determinismKey not empty");
         }
 
         // ── edge case tests ───────────────────────────────────
@@ -421,8 +369,8 @@ namespace Rimconemy.InfectedAutomation.Tests
             var state = new StoryState();
             var result = StorySelector.SelectEvent(null, CreateTestSnapshot(0), state, catalog, 0);
 
-            AssertNull(result.SelectedEvent, "Edge: no profile → null");
-            AssertTrue(result.Reason.Contains("No active profile"), "Edge: reason correct");
+            ts.Check(result.SelectedEvent == null, "Edge: no profile → null");
+            ts.Check(result.Reason.Contains("No active profile"), "Edge: reason correct");
         }
 
         private static void TestNoCatalog_ReturnsNull()
@@ -431,8 +379,8 @@ namespace Rimconemy.InfectedAutomation.Tests
             var state = new StoryState();
             var result = StorySelector.SelectEvent(profile, CreateTestSnapshot(0), state, null, 0);
 
-            AssertNull(result.SelectedEvent, "Edge: no catalog → null");
-            AssertTrue(result.Reason.Contains("No event catalog"), "Edge: reason correct");
+            ts.Check(result.SelectedEvent == null, "Edge: no catalog → null");
+            ts.Check(result.Reason.Contains("No event catalog"), "Edge: reason correct");
         }
 
         // ── slop-audit 2026-08-04 audit-fix A1 ───────────────
@@ -472,8 +420,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             }
 
             var seen = new HashSet<int>(seeds);
-            AssertTrue(seen.Count >= 6,
-                $"BuildSeed spreads: {seen.Count}/8 distinct seeds for 8 variants (would be 1 if identity).");
+            ts.Check(seen.Count >= 6, $"BuildSeed spreads: {seen.Count}/8 distinct seeds for 8 variants (would be 1 if identity).");
 
             // Spot-check that not all seeds cluster around a single value:
             int first = seeds[0];
@@ -482,7 +429,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             {
                 if (Math.Abs(seeds[i] - first) > 1000) farCount++;
             }
-            AssertTrue(farCount >= 4, $"BuildSeed far-spread: {farCount}/7 hops >=1000 from seeds[0].");
+            ts.Check(farCount >= 4, $"BuildSeed far-spread: {farCount}/7 hops >=1000 from seeds[0].");
         }
 
         // ── slop-audit 2026-08-04 audit-fix A2 ───────────────
@@ -504,13 +451,13 @@ namespace Rimconemy.InfectedAutomation.Tests
             for (int i = 0; i < total; i++)
             {
                 float v = rng.NextFloat();
-                AssertTrue(v >= 0f && v < 1f, "RNG-Chi2: value in [0,1)");
+                ts.Check(v >= 0f && v < 1f, "RNG-Chi2: value in [0,1)");
                 int b = (int)(v * buckets);
                 if (b == buckets) b = buckets - 1;
                 counts[b]++;
             }
             for (int i = 0; i < buckets; i++)
-                AssertTrue(counts[i] > 50, $"RNG-Chi2: bucket[{i}]={counts[i]} > 50 (uniform floor).");
+                ts.Check(counts[i] > 50, $"RNG-Chi2: bucket[{i}]={counts[i]} > 50 (uniform floor).");
 
             double expected = (double)total / buckets;
             double chi = 0;
@@ -526,8 +473,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             // 17 means a clearly-skewed RNG would fail (e.g. 50% of values
             // landing in one bucket produces chi around 500). Threshold 30
             // was too lax - it always passed even for obviously-biased RNG.
-            AssertTrue(chi < 17.0,
-                $"RNG-Chi2: chi-square={chi:F2} < 17.0 (df=9, p=0.05 critical=16.919).");
+            ts.Check(chi < 17.0, $"RNG-Chi2: chi-square={chi:F2} < 17.0 (df=9, p=0.05 critical=16.919).");
         }
 
         // ── slop-audit 2026-08-04 audit-fix A3 ───────────────
@@ -551,12 +497,8 @@ namespace Rimconemy.InfectedAutomation.Tests
             // Differential: critical=true MUST produce a strictly higher
             // supply share. We require at least +20% absolute and at least
             // 1.5x relative. Without the boost these would be ~equal.
-            AssertTrue(
-                supplyRateTrue > supplyRateFalse + 0.20,
-                $"StorySelector-ResourceCritical: critical=true {supplyRateTrue:F2} > critical=false {supplyRateFalse:F2} + 0.20.");
-            AssertTrue(
-                supplyRateTrue >= supplyRateFalse * 1.5,
-                $"StorySelector-ResourceCritical: critical=true {supplyRateTrue:F2} >= 1.5x critical=false {supplyRateFalse:F2}.");
+            ts.Check(supplyRateTrue > supplyRateFalse + 0.20, $"StorySelector-ResourceCritical: critical=true {supplyRateTrue:F2} > critical=false {supplyRateFalse:F2} + 0.20.");
+            ts.Check(supplyRateTrue >= supplyRateFalse * 1.5, $"StorySelector-ResourceCritical: critical=true {supplyRateTrue:F2} >= 1.5x critical=false {supplyRateFalse:F2}.");
         }
 
         /// <summary>
@@ -615,20 +557,15 @@ namespace Rimconemy.InfectedAutomation.Tests
 
             var result = StorySelector.SelectEvent(profile, CreateTestSnapshot(tick), state, catalog, tick);
 
-            AssertNotNull(result.SelectedEvent, "FireOrRetry: selector still picks an event");
-            AssertTrue(result.HasEvent, "FireOrRetry: HasEvent=true");
-            AssertTrue(!string.IsNullOrEmpty(result.IdempotencyKey),
-                "FireOrRetry: result carries IdempotencyKey for the caller to commit");
+            ts.Check(result.SelectedEvent != null, "FireOrRetry: selector still picks an event");
+            ts.Check(result.HasEvent, "FireOrRetry: HasEvent=true");
+            ts.Check(!string.IsNullOrEmpty(result.IdempotencyKey), "FireOrRetry: result carries IdempotencyKey for the caller to commit");
 
             // The state MUST have grown exactly ZERO state writes.
-            AssertEqual(initialTotalEvents, state.TotalEventsSelected,
-                "FireOrRetry: TotalEventsSelected not incremented by selector");
-            AssertEqual(initialIdKeysCount, state.IdempotencyKeys != null ? state.IdempotencyKeys.Count : 0,
-                "FireOrRetry: IdempotencyKeys count not changed by selector");
-            AssertEqual(initialLastEventTick, state.LastEventTick == 0 ? (long?)null : state.LastEventTick,
-                "FireOrRetry: LastEventTick not set by selector");
-            AssertEqual(initialCooldowns.Count, state.EventCooldowns.Count,
-                "FireOrRetry: EventCooldowns count not changed by selector");
+            ts.Check(Equals(initialTotalEvents, state.TotalEventsSelected), "FireOrRetry: TotalEventsSelected not incremented by selector");
+            ts.Check(Equals(initialIdKeysCount, state.IdempotencyKeys != null ? state.IdempotencyKeys.Count : 0), "FireOrRetry: IdempotencyKeys count not changed by selector");
+            ts.Check(Equals(initialLastEventTick, state.LastEventTick == 0 ? (long?)null : state.LastEventTick), "FireOrRetry: LastEventTick not set by selector");
+            ts.Check(Equals(initialCooldowns.Count, state.EventCooldowns.Count), "FireOrRetry: EventCooldowns count not changed by selector");
         }
 
         /// <summary>
@@ -645,7 +582,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             long tick = 60000;
 
             var result = StorySelector.SelectEvent(profile, CreateTestSnapshot(tick), new StoryState(), catalog, tick);
-            AssertNotNull(result.SelectedEvent, "CommitApi: selector picks event");
+            ts.Check(result.SelectedEvent != null, "CommitApi: selector picks event");
 
             var state = new StoryState();
             int idKeysBefore = state.IdempotencyKeys.Count;
@@ -658,22 +595,14 @@ namespace Rimconemy.InfectedAutomation.Tests
                 seed: result.SelectionSeed,
                 cooldownTicks: result.CooldownTicks);
 
-            AssertEqual(idKeysBefore + 1, state.IdempotencyKeys.Count,
-                "CommitApi: idempotency key recorded");
-            AssertTrue(state.IdempotencyKeys.Contains(result.IdempotencyKey),
-                "CommitApi: idempotency keys set contains the carrier key");
-            AssertEqual(result.SelectedEvent.EventId, state.LastEventId,
-                "CommitApi: LastEventId set to selected event");
-            AssertEqual(tick, state.LastEventTick,
-                "CommitApi: LastEventTick set to commit tick");
-            AssertEqual(result.SelectionSeed, state.SelectionSeed,
-                "CommitApi: SelectionSeed set to carrier seed");
-            AssertTrue(state.TotalEventsSelected >= 1,
-                "CommitApi: TotalEventsSelected incremented");
-            AssertTrue(state.IsOnCooldown(result.SelectedEvent.EventId, tick),
-                "CommitApi: cooldown active immediately after commit");
-            AssertEqual(activeEventsBefore + 1, state.ActiveEventIds != null ? state.ActiveEventIds.Count : 0,
-                "CommitApi: ActiveEventIds gained the new event");
+            ts.Check(Equals(idKeysBefore + 1, state.IdempotencyKeys.Count), "CommitApi: idempotency key recorded");
+            ts.Check(state.IdempotencyKeys.Contains(result.IdempotencyKey), "CommitApi: idempotency keys set contains the carrier key");
+            ts.Check(Equals(result.SelectedEvent.EventId, state.LastEventId), "CommitApi: LastEventId set to selected event");
+            ts.Check(Equals(tick, state.LastEventTick), "CommitApi: LastEventTick set to commit tick");
+            ts.Check(Equals(result.SelectionSeed, state.SelectionSeed), "CommitApi: SelectionSeed set to carrier seed");
+            ts.Check(state.TotalEventsSelected >= 1, "CommitApi: TotalEventsSelected incremented");
+            ts.Check(state.IsOnCooldown(result.SelectedEvent.EventId, tick), "CommitApi: cooldown active immediately after commit");
+            ts.Check(Equals(activeEventsBefore + 1, state.ActiveEventIds != null ? state.ActiveEventIds.Count : 0), "CommitApi: ActiveEventIds gained the new event");
         }
     }
 }

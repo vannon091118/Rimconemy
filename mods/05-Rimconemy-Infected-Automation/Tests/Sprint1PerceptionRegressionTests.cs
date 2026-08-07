@@ -66,26 +66,21 @@ namespace Rimconemy.InfectedAutomation.Tests
             original.KnownTargets.Add(99);
 
             bool success = ScribeRoundTripHelper.RoundTrip(original);
-            AssertTrue(success, "SR1. ChunkState Scribe roundtrip succeeds");
+            ts.Check(success, "SR1. ChunkState Scribe roundtrip succeeds");
 
             // Rebuild after roundtrip — the Scribe helper mutates the original.
             // Key invariants after reload:
-            AssertEqual(14, original.ChunkX, "SR2. ChunkX preserved after roundtrip");
-            AssertEqual(7, original.ChunkZ, "SR3. ChunkZ preserved after roundtrip");
+            ts.Check(Equals(14, original.ChunkX), "SR2. ChunkX preserved after roundtrip");
+            ts.Check(Equals(7, original.ChunkZ), "SR3. ChunkZ preserved after roundtrip");
             AssertFloat(0.72f, original.LightExposure, 0.001f, "SR4. LightExposure preserved");
             AssertFloat(0.33f, original.NoiseLevel, 0.001f, "SR5. NoiseLevel preserved");
-            AssertTrue(original.AlertState == ChunkAlertState.Investigating,
-                "SR6. AlertState preserved");
-            AssertTrue(original.LastUpdatedTick == 60000L,
-                "SR7. LastUpdatedTick preserved");
-            AssertTrue(original.KnownTargets.Count == 3,
-                "SR8. KnownTargets count preserved (3)");
-            AssertTrue(original.KnownTargets.Contains(42)
+            ts.Check(original.AlertState == ChunkAlertState.Investigating, "SR6. AlertState preserved");
+            ts.Check(original.LastUpdatedTick == 60000L, "SR7. LastUpdatedTick preserved");
+            ts.Check(original.KnownTargets.Count == 3, "SR8. KnownTargets count preserved (3)");
+            ts.Check(original.KnownTargets.Contains(42)
                 && original.KnownTargets.Contains(17)
-                && original.KnownTargets.Contains(99),
-                "SR9. KnownTargets exact values preserved");
-            AssertTrue(original.SchemaVersion == 1,
-                "SR10. SchemaVersion preserved");
+                && original.KnownTargets.Contains(99), "SR9. KnownTargets exact values preserved");
+            ts.Check(original.SchemaVersion == 1, "SR10. SchemaVersion preserved");
 
             // Attraction is derived data — NOT persisted.
             AssertFloat(0f, original.Attraction, 0f,
@@ -101,23 +96,23 @@ namespace Rimconemy.InfectedAutomation.Tests
             // ChunkKey formula: z * 1000 + x.
             chunk.ChunkX = 15;
             chunk.ChunkZ = 3;
-            AssertTrue(chunk.ChunkKey == 3015, "CB1. ChunkKey = z*1000+x");
+            ts.Check(chunk.ChunkKey == 3015, "CB1. ChunkKey = z*1000+x");
 
             chunk.ChunkX = 0;
             chunk.ChunkZ = 0;
-            AssertTrue(chunk.ChunkKey == 0, "CB2. ChunkKey zero for origin");
+            ts.Check(chunk.ChunkKey == 0, "CB2. ChunkKey zero for origin");
 
             // IsStale: currentTick - LastUpdatedTick > maxAge.
             chunk.LastUpdatedTick = 100L;
-            AssertTrue(chunk.IsStale(1000L, 500L), "CB3. IsStale true when gap > max");
-            AssertTrue(!chunk.IsStale(1000L, 1500L), "CB4. IsStale false when gap < max");
-            AssertTrue(!chunk.IsStale(100L, 10L), "CB5. IsStale false at exact boundary");
+            ts.Check(chunk.IsStale(1000L, 500L), "CB3. IsStale true when gap > max");
+            ts.Check(!chunk.IsStale(1000L, 1500L), "CB4. IsStale false when gap < max");
+            ts.Check(!chunk.IsStale(100L, 10L), "CB5. IsStale false at exact boundary");
 
             // AlertState enum values.
-            AssertTrue((int)ChunkAlertState.Dormant == 0, "CB6. Dormant=0");
-            AssertTrue((int)ChunkAlertState.Suspicious == 1, "CB7. Suspicious=1");
-            AssertTrue((int)ChunkAlertState.Investigating == 2, "CB8. Investigating=2");
-            AssertTrue((int)ChunkAlertState.Assault == 3, "CB9. Assault=3");
+            ts.Check((int)ChunkAlertState.Dormant == 0, "CB6. Dormant=0");
+            ts.Check((int)ChunkAlertState.Suspicious == 1, "CB7. Suspicious=1");
+            ts.Check((int)ChunkAlertState.Investigating == 2, "CB8. Investigating=2");
+            ts.Check((int)ChunkAlertState.Assault == 3, "CB9. Assault=3");
         }
 
         // ── 3. LightSystem Daylight Curve ─────────────────────
@@ -199,15 +194,15 @@ namespace Rimconemy.InfectedAutomation.Tests
 
             AssertFloat(1.0f, f0, 0.001f, "NS1. Falloff=1.0 at d=0 (center)");
             AssertFloat(0.5f, fR, 0.001f, "NS2. Falloff=0.5 at d=r");
-            AssertTrue(fHalf > 0.5f && fHalf < 1.0f, "NS3. Falloff at d=r/2 between 0.5 and 1");
-            AssertTrue(f2R > 0.15f && f2R < 0.25f, "NS4. Falloff at d=2r between 0.15 and 0.25");
-            AssertTrue(fFar < 0.01f, "NS5. Falloff at d=10r near zero");
+            ts.Check(fHalf > 0.5f && fHalf < 1.0f, "NS3. Falloff at d=r/2 between 0.5 and 1");
+            ts.Check(f2R > 0.15f && f2R < 0.25f, "NS4. Falloff at d=2r between 0.15 and 0.25");
+            ts.Check(fFar < 0.01f, "NS5. Falloff at d=10r near zero");
 
             // Monotonic: falloff always decreases with distance.
-            AssertTrue(f0 > fHalf, "NS6. Falloff monotonic: f(0) > f(r/2)");
-            AssertTrue(fHalf > fR, "NS7. Falloff monotonic: f(r/2) > f(r)");
-            AssertTrue(fR > f2R, "NS8. Falloff monotonic: f(r) > f(2r)");
-            AssertTrue(f2R > fFar, "NS9. Falloff monotonic: f(2r) > f(10r)");
+            ts.Check(f0 > fHalf, "NS6. Falloff monotonic: f(0) > f(r/2)");
+            ts.Check(fHalf > fR, "NS7. Falloff monotonic: f(r/2) > f(r)");
+            ts.Check(fR > f2R, "NS8. Falloff monotonic: f(r) > f(2r)");
+            ts.Check(f2R > fFar, "NS9. Falloff monotonic: f(2r) > f(10r)");
 
             // Generator noise values.
             AssertFloat(0.30f, NoiseSystem_GeneratorBase, 0.001f,
@@ -282,7 +277,7 @@ namespace Rimconemy.InfectedAutomation.Tests
 
             // Minimum sight: baseSight=1, night, fog
             float sightMin = PerceptionMath.ComputeSightRadius(1f, 0f, 0.4f);
-            AssertTrue(sightMin > 0.2f && sightMin < 0.5f, "PS7. Minimum sight ~0.43 (1 pawn, night+fog)");
+            ts.Check(sightMin > 0.2f && sightMin < 0.5f, "PS7. Minimum sight ~0.43 (1 pawn, night+fog)");
         }
 
         // ── Reflection Helpers for LightSystem ────────────────
@@ -315,11 +310,6 @@ namespace Rimconemy.InfectedAutomation.Tests
 
         // ── Assert Helpers ────────────────────────────────────
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else { _failed++; Log.Error("[Sprint1Regression] " + label); }
-        }
 
         private static void AssertFloat(float expected, float actual, float tolerance, string label)
         {
@@ -332,14 +322,5 @@ namespace Rimconemy.InfectedAutomation.Tests
             }
         }
 
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (Equals(expected, actual)) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[Sprint1Regression] " + label + ": expected " + expected + ", got " + actual);
-            }
-        }
     }
 }

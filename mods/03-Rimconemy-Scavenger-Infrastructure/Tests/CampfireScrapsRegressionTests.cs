@@ -62,24 +62,22 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
         /// <summary>I1: SteelScraps resource category exists.</summary>
         private static void TestI1_SteelScrapsCategoryExists()
         {
-            AssertTrue(!string.IsNullOrEmpty(ResourceCategory.SteelScraps),
-                "I1.SteelScraps constant not empty");
-            AssertTrue(ResourceCategory.All.Contains(ResourceCategory.SteelScraps),
-                "I1.SteelScraps is in ResourceCategory.All");
+            ts.Check(!string.IsNullOrEmpty(ResourceCategory.SteelScraps), "I1.SteelScraps constant not empty");
+            ts.Check(ResourceCategory.All.Contains(ResourceCategory.SteelScraps), "I1.SteelScraps is in ResourceCategory.All");
         }
 
         /// <summary>I2: Campfire ThingDef is loadable.</summary>
         private static void TestI2_CampfireDefLoadable()
         {
             var def = DefDatabase<ThingDef>.GetNamedSilentFail("Rimconemy_Campfire");
-            AssertTrue(def != null, "I2.Rimconemy_Campfire ThingDef is loaded");
+            ts.Check(def != null, "I2.Rimconemy_Campfire ThingDef is loaded");
         }
 
         /// <summary>I3: BurnSteelScraps recipe exists.</summary>
         private static void TestI3_BurnRecipeExists()
         {
             var def = DefDatabase<RecipeDef>.GetNamedSilentFail("Rimconemy_BurnSteelScraps");
-            AssertTrue(def != null, "I3.Rimconemy_BurnSteelScraps RecipeDef is loaded");
+            ts.Check(def != null, "I3.Rimconemy_BurnSteelScraps RecipeDef is loaded");
         }
 
         /// <summary>I4: Woody IS in Wall stuffCategories (D2 — Wood removal reverted, B1).</summary>
@@ -94,7 +92,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             bool hasWoody = wall.stuffCategories.Exists(c => c != null && c.defName == "Woody");
             // D2-Harmonisierung (2026-08-05): Woody-Removal aus Wall/Door/Barricade
             // wurde zurückgenommen. Holz ist wieder Stuff-Material.
-            AssertTrue(hasWoody, "I4.Woody IS in Wall stuffCategories (D2 revert)");
+            ts.Check(hasWoody, "I4.Woody IS in Wall stuffCategories (D2 revert)");
         }
 
         /// <summary>I5: Woody IS in Door stuffCategories (D2 — Wood removal reverted, B1).</summary>
@@ -107,7 +105,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 return;
             }
             bool hasWoody = door.stuffCategories.Exists(c => c != null && c.defName == "Woody");
-            AssertTrue(hasWoody, "I5.Woody IS in Door stuffCategories (D2 revert)");
+            ts.Check(hasWoody, "I5.Woody IS in Door stuffCategories (D2 revert)");
         }
 
         /// <summary>I6: Stony IS in Wall stuffCategories.</summary>
@@ -120,7 +118,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 return;
             }
             bool hasStony = wall.stuffCategories.Exists(c => c != null && c.defName == "Stony");
-            AssertTrue(hasStony, "I6.Stony IS in Wall stuffCategories");
+            ts.Check(hasStony, "I6.Stony IS in Wall stuffCategories");
         }
 
         /// <summary>I7: Stony IS in Door stuffCategories.</summary>
@@ -133,16 +131,16 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 return;
             }
             bool hasStony = door.stuffCategories.Exists(c => c != null && c.defName == "Stony");
-            AssertTrue(hasStony, "I7.Stony IS in Door stuffCategories");
+            ts.Check(hasStony, "I7.Stony IS in Door stuffCategories");
         }
 
         /// <summary>I8: SteelScraps ThingDef is valid.</summary>
         private static void TestI8_SteelScrapsDefValid()
         {
             var def = DefDatabase<ThingDef>.GetNamedSilentFail("Rimconemy_SteelScraps");
-            AssertTrue(def != null, "I8.Rimconemy_SteelScraps ThingDef is loaded");
+            ts.Check(def != null, "I8.Rimconemy_SteelScraps ThingDef is loaded");
             if (def != null)
-                AssertTrue(def.stackLimit > 0, "I8.SteelScraps has valid stackLimit");
+                ts.Check(def.stackLimit > 0, "I8.SteelScraps has valid stackLimit");
         }
 
         /// <summary>I9: BurnSteelScraps recipe produces Steel.</summary>
@@ -154,13 +152,12 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 Log.Message("[Rimconemy.ScavengerInfrastructure] CampfireScraps TEST-DEFERRED I9: Recipe not loaded.");
                 return;
             }
-            AssertTrue(recipe.products != null && recipe.products.Count > 0,
-                "I9.BurnSteelScraps has products");
+            ts.Check(recipe.products != null && recipe.products.Count > 0, "I9.BurnSteelScraps has products");
             if (recipe.products != null && recipe.products.Count > 0)
             {
                 bool producesSteel = recipe.products.Exists(p =>
                     p.thingDef != null && p.thingDef.defName == "Steel");
-                AssertTrue(producesSteel, "I9.BurnSteelScraps produces Steel");
+                ts.Check(producesSteel, "I9.BurnSteelScraps produces Steel");
             }
         }
 
@@ -173,19 +170,14 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 Log.Message("[Rimconemy.ScavengerInfrastructure] CampfireScraps TEST-DEFERRED I10: Campfire not loaded.");
                 return;
             }
-            AssertTrue(campfire.recipes != null, "I10.Campfire has recipes list");
+            ts.Check(campfire.recipes != null, "I10.Campfire has recipes list");
             if (campfire.recipes != null)
             {
                 bool hasRecipe = campfire.recipes.Exists(r =>
                     r != null && r.defName == "Rimconemy_BurnSteelScraps");
-                AssertTrue(hasRecipe, "I10.Campfire recipes list contains BurnSteelScraps");
+                ts.Check(hasRecipe, "I10.Campfire recipes list contains BurnSteelScraps");
             }
         }
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else { _failed++; Log.Error("[Rimconemy.ScavengerInfrastructure] " + label); }
-        }
     }
 }

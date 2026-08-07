@@ -59,70 +59,6 @@ namespace Rimconemy.Foundation.Tests
             return true;
         }
 
-        private static void AssertFalse(bool condition, string label)
-        {
-            if (condition)
-            {
-                _failed++;
-                _failures.Add(label + ": expected false, got true");
-            }
-            else
-            {
-                _passed++;
-            }
-        }
-
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (!condition)
-            {
-                _failed++;
-                _failures.Add(label + ": expected true, got false");
-            }
-            else
-            {
-                _passed++;
-            }
-        }
-
-        private static void AssertNull(object obj, string label)
-        {
-            if (obj != null)
-            {
-                _failed++;
-                _failures.Add(label + ": expected null, got " + obj);
-            }
-            else
-            {
-                _passed++;
-            }
-        }
-
-        private static void AssertEqual(int expected, int actual, string label)
-        {
-            if (expected != actual)
-            {
-                _failed++;
-                _failures.Add(label + ": expected " + expected + ", got " + actual);
-            }
-            else
-            {
-                _passed++;
-            }
-        }
-
-        private static void AssertEqual(long expected, long actual, string label)
-        {
-            if (expected != actual)
-            {
-                _failed++;
-                _failures.Add(label + ": expected " + expected + ", got " + actual);
-            }
-            else
-            {
-                _passed++;
-            }
-        }
 
         // ── tests ──────────────────────────────────────
 
@@ -139,8 +75,8 @@ namespace Rimconemy.Foundation.Tests
 
             // Without Mod 05 registered, capability gate returns false and
             // reason should be null.
-            AssertFalse(result, "CPS-Nomod05: returns false (capability gate)");
-            AssertNull(reason, "CPS-Nomod05: reason is null when capability missing");
+            ts.Check(!(result), "CPS-Nomod05: returns false (capability gate)");
+            ts.Check(reason == null, "CPS-Nomod05: reason is null when capability missing");
         }
 
         /// <summary>
@@ -157,8 +93,8 @@ namespace Rimconemy.Foundation.Tests
             {
                 string reason = "should-be-overwritten-to-null";
                 bool result = CrossPackageState.TryReadStoryGameOverPending(out reason);
-                AssertFalse(result, "CPS-Nocrash iter " + i + ": false");
-                AssertNull(reason, "CPS-Nocrash iter " + i + ": null reason");
+                ts.Check(!(result), "CPS-Nocrash iter " + i + ": false");
+                ts.Check(reason == null, "CPS-Nocrash iter " + i + ": null reason");
             }
         }
 
@@ -205,17 +141,17 @@ namespace Rimconemy.Foundation.Tests
             if (!mod04Active)
             {
                 // Absence branch: capability gate refuses the read.
-                AssertFalse(result, "CPS-Wallet-Absent: returns false when Mod 04 not registered");
-                AssertEqual(0L, balance, "CPS-Wallet-Absent: balance is 0 when capability missing");
+                ts.Check(!(result), "CPS-Wallet-Absent: returns false when Mod 04 not registered");
+                ts.Check(Equals(0L, balance), "CPS-Wallet-Absent: balance is 0 when capability missing");
             }
             else
             {
                 // Presence branch: helper succeeds and returns a real
                 // (possibly 0L-on-empty-wallet) total; the 999L sentinel
                 // must NOT remain.
-                AssertTrue(result, "CPS-Wallet-Present: returns true when Mod 04 registered");
-                AssertTrue(balance != 999L, "CPS-Wallet-Present: sentinel 999L was overwritten");
-                AssertTrue(balance >= 0L, "CPS-Wallet-Present: actual balance is non-negative");
+                ts.Check(result, "CPS-Wallet-Present: returns true when Mod 04 registered");
+                ts.Check(balance != 999L, "CPS-Wallet-Present: sentinel 999L was overwritten");
+                ts.Check(balance >= 0L, "CPS-Wallet-Present: actual balance is non-negative");
             }
         }
 
@@ -237,13 +173,13 @@ namespace Rimconemy.Foundation.Tests
 
                 if (!mod04Active)
                 {
-                    AssertFalse(result, "CPS-Wallet-Nocrash iter " + i + ": returns false when Mod 04 absent");
-                    AssertEqual(0L, balance, "CPS-Wallet-Nocrash iter " + i + ": balance is 0L when absent");
+                    ts.Check(!(result), "CPS-Wallet-Nocrash iter " + i + ": returns false when Mod 04 absent");
+                    ts.Check(Equals(0L, balance), "CPS-Wallet-Nocrash iter " + i + ": balance is 0L when absent");
                 }
                 else
                 {
-                    AssertTrue(result, "CPS-Wallet-Nocrash iter " + i + ": returns true when Mod 04 present");
-                    AssertTrue(balance != -1L, "CPS-Wallet-Nocrash iter " + i + ": sentinel -1L was overwritten");
+                    ts.Check(result, "CPS-Wallet-Nocrash iter " + i + ": returns true when Mod 04 present");
+                    ts.Check(balance != -1L, "CPS-Wallet-Nocrash iter " + i + ": sentinel -1L was overwritten");
                 }
             }
         }
@@ -267,12 +203,12 @@ namespace Rimconemy.Foundation.Tests
             {
                 // Presence: 42L was overwritten by the actual wallet total
                 // (which can legally be 0L on a fresh empty wallet).
-                AssertTrue(balance != 42L, "CPS-Wallet-Default-Present: sentinel 42L was overwritten");
+                ts.Check(balance != 42L, "CPS-Wallet-Default-Present: sentinel 42L was overwritten");
             }
             else
             {
                 // Absence: 42L was overwritten by 0L.
-                AssertEqual(0L, balance, "CPS-Wallet-Default-Absent: false-return sets balance=0L");
+                ts.Check(Equals(0L, balance), "CPS-Wallet-Default-Absent: false-return sets balance=0L");
             }
         }
     }

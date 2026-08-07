@@ -28,14 +28,10 @@ namespace Rimconemy.InfectedAutomation.Tests
 
             // 1. Event-key is stable across Scribe authoring — a single
             //    "starter-infected-spawn" key per map.
-            AssertEqual(
-                "starter-infected-spawn",
-                RimconemyStartEnemiesLedger.EventKey_OneInfectedSpawn,
-                "EventKey: stable for cross-package documentation");
+            ts.Check(Equals("starter-infected-spawn", RimconemyStartEnemiesLedger.EventKey_OneInfectedSpawn), "EventKey: stable for cross-package documentation");
 
             // 2. Stable schema.
-            AssertEqual(1, RimconemyStartEnemiesLedger.CurrentSchemaVersion,
-                "CurrentSchemaVersion = 1");
+            ts.Check(Equals(1, RimconemyStartEnemiesLedger.CurrentSchemaVersion), "CurrentSchemaVersion = 1");
 
             // 3. Mirrors the ledger semantics with a local HashSet. We don't
             //    instantiate the GameComponent directly (needs Verse.Game);
@@ -46,13 +42,12 @@ namespace Rimconemy.InfectedAutomation.Tests
             bool TryMark(int mapId) => seen.Add(KeyFor(mapId));
             bool IsCompleted(int mapId) => seen.Contains(KeyFor(mapId));
 
-            AssertTrue(TryMark(7), "first mark: accepted");
-            AssertTrue(IsCompleted(7), "after mark: completed");
-            AssertFalse(TryMark(7), "duplicate mark: idempotent (false on second)");
-            AssertTrue(TryMark(8), "different map: accepted (no cross-map collision)");
-            AssertEqual(2, seen.Count, "two distinct maps: 2 entries");
-            AssertEqual(2, HashKeyCount(seen, 9) + 2,
-                "unrelated mapId is *not* present (sanity)");
+            ts.Check(TryMark(7), "first mark: accepted");
+            ts.Check(IsCompleted(7), "after mark: completed");
+            ts.Check(!(TryMark(7)), "duplicate mark: idempotent (false on second)");
+            ts.Check(TryMark(8), "different map: accepted (no cross-map collision)");
+            ts.Check(Equals(2, seen.Count), "two distinct maps: 2 entries");
+            ts.Check(Equals(2, HashKeyCount(seen, 9) + 2), "unrelated mapId is *not* present (sanity)");
 
             // 4. Roundtrip via parallel list. BuildingProgressionLedger + RimconemyStart-
             //    State use the same writer; we mirror it here for ledger parity.
@@ -70,9 +65,9 @@ namespace Rimconemy.InfectedAutomation.Tests
                 foreach (var raw in line.Substring(idx + "keys=".Length).Split(','))
                     if (!string.IsNullOrEmpty(raw)) rebuilt.Add(raw.Trim());
             }
-            AssertEqual(2, rebuilt.Count, "saved keys rebuild to 2 entries (no dups)");
-            AssertTrue(rebuilt.Contains("7:starter-infected-spawn"), "map 7 survives");
-            AssertTrue(rebuilt.Contains("8:starter-infected-spawn"), "map 8 survives");
+            ts.Check(Equals(2, rebuilt.Count), "saved keys rebuild to 2 entries (no dups)");
+            ts.Check(rebuilt.Contains("7:starter-infected-spawn"), "map 7 survives");
+            ts.Check(rebuilt.Contains("8:starter-infected-spawn"), "map 8 survives");
 
             string summary = "[Rimconemy.InfectedAutomation] StartEnemies regression tests: "
                 + _passed + " passed, " + _failed + " failed.";
@@ -98,22 +93,6 @@ namespace Rimconemy.InfectedAutomation.Tests
             return hits;
         }
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else { _failed++; Log.Error("[Rimconemy.InfectedAutomation.StartEnemiesRegression] " + label); }
-        }
-        private static void AssertFalse(bool condition, string label) { AssertTrue(!condition, label); }
 
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (Equals(expected, actual)) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[Rimconemy.InfectedAutomation.StartEnemiesRegression] " + label
-                    + ": expected " + expected + ", got " + actual);
-            }
-        }
     }
 }

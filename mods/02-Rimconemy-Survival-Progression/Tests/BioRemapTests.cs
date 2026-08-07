@@ -127,28 +127,17 @@ namespace Rimconemy.SurvivalProgression.Tests
                 TestLightPositiveTraits, TestStrongPositiveTraits,
                 TestLightNegativeTraits, TestHeavyNegativeTraits);
 
-            AssertEqual(SkillBudgetCalculator.TraitZone.Buffer, lowNeutral.Zone,
-                "TraitSelection: balance -5 is buffer");
-            AssertEqual(SkillBudgetCalculator.TraitZone.Buffer, highNeutral.Zone,
-                "TraitSelection: balance +3 is buffer");
-            AssertEqual(SkillBudgetCalculator.TraitZone.NegativeLight, lightNegative.Zone,
-                "TraitSelection: balance -6 is light negative");
-            AssertEqual(SkillBudgetCalculator.TraitZone.PositiveLight, lightPositive.Zone,
-                "TraitSelection: balance +4 is light positive");
-            AssertEqual(SkillBudgetCalculator.TraitZone.NegativeStrong, strongNegative.Zone,
-                "TraitSelection: balance -10 is strong negative");
-            AssertEqual(0, SkillBudgetCalculator.NegativeTraitCount(-5),
-                "TraitSelection: helper keeps balance -5 neutral");
-            AssertEqual(0, lowNeutral.PositiveTraitIds.Count + lowNeutral.NegativeTraitIds.Count,
-                "TraitSelection: neutral lower boundary has no traits");
-            AssertEqual(0, highNeutral.PositiveTraitIds.Count + highNeutral.NegativeTraitIds.Count,
-                "TraitSelection: neutral upper boundary has no traits");
-            AssertEqual(1, lightNegative.NegativeTraitIds.Count,
-                "TraitSelection: light negative has one trait");
-            AssertEqual(1, lightPositive.PositiveTraitIds.Count,
-                "TraitSelection: light positive has one trait");
-            AssertEqual(2, strongNegative.NegativeTraitIds.Count,
-                "TraitSelection: strong negative has two traits");
+            ts.Check(Equals(SkillBudgetCalculator.TraitZone.Buffer, lowNeutral.Zone), "TraitSelection: balance -5 is buffer");
+            ts.Check(Equals(SkillBudgetCalculator.TraitZone.Buffer, highNeutral.Zone), "TraitSelection: balance +3 is buffer");
+            ts.Check(Equals(SkillBudgetCalculator.TraitZone.NegativeLight, lightNegative.Zone), "TraitSelection: balance -6 is light negative");
+            ts.Check(Equals(SkillBudgetCalculator.TraitZone.PositiveLight, lightPositive.Zone), "TraitSelection: balance +4 is light positive");
+            ts.Check(Equals(SkillBudgetCalculator.TraitZone.NegativeStrong, strongNegative.Zone), "TraitSelection: balance -10 is strong negative");
+            ts.Check(Equals(0, SkillBudgetCalculator.NegativeTraitCount(-5)), "TraitSelection: helper keeps balance -5 neutral");
+            ts.Check(Equals(0, lowNeutral.PositiveTraitIds.Count + lowNeutral.NegativeTraitIds.Count), "TraitSelection: neutral lower boundary has no traits");
+            ts.Check(Equals(0, highNeutral.PositiveTraitIds.Count + highNeutral.NegativeTraitIds.Count), "TraitSelection: neutral upper boundary has no traits");
+            ts.Check(Equals(1, lightNegative.NegativeTraitIds.Count), "TraitSelection: light negative has one trait");
+            ts.Check(Equals(1, lightPositive.PositiveTraitIds.Count), "TraitSelection: light positive has one trait");
+            ts.Check(Equals(2, strongNegative.NegativeTraitIds.Count), "TraitSelection: strong negative has two traits");
         }
 
         private static void TestTraitSelection_IsDeterministic()
@@ -160,13 +149,9 @@ namespace Rimconemy.SurvivalProgression.Tests
                 TestLightPositiveTraits, TestStrongPositiveTraits,
                 TestLightNegativeTraits, TestHeavyNegativeTraits);
 
-            AssertEqual(first.Zone, second.Zone, "TraitSelection: same seed keeps zone");
-            AssertEqual(string.Join("|", first.PositiveTraitIds),
-                string.Join("|", second.PositiveTraitIds),
-                "TraitSelection: same seed keeps positive choice");
-            AssertEqual(string.Join("|", first.NegativeTraitIds),
-                string.Join("|", second.NegativeTraitIds),
-                "TraitSelection: same seed keeps negative choice");
+            ts.Check(Equals(first.Zone, second.Zone), "TraitSelection: same seed keeps zone");
+            ts.Check(Equals(string.Join("|", first.PositiveTraitIds), string.Join("|", second.PositiveTraitIds)), "TraitSelection: same seed keeps positive choice");
+            ts.Check(Equals(string.Join("|", first.NegativeTraitIds), string.Join("|", second.NegativeTraitIds)), "TraitSelection: same seed keeps negative choice");
         }
 
         private static void TestTraitSelection_SeedCanChangePoolChoice()
@@ -177,58 +162,27 @@ namespace Rimconemy.SurvivalProgression.Tests
             string seed99 = string.Join("|", TraitAssigner.SelectTraitsForBudget(29, 99,
                 TestLightPositiveTraits, TestStrongPositiveTraits,
                 TestLightNegativeTraits, TestHeavyNegativeTraits).PositiveTraitIds);
-            AssertEqual("Positive_F", seed42,
-                "TraitSelection: H5 seed 42 has the documented deterministic choice");
-            AssertEqual("Positive_B", seed99,
-                "TraitSelection: H5 seed 99 has the documented deterministic choice");
-            AssertTrue(seed42 != seed99,
-                "TraitSelection: H5 seeds 42 and 99 can produce different choices");
+            ts.Check(Equals("Positive_F", seed42), "TraitSelection: H5 seed 42 has the documented deterministic choice");
+            ts.Check(Equals("Positive_B", seed99), "TraitSelection: H5 seed 99 has the documented deterministic choice");
+            ts.Check(seed42 != seed99, "TraitSelection: H5 seeds 42 and 99 can produce different choices");
         }
 
         private static void TestTraitSelection_HandlesEmptyPools()
         {
             var result = TraitAssigner.SelectTraitsForBudget(29, 42,
                 null, new string[0], null, new string[0]);
-            AssertEqual(0, result.PositiveTraitIds.Count + result.NegativeTraitIds.Count,
-                "TraitSelection: null and empty pools are safe");
+            ts.Check(Equals(0, result.PositiveTraitIds.Count + result.NegativeTraitIds.Count), "TraitSelection: null and empty pools are safe");
 
             var duplicated = TraitAssigner.SelectTraitsForBudget(15, 42,
                 TestLightPositiveTraits, TestStrongPositiveTraits,
                 TestLightNegativeTraits,
                 new[] { "Heavy_A", "Heavy_A", "Heavy_B" });
-            AssertEqual(2, duplicated.NegativeTraitIds.Count,
-                "TraitSelection: strong negative skips duplicate pool entries");
-            AssertTrue(duplicated.NegativeTraitIds[0] != duplicated.NegativeTraitIds[1],
-                "TraitSelection: strong negative choices are distinct");
+            ts.Check(Equals(2, duplicated.NegativeTraitIds.Count), "TraitSelection: strong negative skips duplicate pool entries");
+            ts.Check(duplicated.NegativeTraitIds[0] != duplicated.NegativeTraitIds[1], "TraitSelection: strong negative choices are distinct");
         }
 
         // ── helpers ────────────────────────────────────
 
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (!EqualityComparer<T>.Default.Equals(expected, actual))
-            {
-                _failed++;
-                _failures.Add(label + ": expected " + expected + ", got " + actual);
-            }
-            else
-            {
-                _passed++;
-            }
-        }
-
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (!condition)
-            {
-                _failed++;
-                _failures.Add(label + ": expected true, got false");
-            }
-            else
-            {
-                _passed++;
-            }
-        }
 
         private static void AssertDoesNotThrow(System.Action action, string label)
         {
@@ -248,14 +202,12 @@ namespace Rimconemy.SurvivalProgression.Tests
 
         private static void TestFixedBiologicalAge_IsExactly18()
         {
-            AssertEqual(18, CharacterSetup.FixedBiologicalAge,
-                "BioRemap: FixedBiologicalAge == 18 (NOT 63, NOT 25)");
+            ts.Check(Equals(18, CharacterSetup.FixedBiologicalAge), "BioRemap: FixedBiologicalAge == 18 (NOT 63, NOT 25)");
         }
 
         private static void TestFixedChronologicalAge_IsExactly18()
         {
-            AssertEqual(18, CharacterSetup.FixedChronologicalAge,
-                "BioRemap: FixedChronologicalAge == 18");
+            ts.Check(Equals(18, CharacterSetup.FixedChronologicalAge), "BioRemap: FixedChronologicalAge == 18");
         }
 
         private static void TestApplyAndCountAgeChanges_DoesNotThrow_PreGame()
@@ -266,8 +218,7 @@ namespace Rimconemy.SurvivalProgression.Tests
             int result = -42;
             AssertDoesNotThrow(() => { result = CharacterSetup.ApplyAndCountAgeChanges(); },
                 "BioRemap: ApplyAndCountAgeChanges runs without NRE");
-            AssertEqual(0, result,
-                "BioRemap: ApplyAndCountAgeChanges returns 0 in pre-game state");
+            ts.Check(Equals(0, result), "BioRemap: ApplyAndCountAgeChanges returns 0 in pre-game state");
         }
 
         private static void TestApplyAndCountAgeChanges_IsIdempotent()
@@ -277,14 +228,12 @@ namespace Rimconemy.SurvivalProgression.Tests
             // returned by the second call must NOT exceed the first call's count.
             int first = CharacterSetup.ApplyAndCountAgeChanges();
             int second = CharacterSetup.ApplyAndCountAgeChanges();
-            AssertTrue(second >= 0,
-                "BioRemap: idempotent second-call returns non-negative count");
+            ts.Check(second >= 0, "BioRemap: idempotent second-call returns non-negative count");
             // We don't assert equal because the second call may legitimately
             // be lower (the predicate matches what we already changed). The key
             // invariant is: never returns negative (that would mean we toggled
             // a previously-fixed pawn back, which is the bug).
-            AssertTrue(second <= first,
-                "BioRemap: idempotent second-call returns count <= first (" + first + " vs " + second + ")");
+            ts.Check(second <= first, "BioRemap: idempotent second-call returns count <= first (" + first + " vs " + second + ")");
         }
 
         private static void TestFixAllStartingPawnsAge_WrapperDoesNotThrow()
@@ -305,13 +254,11 @@ namespace Rimconemy.SurvivalProgression.Tests
             // again. Asserting visibility here makes that a build-time regression.
             var asm = Assembly.GetExecutingAssembly();
             var charSetup = asm.GetType("Rimconemy.SurvivalProgression.Character.CharacterSetup");
-            AssertTrue(charSetup != null,
-                "BioRemap (audit-R5): CharacterSetup type exists in this assembly");
+            ts.Check(charSetup != null, "BioRemap (audit-R5): CharacterSetup type exists in this assembly");
             if (charSetup == null) return;
 
             var fixAge = charSetup.GetMethod("FixAge", BindingFlags.Public | BindingFlags.Static);
-            AssertTrue(fixAge != null,
-                "BioRemap (audit-R5): CharacterSetup.FixAge has public visibility (customization-page patch hook)");
+            ts.Check(fixAge != null, "BioRemap (audit-R5): CharacterSetup.FixAge has public visibility (customization-page patch hook)");
         }
 
         private static void TestCustomizationPageHarmonyPatch_IsDeclared()
@@ -323,16 +270,14 @@ namespace Rimconemy.SurvivalProgression.Tests
             // This test verifies both the patch class AND the Postfix method exist.
             var asm = Assembly.GetExecutingAssembly();
             var patchType = asm.GetType("Rimconemy.SurvivalProgression.Patches.Page_ConfigureStartingPawnsBioPatch");
-            AssertTrue(patchType != null,
-                "BioRemap (audit-R5): Page_ConfigureStartingPawnsBioPatch type exists in this assembly");
+            ts.Check(patchType != null, "BioRemap (audit-R5): Page_ConfigureStartingPawnsBioPatch type exists in this assembly");
 
             if (patchType == null) return;
 
             // The Postfix method must be public static so Harmony.Patch() can apply it.
             var postfixMethod = patchType.GetMethod("Postfix",
                 BindingFlags.Static | BindingFlags.Public);
-            AssertTrue(postfixMethod != null,
-                "BioRemap (audit-R5): Page_ConfigureStartingPawnsBioPatch.Postfix is public static (manual Harmony.Patch target)");
+            ts.Check(postfixMethod != null, "BioRemap (audit-R5): Page_ConfigureStartingPawnsBioPatch.Postfix is public static (manual Harmony.Patch target)");
         }
     }
 }

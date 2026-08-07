@@ -43,31 +43,25 @@ namespace Rimconemy.InfectedAutomation.Tests
 
             // No Current.Game during pre-game boot — GetLatest must NOT
             // throw and must return null.
-            AssertNull(ThreatSnapshotBridge.GetLatest(),
-                "no-game bridge returns null (defensive)");
-            AssertEqual(0f, ThreatSnapshotBridge.GetLatestPressure(),
-                "no-game bridge pressure is 0f (defensive)");
+            ts.Check(ThreatSnapshotBridge.GetLatest() == null, "no-game bridge returns null (defensive)");
+            ts.Check(Equals(0f, ThreatSnapshotBridge.GetLatestPressure()), "no-game bridge pressure is 0f (defensive)");
 
             // After Release, Latest is null again.
             ResetForTests();
-            AssertTrue(ThreatSnapshotBridge.Latest == null,
-                "ResetForTests clears the Latest property");
+            ts.Check(ThreatSnapshotBridge.Latest == null, "ResetForTests clears the Latest property");
 
             // Defensive tick-pre-Load: even with hat-tick simulated
             // access by repeated GetLatest() calls, no exception escapes.
             for (int i = 0; i < 3; i++)
             {
-                AssertNull(ThreatSnapshotBridge.GetLatest(),
-                    "repeated GetLatest() stays safe (run " + (_run + i) + ")");
+                ts.Check(ThreatSnapshotBridge.GetLatest() == null, "repeated GetLatest() stays safe (run " + (_run + i) + ")");
             }
 
             // ── IsCachedForCurrentTick contracts (tick-stamp cache) ──
             // Empty cache → cache miss for any tick queried.
             ResetForTests();
-            AssertFalse(ThreatSnapshotBridge.IsCachedForCurrentTick(0L),
-                "empty cache: IsCachedForCurrentTick(0) is false");
-            AssertFalse(ThreatSnapshotBridge.IsCachedForCurrentTick(60000L),
-                "empty cache: IsCachedForCurrentTick(any) is false");
+            ts.Check(!(ThreatSnapshotBridge.IsCachedForCurrentTick(0L)), "empty cache: IsCachedForCurrentTick(0) is false");
+            ts.Check(!(ThreatSnapshotBridge.IsCachedForCurrentTick(60000L)), "empty cache: IsCachedForCurrentTick(any) is false");
 
             // Plant a known snapshot at tick T; the cache must report
             // hit for T and miss for T±1.
@@ -76,26 +70,20 @@ namespace Rimconemy.InfectedAutomation.Tests
                 new ThreatAggregator { TotalPressure = 0.42f, LastUpdatedTick = t, ScopeId = "test" },
                 t);
 
-            AssertTrue(ThreatSnapshotBridge.IsCachedForCurrentTick(t),
-                "IsCachedForCurrentTick(t) returns true when cache stamped at t");
-            AssertFalse(ThreatSnapshotBridge.IsCachedForCurrentTick(t + 1L),
-                "IsCachedForCurrentTick(t+1) returns false when cache stamped at t");
-            AssertFalse(ThreatSnapshotBridge.IsCachedForCurrentTick(t - 1L),
-                "IsCachedForCurrentTick(t-1) returns false when cache stamped at t");
-            AssertFalse(ThreatSnapshotBridge.IsCachedForCurrentTick(0L),
-                "IsCachedForCurrentTick(0) returns false when cache has a real stamp");
+            ts.Check(ThreatSnapshotBridge.IsCachedForCurrentTick(t), "IsCachedForCurrentTick(t) returns true when cache stamped at t");
+            ts.Check(!(ThreatSnapshotBridge.IsCachedForCurrentTick(t + 1L)), "IsCachedForCurrentTick(t+1) returns false when cache stamped at t");
+            ts.Check(!(ThreatSnapshotBridge.IsCachedForCurrentTick(t - 1L)), "IsCachedForCurrentTick(t-1) returns false when cache stamped at t");
+            ts.Check(!(ThreatSnapshotBridge.IsCachedForCurrentTick(0L)), "IsCachedForCurrentTick(0) returns false when cache has a real stamp");
 
             // LatestTick companion mirrors the planted value.
-            AssertEqual(t, ThreatSnapshotBridge.LatestTick,
-                "LatestTick mirrors the planted tick stamp");
+            ts.Check(Equals(t, ThreatSnapshotBridge.LatestTick), "LatestTick mirrors the planted tick stamp");
 
             // LatestTick==0 is the "never produced" sentinel: even
             // when Latest != null, the bridge refuses to claim a hit.
             ThreatSnapshotBridge.SetLatestForTests(
                 new ThreatAggregator { TotalPressure = 0.5f, LastUpdatedTick = 0L, ScopeId = "test" },
                 0L);
-            AssertFalse(ThreatSnapshotBridge.IsCachedForCurrentTick(0L),
-                "LatestTick==0 is treated as cache miss even if Latest != null");
+            ts.Check(!(ThreatSnapshotBridge.IsCachedForCurrentTick(0L)), "LatestTick==0 is treated as cache miss even if Latest != null");
 
             // GetOrResolveForTick returns the cached instance on hit,
             // and a fresh (null in this no-game state) on miss.
@@ -103,8 +91,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 new ThreatAggregator { TotalPressure = 0.7f, LastUpdatedTick = t, ScopeId = "test" },
                 t);
             ThreatAggregator cachedHit = ThreatSnapshotBridge.GetOrResolveForTick(t);
-            AssertTrue(cachedHit != null && cachedHit.TotalPressure == 0.7f,
-                "GetOrResolveForTick on hit returns cached instance with original pressure");
+            ts.Check(cachedHit != null && cachedHit.TotalPressure == 0.7f, "GetOrResolveForTick on hit returns cached instance with original pressure");
 
             ResetForTests();
 
@@ -129,25 +116,5 @@ namespace Rimconemy.InfectedAutomation.Tests
             ThreatSnapshotBridge.ResetForTests();
         }
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else { _failed++; Log.Error("[Rimconemy.InfectedAutomation] " + label); }
-        }
-        private static void AssertFalse(bool condition, string label) { AssertTrue(!condition, label); }
-        private static void AssertNull<T>(T value, string label) where T : class
-        {
-            if (value == null) _passed++;
-            else { _failed++; Log.Error("[Rimconemy.InfectedAutomation] " + label + " (expected null, got " + value + ")"); }
-        }
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (Equals(expected, actual)) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[Rimconemy.InfectedAutomation] " + label + ": expected " + expected + ", got " + actual);
-            }
-        }
     }
 }

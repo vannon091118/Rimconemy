@@ -65,27 +65,12 @@ namespace Rimconemy.SurvivalProgression.Tests
 
         // ── helpers ────────────────────────────────────────────
 
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (!EqualityComparer<T>.Default.Equals(expected, actual))
-            {
-                _failed++;
-                _failures.Add($"{label}: expected {expected}, got {actual}");
-            }
-            else _passed++;
-        }
-
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (!condition) { _failed++; _failures.Add($"{label}: expected true, got false"); }
-            else _passed++;
-        }
 
         // ── catalog tests ──────────────────────────────────────
 
         private static void TestCatalog_RegisteredThreeMappings()
         {
-            AssertEqual(3, NeedMappingService.All.Count, "Catalog: count==3");
+            ts.Check(Equals(3, NeedMappingService.All.Count), "Catalog: count==3");
         }
 
         private static void TestSettingNeedClass_IsConcreteAndDormant()
@@ -93,10 +78,8 @@ namespace Rimconemy.SurvivalProgression.Tests
             // RimWorld instantiates NeedDef.needClass through reflection while
             // evaluating pawn needs. The abstract RimWorld.Need must never be
             // used as the XML target; this is the regression for CA9011A3.
-            AssertTrue(!typeof(Need_SettingIdentity).IsAbstract,
-                "NeedDef target: setting identity is concrete");
-            AssertEqual(typeof(RimWorld.Need), typeof(Need_SettingIdentity).BaseType,
-                "NeedDef target: setting identity derives from Need");
+            ts.Check(!typeof(Need_SettingIdentity).IsAbstract, "NeedDef target: setting identity is concrete");
+            ts.Check(Equals(typeof(RimWorld.Need), typeof(Need_SettingIdentity).BaseType), "NeedDef target: setting identity derives from Need");
         }
 
         private static void TestSettingNeedDefs_ResolveConcreteDormantClass()
@@ -111,7 +94,7 @@ namespace Rimconemy.SurvivalProgression.Tests
             foreach (string defName in settingDefNames)
             {
                 var def = Verse.DefDatabase<RimWorld.NeedDef>.GetNamedSilentFail(defName);
-                AssertTrue(def != null, $"NeedDef contract: {defName} resolves");
+                ts.Check(def != null, $"NeedDef contract: {defName} resolves");
                 if (def == null)
                     continue;
 
@@ -121,10 +104,8 @@ namespace Rimconemy.SurvivalProgression.Tests
                         | System.Reflection.BindingFlags.Public
                         | System.Reflection.BindingFlags.NonPublic);
                 var needClass = needClassField?.GetValue(def) as System.Type;
-                AssertEqual(typeof(Need_SettingIdentity), needClass,
-                    $"NeedDef contract: {defName} concrete class");
-                AssertTrue(needClass != null && !needClass.IsAbstract,
-                    $"NeedDef contract: {defName} non-abstract class");
+                ts.Check(Equals(typeof(Need_SettingIdentity), needClass), $"NeedDef contract: {defName} concrete class");
+                ts.Check(needClass != null && !needClass.IsAbstract, $"NeedDef contract: {defName} non-abstract class");
 
                 foreach (string flagName in new[]
                 {
@@ -140,8 +121,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                             | System.Reflection.BindingFlags.Public
                             | System.Reflection.BindingFlags.NonPublic);
                     bool enabled = flagField != null && (bool)flagField.GetValue(def);
-                    AssertTrue(enabled,
-                        $"NeedDef contract: {defName}.{flagName}=true");
+                    ts.Check(enabled, $"NeedDef contract: {defName}.{flagName}=true");
                 }
             }
         }
@@ -149,40 +129,40 @@ namespace Rimconemy.SurvivalProgression.Tests
         private static void TestCatalog_FoodPointsToFoodSetting()
         {
             var m = NeedMappingService.Get(NeedMappingService.FoodSetting);
-            AssertTrue(m != null, "Catalog: Food mapping exists");
-            AssertEqual(NeedMappingService.FoodSetting, m.SettingDefName, "Catalog: Food defName");
+            ts.Check(m != null, "Catalog: Food mapping exists");
+            ts.Check(Equals(NeedMappingService.FoodSetting, m.SettingDefName), "Catalog: Food defName");
         }
 
         private static void TestCatalog_SafetyPointsToSafetySetting()
         {
             var m = NeedMappingService.Get(NeedMappingService.SafetySetting);
-            AssertTrue(m != null, "Catalog: Safety mapping exists");
-            AssertTrue(m.IsCompositeSafety, "Catalog: Safety is composite");
+            ts.Check(m != null, "Catalog: Safety mapping exists");
+            ts.Check(m.IsCompositeSafety, "Catalog: Safety is composite");
         }
 
         private static void TestCatalog_SocialPointsToSocialSetting()
         {
             var m = NeedMappingService.Get(NeedMappingService.SocialSetting);
-            AssertTrue(m != null, "Catalog: Social mapping exists");
+            ts.Check(m != null, "Catalog: Social mapping exists");
         }
 
         private static void TestSampleByName_UnknownSettingReturnsHalf()
         {
             float v = NeedMappingService.SampleByName(null, "Rimconemy_Need_NotARealOne");
-            AssertEqual(0.5f, v, "Sample: unknown -> 0.5");
+            ts.Check(Equals(0.5f, v), "Sample: unknown -> 0.5");
         }
 
         private static void TestGet_UnknownSettingReturnsNull()
         {
-            AssertTrue(NeedMappingService.Get(NeedMappingService.FoodSetting) != null, "Get: known exists");
-            AssertTrue(NeedMappingService.Get("DoesNotExist") == null, "Get: unknown is null");
+            ts.Check(NeedMappingService.Get(NeedMappingService.FoodSetting) != null, "Get: known exists");
+            ts.Check(NeedMappingService.Get("DoesNotExist") == null, "Get: unknown is null");
         }
 
         private static void TestSampleByName_NullPawnReturnsHalf()
         {
             // Real catalog mapping with null pawn must return 0.5 (sane fallback).
             float v = NeedMappingService.SampleByName(null, NeedMappingService.FoodSetting);
-            AssertEqual(0.5f, v, "Sample: null pawn -> 0.5");
+            ts.Check(Equals(0.5f, v), "Sample: null pawn -> 0.5");
         }
 
         // ── projector / aggregator tests ──────────────────────
@@ -199,9 +179,9 @@ namespace Rimconemy.SurvivalProgression.Tests
             // NeedMapping with the same default constructor path.
             // However, the SampleAggregate needs a Pawn; so instead we
             // verify the static catalog wiring: Food is set to Average.
-            AssertEqual(Aggregator.Average, NeedMappingService.Get(NeedMappingService.FoodSetting).Aggregator, "Aggregator: Food=Average");
-            AssertEqual(Aggregator.Average, NeedMappingService.Get(NeedMappingService.SafetySetting).Aggregator, "Aggregator: Safety=Average");
-            AssertEqual(Aggregator.Maximum, NeedMappingService.Get(NeedMappingService.SocialSetting).Aggregator, "Aggregator: Social=Maximum (recreation peak)");
+            ts.Check(Equals(Aggregator.Average, NeedMappingService.Get(NeedMappingService.FoodSetting).Aggregator), "Aggregator: Food=Average");
+            ts.Check(Equals(Aggregator.Average, NeedMappingService.Get(NeedMappingService.SafetySetting).Aggregator), "Aggregator: Safety=Average");
+            ts.Check(Equals(Aggregator.Maximum, NeedMappingService.Get(NeedMappingService.SocialSetting).Aggregator), "Aggregator: Social=Maximum (recreation peak)");
         }
 
         private static void Aggregator_Minimum_PicksFloor()
@@ -213,8 +193,8 @@ namespace Rimconemy.SurvivalProgression.Tests
                 "synthetic-min",
                 new List<RimWorld.NeedDef>(),
                 Aggregator.Minimum);
-            AssertEqual(Aggregator.Minimum, m.Aggregator, "Aggregator: Min honored");
-            AssertEqual(0.5f, m.SampleAggregate(null), "Aggregator: empty sources -> 0.5");
+            ts.Check(Equals(Aggregator.Minimum, m.Aggregator), "Aggregator: Min honored");
+            ts.Check(Equals(0.5f, m.SampleAggregate(null)), "Aggregator: empty sources -> 0.5");
         }
 
         private static void Aggregator_Maximum_PicksCeiling()
@@ -223,8 +203,8 @@ namespace Rimconemy.SurvivalProgression.Tests
                 "synthetic-max",
                 new List<RimWorld.NeedDef>(),
                 Aggregator.Maximum);
-            AssertEqual(Aggregator.Maximum, m.Aggregator, "Aggregator: Max honored");
-            AssertEqual(0.5f, m.SampleAggregate(null), "Aggregator: empty sources -> 0.5");
+            ts.Check(Equals(Aggregator.Maximum, m.Aggregator), "Aggregator: Max honored");
+            ts.Check(Equals(0.5f, m.SampleAggregate(null)), "Aggregator: empty sources -> 0.5");
         }
 
         // ── composite safety tests ─────────────────────────────
@@ -241,9 +221,9 @@ namespace Rimconemy.SurvivalProgression.Tests
                 safetyHealthWeight: 0.65f,
                 safetyRestWeight: 0.35f);
             float v = m.SampleAggregate(null);
-            AssertTrue(v >= 0.49f && v <= 0.51f, $"CompositeSafety: null-pawn near 0.5 ({v})");
-            AssertEqual(0.65f, m.SafetyHealthWeight, "CompositeSafety: weight 0.65");
-            AssertEqual(0.35f, m.SafetyRestWeight, "CompositeSafety: weight 0.35");
+            ts.Check(v >= 0.49f && v <= 0.51f, $"CompositeSafety: null-pawn near 0.5 ({v})");
+            ts.Check(Equals(0.65f, m.SafetyHealthWeight), "CompositeSafety: weight 0.65");
+            ts.Check(Equals(0.35f, m.SafetyRestWeight), "CompositeSafety: weight 0.35");
         }
 
         private static void CompositeSafety_NullHealthDefaultsToHalf()
@@ -256,7 +236,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                 Aggregator.Average,
                 isCompositeSafety: true);
             float v = m.SampleAggregate(null);
-            AssertEqual(0.5f, v, "CompositeSafety: null-pawn exact 0.5");
+            ts.Check(Equals(0.5f, v), "CompositeSafety: null-pawn exact 0.5");
         }
 
         // ── fallback tests ─────────────────────────────────────
@@ -267,7 +247,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                 "synthetic-empty",
                 new List<RimWorld.NeedDef>(),
                 Aggregator.Average);
-            AssertEqual(0.5f, m.SampleAggregate(null), "Empty: null pawn -> 0.5");
+            ts.Check(Equals(0.5f, m.SampleAggregate(null)), "Empty: null pawn -> 0.5");
         }
 
         private static void Defender_ClampsBelowZero()
@@ -278,14 +258,14 @@ namespace Rimconemy.SurvivalProgression.Tests
             // is already clamped by vanilla. We document the clamp contract.
             var m = new NeedMapping("c", new List<RimWorld.NeedDef>(), Aggregator.Average);
             float v = m.SampleAggregate(null);
-            AssertTrue(v >= 0f, $"Clamp: v>=0 ({v})");
+            ts.Check(v >= 0f, $"Clamp: v>=0 ({v})");
         }
 
         private static void Defender_ClampsAboveOne()
         {
             var m = new NeedMapping("c", new List<RimWorld.NeedDef>(), Aggregator.Average);
             float v = m.SampleAggregate(null);
-            AssertTrue(v <= 1f, $"Clamp: v<=1 ({v})");
+            ts.Check(v <= 1f, $"Clamp: v<=1 ({v})");
         }
 
         private static void CleanupSyntheticRegistrations()

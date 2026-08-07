@@ -48,12 +48,9 @@ namespace Rimconemy.EconomyTerritory.Tests
             OutpostInvestmentResult result = outpost.TryReserveInvestment(
                 transfers, "rimconemy.tests", "invest-1", "Rimconemy_ConstructionDebris", 30, 60000L);
 
-            AssertEqual(OutpostInvestmentStatus.Reserved, result.Status,
-                "Outpost: physical investment is reserved");
-            AssertEqual(80, transfers.GetAvailable("Rimconemy_ConstructionDebris"),
-                "Outpost: reserve does not consume physical stock");
-            AssertEqual(30, transfers.GetReserved("Rimconemy_ConstructionDebris"),
-                "Outpost: investment reservation is visible");
+            ts.Check(Equals(OutpostInvestmentStatus.Reserved, result.Status), "Outpost: physical investment is reserved");
+            ts.Check(Equals(80, transfers.GetAvailable("Rimconemy_ConstructionDebris")), "Outpost: reserve does not consume physical stock");
+            ts.Check(Equals(30, transfers.GetReserved("Rimconemy_ConstructionDebris")), "Outpost: investment reservation is visible");
         }
 
         private static void TestInvestmentReplayDoesNotDuplicate()
@@ -66,9 +63,8 @@ namespace Rimconemy.EconomyTerritory.Tests
             OutpostInvestmentResult replay = outpost.TryReserveInvestment(
                 transfers, "rimconemy.tests", "invest-2", "Rimconemy_ConstructionDebris", 30, 60000L);
 
-            AssertEqual(first.TransferId, replay.TransferId, "Outpost: investment replay is idempotent");
-            AssertEqual(30, transfers.GetReserved("Rimconemy_ConstructionDebris"),
-                "Outpost: investment replay does not double-reserve");
+            ts.Check(Equals(first.TransferId, replay.TransferId), "Outpost: investment replay is idempotent");
+            ts.Check(Equals(30, transfers.GetReserved("Rimconemy_ConstructionDebris")), "Outpost: investment replay does not double-reserve");
         }
 
         private static void TestOutpostStateUsesAbsoluteTicks()
@@ -77,9 +73,8 @@ namespace Rimconemy.EconomyTerritory.Tests
             outpost.ForceTransition(OutpostState.Active, "test activation", 2000L);
             outpost.UpdateEconomy(10, 1, 60000L);
             outpost.Tick(60000L);
-            AssertEqual(60000L, outpost.LastUpdatedTick,
-                "Outpost: state evaluation records absolute world tick");
-            AssertEqual(9L, outpost.CurrentNet, "Outpost: net economy is deterministic");
+            ts.Check(Equals(60000L, outpost.LastUpdatedTick), "Outpost: state evaluation records absolute world tick");
+            ts.Check(Equals(9L, outpost.CurrentNet), "Outpost: net economy is deterministic");
         }
 
         // D-Harmo §31.4: Unbemannt → 30 %, bemannt → 100 %.
@@ -89,8 +84,7 @@ namespace Rimconemy.EconomyTerritory.Tests
             outpost.ForceTransition(OutpostState.Active, "test activation", 2000L);
             outpost.UpdateEconomy(10, 1, 60000L);
             outpost.StationedPawnCount = 0;
-            AssertEqual(3L, outpost.EffectiveGross,
-                "Outpost: unmanned Active produces 30 % of gross (auto-faktor niedrig)");
+            ts.Check(Equals(3L, outpost.EffectiveGross), "Outpost: unmanned Active produces 30 % of gross (auto-faktor niedrig)");
         }
 
         private static void TestMannedFactorFullOutput()
@@ -99,8 +93,7 @@ namespace Rimconemy.EconomyTerritory.Tests
             outpost.ForceTransition(OutpostState.Active, "test activation", 2000L);
             outpost.UpdateEconomy(10, 1, 60000L);
             outpost.StationedPawnCount = 2;
-            AssertEqual(10L, outpost.EffectiveGross,
-                "Outpost: manned Active produces 100 % of gross (voller Output)");
+            ts.Check(Equals(10L, outpost.EffectiveGross), "Outpost: manned Active produces 100 % of gross (voller Output)");
         }
 
         private static void TestPlannedOutpostProducesZero()
@@ -109,18 +102,8 @@ namespace Rimconemy.EconomyTerritory.Tests
             // State is Planned (default).
             outpost.UpdateEconomy(10, 1, 2000L);
             outpost.StationedPawnCount = 5;
-            AssertEqual(0L, outpost.EffectiveGross,
-                "Outpost: Planned state yields zero output (gate, not auto-promote)");
+            ts.Check(Equals(0L, outpost.EffectiveGross), "Outpost: Planned state yields zero output (gate, not auto-promote)");
         }
 
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (EqualityComparer<T>.Default.Equals(expected, actual)) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[OutpostInvestmentRegression] " + label + ": expected " + expected + ", got " + actual);
-            }
-        }
     }
 }

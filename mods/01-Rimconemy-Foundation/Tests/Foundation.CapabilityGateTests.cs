@@ -63,44 +63,6 @@ namespace Rimconemy.Foundation.Tests
 
         // ── helpers (mirror StorySelectorTests) ──────────────────
 
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (!EqualityComparer<T>.Default.Equals(expected, actual))
-            {
-                _failed++;
-                _failures.Add(label + ": expected " + expected + ", got " + actual);
-            }
-            else
-            {
-                _passed++;
-            }
-        }
-
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (!condition)
-            {
-                _failed++;
-                _failures.Add(label + ": expected true, got false");
-            }
-            else
-            {
-                _passed++;
-            }
-        }
-
-        private static void AssertFalse(bool condition, string label)
-        {
-            if (condition)
-            {
-                _failed++;
-                _failures.Add(label + ": expected false, got true");
-            }
-            else
-            {
-                _passed++;
-            }
-        }
 
         // ── tests ───────────────────────────────────────────────
 
@@ -120,14 +82,14 @@ namespace Rimconemy.Foundation.Tests
                 minVersion: 1,
                 readerContext: "Test1.1");
 
-            AssertFalse(result1, "Audit-1.1: false on missing capability");
-            AssertEqual(1, CapabilityAudit.WarningCount(), "Audit-1.1: 1 warning logged");
+            ts.Check(!(result1), "Audit-1.1: false on missing capability");
+            ts.Check(Equals(1, CapabilityAudit.WarningCount()), "Audit-1.1: 1 warning logged");
 
             // Second call with same readerContext → no new warning.
             bool result2 = CapabilityAudit.HasCapabilityOrWarn(
                 "rimconemy.synthetic", CapId, 1, "Test1.1");
-            AssertFalse(result2, "Audit-1.1: false on repeat");
-            AssertEqual(1, CapabilityAudit.WarningCount(), "Audit-1.1: still 1 warning");
+            ts.Check(!(result2), "Audit-1.1: false on repeat");
+            ts.Check(Equals(1, CapabilityAudit.WarningCount()), "Audit-1.1: still 1 warning");
         }
 
         /// <summary>
@@ -145,8 +107,8 @@ namespace Rimconemy.Foundation.Tests
                 minVersion: 1,
                 readerContext: "Test1.2");
 
-            AssertTrue(result, "Audit-1.2: true on satisfied capability");
-            AssertEqual(0, CapabilityAudit.WarningCount(), "Audit-1.2: 0 warnings logged");
+            ts.Check(result, "Audit-1.2: true on satisfied capability");
+            ts.Check(Equals(0, CapabilityAudit.WarningCount()), "Audit-1.2: 0 warnings logged");
         }
 
         /// <summary>
@@ -162,15 +124,15 @@ namespace Rimconemy.Foundation.Tests
             bool r2 = CapabilityAudit.HasCapabilityOrWarn(
                 "rimconemy.synthetic1", "rimconemy.synthetic.cap_x", 1, "CtxB");
 
-            AssertFalse(r1, "Audit-1.3: r1 false");
-            AssertFalse(r2, "Audit-1.3: r2 false");
-            AssertEqual(2, CapabilityAudit.WarningCount(), "Audit-1.3: 2 warnings for 2 reader contexts");
+            ts.Check(!(r1), "Audit-1.3: r1 false");
+            ts.Check(!(r2), "Audit-1.3: r2 false");
+            ts.Check(Equals(2, CapabilityAudit.WarningCount()), "Audit-1.3: 2 warnings for 2 reader contexts");
 
             // Same package+cap+context again: still 2.
             bool r3 = CapabilityAudit.HasCapabilityOrWarn(
                 "rimconemy.synthetic1", "rimconemy.synthetic.cap_x", 1, "CtxA");
-            AssertFalse(r3, "Audit-1.3: r3 false");
-            AssertEqual(2, CapabilityAudit.WarningCount(), "Audit-1.3: still 2 warnings");
+            ts.Check(!(r3), "Audit-1.3: r3 false");
+            ts.Check(Equals(2, CapabilityAudit.WarningCount()), "Audit-1.3: still 2 warnings");
         }
 
         /// <summary>
@@ -184,11 +146,9 @@ namespace Rimconemy.Foundation.Tests
                 "rimconemy.synthetic2", "rimconemy.synthetic.cap_y", 1, "MyTestReader");
 
             var warnings = CapabilityAudit.Warnings();
-            AssertEqual(1, warnings.Count, "Audit-1.4: 1 warning");
-            AssertTrue(warnings[0].Contains("MyTestReader"),
-                "Audit-1.4: warning contains reader context label");
-            AssertTrue(warnings[0].Contains("rimconemy.synthetic.cap_y"),
-                "Audit-1.4: warning contains capability id");
+            ts.Check(Equals(1, warnings.Count), "Audit-1.4: 1 warning");
+            ts.Check(warnings[0].Contains("MyTestReader"), "Audit-1.4: warning contains reader context label");
+            ts.Check(warnings[0].Contains("rimconemy.synthetic.cap_y"), "Audit-1.4: warning contains capability id");
         }
 
         /// <summary>
@@ -202,8 +162,8 @@ namespace Rimconemy.Foundation.Tests
                 "rimconemy.nonexistent.package",
                 "Test1.5");
 
-            AssertFalse(result, "Audit-1.5: false on missing package");
-            AssertEqual(1, CapabilityAudit.WarningCount(), "Audit-1.5: 1 warning");
+            ts.Check(!(result), "Audit-1.5: false on missing package");
+            ts.Check(Equals(1, CapabilityAudit.WarningCount()), "Audit-1.5: 1 warning");
         }
 
         /// <summary>
@@ -231,14 +191,14 @@ namespace Rimconemy.Foundation.Tests
                     capabilities: new List<Capability> { new Capability(MockCapId, 1) },
                     profileCompatibility: ProfileCompatibility.StandaloneAndFull);
                 bool registered = PackageRegistry.Register(descriptor);
-                AssertTrue(registered, "Audit-1.6: synthetic package registered");
+                ts.Check(registered, "Audit-1.6: synthetic package registered");
             }
 
             bool result = CapabilityAudit.HasCapabilityOrWarn(
                 MockPackageId, MockCapId, 1, "Test1.6");
 
-            AssertTrue(result, "Audit-1.6: true after registration");
-            AssertEqual(0, CapabilityAudit.WarningCount(), "Audit-1.6: no warning when satisfied");
+            ts.Check(result, "Audit-1.6: true after registration");
+            ts.Check(Equals(0, CapabilityAudit.WarningCount()), "Audit-1.6: no warning when satisfied");
         }
     }
 }

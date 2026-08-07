@@ -65,12 +65,11 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
         private static void TestC1_CoalDefExists()
         {
             var def = DefDatabase<ThingDef>.GetNamedSilentFail("Rimconemy_Coal");
-            AssertTrue(def != null, "C1.Rimconemy_Coal ThingDef is loaded");
+            ts.Check(def != null, "C1.Rimconemy_Coal ThingDef is loaded");
             if (def != null)
             {
-                AssertTrue(def.stackLimit > 0, "C1.Coal has valid stackLimit");
-                AssertTrue(def.thingCategories != null && def.thingCategories.Exists(c => c.defName == "Rimconemy_GeneratorInputs"),
-                    "C1.Coal has GeneratorInputs category");
+                ts.Check(def.stackLimit > 0, "C1.Coal has valid stackLimit");
+                ts.Check(def.thingCategories != null && def.thingCategories.Exists(c => c.defName == "Rimconemy_GeneratorInputs"), "C1.Coal has GeneratorInputs category");
             }
         }
 
@@ -78,12 +77,11 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
         private static void TestC2_MachinePartsDefExists()
         {
             var def = DefDatabase<ThingDef>.GetNamedSilentFail("Rimconemy_MachineParts");
-            AssertTrue(def != null, "C2.Rimconemy_MachineParts ThingDef is loaded");
+            ts.Check(def != null, "C2.Rimconemy_MachineParts ThingDef is loaded");
             if (def != null)
             {
-                AssertTrue(def.stackLimit > 0, "C2.MachineParts has valid stackLimit");
-                AssertTrue(def.thingCategories != null && def.thingCategories.Exists(c => c.defName == "Rimconemy_Scraps"),
-                    "C2.MachineParts has Scraps category");
+                ts.Check(def.stackLimit > 0, "C2.MachineParts has valid stackLimit");
+                ts.Check(def.thingCategories != null && def.thingCategories.Exists(c => c.defName == "Rimconemy_Scraps"), "C2.MachineParts has Scraps category");
             }
         }
 
@@ -91,21 +89,20 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
         private static void TestC3_CraftingStationsCategoryExists()
         {
             var def = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("Rimconemy_CraftingStations");
-            AssertTrue(def != null, "C3.Rimconemy_CraftingStations ThingCategoryDef is loaded");
+            ts.Check(def != null, "C3.Rimconemy_CraftingStations ThingCategoryDef is loaded");
         }
 
         /// <summary>C4: Rimconemy_MakeCoal RecipeDef exists.</summary>
         private static void TestC4_MakeCoalRecipeExists()
         {
             var recipe = DefDatabase<RecipeDef>.GetNamedSilentFail("Rimconemy_MakeCoal");
-            AssertTrue(recipe != null, "C4.Rimconemy_MakeCoal RecipeDef is loaded");
+            ts.Check(recipe != null, "C4.Rimconemy_MakeCoal RecipeDef is loaded");
             if (recipe != null)
             {
-                AssertTrue(recipe.products != null && recipe.products.Count > 0,
-                    "C4.MakeCoal has products");
+                ts.Check(recipe.products != null && recipe.products.Count > 0, "C4.MakeCoal has products");
                 bool producesCoal = recipe.products.Exists(p =>
                     p.thingDef != null && p.thingDef.defName == "Rimconemy_Coal" && p.count == 4);
-                AssertTrue(producesCoal, "C4.MakeCoal produces 4 Rimconemy_Coal");
+                ts.Check(producesCoal, "C4.MakeCoal produces 4 Rimconemy_Coal");
             }
         }
 
@@ -113,14 +110,13 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
         private static void TestC5_SalvageMachinePartsRecipeExists()
         {
             var recipe = DefDatabase<RecipeDef>.GetNamedSilentFail("Rimconemy_SalvageMachineParts");
-            AssertTrue(recipe != null, "C5.Rimconemy_SalvageMachineParts RecipeDef is loaded");
+            ts.Check(recipe != null, "C5.Rimconemy_SalvageMachineParts RecipeDef is loaded");
             if (recipe != null)
             {
-                AssertTrue(recipe.products != null && recipe.products.Count > 0,
-                    "C5.SalvageMachineParts has products");
+                ts.Check(recipe.products != null && recipe.products.Count > 0, "C5.SalvageMachineParts has products");
                 bool producesParts = recipe.products.Exists(p =>
                     p.thingDef != null && p.thingDef.defName == "Rimconemy_MachineParts" && p.count == 1);
-                AssertTrue(producesParts, "C5.SalvageMachineParts produces 1 Rimconemy_MachineParts");
+                ts.Check(producesParts, "C5.SalvageMachineParts produces 1 Rimconemy_MachineParts");
             }
         }
 
@@ -128,14 +124,14 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
         private static void TestC6_BurnSteelScrapsRecipeWired()
         {
             var recipe = DefDatabase<RecipeDef>.GetNamedSilentFail("Rimconemy_BurnSteelScraps");
-            AssertTrue(recipe != null, "C6.Rimconemy_BurnSteelScraps RecipeDef is loaded");
+            ts.Check(recipe != null, "C6.Rimconemy_BurnSteelScraps RecipeDef is loaded");
             if (recipe != null)
             {
                 // Phase-First contract (PHASE_PROGRESSION_CONTRACT.md): 5 SteelScraps -> 1 Steel.
                 // Updated 2026-08-05 to harden the 5:1 gate.
                 bool producesSteel = recipe.products.Exists(p =>
                     p.thingDef != null && p.thingDef.defName == "Steel" && p.count == 1);
-                AssertTrue(producesSteel, "C6.BurnSteelScraps produces 1 Steel (5:1 Phase-First)");
+                ts.Check(producesSteel, "C6.BurnSteelScraps produces 1 Steel (5:1 Phase-First)");
             }
         }
 
@@ -143,21 +139,20 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
         private static void TestC7_CampfireHasAllRecipes()
         {
             var campfire = DefDatabase<ThingDef>.GetNamedSilentFail("Rimconemy_Campfire");
-            AssertTrue(campfire != null, "C7.Rimconemy_Campfire ThingDef is loaded");
+            ts.Check(campfire != null, "C7.Rimconemy_Campfire ThingDef is loaded");
             if (campfire != null)
             {
-                AssertTrue(campfire.recipes != null && campfire.recipes.Count >= 5,
-                    "C7.Campfire has at least 5 recipes");
+                ts.Check(campfire.recipes != null && campfire.recipes.Count >= 5, "C7.Campfire has at least 5 recipes");
                 bool hasBurn = campfire.recipes.Exists(r => r != null && r.defName == "Rimconemy_BurnSteelScraps");
                 bool hasMake = campfire.recipes.Exists(r => r != null && r.defName == "Rimconemy_MakeCoal");
                 bool hasSalvage = campfire.recipes.Exists(r => r != null && r.defName == "Rimconemy_SalvageMachineParts");
                 bool hasSS = campfire.recipes.Exists(r => r != null && r.defName == "Rimconemy_MakeStainlessSteel");
                 bool hasWC = campfire.recipes.Exists(r => r != null && r.defName == "Rimconemy_MakeWeaponComponent");
-                AssertTrue(hasBurn, "C7.Campfire has BurnSteelScraps");
-                AssertTrue(hasMake, "C7.Campfire has MakeCoal");
-                AssertTrue(hasSalvage, "C7.Campfire has SalvageMachineParts");
-                AssertTrue(hasSS, "C7.Campfire has MakeStainlessSteel");
-                AssertTrue(hasWC, "C7.Campfire has MakeWeaponComponent (D3)");
+                ts.Check(hasBurn, "C7.Campfire has BurnSteelScraps");
+                ts.Check(hasMake, "C7.Campfire has MakeCoal");
+                ts.Check(hasSalvage, "C7.Campfire has SalvageMachineParts");
+                ts.Check(hasSS, "C7.Campfire has MakeStainlessSteel");
+                ts.Check(hasWC, "C7.Campfire has MakeWeaponComponent (D3)");
             }
         }
 
@@ -165,7 +160,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
         private static void TestC8_GeneratorHasSingleRefuelable()
         {
             var gen = DefDatabase<ThingDef>.GetNamedSilentFail("Rimconemy_WoodCoalGenerator");
-            AssertTrue(gen != null, "C8.Rimconemy_WoodCoalGenerator ThingDef is loaded");
+            ts.Check(gen != null, "C8.Rimconemy_WoodCoalGenerator ThingDef is loaded");
             if (gen != null && gen.comps != null)
             {
                 var refuelables = new List<CompProperties_Refuelable>();
@@ -177,8 +172,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 // Phase-First (2026-08-05): duplicate Refuelable comp removed because
                 // Vanilla IM only instantiates the first; consolidation into a single
                 // Refuelable with WoodLog/Chemfuel/Rimconemy_Coal in fuelFilter.
-                AssertTrue(refuelables.Count == 1,
-                    "C8.Generator has exactly 1 Refuelable comp (Phase-First consolidation)");
+                ts.Check(refuelables.Count == 1, "C8.Generator has exactly 1 Refuelable comp (Phase-First consolidation)");
 
                 var primaryRefuel = refuelables.Count > 0 ? refuelables[0] : null;
                 if (primaryRefuel != null && primaryRefuel.fuelFilter != null)
@@ -186,8 +180,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                     bool hasWood = primaryRefuel.fuelFilter.AllowedThingDefs.Any(d => d.defName == "WoodLog");
                     bool hasChem = primaryRefuel.fuelFilter.AllowedThingDefs.Any(d => d.defName == "Chemfuel");
                     bool hasCoal = primaryRefuel.fuelFilter.AllowedThingDefs.Any(d => d.defName == "Rimconemy_Coal");
-                    AssertTrue(hasWood && hasChem && hasCoal,
-                        "C8.Generator Refuelable fuelFilter contains WoodLog+Chemfuel+Rimconemy_Coal");
+                    ts.Check(hasWood && hasChem && hasCoal, "C8.Generator Refuelable fuelFilter contains WoodLog+Chemfuel+Rimconemy_Coal");
                 }
             }
         }
@@ -199,11 +192,11 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             if (def != null && def.thingCategories != null)
             {
                 bool hasCat = def.thingCategories.Exists(c => c.defName == "Rimconemy_GeneratorInputs");
-                AssertTrue(hasCat, "C9.Coal has GeneratorInputs category");
+                ts.Check(hasCat, "C9.Coal has GeneratorInputs category");
             }
             else
             {
-                AssertTrue(false, "C9.Coal category check failed (def or categories null)");
+                ts.Check(false, "C9.Coal category check failed (def or categories null)");
             }
         }
 
@@ -214,18 +207,13 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             if (def != null && def.thingCategories != null)
             {
                 bool hasCat = def.thingCategories.Exists(c => c.defName == "Rimconemy_Scraps");
-                AssertTrue(hasCat, "C10.MachineParts has Scraps category");
+                ts.Check(hasCat, "C10.MachineParts has Scraps category");
             }
             else
             {
-                AssertTrue(false, "C10.MachineParts category check failed (def or categories null)");
+                ts.Check(false, "C10.MachineParts category check failed (def or categories null)");
             }
         }
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else { _failed++; Log.Error("[Rimconemy.ScavengerInfrastructure] " + label); }
-        }
     }
 }

@@ -109,7 +109,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             var fwd5 = new IntVec3(55, 0, 50);
             float visFwd5 = SightConeMath.ComputeCellVisibility(
                 pos, fwd5, facing, 1f, 0f, IntVec3.Invalid);
-            AssertTrue(visFwd5 > 0.45f, "CS9. Forward 5 tiles at full light remains above 0.45 after MaxForwardRadius=16");
+            ts.Check(visFwd5 > 0.45f, "CS9. Forward 5 tiles at full light remains above 0.45 after MaxForwardRadius=16");
 
             // Forward 10 tiles at full light: power curve (exp=2.0) drops
             // mid-range steeply. (1-10/16)^2 = (6/16)^2 ≈ 0.141 — clearly
@@ -131,7 +131,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             var behind5 = new IntVec3(45, 0, 50);
             float visBehind = SightConeMath.ComputeCellVisibility(
                 pos, behind5, facing, 1f, 0f, IntVec3.Invalid);
-            AssertTrue(visBehind < visFwd5, "CS11. Behind visibility < forward visibility");
+            ts.Check(visBehind < visFwd5, "CS11. Behind visibility < forward visibility");
         }
 
         private static void TestDistanceFalloff()
@@ -150,8 +150,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             var far  = new IntVec3(58, 0, 50); // 8 tiles
             float visNear = SightConeMath.ComputeCellVisibility(pos, near, facing, 1f, 0f, IntVec3.Invalid);
             float visFar  = SightConeMath.ComputeCellVisibility(pos, far,  facing, 1f, 0f, IntVec3.Invalid);
-            AssertTrue(visNear > visFar,
-                "CS20. Closer forward tile brighter than farther forward tile (power curve)");
+            ts.Check(visNear > visFar, "CS20. Closer forward tile brighter than farther forward tile (power curve)");
 
             // Daylight tile 10 ahead is darker than night-time tile 10 ahead
             // measured RELATIVE to cone-edge? No — absolute distance still
@@ -161,8 +160,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             // halving occurs within the cone (i.e. mid-range is 0.3 not 0.6).
             var mid = new IntVec3(60, 0, 50); // 10 tiles, full daylight
             float visMidDay = SightConeMath.ComputeCellVisibility(pos, mid, facing, 1f, 0f, IntVec3.Invalid);
-            AssertTrue(visMidDay < 0.4f,
-                "CS21. Mid-range daylight visibility < 0.4 (power curve makes distance perceptible)");
+            ts.Check(visMidDay < 0.4f, "CS21. Mid-range daylight visibility < 0.4 (power curve makes distance perceptible)");
         }
 
         private static void TestLightLevelRange()
@@ -178,7 +176,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             float visBright = SightConeMath.ComputeCellVisibility(
                 pos, target, IntVec3.Zero, 1f, 0f, IntVec3.Invalid);
 
-            AssertTrue(visBright >= visDark, "CS12. Bright light >= dark visibility");
+            ts.Check(visBright >= visDark, "CS12. Bright light >= dark visibility");
             // Day/Night contrast at 5 tiles, exp=2.0.
             AssertFloat(0.473f, visBright, 0.02f,
                 "CS12b. Bright-light visibility at 5 tiles (formula: (1-5/16)^2)");
@@ -206,14 +204,10 @@ namespace Rimconemy.InfectedAutomation.Tests
             // covered by the live regression test instead.
             var method = typeof(ColonistSightSystem).GetMethod("HasActiveSight",
                 System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-            AssertTrue(method != null,
-                "CS22. ColonistSightSystem.HasActiveSight() public accessor exists");
-            AssertTrue(method.ReturnType == typeof(bool),
-                "CS23. HasActiveSight() returns bool");
-            AssertTrue(method.GetParameters().Length == 0,
-                "CS24. HasActiveSight() takes no parameters");
+            ts.Check(method != null, "CS22. ColonistSightSystem.HasActiveSight() public accessor exists");
+            ts.Check(method.ReturnType == typeof(bool), "CS23. HasActiveSight() returns bool");
+            ts.Check(method.GetParameters().Length == 0, "CS24. HasActiveSight() takes no parameters");
         }
-
 
 
         // ── reflection helper ─────────────────────────────────
@@ -231,11 +225,6 @@ namespace Rimconemy.InfectedAutomation.Tests
 
         // ── helpers ───────────────────────────────────────────
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else { _failed++; Log.Error("[Rimconemy.InfectedAutomation] " + label); }
-        }
 
         private static void AssertFloat(float expected, float actual, float tolerance, string label)
         {

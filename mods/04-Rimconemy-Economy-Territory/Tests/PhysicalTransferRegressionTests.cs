@@ -44,11 +44,9 @@ namespace Rimconemy.EconomyTerritory.Tests
             var service = new PhysicalTransferService();
             service.SetAvailable("Rimconemy_ConstructionDebris", 100);
             TransferResult result = service.ReservePhysicalTransfer(Request("reserve", 25));
-            AssertEqual(TransferStatus.Reserved, result.Status, "Transfer: reserve succeeds");
-            AssertEqual(100, service.GetAvailable("Rimconemy_ConstructionDebris"),
-                "Transfer: reserve does not consume physical stock");
-            AssertEqual(25, service.GetReserved("Rimconemy_ConstructionDebris"),
-                "Transfer: reserve records locked amount");
+            ts.Check(Equals(TransferStatus.Reserved, result.Status), "Transfer: reserve succeeds");
+            ts.Check(Equals(100, service.GetAvailable("Rimconemy_ConstructionDebris")), "Transfer: reserve does not consume physical stock");
+            ts.Check(Equals(25, service.GetReserved("Rimconemy_ConstructionDebris")), "Transfer: reserve records locked amount");
         }
 
         private static void TestExecuteConsumesExactlyOnce()
@@ -59,11 +57,11 @@ namespace Rimconemy.EconomyTerritory.Tests
             TransferResult reserved = service.ReservePhysicalTransfer(request);
             TransferResult executed = service.ExecutePhysicalTransfer(reserved.TransferId);
             TransferResult replay = service.ExecutePhysicalTransfer(reserved.TransferId);
-            AssertEqual(TransferStatus.Reserved, reserved.Status, "Transfer: execute setup reserves");
-            AssertEqual(TransferStatus.Executed, executed.Status, "Transfer: execute commits");
-            AssertEqual(TransferStatus.Executed, replay.Status, "Transfer: execute replay is stable");
-            AssertEqual(60, service.GetAvailable("Steel"), "Transfer: execute consumes exact amount once");
-            AssertEqual(0, service.GetReserved("Steel"), "Transfer: execute releases reservation");
+            ts.Check(Equals(TransferStatus.Reserved, reserved.Status), "Transfer: execute setup reserves");
+            ts.Check(Equals(TransferStatus.Executed, executed.Status), "Transfer: execute commits");
+            ts.Check(Equals(TransferStatus.Executed, replay.Status), "Transfer: execute replay is stable");
+            ts.Check(Equals(60, service.GetAvailable("Steel")), "Transfer: execute consumes exact amount once");
+            ts.Check(Equals(0, service.GetReserved("Steel")), "Transfer: execute releases reservation");
         }
 
         private static void TestCancelConsumesNothing()
@@ -73,9 +71,9 @@ namespace Rimconemy.EconomyTerritory.Tests
             TransferRequest request = Request("cancel", 10, "WoodLog");
             TransferResult reserved = service.ReservePhysicalTransfer(request);
             TransferResult cancelled = service.CancelPhysicalTransfer(reserved.TransferId);
-            AssertEqual(TransferStatus.Cancelled, cancelled.Status, "Transfer: cancel commits");
-            AssertEqual(50, service.GetAvailable("WoodLog"), "Transfer: cancel consumes nothing");
-            AssertEqual(0, service.GetReserved("WoodLog"), "Transfer: cancel releases reservation");
+            ts.Check(Equals(TransferStatus.Cancelled, cancelled.Status), "Transfer: cancel commits");
+            ts.Check(Equals(50, service.GetAvailable("WoodLog")), "Transfer: cancel consumes nothing");
+            ts.Check(Equals(0, service.GetReserved("WoodLog")), "Transfer: cancel releases reservation");
         }
 
         private static void TestReplayReturnsOriginalResult()
@@ -85,9 +83,9 @@ namespace Rimconemy.EconomyTerritory.Tests
             TransferRequest request = Request("replay", 5, "Chemfuel");
             TransferResult first = service.ReservePhysicalTransfer(request);
             TransferResult second = service.ReservePhysicalTransfer(request);
-            AssertEqual(first.TransferId, second.TransferId, "Transfer: reserve replay returns same transfer");
-            AssertEqual(first.Status, second.Status, "Transfer: reserve replay returns same status");
-            AssertEqual(5, service.GetReserved("Chemfuel"), "Transfer: replay does not double-lock stock");
+            ts.Check(Equals(first.TransferId, second.TransferId), "Transfer: reserve replay returns same transfer");
+            ts.Check(Equals(first.Status, second.Status), "Transfer: reserve replay returns same status");
+            ts.Check(Equals(5, service.GetReserved("Chemfuel")), "Transfer: replay does not double-lock stock");
         }
 
         private static void TestMissingStockBlocksWithoutPhantomConsumption()
@@ -95,9 +93,9 @@ namespace Rimconemy.EconomyTerritory.Tests
             var service = new PhysicalTransferService();
             service.SetAvailable("Steel", 2);
             TransferResult result = service.ReservePhysicalTransfer(Request("blocked", 3, "Steel"));
-            AssertEqual(TransferStatus.Blocked, result.Status, "Transfer: insufficient stock is blocked");
-            AssertEqual(2, service.GetAvailable("Steel"), "Transfer: blocked request leaves stock unchanged");
-            AssertEqual(0, service.GetReserved("Steel"), "Transfer: blocked request creates no reservation");
+            ts.Check(Equals(TransferStatus.Blocked, result.Status), "Transfer: insufficient stock is blocked");
+            ts.Check(Equals(2, service.GetAvailable("Steel")), "Transfer: blocked request leaves stock unchanged");
+            ts.Check(Equals(0, service.GetReserved("Steel")), "Transfer: blocked request creates no reservation");
         }
 
         private static TransferRequest Request(string requestId, int amount, string resourceId = "Rimconemy_ConstructionDebris")
@@ -113,14 +111,5 @@ namespace Rimconemy.EconomyTerritory.Tests
             };
         }
 
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (EqualityComparer<T>.Default.Equals(expected, actual)) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[PhysicalTransferRegression] " + label + ": expected " + expected + ", got " + actual);
-            }
-        }
     }
 }

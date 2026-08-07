@@ -67,25 +67,18 @@ namespace Rimconemy.InfectedAutomation.Tests
             };
 
             bool success = ScribeRoundTripHelper.RoundTrip(original);
-            AssertTrue(success, "SB1. InfectedPawnState Scribe roundtrip succeeds");
+            ts.Check(success, "SB1. InfectedPawnState Scribe roundtrip succeeds");
 
-            AssertEqual(42, original.PawnThingId, "SB2. PawnThingId preserved");
-            AssertTrue(original.CurrentBehavior == InfectedBehaviorState.Roaming,
-                "SB3. CurrentBehavior preserved");
-            AssertTrue(original.BehaviorStartTick == 65000L,
-                "SB4. BehaviorStartTick preserved");
-            AssertEqual(new IntVec3(120, 0, 220), original.TargetCell,
-                "SB5. TargetCell preserved");
-            AssertEqual(-1, original.TargetColonistId,
-                "SB6. TargetColonistId preserved");
-            AssertTrue(original.LastEvaluateTick == 65250L,
-                "SB7. LastEvaluateTick preserved");
-            AssertTrue(original.SchemaVersion == 1,
-                "SB8. SchemaVersion preserved");
+            ts.Check(Equals(42, original.PawnThingId), "SB2. PawnThingId preserved");
+            ts.Check(original.CurrentBehavior == InfectedBehaviorState.Roaming, "SB3. CurrentBehavior preserved");
+            ts.Check(original.BehaviorStartTick == 65000L, "SB4. BehaviorStartTick preserved");
+            ts.Check(Equals(new IntVec3(120, 0, 220), original.TargetCell), "SB5. TargetCell preserved");
+            ts.Check(Equals(-1, original.TargetColonistId), "SB6. TargetColonistId preserved");
+            ts.Check(original.LastEvaluateTick == 65250L, "SB7. LastEvaluateTick preserved");
+            ts.Check(original.SchemaVersion == 1, "SB8. SchemaVersion preserved");
 
             // IsInactive and LastSightRadius are NOT persisted — PostLoadInit resets them.
-            AssertTrue(!original.IsInactive,
-                "SB9. IsInactive reset to false after roundtrip");
+            ts.Check(!original.IsInactive, "SB9. IsInactive reset to false after roundtrip");
             AssertFloat(0f, original.LastSightRadius, 0f,
                 "SB10. LastSightRadius reset to 0 after roundtrip");
         }
@@ -96,37 +89,26 @@ namespace Rimconemy.InfectedAutomation.Tests
         {
             var state = new InfectedPawnState(99, new IntVec3(50, 0, 50), 1000L);
 
-            AssertEqual(99, state.PawnThingId, "SC1. PawnThingId set by constructor");
-            AssertTrue(state.CurrentBehavior == InfectedBehaviorState.Dormant,
-                "SC2. Default behavior is Dormant");
-            AssertTrue(state.BehaviorStartTick == 1000L,
-                "SC3. BehaviorStartTick set by constructor");
-            AssertEqual(new IntVec3(50, 0, 50), state.SpawnCell,
-                "SC4. SpawnCell set by constructor");
-            AssertEqual(new IntVec3(50, 0, 50), state.TargetCell,
-                "SC5. TargetCell = SpawnCell initially");
-            AssertEqual(-1, state.TargetColonistId,
-                "SC6. TargetColonistId = -1 initially");
-            AssertTrue(!state.IsInactive,
-                "SC7. IsInactive false initially");
+            ts.Check(Equals(99, state.PawnThingId), "SC1. PawnThingId set by constructor");
+            ts.Check(state.CurrentBehavior == InfectedBehaviorState.Dormant, "SC2. Default behavior is Dormant");
+            ts.Check(state.BehaviorStartTick == 1000L, "SC3. BehaviorStartTick set by constructor");
+            ts.Check(Equals(new IntVec3(50, 0, 50), state.SpawnCell), "SC4. SpawnCell set by constructor");
+            ts.Check(Equals(new IntVec3(50, 0, 50), state.TargetCell), "SC5. TargetCell = SpawnCell initially");
+            ts.Check(Equals(-1, state.TargetColonistId), "SC6. TargetColonistId = -1 initially");
+            ts.Check(!state.IsInactive, "SC7. IsInactive false initially");
 
             // TicksInState
-            AssertTrue(state.TicksInState(2000L) == 1000L,
-                "SC8. TicksInState = currentTick - BehaviorStartTick");
+            ts.Check(state.TicksInState(2000L) == 1000L, "SC8. TicksInState = currentTick - BehaviorStartTick");
 
             // TransitionTo
             state.TransitionTo(InfectedBehaviorState.Roaming, 5000L);
-            AssertTrue(state.CurrentBehavior == InfectedBehaviorState.Roaming,
-                "SC9. TransitionTo changes state");
-            AssertTrue(state.BehaviorStartTick == 5000L,
-                "SC10. TransitionTo resets BehaviorStartTick");
-            AssertEqual(-1, state.TargetColonistId,
-                "SC11. TransitionTo resets TargetColonistId");
+            ts.Check(state.CurrentBehavior == InfectedBehaviorState.Roaming, "SC9. TransitionTo changes state");
+            ts.Check(state.BehaviorStartTick == 5000L, "SC10. TransitionTo resets BehaviorStartTick");
+            ts.Check(Equals(-1, state.TargetColonistId), "SC11. TransitionTo resets TargetColonistId");
 
             // No-op transition
             state.TransitionTo(InfectedBehaviorState.Roaming, 6000L);
-            AssertTrue(state.BehaviorStartTick == 5000L,
-                "SC12. TransitionTo same state = no-op");
+            ts.Check(state.BehaviorStartTick == 5000L, "SC12. TransitionTo same state = no-op");
         }
 
         // ── 3. Dormant → Roaming ──────────────────────────────
@@ -147,8 +129,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 InfectedBehaviorState.Dormant, chunk, env,
                 pawnVisible: false, ticksInState: 500L, ref rng);
 
-            AssertTrue(next == InfectedBehaviorState.Roaming,
-                "DR1. Dormant→Roaming when dark + high attraction");
+            ts.Check(next == InfectedBehaviorState.Roaming, "DR1. Dormant→Roaming when dark + high attraction");
 
             // Daytime with any attraction → stay dormant.
             var dayEnv = new EnvironmentSnapshot { DarknessFactor = 0.1f };
@@ -158,8 +139,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 InfectedBehaviorState.Dormant, chunk, dayEnv,
                 pawnVisible: false, ticksInState: 500L, ref rng2);
 
-            AssertTrue(nextDay == InfectedBehaviorState.Dormant,
-                "DR2. Dormant stays dormant in daylight");
+            ts.Check(nextDay == InfectedBehaviorState.Dormant, "DR2. Dormant stays dormant in daylight");
 
             // Night with low attraction, random wake check.
             var quietChunk = new ChunkState(5, 5)
@@ -178,9 +158,8 @@ namespace Rimconemy.InfectedAutomation.Tests
 
             // Since the random check may or may not pass, we just verify
             // it's either Dormant or Roaming — both are valid.
-            AssertTrue(nextQuiet == InfectedBehaviorState.Dormant
-                || nextQuiet == InfectedBehaviorState.Roaming,
-                "DR3. Dormant with low attraction: either stays or wakes randomly");
+            ts.Check(nextQuiet == InfectedBehaviorState.Dormant
+                || nextQuiet == InfectedBehaviorState.Roaming, "DR3. Dormant with low attraction: either stays or wakes randomly");
         }
 
         // ── 4. Roaming → Investigating ────────────────────────
@@ -199,8 +178,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             var next1 = InfectedBehaviorTransition.ComputeNext(
                 InfectedBehaviorState.Roaming, suspectChunk, env,
                 pawnVisible: false, ticksInState: 200L, ref rng);
-            AssertTrue(next1 == InfectedBehaviorState.Investigating,
-                "RI1. Roaming→Investigating when chunk is Suspicious");
+            ts.Check(next1 == InfectedBehaviorState.Investigating, "RI1. Roaming→Investigating when chunk is Suspicious");
 
             // Chunk is Investigating → investigate.
             var alertChunk = new ChunkState(3, 3)
@@ -211,8 +189,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             var next2 = InfectedBehaviorTransition.ComputeNext(
                 InfectedBehaviorState.Roaming, alertChunk, env,
                 pawnVisible: false, ticksInState: 200L, ref rng);
-            AssertTrue(next2 == InfectedBehaviorState.Investigating,
-                "RI2. Roaming→Investigating when chunk is Investigating");
+            ts.Check(next2 == InfectedBehaviorState.Investigating, "RI2. Roaming→Investigating when chunk is Investigating");
 
             // Loud noise → investigate even without alert.
             var noisyChunk = new ChunkState(3, 3)
@@ -223,8 +200,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             var next3 = InfectedBehaviorTransition.ComputeNext(
                 InfectedBehaviorState.Roaming, noisyChunk, env,
                 pawnVisible: false, ticksInState: 200L, ref rng);
-            AssertTrue(next3 == InfectedBehaviorState.Investigating,
-                "RI3. Roaming→Investigating when noise above threshold");
+            ts.Check(next3 == InfectedBehaviorState.Investigating, "RI3. Roaming→Investigating when noise above threshold");
 
             // Quiet, no alert, daylight → drops to Dormant.
             var dayEnv = new EnvironmentSnapshot { DarknessFactor = 0.05f };
@@ -237,8 +213,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             var next4 = InfectedBehaviorTransition.ComputeNext(
                 InfectedBehaviorState.Roaming, quietChunk, dayEnv,
                 pawnVisible: false, ticksInState: 500L, ref rng);
-            AssertTrue(next4 == InfectedBehaviorState.Dormant,
-                "RI4. Roaming→Dormant in quiet daylight");
+            ts.Check(next4 == InfectedBehaviorState.Dormant, "RI4. Roaming→Dormant in quiet daylight");
         }
 
         // ── 5. Investigating → Assault ────────────────────────
@@ -257,22 +232,19 @@ namespace Rimconemy.InfectedAutomation.Tests
             var nextAssault = InfectedBehaviorTransition.ComputeNext(
                 InfectedBehaviorState.Investigating, chunk, env,
                 pawnVisible: true, ticksInState: 100L, ref rng);
-            AssertTrue(nextAssault == InfectedBehaviorState.Assault,
-                "IA1. Investigating→Assault when colonist visible");
+            ts.Check(nextAssault == InfectedBehaviorState.Assault, "IA1. Investigating→Assault when colonist visible");
 
             // No colonist, within timeout → stays Investigating.
             var nextStay = InfectedBehaviorTransition.ComputeNext(
                 InfectedBehaviorState.Investigating, chunk, env,
                 pawnVisible: false, ticksInState: 2000L, ref rng);
-            AssertTrue(nextStay == InfectedBehaviorState.Investigating,
-                "IA2. Investigating stays Investigating within timeout");
+            ts.Check(nextStay == InfectedBehaviorState.Investigating, "IA2. Investigating stays Investigating within timeout");
 
             // Timeout exceeded → drops to Roaming.
             var nextTimeout = InfectedBehaviorTransition.ComputeNext(
                 InfectedBehaviorState.Investigating, chunk, env,
                 pawnVisible: false, ticksInState: 3500L, ref rng);
-            AssertTrue(nextTimeout == InfectedBehaviorState.Roaming,
-                "IA3. Investigating→Roaming after timeout (3000 ticks)");
+            ts.Check(nextTimeout == InfectedBehaviorState.Roaming, "IA3. Investigating→Roaming after timeout (3000 ticks)");
 
             // Alert decayed → drops to Roaming.
             var decayedChunk = new ChunkState(4, 4)
@@ -283,8 +255,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             var nextDecayed = InfectedBehaviorTransition.ComputeNext(
                 InfectedBehaviorState.Investigating, decayedChunk, env,
                 pawnVisible: false, ticksInState: 500L, ref rng);
-            AssertTrue(nextDecayed == InfectedBehaviorState.Roaming,
-                "IA4. Investigating→Roaming when chunk alert decayed");
+            ts.Check(nextDecayed == InfectedBehaviorState.Roaming, "IA4. Investigating→Roaming when chunk alert decayed");
         }
 
         // ── 6. Assault Fallback Transitions ───────────────────
@@ -303,29 +274,25 @@ namespace Rimconemy.InfectedAutomation.Tests
             var nextStay = InfectedBehaviorTransition.ComputeNext(
                 InfectedBehaviorState.Assault, chunk, env,
                 pawnVisible: true, ticksInState: 100L, ref rng);
-            AssertTrue(nextStay == InfectedBehaviorState.Assault,
-                "AF1. Assault stays Assault when colonist visible");
+            ts.Check(nextStay == InfectedBehaviorState.Assault, "AF1. Assault stays Assault when colonist visible");
 
             // Target lost briefly (under AssaultTargetLostTicks) → stays Assault.
             var nextBrief = InfectedBehaviorTransition.ComputeNext(
                 InfectedBehaviorState.Assault, chunk, env,
                 pawnVisible: false, ticksInState: 400L, ref rng);
-            AssertTrue(nextBrief == InfectedBehaviorState.Assault,
-                "AF2. Assault stays Assault under target-lost threshold");
+            ts.Check(nextBrief == InfectedBehaviorState.Assault, "AF2. Assault stays Assault under target-lost threshold");
 
             // Target lost > AssaultTargetLostTicks → Investigating.
             var nextLost = InfectedBehaviorTransition.ComputeNext(
                 InfectedBehaviorState.Assault, chunk, env,
                 pawnVisible: false, ticksInState: 700L, ref rng);
-            AssertTrue(nextLost == InfectedBehaviorState.Investigating,
-                "AF3. Assault→Investigating after target-lost timeout");
+            ts.Check(nextLost == InfectedBehaviorState.Investigating, "AF3. Assault→Investigating after target-lost timeout");
 
             // No colonist for > AssaultNoPawnTicks → Roaming.
             var nextGone = InfectedBehaviorTransition.ComputeNext(
                 InfectedBehaviorState.Assault, chunk, env,
                 pawnVisible: false, ticksInState: 2500L, ref rng);
-            AssertTrue(nextGone == InfectedBehaviorState.Roaming,
-                "AF4. Assault→Roaming after no-colonist timeout");
+            ts.Check(nextGone == InfectedBehaviorState.Roaming, "AF4. Assault→Roaming after no-colonist timeout");
         }
 
         // ── 7. Deterministic Seed Reproducibility ─────────────
@@ -352,8 +319,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 InfectedBehaviorState.Dormant, chunk, env,
                 pawnVisible: false, ticksInState: 500L, ref rng2);
 
-            AssertTrue(result1 == result2,
-                "DS1. Same seed + same inputs → same output");
+            ts.Check(result1 == result2, "DS1. Same seed + same inputs → same output");
 
             // Different seed may differ (but is still deterministic per seed).
             var rng3 = new DeterministicRng(43);
@@ -361,32 +327,26 @@ namespace Rimconemy.InfectedAutomation.Tests
                 InfectedBehaviorState.Dormant, chunk, env,
                 pawnVisible: false, ticksInState: 500L, ref rng3);
             // Both valid states.
-            AssertTrue(result3 == InfectedBehaviorState.Dormant
-                || result3 == InfectedBehaviorState.Roaming,
-                "DS2. Different seed produces valid state");
+            ts.Check(result3 == InfectedBehaviorState.Dormant
+                || result3 == InfectedBehaviorState.Roaming, "DS2. Different seed produces valid state");
 
             // Stable hash reproducibility.
             int hash1 = DeterministicRng.GetStableHashCode("pawn42|day5|map1");
             int hash2 = DeterministicRng.GetStableHashCode("pawn42|day5|map1");
-            AssertEqual(hash1, hash2, "DS3. FNV-1a hash is reproducible");
+            ts.Check(Equals(hash1, hash2), "DS3. FNV-1a hash is reproducible");
 
             int hash3 = DeterministicRng.GetStableHashCode("pawn43|day5|map1");
-            AssertTrue(hash1 != hash3,
-                "DS4. Different input → different hash");
+            ts.Check(hash1 != hash3, "DS4. Different input → different hash");
         }
 
         // ── 8. All State Values ───────────────────────────────
 
         private static void TestAllStateValues()
         {
-            AssertTrue((int)InfectedBehaviorState.Dormant == 0,
-                "SV1. Dormant=0");
-            AssertTrue((int)InfectedBehaviorState.Roaming == 1,
-                "SV2. Roaming=1");
-            AssertTrue((int)InfectedBehaviorState.Investigating == 2,
-                "SV3. Investigating=2");
-            AssertTrue((int)InfectedBehaviorState.Assault == 3,
-                "SV4. Assault=3");
+            ts.Check((int)InfectedBehaviorState.Dormant == 0, "SV1. Dormant=0");
+            ts.Check((int)InfectedBehaviorState.Roaming == 1, "SV2. Roaming=1");
+            ts.Check((int)InfectedBehaviorState.Investigating == 2, "SV3. Investigating=2");
+            ts.Check((int)InfectedBehaviorState.Assault == 3, "SV4. Assault=3");
 
             // Threshold constants.
             AssertFloat(0.5f, InfectedBehaviorTransition.WakeDarknessThreshold, 0.001f,
@@ -399,21 +359,13 @@ namespace Rimconemy.InfectedAutomation.Tests
                 "SV8. InvestigateNoiseThreshold=0.2");
             AssertFloat(15f, InfectedBehaviorTransition.InfectedBaseSight, 0.001f,
                 "SV9. InfectedBaseSight=15");
-            AssertTrue(InfectedBehaviorTransition.InvestigationTimeoutTicks == 3000L,
-                "SV10. InvestigationTimeout=3000 ticks");
-            AssertTrue(InfectedBehaviorTransition.AssaultTargetLostTicks == 600L,
-                "SV11. AssaultTargetLost=600 ticks");
-            AssertTrue(InfectedBehaviorTransition.AssaultNoPawnTicks == 2000L,
-                "SV12. AssaultNoPawn=2000 ticks");
+            ts.Check(InfectedBehaviorTransition.InvestigationTimeoutTicks == 3000L, "SV10. InvestigationTimeout=3000 ticks");
+            ts.Check(InfectedBehaviorTransition.AssaultTargetLostTicks == 600L, "SV11. AssaultTargetLost=600 ticks");
+            ts.Check(InfectedBehaviorTransition.AssaultNoPawnTicks == 2000L, "SV12. AssaultNoPawn=2000 ticks");
         }
 
         // ── Assert Helpers ────────────────────────────────────
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else { _failed++; Log.Error("[Sprint2Regression] " + label); }
-        }
 
         private static void AssertFloat(float expected, float actual, float tolerance, string label)
         {
@@ -426,14 +378,5 @@ namespace Rimconemy.InfectedAutomation.Tests
             }
         }
 
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (Equals(expected, actual)) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[Sprint2Regression] " + label + ": expected " + expected + ", got " + actual);
-            }
-        }
     }
 }

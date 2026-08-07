@@ -79,21 +79,12 @@ namespace Rimconemy.Foundation.Tests
             string encoded = (string)serialize.Invoke(null, new object[] { original });
             var restored = (EventRecord)deserialize.Invoke(null, new object[] { encoded });
 
-            AssertEqual(category, restored?.Category, label + ": category");
-            AssertEqual(eventType, restored?.EventType, label + ": event type");
-            AssertEqual(source, restored?.SourcePackageId, label + ": source");
-            AssertEqual(message, restored?.Message, label + ": message");
-            AssertEqual(detail, restored?.Detail, label + ": detail");
+            ts.Check(Equals(category, restored?.Category), label + ": category");
+            ts.Check(Equals(eventType, restored?.EventType), label + ": event type");
+            ts.Check(Equals(source, restored?.SourcePackageId), label + ": source");
+            ts.Check(Equals(message, restored?.Message), label + ": message");
+            ts.Check(Equals(detail, restored?.Detail), label + ": detail");
         }
 
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (EqualityComparer<T>.Default.Equals(expected, actual)) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[FoundationEventLogRegression] " + label + ": expected " + expected + ", got " + actual);
-            }
-        }
     }
 }

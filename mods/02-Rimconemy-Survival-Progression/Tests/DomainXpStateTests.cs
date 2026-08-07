@@ -28,13 +28,13 @@ namespace Rimconemy.SurvivalProgression.Tests
             _passed = 0;
             _failed = 0;
 
-            AssertEqual(0f, 0f, "ignore");
+            ts.Check(Equals(0f, 0f), "ignore");
 
             // 1) Empty-state defaults
             var empty = new DomainXpState();
-            AssertEqual(0f, empty.GetXp(ProgressionDomain.Building), "empty xp is zero");
-            AssertEqual(1, empty.GetLevel(ProgressionDomain.Building), "empty level is 1");
-            AssertEqual(0, empty.TotalAwards, "empty award count is zero");
+            ts.Check(Equals(0f, empty.GetXp(ProgressionDomain.Building)), "empty xp is zero");
+            ts.Check(Equals(1, empty.GetLevel(ProgressionDomain.Building)), "empty level is 1");
+            ts.Check(Equals(0, empty.TotalAwards), "empty award count is zero");
 
             // 2) Single valid award — 100 XP crosses the Level-2 threshold
             //    (level = 1 + floor(sqrt(xp/100)), so 100 XP -> Level 2).
@@ -42,34 +42,30 @@ namespace Rimconemy.SurvivalProgression.Tests
             bool accepted = empty.TryAward(
                 ProgressionDomain.Building, 100f, "build:test:1", "Rimconemy_Tier1Barricade",
                 1, tick, out ProgressionActionResult r1);
-            AssertTrue(accepted, "first award accepted");
-            AssertTrue(r1.WasAccepted, "result WasAccepted=true");
-            AssertEqual(100f, r1.BaseExperience, "result BaseExperience preserved");
-            AssertEqual(100f, r1.ActualExperience, "result first-award retains full amount (factor=1)");
-            AssertEqual(100f, empty.GetXp(ProgressionDomain.Building), "xp credited");
-            AssertEqual(2, empty.GetLevel(ProgressionDomain.Building), "level crossed to 2 (100 sq threshold)");
-            AssertEqual(1, empty.TotalAwards, "one completion key");
+            ts.Check(accepted, "first award accepted");
+            ts.Check(r1.WasAccepted, "result WasAccepted=true");
+            ts.Check(Equals(100f, r1.BaseExperience), "result BaseExperience preserved");
+            ts.Check(Equals(100f, r1.ActualExperience), "result first-award retains full amount (factor=1)");
+            ts.Check(Equals(100f, empty.GetXp(ProgressionDomain.Building)), "xp credited");
+            ts.Check(Equals(2, empty.GetLevel(ProgressionDomain.Building)), "level crossed to 2 (100 sq threshold)");
+            ts.Check(Equals(1, empty.TotalAwards), "one completion key");
 
             // 3) Duplicate idempotency
             bool replay = empty.TryAward(
                 ProgressionDomain.Building, 10f, "build:test:1", "Rimconemy_Tier1Barricade",
                 1, tick, out ProgressionActionResult r2);
-            AssertFalse(replay, "replay rejected");
-            AssertFalse(r2.WasAccepted, "replay result WasAccepted=false");
-            AssertEqual(1, empty.TotalAwards, "duplicate did not add key");
-            AssertEqual(100f, empty.GetXp(ProgressionDomain.Building), "duplicate did not add xp");
+            ts.Check(!(replay), "replay rejected");
+            ts.Check(!(r2.WasAccepted), "replay result WasAccepted=false");
+            ts.Check(Equals(1, empty.TotalAwards), "duplicate did not add key");
+            ts.Check(Equals(100f, empty.GetXp(ProgressionDomain.Building)), "duplicate did not add xp");
 
             // 4) Empty / invalid input rejection
-            AssertFalse(empty.TryAward(ProgressionDomain.Building, 10f, "", "", 0, 0L, out _),
-                "empty key rejected");
-            AssertFalse(empty.TryAward(ProgressionDomain.Building, 0f, "x", "", 0, 0L, out _),
-                "zero amount rejected");
-            AssertFalse(empty.TryAward(ProgressionDomain.Building, -5f, "y", "", 0, 0L, out _),
-                "negative amount rejected");
+            ts.Check(!(empty.TryAward(ProgressionDomain.Building, 10f, "", "", 0, 0L, out _)), "empty key rejected");
+            ts.Check(!(empty.TryAward(ProgressionDomain.Building, 0f, "x", "", 0, 0L, out _)), "zero amount rejected");
+            ts.Check(!(empty.TryAward(ProgressionDomain.Building, -5f, "y", "", 0, 0L, out _)), "negative amount rejected");
             int before = empty.TotalAwards;
-            AssertFalse(empty.TryAward((ProgressionDomain)99, 10f, "z", "", 0, 0L, out _),
-                "invalid domain enum rejected");
-            AssertEqual(before, empty.TotalAwards, "invalid domain did not poison keyset");
+            ts.Check(!(empty.TryAward((ProgressionDomain)99, 10f, "z", "", 0, 0L, out _)), "invalid domain enum rejected");
+            ts.Check(Equals(before, empty.TotalAwards), "invalid domain did not poison keyset");
 
             // 5) Diminishing returns. Keys MUST carry the domain prefix
             //    (domain:Building:) so AwardCountByDomain sees them in-domain;
@@ -87,10 +83,8 @@ namespace Rimconemy.SurvivalProgression.Tests
             // (asymptote 0.5); 5 awards of 10 -> xp ~= 40.5
             // (< 50 linear, > 25 lower bound).
             float xpDim = dim.GetXp(ProgressionDomain.Building);
-            AssertTrue(xpDim > 25f && xpDim < 50f,
-                "diminishing returns shrinks xp below linear (got " + xpDim + ")");
-            AssertEqual(5, dim.AwardCountByDomain(ProgressionDomain.Building),
-                "5 awards counted in domain");
+            ts.Check(xpDim > 25f && xpDim < 50f, "diminishing returns shrinks xp below linear (got " + xpDim + ")");
+            ts.Check(Equals(5, dim.AwardCountByDomain(ProgressionDomain.Building)), "5 awards counted in domain");
 
             // 6) Per-domain level threshold: 0..99 = Level 1, 100..399 = Level 2
             var lvl = new DomainXpState();
@@ -105,21 +99,20 @@ namespace Rimconemy.SurvivalProgression.Tests
             // Should be at least Level 2 once xp > 0 (due to sqrt formula)
             // Verify >= Level 2 with the actual xp we got
             int expected = 1 + (int)Math.Floor(Math.Sqrt(lvlXp / 100.0));
-            AssertEqual(expected, lvlLevel, "level formula matches manual sqrt computation");
+            ts.Check(Equals(expected, lvlLevel), "level formula matches manual sqrt computation");
 
             // 7) Different domain keys do not cross-credit
             var cross = new DomainXpState();
             cross.TryAward(ProgressionDomain.Building, 10f, "x", "", 0, 0L, out _);
             cross.TryAward(ProgressionDomain.Defense, 10f, "y", "", 0, 0L, out _);
             cross.TryAward(ProgressionDomain.Machinery, 10f, "z", "", 0, 0L, out _);
-            AssertEqual(10f, cross.GetXp(ProgressionDomain.Building), "Building xp isolated");
-            AssertEqual(10f, cross.GetXp(ProgressionDomain.Defense), "Defense xp isolated");
-            AssertEqual(10f, cross.GetXp(ProgressionDomain.Machinery), "Machinery xp isolated");
-            AssertEqual(3, cross.TotalAwards, "3 domains = 3 keys");
+            ts.Check(Equals(10f, cross.GetXp(ProgressionDomain.Building)), "Building xp isolated");
+            ts.Check(Equals(10f, cross.GetXp(ProgressionDomain.Defense)), "Defense xp isolated");
+            ts.Check(Equals(10f, cross.GetXp(ProgressionDomain.Machinery)), "Machinery xp isolated");
+            ts.Check(Equals(3, cross.TotalAwards), "3 domains = 3 keys");
 
             // 8) Schema version constant
-            AssertEqual(DomainXpState.CurrentSchemaVersion, empty.SchemaVersion,
-                "schema version pinned");
+            ts.Check(Equals(DomainXpState.CurrentSchemaVersion, empty.SchemaVersion), "schema version pinned");
 
             string summary = "[Rimconemy.SurvivalProgression] DomainXpState tests: "
                 + _passed + " passed, " + _failed + " failed.";
@@ -135,22 +128,6 @@ namespace Rimconemy.SurvivalProgression.Tests
             return true;
         }
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else { _failed++; Log.Error("[Rimconemy.SurvivalProgression] " + label); }
-        }
 
-        private static void AssertFalse(bool condition, string label) { AssertTrue(!condition, label); }
-
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (Equals(expected, actual)) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[Rimconemy.SurvivalProgression] " + label + ": expected " + expected + ", got " + actual);
-            }
-        }
     }
 }

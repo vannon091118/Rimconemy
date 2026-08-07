@@ -58,10 +58,8 @@ namespace Rimconemy.InfectedAutomation.Tests
                 DarknessSectionLayerLifecycle.ComputeOverlayAlpha(1f, 1.0f, 0f),
                 0.001f,
                 "DL2. Full visibility has no overlay alpha when veil is gated off");
-            AssertTrue(
-                DarknessSectionLayerLifecycle.ComputeOverlayAlpha(0.25f, 1.0f, 0f)
-                    > DarknessSectionLayerLifecycle.ComputeOverlayAlpha(0.75f, 1.0f, 0f),
-                "DL3. Darker cells have greater alpha");
+            ts.Check(DarknessSectionLayerLifecycle.ComputeOverlayAlpha(0.25f, 1.0f, 0f)
+                    > DarknessSectionLayerLifecycle.ComputeOverlayAlpha(0.75f, 1.0f, 0f), "DL3. Darker cells have greater alpha");
             // DL3a/b/c verify the pow(1-v, 0.4) curve math precisely.
             AssertFloat(0.891f,
                 DarknessSectionLayerLifecycle.ComputeOverlayAlpha(0.25f, 1.0f, 0f), 0.02f,
@@ -108,9 +106,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 DarknessSectionLayerLifecycle.ComputeOverlayAlpha(1f, 1.0f, 0.04f),
                 0.0001f,
                 "DL16. Veil applies at visibility=1 once ConditionalVeil gate is open");
-            AssertTrue(
-                DarknessSectionLayerLifecycle.ComputeOverlayAlpha(0.95f, 1.0f, 0.04f) >= 0.04f,
-                "DL17. Curve >= veil for mid-bright cells; veil never darkens below curve");
+            ts.Check(DarknessSectionLayerLifecycle.ComputeOverlayAlpha(0.95f, 1.0f, 0.04f) >= 0.04f, "DL17. Curve >= veil for mid-bright cells; veil never darkens below curve");
             // At vis=0.99 the curve pow(0.01, 0.4) ≈ 0.158 exceeds the veil floor.
             AssertFloat(0.158f,
                 DarknessSectionLayerLifecycle.ComputeOverlayAlpha(0.99f, 1.0f, 0.04f),
@@ -124,18 +120,10 @@ namespace Rimconemy.InfectedAutomation.Tests
 
         private static void TestMeshBufferCounts()
         {
-            AssertTrue(
-                DarknessSectionLayerLifecycle.ValidateMeshBuffers(4, 4, 6),
-                "DL7. One quad has matching buffers");
-            AssertTrue(
-                DarknessSectionLayerLifecycle.ValidateMeshBuffers(0, 0, 0),
-                "DL8. Empty section is valid");
-            AssertTrue(
-                !DarknessSectionLayerLifecycle.ValidateMeshBuffers(4, 3, 6),
-                "DL9. Color mismatch is rejected");
-            AssertTrue(
-                !DarknessSectionLayerLifecycle.ValidateMeshBuffers(4, 4, 5),
-                "DL10. Non-triangle index count is rejected");
+            ts.Check(DarknessSectionLayerLifecycle.ValidateMeshBuffers(4, 4, 6), "DL7. One quad has matching buffers");
+            ts.Check(DarknessSectionLayerLifecycle.ValidateMeshBuffers(0, 0, 0), "DL8. Empty section is valid");
+            ts.Check(!DarknessSectionLayerLifecycle.ValidateMeshBuffers(4, 3, 6), "DL9. Color mismatch is rejected");
+            ts.Check(!DarknessSectionLayerLifecycle.ValidateMeshBuffers(4, 4, 5), "DL10. Non-triangle index count is rejected");
         }
 
         private static void TestOverlayColorContract()
@@ -143,68 +131,46 @@ namespace Rimconemy.InfectedAutomation.Tests
             // Darkness material uses vertex color as black-overlay multiplier:
             // black RGB darkens the map; alpha is the visibility-derived channel.
             var opaque = DarknessSectionLayerLifecycle.CreateOverlayColor(1f);
-            AssertTrue(
-                DarknessSectionLayerLifecycle.IsBlackOverlayColor(opaque),
-                "DL20. Opaque overlay uses black RGB so Darkness material darkens the map");
-            AssertTrue(opaque.a == 255,
-                "DL21. Opaque overlay preserves alpha=255");
+            ts.Check(DarknessSectionLayerLifecycle.IsBlackOverlayColor(opaque), "DL20. Opaque overlay uses black RGB so Darkness material darkens the map");
+            ts.Check(opaque.a == 255, "DL21. Opaque overlay preserves alpha=255");
 
             var partial = DarknessSectionLayerLifecycle.CreateOverlayColor(0.5f);
-            AssertTrue(
-                DarknessSectionLayerLifecycle.IsBlackOverlayColor(partial),
-                "DL22. Partial overlay keeps black RGB");
-            AssertTrue(partial.a >= 127 && partial.a <= 128,
-                "DL23. Partial overlay converts alpha to approximately 128");
+            ts.Check(DarknessSectionLayerLifecycle.IsBlackOverlayColor(partial), "DL22. Partial overlay keeps black RGB");
+            ts.Check(partial.a >= 127 && partial.a <= 128, "DL23. Partial overlay converts alpha to approximately 128");
 
             var clamped = DarknessSectionLayerLifecycle.CreateOverlayColor(2f);
-            AssertTrue(clamped.a == 255,
-                "DL24. Overlay color clamps alpha above one");
+            ts.Check(clamped.a == 255, "DL24. Overlay color clamps alpha above one");
         }
 
         private static void TestVisibilityRangeContract()
         {
-            AssertTrue(
-                SightConeMath.ComputeCellVisibility(
+            ts.Check(SightConeMath.ComputeCellVisibility(
                     new IntVec3(10, 0, 10),
                     new IntVec3(10, 0, 10),
                     IntVec3.Zero,
                     0f,
                     0f,
-                    IntVec3.Invalid) >= 0f,
-                "DL11. Visibility helper remains non-negative");
-            AssertTrue(
-                SightConeMath.ComputeCellVisibility(
+                    IntVec3.Invalid) >= 0f, "DL11. Visibility helper remains non-negative");
+            ts.Check(SightConeMath.ComputeCellVisibility(
                     new IntVec3(10, 0, 10),
                     new IntVec3(10, 0, 10),
                     IntVec3.Zero,
                     0f,
                     0f,
-                    IntVec3.Invalid) <= 1f,
-                "DL12. Visibility helper remains at most one");
+                    IntVec3.Invalid) <= 1f, "DL12. Visibility helper remains at most one");
         }
 
         private static void TestConditionalVeilGateValue()
         {
             // The veil parameter is wired through HasActiveSight() gate.
             // Runtime gate is exercised by live ColonistSightSystemRegressionTests.
-            AssertTrue(true,
-                "DL19. Conditional veil wiring documented (HasActiveSight gate)");
+            ts.Check(true, "DL19. Conditional veil wiring documented (HasActiveSight gate)");
         }
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[DarknessSectionLayerRegression] " + label);
-            }
-        }
 
         private static void AssertFloat(float expected, float actual, float tolerance, string label)
         {
-            AssertTrue(Math.Abs(expected - actual) <= tolerance,
-                label + ": expected " + expected + ", got " + actual);
+            ts.Check(Math.Abs(expected - actual) <= tolerance, label + ": expected " + expected + ", got " + actual);
         }
     }
 }

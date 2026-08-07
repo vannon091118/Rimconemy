@@ -75,11 +75,9 @@ namespace Rimconemy.InfectedAutomation.Tests
             long t = 10_000L;
 
             state.MarkGameOverPending("wipe-1", colonistsPresent: false, atTick: t);
-            AssertEqual(1, state.GameOverPendingQueue.Count,
-                "Queue: enqueue adds exactly one entry when colonists absent");
-            AssertTrue(state.GameOverPending, "Queue: legacy mirror flag is true after enqueue");
-            AssertEqual("wipe-1", state.GameOverReasonPending,
-                "Queue: legacy mirror reason matches oldest entry");
+            ts.Check(Equals(1, state.GameOverPendingQueue.Count), "Queue: enqueue adds exactly one entry when colonists absent");
+            ts.Check(state.GameOverPending, "Queue: legacy mirror flag is true after enqueue");
+            ts.Check(Equals("wipe-1", state.GameOverReasonPending), "Queue: legacy mirror reason matches oldest entry");
         }
 
         private static void TestEdgeTriggerFirstWipeTickIsImmutable()
@@ -90,8 +88,7 @@ namespace Rimconemy.InfectedAutomation.Tests
 
             state.MarkGameOverPending("wipe-1", colonistsPresent: false, atTick: t1);
             state.MarkGameOverPending("wipe-2", colonistsPresent: false, atTick: t2);
-            AssertEqual(t1, state.FirstWipeTick,
-                "Queue: FirstWipeTick remains the first wipe tick and doesn't get overwritten");
+            ts.Check(Equals(t1, state.FirstWipeTick), "Queue: FirstWipeTick remains the first wipe tick and doesn't get overwritten");
         }
 
         private static void TestMultipleWipeTickSignalsAccumulate()
@@ -100,8 +97,7 @@ namespace Rimconemy.InfectedAutomation.Tests
             state.MarkGameOverPending("wipe-1", colonistsPresent: false, atTick: 10_000L);
             state.MarkGameOverPending("wipe-2", colonistsPresent: false, atTick: 20_000L);
             state.MarkGameOverPending("wipe-3", colonistsPresent: false, atTick: 30_000L);
-            AssertEqual(3, state.GameOverPendingQueue.Count,
-                "Queue: 3 consecutive wipe ticks yield 3 distinct entries");
+            ts.Check(Equals(3, state.GameOverPendingQueue.Count), "Queue: 3 consecutive wipe ticks yield 3 distinct entries");
         }
 
         private static void TestFifoDrainOrder()
@@ -112,18 +108,13 @@ namespace Rimconemy.InfectedAutomation.Tests
             state.MarkGameOverPending("wipe-3", colonistsPresent: false, atTick: 30_000L);
 
             string drained1, drained2, drained3;
-            AssertTrue(state.ConsumeGameOverPending(out drained1) && drained1 == "wipe-1",
-                "Queue: first Consume yields oldest entry (wipe-1)");
-            AssertTrue(state.ConsumeGameOverPending(out drained2) && drained2 == "wipe-2",
-                "Queue: second Consume yields the next-oldest entry (wipe-2)");
-            AssertTrue(state.ConsumeGameOverPending(out drained3) && drained3 == "wipe-3",
-                "Queue: third Consume yields the newest entry (wipe-3)");
-            AssertEqual(0, state.GameOverPendingQueue.Count,
-                "Queue: 3 Consumes drain the queue");
+            ts.Check(state.ConsumeGameOverPending(out drained1) && drained1 == "wipe-1", "Queue: first Consume yields oldest entry (wipe-1)");
+            ts.Check(state.ConsumeGameOverPending(out drained2) && drained2 == "wipe-2", "Queue: second Consume yields the next-oldest entry (wipe-2)");
+            ts.Check(state.ConsumeGameOverPending(out drained3) && drained3 == "wipe-3", "Queue: third Consume yields the newest entry (wipe-3)");
+            ts.Check(Equals(0, state.GameOverPendingQueue.Count), "Queue: 3 Consumes drain the queue");
 
             string drainedEmpty;
-            AssertFalse(state.ConsumeGameOverPending(out drainedEmpty),
-                "Queue: Consume on empty queue returns false (and nulls out parameter)");
+            ts.Check(!(state.ConsumeGameOverPending(out drainedEmpty)), "Queue: Consume on empty queue returns false (and nulls out parameter)");
         }
 
         private static void TestLegacyPreF13SinglePendingSurvivesReload()
@@ -139,12 +130,9 @@ namespace Rimconemy.InfectedAutomation.Tests
 
             InvokePrivate(state, "RebuildAfterLoad");
 
-            AssertEqual(1, state.GameOverPendingQueue.Count,
-                "Legacy: RebuildAfterLoad synthesises one queue entry from mirror fields");
-            AssertEqual("legacy-wipe", state.GameOverPendingQueue[0].Reason,
-                "Legacy: synthesised entry carries legacy reason");
-            AssertEqual(12_500L, state.GameOverPendingQueue[0].Tick,
-                "Legacy: synthesised entry carries FirstWipeTick as tick anchor");
+            ts.Check(Equals(1, state.GameOverPendingQueue.Count), "Legacy: RebuildAfterLoad synthesises one queue entry from mirror fields");
+            ts.Check(Equals("legacy-wipe", state.GameOverPendingQueue[0].Reason), "Legacy: synthesised entry carries legacy reason");
+            ts.Check(Equals(12_500L, state.GameOverPendingQueue[0].Tick), "Legacy: synthesised entry carries FirstWipeTick as tick anchor");
         }
 
         private static void TestModernPreF13QueueSurvivesRoundTrip()
@@ -157,14 +145,13 @@ namespace Rimconemy.InfectedAutomation.Tests
 
             InvokePrivate(state, "RebuildAfterLoad");
 
-            AssertEqual(3, state.GameOverPendingQueue.Count,
-                "Modern: RebuildAfterLoad reconstructs every queue entry from parallel lists");
-            AssertEqual("r1", state.GameOverPendingQueue[0].Reason, "Modern: queue[0].Reason");
-            AssertEqual(100L, state.GameOverPendingQueue[0].Tick, "Modern: queue[0].Tick");
-            AssertEqual("wipe", state.GameOverPendingQueue[0].TriggerId, "Modern: queue[0].TriggerId");
-            AssertEqual("shuttle", state.GameOverPendingQueue[2].TriggerId, "Modern: queue[2].TriggerId");
-            AssertTrue(state.GameOverPending, "Modern: legacy mirror flipped true after RebuildAfterLoad");
-            AssertEqual("r1", state.GameOverReasonPending, "Modern: legacy mirror matches oldest queue entry");
+            ts.Check(Equals(3, state.GameOverPendingQueue.Count), "Modern: RebuildAfterLoad reconstructs every queue entry from parallel lists");
+            ts.Check(Equals("r1", state.GameOverPendingQueue[0].Reason), "Modern: queue[0].Reason");
+            ts.Check(Equals(100L, state.GameOverPendingQueue[0].Tick), "Modern: queue[0].Tick");
+            ts.Check(Equals("wipe", state.GameOverPendingQueue[0].TriggerId), "Modern: queue[0].TriggerId");
+            ts.Check(Equals("shuttle", state.GameOverPendingQueue[2].TriggerId), "Modern: queue[2].TriggerId");
+            ts.Check(state.GameOverPending, "Modern: legacy mirror flipped true after RebuildAfterLoad");
+            ts.Check(Equals("r1", state.GameOverReasonPending), "Modern: legacy mirror matches oldest queue entry");
         }
 
         private static void TestPeekDoesNotDrain()
@@ -174,12 +161,10 @@ namespace Rimconemy.InfectedAutomation.Tests
             state.MarkGameOverPending("peek-2", colonistsPresent: false, atTick: 2000L);
 
             string reason; long tick; string triggerId;
-            AssertTrue(state.PeekGameOverPending(out reason, out tick, out triggerId),
-                "Peek: returns true when queue has entries");
-            AssertEqual("peek-1", reason, "Peek: returns oldest reason");
-            AssertEqual(1000L, tick, "Peek: returns oldest tick");
-            AssertEqual(2, state.GameOverPendingQueue.Count,
-                "Peek: queue length unchanged after Peek");
+            ts.Check(state.PeekGameOverPending(out reason, out tick, out triggerId), "Peek: returns true when queue has entries");
+            ts.Check(Equals("peek-1", reason), "Peek: returns oldest reason");
+            ts.Check(Equals(1000L, tick), "Peek: returns oldest tick");
+            ts.Check(Equals(2, state.GameOverPendingQueue.Count), "Peek: queue length unchanged after Peek");
         }
 
         // ── helpers ──────────────────────────────────────
@@ -202,25 +187,6 @@ namespace Rimconemy.InfectedAutomation.Tests
             method.Invoke(instance, null);
         }
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else { _failed++; Log.Error("[Rimconemy.InfectedAutomation] " + label); }
-        }
 
-        private static void AssertFalse(bool condition, string label)
-        {
-            AssertTrue(!condition, label);
-        }
-
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (EqualityComparer<T>.Default.Equals(expected, actual)) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[Rimconemy.InfectedAutomation] " + label + ": expected " + expected + ", got " + actual);
-            }
-        }
     }
 }

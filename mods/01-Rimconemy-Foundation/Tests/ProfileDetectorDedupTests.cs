@@ -33,36 +33,28 @@ namespace Rimconemy.Foundation.Tests
 
             // Test 2: First call after reset must emit (token is null).
             bool firstEmitted = ProfileDetector.TryEmitDetection(out string firstSummary);
-            AssertTrue(firstEmitted,
-                "TryEmitDetection: first call after ResetForReload emits");
-            AssertTrue(!string.IsNullOrEmpty(firstSummary),
-                "TryEmitDetection: out summary is populated on first call");
+            ts.Check(firstEmitted, "TryEmitDetection: first call after ResetForReload emits");
+            ts.Check(!string.IsNullOrEmpty(firstSummary), "TryEmitDetection: out summary is populated on first call");
 
             // Test 3: Second call with no state change must dedup — the same
             // canonical state produces the same string, so TryEmitDetection
             // returns false. This is the literal cctor re-entry scenario.
             bool secondEmitted = ProfileDetector.TryEmitDetection(out string secondSummary);
-            AssertTrue(!secondEmitted,
-                "TryEmitDetection: same-state re-entry does not re-emit (cctor race)");
-            AssertTrue(string.Equals(firstSummary, secondSummary, StringComparison.Ordinal),
-                "TryEmitDetection: out summary is stable across same-state calls");
+            ts.Check(!secondEmitted, "TryEmitDetection: same-state re-entry does not re-emit (cctor race)");
+            ts.Check(string.Equals(firstSummary, secondSummary, StringComparison.Ordinal), "TryEmitDetection: out summary is stable across same-state calls");
 
             // Test 4: A third back-to-back call STILL dedups (asserts the dedup
             // is a stable invariant and not a "first two only" coincidence).
             bool thirdEmitted = ProfileDetector.TryEmitDetection(out string thirdSummary);
-            AssertTrue(!thirdEmitted,
-                "TryEmitDetection: a third same-state call still dedups");
-            AssertTrue(string.Equals(firstSummary, thirdSummary, StringComparison.Ordinal),
-                "TryEmitDetection: out summary stable across N same-state calls");
+            ts.Check(!thirdEmitted, "TryEmitDetection: a third same-state call still dedups");
+            ts.Check(string.Equals(firstSummary, thirdSummary, StringComparison.Ordinal), "TryEmitDetection: out summary stable across N same-state calls");
 
             // Test 5: After ResetForReload the dedup token is cleared, so the
             // next TryEmitDetection emits again — exactly the save/load path.
             ProfileDetector.ResetForReload();
             bool fourthEmitted = ProfileDetector.TryEmitDetection(out string fourthSummary);
-            AssertTrue(fourthEmitted,
-                "TryEmitDetection: post-ResetForReload call emits a fresh summary");
-            AssertTrue(string.Equals(firstSummary, fourthSummary, StringComparison.Ordinal),
-                "TryEmitDetection: post-reset summary matches the original content");
+            ts.Check(fourthEmitted, "TryEmitDetection: post-ResetForReload call emits a fresh summary");
+            ts.Check(string.Equals(firstSummary, fourthSummary, StringComparison.Ordinal), "TryEmitDetection: post-reset summary matches the original content");
 
             // Final report. Format must match the runtime_test.sh required
             // summaries regex "Profile detector dedup tests: [0-9]+ passed, 0 failed".
@@ -80,14 +72,5 @@ namespace Rimconemy.Foundation.Tests
             return true;
         }
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[Rimconemy.Foundation] ProfileDetectorDedupTests FAILED: " + label);
-            }
-        }
     }
 }

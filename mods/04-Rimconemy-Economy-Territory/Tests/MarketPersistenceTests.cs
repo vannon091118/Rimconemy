@@ -20,16 +20,13 @@ namespace Rimconemy.EconomyTerritory.Tests
             _passed = 0;
             _failed = 0;
 
-            AssertTrue(typeof(MarketModel).GetInterface(nameof(IExposable)) != null,
-                "Market: implements IExposable for Scribe_Deep");
+            ts.Check(typeof(MarketModel).GetInterface(nameof(IExposable)) != null, "Market: implements IExposable for Scribe_Deep");
 
             var market = new MarketModel { MapId = 42, SnapshotTick = 60000L };
             market.RegisterItem("Meal", 25L, currentStock: 0, targetStock: 10);
-            AssertTrue(market.Price("Meal") > 0, "Market: registered price is readable");
-            AssertTrue(market.PlaceOrder("tests", "request-1", "Meal", 1, OrderSide.Buy),
-                "Market: first order is accepted");
-            AssertTrue(!market.PlaceOrder("tests", "request-1", "Meal", 1, OrderSide.Buy),
-                "Market: duplicate order is rejected");
+            ts.Check(market.Price("Meal") > 0, "Market: registered price is readable");
+            ts.Check(market.PlaceOrder("tests", "request-1", "Meal", 1, OrderSide.Buy), "Market: first order is accepted");
+            ts.Check(!market.PlaceOrder("tests", "request-1", "Meal", 1, OrderSide.Buy), "Market: duplicate order is rejected");
 
             string summary = "[Rimconemy.EconomyTerritory] Market persistence tests: "
                 + _passed + " passed, " + _failed + " failed.";
@@ -45,14 +42,5 @@ namespace Rimconemy.EconomyTerritory.Tests
             return true;
         }
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[Rimconemy.EconomyTerritory] MarketPersistenceTests FAILED: " + label);
-            }
-        }
     }
 }

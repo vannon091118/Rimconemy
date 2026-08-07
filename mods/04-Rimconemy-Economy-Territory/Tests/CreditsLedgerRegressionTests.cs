@@ -48,29 +48,27 @@ namespace Rimconemy.EconomyTerritory.Tests
                 ledger.ApplyTransaction(Transaction("filler-" + i, 1));
 
             bool historyTrimmed = ledger.Transactions.Count == CreditsLedger.MaxHistoryRetained;
-            AssertTrue(historyTrimmed, "Ledger: history is capped independently");
+            ts.Check(historyTrimmed, "Ledger: history is capped independently");
 
             long replayId = ledger.ApplyTransaction(Transaction("first", 1));
-            AssertEqual(firstId, replayId, "Ledger: replay returns original TxId");
-            AssertEqual(CreditsLedger.MaxHistoryRetained + 2L, ledger.LastTransactionId,
-                "Ledger: replay does not create a new transaction");
-            AssertEqual(CreditsLedger.MaxHistoryRetained + 2L, ledger.Balance,
-                "Ledger: replay leaves balance unchanged");
+            ts.Check(Equals(firstId, replayId), "Ledger: replay returns original TxId");
+            ts.Check(Equals(CreditsLedger.MaxHistoryRetained + 2L, ledger.LastTransactionId), "Ledger: replay does not create a new transaction");
+            ts.Check(Equals(CreditsLedger.MaxHistoryRetained + 2L, ledger.Balance), "Ledger: replay leaves balance unchanged");
         }
 
         private static void TestOverflowAndUnderflowAreRejectedWithoutMutation()
         {
             var ledger = new CreditsLedger { Balance = CreditsLedger.MaxBalance };
             long overflowId = ledger.ApplyTransaction(Transaction("overflow", 1));
-            AssertEqual(-1L, overflowId, "Ledger: overflow rejected");
-            AssertEqual(0L, ledger.LastTransactionId, "Ledger: overflow leaves TxId unchanged");
-            AssertEqual(CreditsLedger.MaxBalance, ledger.Balance, "Ledger: overflow leaves balance unchanged");
+            ts.Check(Equals(-1L, overflowId), "Ledger: overflow rejected");
+            ts.Check(Equals(0L, ledger.LastTransactionId), "Ledger: overflow leaves TxId unchanged");
+            ts.Check(Equals(CreditsLedger.MaxBalance, ledger.Balance), "Ledger: overflow leaves balance unchanged");
 
             ledger.Balance = 0;
             long underflowId = ledger.ApplyTransaction(Transaction("underflow", long.MinValue));
-            AssertEqual(-1L, underflowId, "Ledger: long underflow rejected");
-            AssertEqual(0L, ledger.LastTransactionId, "Ledger: underflow leaves TxId unchanged");
-            AssertEqual(0L, ledger.Balance, "Ledger: underflow leaves balance unchanged");
+            ts.Check(Equals(-1L, underflowId), "Ledger: long underflow rejected");
+            ts.Check(Equals(0L, ledger.LastTransactionId), "Ledger: underflow leaves TxId unchanged");
+            ts.Check(Equals(0L, ledger.Balance), "Ledger: underflow leaves balance unchanged");
         }
 
         private static void TestRecomputeBalanceIncludesTrimmedHistory()
@@ -80,8 +78,7 @@ namespace Rimconemy.EconomyTerritory.Tests
                 ledger.ApplyTransaction(Transaction("recompute-" + i, 1));
 
             ledger.Balance = -123;
-            AssertEqual(CreditsLedger.MaxHistoryRetained + 10L, ledger.RecomputeBalance(),
-                "Ledger: recompute includes trimmed transaction base");
+            ts.Check(Equals(CreditsLedger.MaxHistoryRetained + 10L, ledger.RecomputeBalance()), "Ledger: recompute includes trimmed transaction base");
         }
 
         private static void TestCountCapPrunesOldestIdempotencyKeysDeterministically()
@@ -93,12 +90,10 @@ namespace Rimconemy.EconomyTerritory.Tests
             // The durable index keeps the configured post-prune window and
             // does not rebuild from the 256-entry UI history.
             long oldestReplay = ledger.ApplyTransaction(Transaction("count-0", 1));
-            AssertEqual(4101L, oldestReplay, "Ledger: pruned oldest key can be safely reissued");
+            ts.Check(Equals(4101L, oldestReplay), "Ledger: pruned oldest key can be safely reissued");
             long retainedReplay = ledger.ApplyTransaction(Transaction("count-4099", 1));
-            AssertTrue(retainedReplay > 0 && retainedReplay < 4101,
-                "Ledger: newest key remains idempotent after prune");
-            AssertEqual(4101L, ledger.LastTransactionId,
-                "Ledger: only the deliberately pruned replay creates a transaction");
+            ts.Check(retainedReplay > 0 && retainedReplay < 4101, "Ledger: newest key remains idempotent after prune");
+            ts.Check(Equals(4101L, ledger.LastTransactionId), "Ledger: only the deliberately pruned replay creates a transaction");
         }
 
         private static Transaction Transaction(string requestId, long amount)
@@ -112,20 +107,6 @@ namespace Rimconemy.EconomyTerritory.Tests
             };
         }
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else { _failed++; Log.Error("[CreditsLedgerRegression] " + label); }
-        }
 
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (EqualityComparer<T>.Default.Equals(expected, actual)) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[CreditsLedgerRegression] " + label + ": expected " + expected + ", got " + actual);
-            }
-        }
     }
 }

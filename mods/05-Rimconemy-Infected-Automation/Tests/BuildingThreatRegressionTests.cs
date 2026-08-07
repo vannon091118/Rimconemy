@@ -20,12 +20,10 @@ namespace Rimconemy.InfectedAutomation.Tests
 
             AssertNear(0.475f, BuildingThreatAdapter.ComputePressure(2, 1, 0.5f), 0.0001f,
                 "Building threat: weighted pressure is deterministic");
-            AssertEqual(0f, BuildingThreatAdapter.ComputePressure(0, 0, -1f),
-                "Building threat: lower bound is clamped");
-            AssertEqual(1f, BuildingThreatAdapter.ComputePressure(100, 100, 10f),
-                "Building threat: upper bound is clamped");
+            ts.Check(Equals(0f, BuildingThreatAdapter.ComputePressure(0, 0, -1f)), "Building threat: lower bound is clamped");
+            ts.Check(Equals(1f, BuildingThreatAdapter.ComputePressure(100, 100, 10f)), "Building threat: upper bound is clamped");
             string key = BuildingThreatAdapter.BuildDeterminismKey(120L, "ABC", "DEF");
-            AssertEqual("120|ABC|DEF", key, "Building threat: determinism key is canonical");
+            ts.Check(Equals("120|ABC|DEF", key), "Building threat: determinism key is canonical");
 
             string summary = "[Rimconemy.InfectedAutomation] Building threat regression tests: "
                 + _passed + " passed, " + _failed + " failed.";
@@ -51,14 +49,5 @@ namespace Rimconemy.InfectedAutomation.Tests
             }
         }
 
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (Equals(expected, actual)) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[BuildingThreatRegression] " + label + ": expected " + expected + ", got " + actual);
-            }
-        }
     }
 }

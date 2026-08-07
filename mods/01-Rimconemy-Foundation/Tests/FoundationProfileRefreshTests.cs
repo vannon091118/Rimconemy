@@ -34,10 +34,8 @@ namespace Rimconemy.Foundation.Tests
             // Canonical public entry point; emits the summary line at most once.
             ProfileDetector.TryEmitDetection(out _);
 
-            AssertTrue(PackageRegistry.RegisteredPackageIds != null,
-                "Profile refresh: package registry remains readable");
-            AssertTrue(ProfileDetector.MissingPackageIds != null,
-                "Profile refresh: missing package result is non-null");
+            ts.Check(PackageRegistry.RegisteredPackageIds != null, "Profile refresh: package registry remains readable");
+            ts.Check(ProfileDetector.MissingPackageIds != null, "Profile refresh: missing package result is non-null");
 
             foreach (var feature in FeaturePackages)
             {
@@ -54,10 +52,8 @@ namespace Rimconemy.Foundation.Tests
                 if (!assemblyLoaded)
                     continue;
 
-                AssertTrue(PackageRegistry.IsRegistered(feature.Value),
-                    "Profile refresh: loaded assembly registered (" + feature.Key + ")");
-                AssertTrue(!Contains(ProfileDetector.MissingPackageIds, feature.Value),
-                    "Profile refresh: loaded assembly not marked missing (" + feature.Key + ")");
+                ts.Check(PackageRegistry.IsRegistered(feature.Value), "Profile refresh: loaded assembly registered (" + feature.Key + ")");
+                ts.Check(!Contains(ProfileDetector.MissingPackageIds, feature.Value), "Profile refresh: loaded assembly not marked missing (" + feature.Key + ")");
             }
 
             string summary = "[Rimconemy.Foundation] Profile refresh tests: "
@@ -85,14 +81,5 @@ namespace Rimconemy.Foundation.Tests
             return false;
         }
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[Rimconemy.Foundation] FoundationProfileRefreshTests FAILED: " + label);
-            }
-        }
     }
 }

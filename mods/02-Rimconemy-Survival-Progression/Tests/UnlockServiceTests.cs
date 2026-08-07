@@ -26,13 +26,12 @@ namespace Rimconemy.SurvivalProgression.Tests
             _failed = 0;
 
             // Defensive defaults
-            AssertTrue(UnlockService.IsUnlocked(null, null), "null def + null state -> true");
-            AssertTrue(UnlockService.IsUnlocked(new FakeDef(), null), "real def + null state -> true");
-            AssertTrue(UnlockService.IsUnlocked(null, new DomainXpState()), "null def + state -> true");
+            ts.Check(UnlockService.IsUnlocked(null, null), "null def + null state -> true");
+            ts.Check(UnlockService.IsUnlocked(new FakeDef(), null), "real def + null state -> true");
+            ts.Check(UnlockService.IsUnlocked(null, new DomainXpState()), "null def + state -> true");
 
             var defNoGate = new FakeDef();
-            AssertTrue(UnlockService.IsUnlocked(defNoGate, new DomainXpState()),
-                "def without RimconemyUnlockExtension -> always unlocked");
+            ts.Check(UnlockService.IsUnlocked(defNoGate, new DomainXpState()), "def without RimconemyUnlockExtension -> always unlocked");
 
             var state = new DomainXpState();
             // Stage level 2 in Building
@@ -53,8 +52,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                     },
                 },
             };
-            AssertFalse(UnlockService.IsUnlocked(defOk, state),
-                "extension with held action set returns false (action not recorded)");
+            ts.Check(!(UnlockService.IsUnlocked(defOk, state)), "extension with held action set returns false (action not recorded)");
 
             state.TryAward(
                 ProgressionDomain.Building,
@@ -66,8 +64,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                 1f,
                 "domain:Building:completed:map=2:def=Warm:frame=4:tick=5",
                 "", 0, 0L, out _);
-            AssertTrue(UnlockService.IsUnlocked(defOk, state),
-                "after required actions are recorded the gate opens");
+            ts.Check(UnlockService.IsUnlocked(defOk, state), "after required actions are recorded the gate opens");
 
             // Level-not-met
             var defLevel = new FakeDef();
@@ -79,8 +76,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                     requiredLevel = 99,
                 },
             };
-            AssertFalse(UnlockService.IsUnlocked(defLevel, state),
-                "Machinery Level 99 extension against Level-1 state is closed");
+            ts.Check(!(UnlockService.IsUnlocked(defLevel, state)), "Machinery Level 99 extension against Level-1 state is closed");
 
             // Missing domain string => IsGateDefined()==false => closed
             var defMalformed = new FakeDef();
@@ -92,8 +88,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                     requiredLevel = 1,
                 },
             };
-            AssertFalse(UnlockService.IsUnlocked(defMalformed, state),
-                "extension with empty domain string is malformed and closed");
+            ts.Check(!(UnlockService.IsUnlocked(defMalformed, state)), "extension with empty domain string is malformed and closed");
 
             // domain string pointing to a non-existent slot resolves to null
             // via ResolveDomain(); the gate stays closed.
@@ -106,8 +101,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                     requiredLevel = 1,
                 },
             };
-            AssertFalse(UnlockService.IsUnlocked(defUnknown, state),
-                "unknown-domain extension does NOT silently map to Survival; gate stays closed");
+            ts.Check(!(UnlockService.IsUnlocked(defUnknown, state)), "unknown-domain extension does NOT silently map to Survival; gate stays closed");
 
             // RequiredActions list with empty entries must be ignored
             var defEmptyAction = new FakeDef();
@@ -121,8 +115,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                 },
             };
             // state already has Building>=Level2 -> true; empty action ignored
-            AssertTrue(UnlockService.IsUnlocked(defEmptyAction, state),
-                "empty-string requiredAction entries are skipped");
+            ts.Check(UnlockService.IsUnlocked(defEmptyAction, state), "empty-string requiredAction entries are skipped");
 
             string summary = "[Rimconemy.SurvivalProgression] UnlockService tests: "
                 + _passed + " passed, " + _failed + " failed.";
@@ -150,12 +143,6 @@ namespace Rimconemy.SurvivalProgression.Tests
             public FakeDef(string defName) : this() { this.defName = defName; }
         }
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else { _failed++; Log.Error("[UnlockServiceTests] " + label); }
-        }
 
-        private static void AssertFalse(bool condition, string label) { AssertTrue(!condition, label); }
     }
 }

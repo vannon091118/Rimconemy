@@ -64,10 +64,9 @@ namespace Rimconemy.InfectedAutomation.Tests
                 state.MarkExecuted("fresh-" + i, currentTick);
 
             state.PruneOldKeys(currentTick);
-            AssertEqual(600, state.IdempotencyKeys.Count,
-                "StoryState: 600 fresh keys are not age-pruned or prematurely capped");
-            AssertTrue(state.HasExecuted("fresh-0"), "StoryState: oldest fresh key survives");
-            AssertTrue(state.HasExecuted("fresh-599"), "StoryState: newest fresh key survives");
+            ts.Check(Equals(600, state.IdempotencyKeys.Count), "StoryState: 600 fresh keys are not age-pruned or prematurely capped");
+            ts.Check(state.HasExecuted("fresh-0"), "StoryState: oldest fresh key survives");
+            ts.Check(state.HasExecuted("fresh-599"), "StoryState: newest fresh key survives");
         }
 
         private static void TestOldKeysPruneBeforeFreshKeys()
@@ -80,10 +79,9 @@ namespace Rimconemy.InfectedAutomation.Tests
                 state.MarkExecuted("fresh-" + i, currentTick);
 
             state.PruneOldKeys(currentTick);
-            AssertEqual(3, state.IdempotencyKeys.Count,
-                "StoryState: expired keys are removed without deleting fresh keys");
-            AssertTrue(!state.HasExecuted("old-0"), "StoryState: expired key removed");
-            AssertTrue(state.HasExecuted("fresh-0"), "StoryState: fresh key retained");
+            ts.Check(Equals(3, state.IdempotencyKeys.Count), "StoryState: expired keys are removed without deleting fresh keys");
+            ts.Check(!state.HasExecuted("old-0"), "StoryState: expired key removed");
+            ts.Check(state.HasExecuted("fresh-0"), "StoryState: fresh key retained");
         }
 
         private static void TestCountCapAppliesAfterAgePrune()
@@ -96,10 +94,9 @@ namespace Rimconemy.InfectedAutomation.Tests
                 state.MarkExecuted("fresh-" + i, currentTick);
 
             state.PruneOldKeys(currentTick);
-            AssertEqual(600, state.IdempotencyKeys.Count,
-                "StoryState: age prune removes old keys before count cap");
-            AssertTrue(state.HasExecuted("fresh-0"), "StoryState: fresh keys survive age prune");
-            AssertTrue(!state.HasExecuted("old-599"), "StoryState: all old keys removed");
+            ts.Check(Equals(600, state.IdempotencyKeys.Count), "StoryState: age prune removes old keys before count cap");
+            ts.Check(state.HasExecuted("fresh-0"), "StoryState: fresh keys survive age prune");
+            ts.Check(!state.HasExecuted("old-599"), "StoryState: all old keys removed");
         }
 
         private static void TestUnknownAgeKeysUseCountCapOnly()
@@ -109,12 +106,9 @@ namespace Rimconemy.InfectedAutomation.Tests
                 state.MarkExecuted("legacy-" + i);
 
             state.PruneOldKeys(2_000_000L);
-            AssertEqual(500, state.IdempotencyKeys.Count,
-                "StoryState: unknown-age legacy keys use deterministic count cap");
-            AssertTrue(!state.HasExecuted("legacy-0"),
-                "StoryState: oldest unknown-age key is removed by count cap");
-            AssertTrue(state.HasExecuted("legacy-1499"),
-                "StoryState: newest unknown-age key is retained");
+            ts.Check(Equals(500, state.IdempotencyKeys.Count), "StoryState: unknown-age legacy keys use deterministic count cap");
+            ts.Check(!state.HasExecuted("legacy-0"), "StoryState: oldest unknown-age key is removed by count cap");
+            ts.Check(state.HasExecuted("legacy-1499"), "StoryState: newest unknown-age key is retained");
         }
 
         private static void TestPostLoadTicksSurviveLateAgePrune()
@@ -141,12 +135,9 @@ namespace Rimconemy.InfectedAutomation.Tests
             InvokePrivate(state, "RebuildAfterLoad");
 
             state.PruneOldKeys(currentTick);
-            AssertEqual(50, state.IdempotencyKeys.Count,
-                "StoryState: saved insertion ticks preserve late-age keys");
-            AssertTrue(state.HasExecuted("loaded-0"),
-                "StoryState: oldest loaded key survives late age prune");
-            AssertTrue(state.HasExecuted("loaded-49"),
-                "StoryState: newest loaded key survives late age prune");
+            ts.Check(Equals(50, state.IdempotencyKeys.Count), "StoryState: saved insertion ticks preserve late-age keys");
+            ts.Check(state.HasExecuted("loaded-0"), "StoryState: oldest loaded key survives late age prune");
+            ts.Check(state.HasExecuted("loaded-49"), "StoryState: newest loaded key survives late age prune");
         }
 
         private static void SetPrivateField(object instance, string name, object value)
@@ -176,28 +167,11 @@ namespace Rimconemy.InfectedAutomation.Tests
                 state.IdempotencyKeys.Add("unordered-" + i.ToString("D4"));
 
             state.PruneOldKeys(2_000_000L);
-            AssertEqual(500, state.IdempotencyKeys.Count,
-                "StoryState: tracker-less legacy set gets deterministic count cap");
-            AssertTrue(!state.HasExecuted("unordered-0000"),
-                "StoryState: deterministic fallback removes lowest ordinal keys");
-            AssertTrue(state.HasExecuted("unordered-1499"),
-                "StoryState: deterministic fallback retains highest ordinal keys");
+            ts.Check(Equals(500, state.IdempotencyKeys.Count), "StoryState: tracker-less legacy set gets deterministic count cap");
+            ts.Check(!state.HasExecuted("unordered-0000"), "StoryState: deterministic fallback removes lowest ordinal keys");
+            ts.Check(state.HasExecuted("unordered-1499"), "StoryState: deterministic fallback retains highest ordinal keys");
         }
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else { _failed++; Log.Error("[StoryStateRegression] " + label); }
-        }
 
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (EqualityComparer<T>.Default.Equals(expected, actual)) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[StoryStateRegression] " + label + ": expected " + expected + ", got " + actual);
-            }
-        }
     }
 }

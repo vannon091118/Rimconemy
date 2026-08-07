@@ -25,9 +25,8 @@ namespace Rimconemy.SurvivalProgression.Tests
 
             // Empty extension: defaults to invalid gate
             var empty = new RimconemyUnlockExtension();
-            AssertFalse(empty.IsGateDefined(), "default extension is not a valid gate (no domain)");
-            AssertTrue(empty.ResolveDomain() == null,
-                "default extension has no resolved domain (null)");
+            ts.Check(!(empty.IsGateDefined()), "default extension is not a valid gate (no domain)");
+            ts.Check(empty.ResolveDomain() == null, "default extension has no resolved domain (null)");
 
             // Each domain slot maps to the right enum
             T("Survival", ProgressionDomain.Survival);
@@ -40,16 +39,14 @@ namespace Rimconemy.SurvivalProgression.Tests
 
             // Unknown string returns null, IsKnownDomainString false
             var unk = new RimconemyUnlockExtension { domain = "Heuristik" };
-            AssertTrue(unk.ResolveDomain() == null,
-                "unknown domain string resolves to null (not silently Survival)");
-            AssertFalse(unk.IsKnownDomainString(),
-                "unknown domain string is not 'known'");
+            ts.Check(unk.ResolveDomain() == null, "unknown domain string resolves to null (not silently Survival)");
+            ts.Check(!(unk.IsKnownDomainString()), "unknown domain string is not 'known'");
 
             // Gate validity requires level >= 1 even with valid domain
             var lowLevel = new RimconemyUnlockExtension { domain = "Building", requiredLevel = 0 };
-            AssertFalse(lowLevel.IsGateDefined(), "requiredLevel 0 rejects gate definition");
+            ts.Check(!(lowLevel.IsGateDefined()), "requiredLevel 0 rejects gate definition");
             var okLevel = new RimconemyUnlockExtension { domain = "Building", requiredLevel = 1 };
-            AssertTrue(okLevel.IsGateDefined(), "requiredLevel >= 1 accepts gate definition");
+            ts.Check(okLevel.IsGateDefined(), "requiredLevel >= 1 accepts gate definition");
 
             string summary = "[Rimconemy.SurvivalProgression] RimconemyUnlockExtension tests: "
                 + _passed + " passed, " + _failed + " failed.";
@@ -69,25 +66,9 @@ namespace Rimconemy.SurvivalProgression.Tests
         {
             var ext = new RimconemyUnlockExtension { domain = domainString };
             ProgressionDomain? actual = ext.ResolveDomain();
-            AssertTrue(actual.HasValue && actual.Value == expected,
-                "domain string '" + domainString + "' maps correctly");
-            AssertTrue(ext.IsGateDefined(), "domain '" + domainString + "' has IsGateDefined=true");
+            ts.Check(actual.HasValue && actual.Value == expected, "domain string '" + domainString + "' maps correctly");
+            ts.Check(ext.IsGateDefined(), "domain '" + domainString + "' has IsGateDefined=true");
         }
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else { _failed++; Log.Error("[Rimconemy.SurvivalProgression] " + label); }
-        }
-        private static void AssertFalse(bool condition, string label) { AssertTrue(!condition, label); }
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (Equals(expected, actual)) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[Rimconemy.SurvivalProgression] " + label + ": expected " + expected + ", got " + actual);
-            }
-        }
     }
 }

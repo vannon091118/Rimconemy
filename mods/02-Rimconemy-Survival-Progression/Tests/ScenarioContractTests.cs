@@ -28,47 +28,37 @@ namespace Rimconemy.SurvivalProgression.Tests
             // The loaded DefDatabase is the authoritative runtime contract.
             // This catches null playerFaction/surfaceLayer/parts after XML
             // inheritance and def loading, not just well-formed source text.
-            AssertTrue(typeof(Scenarios.ScenPart_StartInSandbox) != null,
-                "Sandbox scenario: custom ScenPart type is compiled");
+            ts.Check(typeof(Scenarios.ScenPart_StartInSandbox) != null, "Sandbox scenario: custom ScenPart type is compiled");
             var sandboxPartDef = DefDatabase<RimWorld.ScenPartDef>
                 .GetNamedSilentFail("Rimconemy_StartInSandbox");
-            AssertTrue(sandboxPartDef != null,
-                "Sandbox scenario: ScenPartDef is loaded");
+            ts.Check(sandboxPartDef != null, "Sandbox scenario: ScenPartDef is loaded");
 
             var loadedDef = DefDatabase<RimWorld.ScenarioDef>
                 .GetNamedSilentFail("Rimconemy_SandboxScenario");
-            AssertTrue(loadedDef != null,
-                "Sandbox scenario: ScenarioDef is loaded");
+            ts.Check(loadedDef != null, "Sandbox scenario: ScenarioDef is loaded");
             if (loadedDef != null)
             {
-                AssertTrue(loadedDef.scenario != null,
-                    "Sandbox scenario: scenario payload is loaded");
+                ts.Check(loadedDef.scenario != null, "Sandbox scenario: scenario payload is loaded");
                 if (loadedDef.scenario != null)
                 {
                     object playerFaction = ReadScenarioMember(loadedDef.scenario, "playerFaction");
                     object surfaceLayer = ReadScenarioMember(loadedDef.scenario, "surfaceLayer");
                     object parts = ReadScenarioMember(loadedDef.scenario, "parts");
-                    AssertTrue(playerFaction != null,
-                        "Sandbox scenario: loaded playerFaction is non-null");
-                    AssertTrue(surfaceLayer != null,
-                        "Sandbox scenario: loaded surfaceLayer is non-null");
-                    AssertTrue(parts != null,
-                        "Sandbox scenario: loaded parts list is non-null");
+                    ts.Check(playerFaction != null, "Sandbox scenario: loaded playerFaction is non-null");
+                    ts.Check(surfaceLayer != null, "Sandbox scenario: loaded surfaceLayer is non-null");
+                    ts.Check(parts != null, "Sandbox scenario: loaded parts list is non-null");
                     object sandboxPart = FindSandboxPart(parts);
-                    AssertTrue(sandboxPart != null,
-                        "Sandbox scenario: loaded parts contain sandbox ScenPart");
+                    ts.Check(sandboxPart != null, "Sandbox scenario: loaded parts contain sandbox ScenPart");
                     if (sandboxPart != null)
                     {
-                        AssertTrue(ReadMember(sandboxPart, "def") != null
-                            || ReadMember(sandboxPart, "Def") != null,
-                            "Sandbox scenario: loaded ScenPart has a non-null def");
+                        ts.Check(ReadMember(sandboxPart, "def") != null
+                            || ReadMember(sandboxPart, "Def") != null, "Sandbox scenario: loaded ScenPart has a non-null def");
                     }
                     // Deployed-mod safety net: even when source XML is absent
                     // (rsync excludes source trees), the live ScenPart instance
                     // in DefDatabase must still have both pawnCount AND
                     // pawnChoiceCount set > 0. See HasConfigureStartingPawnsWithChoiceAtRuntime.
-                    AssertTrue(HasConfigureStartingPawnsWithChoiceAtRuntime(parts),
-                        "Sandbox scenario (deployed-runtime guard): ScenPart_ConfigPage_ConfigureStartingPawns has both pawnCount > 0 AND pawnChoiceCount > 0");
+                    ts.Check(HasConfigureStartingPawnsWithChoiceAtRuntime(parts), "Sandbox scenario (deployed-runtime guard): ScenPart_ConfigPage_ConfigureStartingPawns has both pawnCount > 0 AND pawnChoiceCount > 0");
                 }
             }
 
@@ -78,16 +68,11 @@ namespace Rimconemy.SurvivalProgression.Tests
             if (File.Exists(sourcePath))
             {
                 var scenario = XElement.Load(sourcePath).Element("ScenarioDef");
-                AssertEqual("ScenarioBase", scenario?.Attribute("ParentName")?.Value,
-                    "Sandbox scenario: inherits ScenarioBase");
-                AssertTrue(scenario?.Element("scenario")?.Element("playerFaction") != null,
-                    "Sandbox scenario: playerFaction is present");
-                AssertTrue(scenario?.Element("scenario")?.Element("surfaceLayer") != null,
-                    "Sandbox scenario: surfaceLayer is present");
-                AssertTrue(scenario?.Element("scenario")?.Element("parts")?.Element("li")?.Element("def") != null,
-                    "Sandbox scenario: custom part has a def");
-                AssertTrue(HasConfigureStartingPawnsWithChoice(scenario),
-                    "Sandbox scenario: ScenPart_ConfigPage_ConfigureStartingPawns has both pawnCount AND pawnChoiceCount>0");
+                ts.Check(Equals("ScenarioBase", scenario?.Attribute("ParentName")?.Value), "Sandbox scenario: inherits ScenarioBase");
+                ts.Check(scenario?.Element("scenario")?.Element("playerFaction") != null, "Sandbox scenario: playerFaction is present");
+                ts.Check(scenario?.Element("scenario")?.Element("surfaceLayer") != null, "Sandbox scenario: surfaceLayer is present");
+                ts.Check(scenario?.Element("scenario")?.Element("parts")?.Element("li")?.Element("def") != null, "Sandbox scenario: custom part has a def");
+                ts.Check(HasConfigureStartingPawnsWithChoice(scenario), "Sandbox scenario: ScenPart_ConfigPage_ConfigureStartingPawns has both pawnCount AND pawnChoiceCount>0");
             }
             else
             {
@@ -151,26 +136,6 @@ namespace Rimconemy.SurvivalProgression.Tests
             return null;
         }
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (condition) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[Rimconemy.SurvivalProgression] ScenarioContractTests FAILED: " + label);
-            }
-        }
-
-        private static void AssertEqual<T>(T expected, T actual, string label)
-        {
-            if (EqualityComparer<T>.Default.Equals(expected, actual)) _passed++;
-            else
-            {
-                _failed++;
-                Log.Error("[Rimconemy.SurvivalProgression] ScenarioContractTests FAILED: "
-                    + label + ": expected " + expected + ", got " + actual);
-            }
-        }
 
         /// <summary>
         /// Returns true if the scenario contains a ScenPart_ConfigPage_ConfigureStartingPawns

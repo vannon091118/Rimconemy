@@ -59,38 +59,12 @@ namespace Rimconemy.Foundation.Tests
 
         // ── helpers (mirror other tests) ───────────────
 
-        private static void AssertTrue(bool condition, string label)
-        {
-            if (!condition)
-            {
-                _failed++;
-                _failures.Add(label + ": expected true, got false");
-            }
-            else
-            {
-                _passed++;
-            }
-        }
-
-        private static void AssertFalse(bool condition, string label)
-        {
-            if (condition)
-            {
-                _failed++;
-                _failures.Add(label + ": expected false, got true");
-            }
-            else
-            {
-                _passed++;
-            }
-        }
 
         // ── tests ──────────────────────────────────────
 
         private static void TestIsPlayerColonist_RejectsNull()
         {
-            AssertFalse(ColonialReader.IsPlayerColonist(null),
-                "CR-NULL: null rejected");
+            ts.Check(!(ColonialReader.IsPlayerColonist(null)), "CR-NULL: null rejected");
         }
 
         private static void TestIsPlayerColonist_RejectsNonHumanlike()
@@ -109,8 +83,7 @@ namespace Rimconemy.Foundation.Tests
             //
             // We CAN at least assert the predicate returns false for null
             // (which is also the most common production error).
-            AssertFalse(ColonialReader.IsPlayerColonist(null),
-                "CR-NONHUMAN: null pawn path covered");
+            ts.Check(!(ColonialReader.IsPlayerColonist(null)), "CR-NONHUMAN: null pawn path covered");
         }
 
         private static void TestIsPlayerColonist_RejectsDead()
@@ -120,22 +93,19 @@ namespace Rimconemy.Foundation.Tests
             // AND !p.DestroyedOrNull() AND p.RaceProps.Humanlike.
             // The Pawn construction is locked by Verse — no test.
             // We assert *null* doesn't accidentally pass:
-            AssertFalse(ColonialReader.IsPlayerColonist(null),
-                "CR-DEAD: null pawn path covered");
+            ts.Check(!(ColonialReader.IsPlayerColonist(null)), "CR-DEAD: null pawn path covered");
         }
 
         private static void TestIsPlayerColonist_RejectsDestroyedOrNull()
         {
             // Same as above — Predicates Verified by construction in StorySelectorTests.
-            AssertFalse(ColonialReader.IsPlayerColonist(null),
-                "CR-DESTROYED: null pawn path covered");
+            ts.Check(!(ColonialReader.IsPlayerColonist(null)), "CR-DESTROYED: null pawn path covered");
         }
 
         private static void TestIsPlayerColonist_RejectsNonColonist()
         {
             // Same as above.
-            AssertFalse(ColonialReader.IsPlayerColonist(null),
-                "CR-NONCOLONIST: null pawn path covered");
+            ts.Check(!(ColonialReader.IsPlayerColonist(null)), "CR-NONCOLONIST: null pawn path covered");
         }
 
         /// <summary>NoColonists short-circuits to true when Find.Maps is null.</summary>
@@ -148,8 +118,7 @@ namespace Rimconemy.Foundation.Tests
             // observable invariant: ActiveColonistCount is non-negative
             // even when the game is not running.
             int count = ColonialReader.ActiveColonistCount;
-            AssertTrue(count >= 0,
-                "CR-NOCOLONISTS: count is non-negative even in pre-game state");
+            ts.Check(count >= 0, "CR-NOCOLONISTS: count is non-negative even in pre-game state");
         }
 
         private static void TestNoColonists_FalseWithMapsEmpty()
@@ -158,8 +127,7 @@ namespace Rimconemy.Foundation.Tests
             // (no colonists available). The predicate handles this — we test
             // that there's no crash and the count is sane.
             float avg = ColonialReader.AverageHealthPercent;
-            AssertTrue(avg >= 0f && avg <= 1f,
-                "CR-EMPTYMAPS: AverageHealthPercent in [0,1] when nobody");
+            ts.Check(avg >= 0f && avg <= 1f, "CR-EMPTYMAPS: AverageHealthPercent in [0,1] when nobody");
         }
     }
 }
