@@ -98,12 +98,14 @@ namespace Rimconemy.InfectedAutomation.Story
         public long LastRevengeRefreshTick;
 
         private StoryEventCatalog _catalog;
+        private RimconemyStorytellerComp _comp;
 
         public StoryDirector(Game game)
         {
             State = new StoryState();
-            ActiveProfile = SettingProfile.Survival; // default, overridden in FinalizeInit
+            ActiveProfile = SettingProfile.Survival;
             _catalog = new StoryEventCatalog();
+            _comp = new RimconemyStorytellerComp();
         }
 
         public override void FinalizeInit()
@@ -160,6 +162,8 @@ namespace Rimconemy.InfectedAutomation.Story
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 _catalog = new StoryEventCatalog();
+                if (_comp == null) _comp = new RimconemyStorytellerComp();
+                _comp.RebuildCatalog();
             }
         }
 
@@ -167,105 +171,13 @@ namespace Rimconemy.InfectedAutomation.Story
         {
             base.GameComponentTick();
 
-            if (Find.TickManager == null)
-                return;
+            if (_comp == null) return;
 
-            long currentTick = Find.TickManager.TicksGame;
+            // Bootstrap the Comp once
+            _comp.EmitBootstrapIfNeeded();
 
-            // Phase B / F-V2: colony-wipe detection. If we detect that ALL
-            // player colonists died (typically through a raid wiping the colony),
-            // flag a GameOverPending signal that Mod 02 (Sole-Owner) will pull
-            // via the late-bound bridge in Foundation. We do not call
-            // Find.GameEnder directly — that is Mod 02's sole responsibility.
-            //
-            // slop-audit-fix §6 (2026-08-04): gate similarly to ProgressionGC
-            // (250 ticks). A colony-wipe is observable at 4.2-second latency
-            // which is well below the human-noticeable threshold and matches
-            // Mod 02's timing so the Sole-Owner GameOver and the wipe signal
-            // are temporally coherent. The previous per-tick call cost
-            // ~900k FreeColonistsSpawned lookups per game-day; the new path
-            // reduces that to ~3,700 (1/240 of the prior load).
-            if (currentTick >= LastWipeCheckTick + GameOverWipeCheckInterval)
-            {
-                LastWipeCheckTick = currentTick;
-                MaybeSignalGameOverForWipe(currentTick);
-            }
-
-            // Don't evaluate too frequently
-            if (currentTick < LastEvaluationTick + EvaluationIntervalTicks)
-                return;
-
-            LastEvaluationTick = currentTick;
-
-            // slop-audit-fix F3: rate-limit any firing by MinEventSpacingTicks.
-            // The constant (30000 / 0.5 day) is documented as HALF of the eval
-            // interval so two story events cannot fire back-to-back on the
-            // same day. With current EvaluationIntervalTicks=60000 this gate
-            // is effectively a no-op (next eval is always 60k after the last
-            // fire), but it would activate if a future tuning reduces the eval
-            // interval below 1 day. The gate is in place to make that future
-            // tuning safe without revisiting this file. LastEventTick==0
-            // indicates "no event fired yet" so we let the new session through.
-            if (State != null && State.LastEventTick > 0
-                && (currentTick - State.LastEventTick) < MinEventSpacingTicks)
-            {
-                return;
-            }
-
-            // Don't evaluate if threat is below profile minimum. Pass the
-            // instance ActiveProfile so the Early-Game Pressure Floor can
-            // apply the profile-specific floor — audit-fix 2026-08-05.
-            var snapshot = BuildLiveSnapshot(currentTick, State, ActiveProfile);
-            EvaluateWithSnapshot(snapshot, currentTick);
-
-            // Phase B (2026-08-05) — Day-Growth + Reset + Recompute-Revenge
-            // block, AFTER the Eval block. The refactor follows the user
-            // override of the Phase-A spec:
-            //   1. WipeCheck (above)
-            //   2. Eval-Gate-MinEventSpacing (above)
-            //   3. Eval (StorySelector + queue)           ← EvaluateWithSnapshot
-            //   4. Day-Growth                             ← ApplyDailyGrowthTick
-            //   5. Reset-Daily-Counters                   ← ResetDailyCounters
-            //   6. Recompute-Revenge                      ← RecomputeRevengeAfterDayTick
-            //   7. Inoculation (Phase C)                  ← TryInfectRandom
-            //
-            // Why Eval-before-Growth: today's threats are evaluated against
-            // today's already-grown cap, so a long survival streak produces
-            // the difficulty curve the player can react to (Revenge quota,
-            // Inoculation). The Growth+Reset block writes next-day state.
-            try
-            {
-                var ledger = PopulationLedger.Get();
-                if (ledger != null)
-                {
-                    ledger.ApplyDailyGrowthTick();
-                    ledger.ResetDailyCounters();
-                }
-                RecomputeRevengeAfterDayTick(ledger, ActiveProfile, currentTick);
-            }
-            catch (System.Exception ex)
-            {
-                // Defensive: never let the day-block throw out into
-                // GameComponentTick — Inoculation still has to run below.
-                Log.Warning("[Rimconemy.InfectedAutomation] StoryDirector: " +
-                    "Day-Growth/Reset/Recompute block raised " +
-                    ex.GetType().Name + ": " + ex.Message);
-            }
-
-            // Phase C — Tier-Inokulation Day-Tick Hook (2026-08-05).
-            // Independent of StorySelector: animal-inoculation runs once
-            // per day if Profile allows + cooldown gate is open. Profile
-            // – 'Refuge' disables it; 'Survival' once per week; 'Collapse'
-            // three per week. Failure modes log and remain no-op.
-            Map playerHomeForInoculation = ResolveCanonicalPlayerMap();
-            if (playerHomeForInoculation != null)
-            {
-                Inoculation.RandomInoculationService.TryInfectRandom(
-                    playerHomeForInoculation, currentTick);
-
-                // Phase E — profile-driven wild-animal infection (chance + horde cap).
-                TryFireProfileInfection(currentTick);
-            }
+            // Delegate full evaluation pipeline to the Comp
+            _comp.DailyEvaluate(this);
         }
 
         /// <summary>
@@ -806,17 +718,15 @@ namespace Rimconemy.InfectedAutomation.Story
             };
         }
         /// <summary>
-        /// Dev-mode shortcut: immediately runs one evaluation cycle regardless
-        /// of the normal interval gate. Called from ThreatDashboard in Dev mode.
+        /// Dev-mode shortcut: immediately runs one evaluation cycle.
+        /// Delegates to RimconemyStorytellerComp.
         /// </summary>
         public void EvaluateNow(long currentTick)
         {
-            // Reset the gate so GameComponentTick's interval check passes.
             LastEvaluationTick = currentTick - EvaluationIntervalTicks;
-            // Build and store the snapshot immediately so the dashboard can
-            // display it, then invoke the shared evaluation path.
-            var snapshot = BuildLiveSnapshotPublic(currentTick);
-            EvaluateWithSnapshot(snapshot, currentTick);
+            var snapshot = RimconemyStorytellerComp.BuildLiveSnapshot(currentTick, State, ActiveProfile);
+            if (_comp != null)
+                _comp.EvaluateWithSnapshot(this, snapshot, currentTick);
             Log.Message("[Rimconemy.InfectedAutomation] StoryDirector.EvaluateNow triggered from Dev mode.");
         }
 
