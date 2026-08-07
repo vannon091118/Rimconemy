@@ -1,6 +1,6 @@
 # INDEX — SSOT-Topics-Map
 
-> **Stand:** 2026-08-05
+> **Stand:** 2026-08-07
 > **Rolle:** Diese Map zeigt, welche Datei welches Topic final besitzt. Wer ein Topic moved/edits, aktualisiert die Map (und idealerweise gleichzeitig [ARCHITECTURE.md](ARCHITECTURE.md)).
 
 ## §1 Phasen-First Architecture (2026-08-05)
@@ -46,7 +46,24 @@
 |---|---|---|
 | Falsifikations-Berichte | [docs/falsification/](falsification/) | per-Topic-Owner |
 
-## §6 Phasen-First Tasks (2026-08-05)
+## §6 Tooling (2026-08-07)
+
+| Topic | SSOT | Owner |
+|---|---|---|
+| Test-Migration Script | [scripts/migrate_to_tscheck.py](../scripts/migrate_to_tscheck.py) | Mod 01 | Paren-counting-basierter Assert→ts.Check Migrator |
+| Live Player.log Monitor | [scripts/live_monitor.py](../scripts/live_monitor.py) | Mod 01 | Echtzeit-Dashboard mit Noise-Filter |
+| Parser + SSOT Config | [scripts/parse_runtime_log.py](../scripts/parse_runtime_log.py) + [scripts/parser_config.json](../scripts/parser_config.json) | Mod 01 | Deskriptiver Log-Parser mit Completeness-Check |
+| Runtime Gate | [scripts/runtime_test.sh](../scripts/runtime_test.sh) | Mod 01 | 90s Build+Deploy+Game+Verify |
+
+## §7 Sessions
+
+| Session | Datei | Inhalt |
+|---|---|---|
+| 2026-08-07 (heute) | [docs/SESSION_2026-08-07.md](SESSION_2026-08-07.md) | TestSuite-Migration, Parser-Fixes, Live Monitor |
+| 2026-08-07 (truth-chain) | [docs/SESSION_2026-08-07-truth-chain.md](SESSION_2026-08-07-truth-chain.md) | TestSuite-Harness, Runtime Truth Chain, SSOT-Architektur |
+| 2026-08-06 | [docs/SESSION_2026-08-06.md](SESSION_2026-08-06.md) | 8→0 Failures, Dead Code, Tutorial-Fixes |
+
+## §8 Phasen-First Tasks (2026-08-05)
 
 19 Tasks ausgeführt (Stand 2026-08-05):
 
