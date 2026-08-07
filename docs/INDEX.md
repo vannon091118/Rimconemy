@@ -70,6 +70,7 @@
 | Traceability Matrix | [docs/TRACEABILITY_MATRIX.md](TRACEABILITY_MATRIX.md) | Mod 01 | Full file audit (191 files, 34,768 LOC), creation timestamps, concern overlap map, dependency graph |
 | Refactoring Plan | [docs/REFACTORING_PLAN.md](REFACTORING_PLAN.md) | Mod 01 | 6-phase plan: contract hardening, god-class split, data-as-code→Defs, dead code removal, LOC targets -57% |
 | Storyteller Analysis | [docs/STORYTELLER_ANALYSIS.md](STORYTELLER_ANALYSIS.md) | Mod 05 | Vanilla Storyteller architecture, FiringIncident/TryFire injection, StorytellerComp vs StorytellerDef, dynamic mod-aware events, rewiring recommendations |
+| Storyteller Design Decisions | [docs/STORYTELLER_DESIGN_DECISIONS.md](STORYTELLER_DESIGN_DECISIONS.md) | Mod 05 | 4 offene Fragen geklärt: DLC-Incidents ersetzen, Difficulty behalten, Save-Migration sanft, Mod-Kompatibilität per Akzeptanz |
 
 ## §9 Phasen-First Tasks (2026-08-05)
 
