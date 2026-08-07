@@ -10,7 +10,7 @@
 
 The Rimconemy codebase is **34,768 LOC** across 191 source files. While package isolation (01→05) is architecturally sound, three systemic problems exist:
 
-1. **Pkg 05 is a 15.8K-LOC monolith** — 46% of all code in one package, with a god orchestrator (`StoryDirector`, 1,086 LOC) mixing 7 concerns
+1. **Pkg 05 is a 15.8K-LOC monolith** — 46% of all code in one package, with a god orchestrator (`StoryDirector`, 996 LOC) now delegating evaluation to `RimconemyStorytellerComp` (558 LOC)
 2. **88 `Find.*` calls bypass Foundation contracts** — circumventing the `CapabilityRegistry`/`MapRegistry`/`ColonialReader` interface layer
 3. **Data-as-code patterns** — `StoryEventCatalog` (1,687 LOC) and `StoryEventSpec` (501 LOC) should be XML Defs
 
@@ -68,32 +68,34 @@ public static class WiringCatalog {
 
 ### 2.1 StoryDirector → RimconemyStorytellerComp Migration
 
-**Current:** `StoryDirector` (1,086 LOC) ist ein `GameComponent` mit 60k-Tick-Polling.
+**Current:** `StoryDirector` (996 LOC) ist ein `GameComponent` mit 60k-Tick-Polling, delegiert Evaluation an `RimconemyStorytellerComp` (558 LOC).
 
-**Target:** `RimconemyStorytellerComp : StorytellerComp` läuft im Vanilla-Storyteller-Loop mit Per-Tick-Integration.
+**Status 2026-08-07:** Migration Phase 1 abgeschlossen — Comp hat `BuildLiveSnapshot`, `EvaluateWithSnapshot`, `QueueSelectedIncident`, `DailyEvaluate`. StoryDirector ruft `_comp.DailyEvaluate(this)` auf. ✅
+
+**Target:** Volle `StorytellerComp`-Integration via `MakeIntervalIncidents()`-Override (Decompile bestätigt: kein Per-Tick-Hook auf StorytellerComp, Tick-Zyklus über GameComponent bleibt korrekt).
 
 | Concern | Approx LOC | Target |
 |---------|-----------|--------|
-| Tick loop + scheduling | 180 | `RimconemyStorytellerComp.IncidentCycleTick()` |
-| Incident selection + firing | 250 | `IncidentDispatcher` (new) — `TryFire(queued=false)` |
-| Cooldown tracking | 120 | `CooldownRegistry` (new) — oder Vanilla-Cooldown-System |
-| Difficulty scaling | 100 | `SettingProfile`-Mapping (bleibt im Comp) |
-| Faction scanning + threat assessment | 150 | → existing `ThreatSnapshotBridge` |
-| Situation snapshot creation | 120 | → existing `SituationSnapshot` |
-| Wipe-Check | ~80 | → Mod 02 `GameOverDetector` (Sole-Owner) |
-| Day-Growth + Revenge | ~86 | → `GrowthManager` (new) |
+| Tick loop + scheduling | 180 | ✅ `RimconemyStorytellerComp.DailyEvaluate()` (Phase 1 done) |
+| Incident selection + firing | 250 | ✅ `RimconemyStorytellerComp.EvaluateWithSnapshot()` + `QueueSelectedIncident()` |
+| Cooldown tracking | 120 | 🔲 `CooldownRegistry` (new) — noch in StoryDirector |
+| Difficulty scaling | 100 | ✅ `SettingProfile`-Mapping (im Comp) |
+| Faction scanning + threat assessment | 150 | 🔲 → existing `ThreatSnapshotBridge` |
+| Situation snapshot creation | 120 | ✅ `RimconemyStorytellerComp.BuildLiveSnapshot()` (static utility) |
+| Wipe-Check | ~80 | ✅ `RimconemyStorytellerComp` → Mod 02 via `MarkGameOverPending` |
+| Day-Growth + Revenge | ~86 | 🔲 → `GrowthManager` (new) |
 
 **Key Change von GameComponent zu StorytellerComp:**
-- `GameComponentTick` (60k-Intervall) → `IncidentCycleTick()` (per-Tick mit internem Gate)
-- `QueueSelectedIncident` → `TryFire(queued=false)` (direkt, nicht via Queue)
-- Kein `Find.Storyteller.incidentQueue`-Zugriff mehr nötig
+- ✅ Phase 1 done: Core-Logik (BuildLiveSnapshot, EvaluateWithSnapshot, QueueSelectedIncident, DailyEvaluate) im Comp
+- 🔲 Phase 2: Verbleibende Concerns (Cooldowns, Faction-Scanning) aus StoryDirector extrahieren
+- 🔲 Phase 3: `MakeIntervalIncidents()`-Override für Vanilla-Storyteller-Integration prüfen
 
 **Impact:**
-- StoryDirector: 1,086 → ~0 LOC (wird gelöscht)
-- RimconemyStorytellerComp: ~350 LOC (neu)
-- IncidentDispatcher: ~150 LOC (neu)
-- GrowthManager: ~100 LOC (neu)
-- Zusätzlich: StorytellerDef XML (~30 lines), HideVanilla Patch (~50 lines)
+- StoryDirector: 1,086 → 996 LOC (Phase 1: Logik migriert, State + API geblieben)
+- RimconemyStorytellerComp: 558 LOC (neu, Phase 1)
+- StorytellerDef XML: aktiviert ✅
+- HideVanilla Patch: aktiv ✅
+- Noch zu migrieren: Cooldowns, Faction-Scanning (~300 LOC aus StoryDirector)
 
 ### 2.2 StoryState Split
 
@@ -248,7 +250,7 @@ new StoryEventSpec {
 
 | Phase | Target | Before | After | Reduction |
 |-------|--------|--------|-------|-----------|
-| P0 | StoryDirector split | 1,086 | 550 | -49% |
+| P0 | StoryDirector split | 1,086 → 996 | ~550 (Comp 558 + Director ~300) | -49% (Phase 1 done, Phase 2 pending) |
 | P0 | StoryEventCatalog → XML | 1,687 | 80 | -95% |
 | P0 | StoryEventSpec → delete | 501 | 0 | -100% |
 | P0 | Find.* → RuntimeAccess | 88 calls | clean | - |

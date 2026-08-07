@@ -157,7 +157,7 @@ Der Repo-Stil ist: Phase-6-Stubs mit Kommentar „…is owned by a User Live-Tes
 
 ## 5. Extraktions-Pattern: Monolithen systematisch abbauen
 
-Größte Dateien aktuell (LOC): `StoryEventCatalog` (891), `StoryState` (817), `StoryDirector` (761), `FoundationDashboard` (695), `ProgressionGameComponent` (603), `BauschuttRemapApply` (480), `StorageQuery` (471), `CreditsLedger` (468), `FoundationSaveData` (463), `StorySelector` (399), `Market` (388), `ArrowTurretPowerGate` (381).
+Größte Dateien aktuell (LOC, Stand 2026-08-05): `StoryEventCatalog` (891→1687 nach Expansion), `StoryState` (817), `StoryDirector` (761→996 nach StorytellerComp-Migration 2026-08-07), RimconemyStorytellerComp (558, neu), `FoundationDashboard` (695), `ProgressionGameComponent` (603), `BauschuttRemapApply` (480), `StorageQuery` (471), `CreditsLedger` (468), `FoundationSaveData` (463), `StorySelector` (399), `Market` (388), `ArrowTurretPowerGate` (381).
 
 **Wichtig vorab:** Die Pakete sind bereits sauber modular (keine Projekt-Referenzen, Capability-Gate). „Monolith" heißt hier **Klassen-Monolith** (God-Classes), nicht Paket-Monolith. Das Pattern zielt auf Klassen-Extraktion.
 

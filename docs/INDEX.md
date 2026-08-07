@@ -1,6 +1,6 @@
 # INDEX — SSOT-Topics-Map
 
-> **Stand:** 2026-08-07 (added §8 Architecture Analysis + §8a Storyteller Analysis)
+> **Stand:** 2026-08-07 (aktualisiert: StorytellerDef + Clean Break + Doc-Audit)
 > **Rolle:** Diese Map zeigt, welche Datei welches Topic final besitzt. Wer ein Topic moved/edits, aktualisiert die Map (und idealerweise gleichzeitig [ARCHITECTURE.md](ARCHITECTURE.md)).
 
 ## §1 Phasen-First Architecture (2026-08-05)
@@ -59,8 +59,7 @@
 
 | Session | Datei | Inhalt |
 |---|---|---|
-| 2026-08-07 (heute) | [docs/SESSION_2026-08-07.md](SESSION_2026-08-07.md) | TestSuite-Migration, Parser-Fixes, Live Monitor |
-| 2026-08-07 (truth-chain) | [docs/SESSION_2026-08-07-truth-chain.md](SESSION_2026-08-07-truth-chain.md) | TestSuite-Harness, Runtime Truth Chain, SSOT-Architektur |
+| 2026-08-07 (heute) | [docs/SESSION_2026-08-07.md](SESSION_2026-08-07.md) | StorytellerDef, Migration, Decompile, RimPad, Tutorial, Truth Chain (komplette Session) |
 | 2026-08-06 | [docs/SESSION_2026-08-06.md](SESSION_2026-08-06.md) | 8→0 Failures, Dead Code, Tutorial-Fixes |
 
 ## §8 Architecture Analysis (2026-08-07)

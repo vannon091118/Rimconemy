@@ -187,7 +187,7 @@ OutpostProxyGraph → ColonialReader (Foundation)
 | File | LOC | Concerns Mixed | Risk |
 |------|-----|---------------|------|
 | `Story/StoryEventCatalog.cs` | 1,687 | Event definitions + Descriptions + Conditions + Weights + DLC filtering + Placeholder expansion | **Critical** — data blob disguised as code |
-| `Story/StoryDirector.cs` | 1,086 | Orchestration + Tick loop + Incident firing + Cooldowns + Difficulty scaling + Faction scanning + `Find.*` calls (15+) | **Critical** — god orchestrator |
+| `Story/StoryDirector.cs` | 996 | State + API + Delegation an RimconemyStorytellerComp (Cooldowns + Difficulty scaling + Faction scanning + `Find.*` calls (15+)) | **Critical** — god orchestrator (Phase 1 migration done) |
 | `Story/StoryState.cs` | 817 | State machine + Persistence + Query + Schema migration + Tick tracking + FirstWipe detection | **High** |
 | `Story/StorySelector.cs` | 623 | Event selection + Weight calculation + Filtering + Phase awareness | **High** |
 | `World/ChunkController.cs` | 502 | Chunk lifecycle + Spawning + Cleanup + Map iteration + Perception hooks | High |

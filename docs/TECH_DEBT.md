@@ -4,7 +4,7 @@
 > "not yet functional"-Disclaimer oder bekannten Live-Bugs.
 > Pro Eintrag: Symptom, Root-Code-Spur, Owner-Paket, Status, Abarbeitungs-Ticket.
 >
-> **Stand:** 2026-08-06 (updated 23:30) · **Quelle:** Live-Tests (Player.log) + Code-Audit
+> **Stand:** 2026-08-07 (aktualisiert für StorytellerDef + RimPad-Verkabelung) · **Quelle:** Live-Tests (Player.log) + Code-Audit
 > **Roadmap-Referenz:** ROADMAP.md §4-§9
 > **Operativer Plan:** → [WORKPLAN.md](WORKPLAN.md) (DELETE → WIRE → NEW)
 > **Parser:** `scripts/parse_runtime_log.py` für automatische Debug-Übersicht
@@ -15,11 +15,11 @@
 
 | ID | System | Symptom | Code-Anker | Owner | Status |
 |----|--------|---------|------------|-------|--------|
-| TD-01 | RimPad Survival-Tab | `Rimconemy.RimPad.Tab.Todo` statt Bedürfnis-Werte | `mods/01/Source/UI/RimPadWindow.cs:93` | 01→02 | OPEN |
-| TD-02 | RimPad Infrastructure-Tab | `Tab.Todo` statt Storage/Power | `RimPadWindow.cs:94` | 01→03 | OPEN |
-| TD-03 | RimPad Economy-Tab | `Tab.Todo` statt Credits/Market | `RimPadWindow.cs:95` | 01→04 | OPEN |
-| TD-04 | RimPad Threat-Tab | `Tab.Todo` statt ThreatAggregator | `RimPadWindow.cs:96` | 01→05 | OPEN |
-| TD-05 | RimPad Diagnostics-Tab | `Tab.Todo` statt EventLog | `RimPadWindow.cs:97` | 01→01 | OPEN |
+| TD-01 | RimPad Survival-Tab | `Rimconemy.RimPad.Tab.Todo` — Callback `SurvivalTabDrawer` bereit, noch nicht registriert | `mods/01/Source/UI/RimPadWindow.cs:93` | 01→02 | READY (Callback existiert) |
+| TD-02 | RimPad Infrastructure-Tab | `Tab.Todo` — Callback `InfrastructureTabDrawer` bereit, noch nicht registriert | `RimPadWindow.cs:94` | 01→03 | READY (Callback existiert) |
+| TD-03 | RimPad Economy-Tab | `Tab.Todo` — Callback `EconomyTabDrawer` bereit, noch nicht registriert | `RimPadWindow.cs:95` | 01→04 | READY (Callback existiert) |
+| TD-04 | RimPad Threat-Tab | ✅ Verkabelt → `ThreatDashboard.DrawRimPadContent` | `RimPadWindow.cs:96` + `Bootstrap.cs` (Pkg 05) | 01→05 | **FIXED 2026-08-07** |
+| TD-05 | RimPad Diagnostics-Tab | ✅ Verkabelt → `RimconemyUi.DrawDiagnosticsContent` | `RimPadWindow.cs:97` + `RimconemyUi.cs` | 01→01 | **FIXED 2026-08-07** |
 | TD-06 | RimPad Guide-Tab | Guide-Tab registriert (Drawer-Callback aktiv), Inhalt noch statisch | `RimPadWindow.cs:83-89` + `RimPadTab.Guide` | 01→05 | IMPROVED (W-05: enum+SelectTab) |
 
 ## §2 Spawn- und Map-Lifecycle-Bugs (TD-08–TD-10)
