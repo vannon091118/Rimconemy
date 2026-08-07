@@ -30,9 +30,9 @@ Ueberleben (Survival) oder Kollaps (Collapse) erlebt.</description>
          Vanilla-Defs werden via Patch auf listOrder=99999 gesetzt. -->
     <listOrder>-100</listOrder>
 
-    <storytellerComps>
-      <li Class="Rimconemy.InfectedAutomation.Story.RimconemyStorytellerComp" />
-    </storytellerComps>
+    <!-- RimconemyStorytellerComp wird NICHT via XML-comps registriert.
+         Der Comp wird von StoryDirector (GameComponent) instanziiert und
+         via GameComponentTick aufgerufen. DECISIONS §34/korrigiert. -->
   </StorytellerDef>
 
 </Defs>

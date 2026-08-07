@@ -10,7 +10,7 @@
 -->
 <Defs>
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.supply.stockpile_bonus</defName>
+    <defName>rimconemy_supply_stockpile_bonus</defName>
     <eventVersion>1</eventVersion>
     <eventFamily>Supply</eventFamily>
     <label>Vorratsbonus</label>
@@ -37,7 +37,7 @@
   </Rimconemy.InfectedAutomation.Story.StoryEventDef>
 
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.social.faction_envoy</defName>
+    <defName>rimconemy_social_faction_envoy</defName>
     <eventVersion>1</eventVersion>
     <eventFamily>Social</eventFamily>
     <label>Gesandter</label>
@@ -65,7 +65,7 @@
   </Rimconemy.InfectedAutomation.Story.StoryEventDef>
 
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.social.internal_dispute</defName>
+    <defName>rimconemy_social_internal_dispute</defName>
     <eventVersion>1</eventVersion>
     <eventFamily>Social</eventFamily>
     <label>Interner Streit</label>
@@ -93,7 +93,7 @@
   </Rimconemy.InfectedAutomation.Story.StoryEventDef>
 
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.supply.shortage</defName>
+    <defName>rimconemy_supply_shortage</defName>
     <eventVersion>1</eventVersion>
     <eventFamily>Supply</eventFamily>
     <label>Versorgungskrise</label>
@@ -128,7 +128,7 @@
   </Rimconemy.InfectedAutomation.Story.StoryEventDef>
 
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.raid.infected_scouts</defName>
+    <defName>rimconemy_raid_infected_scouts</defName>
     <eventVersion>1</eventVersion>
     <eventFamily>Raid</eventFamily>
     <label>Infizierte Späher</label>
@@ -160,7 +160,7 @@
   </Rimconemy.InfectedAutomation.Story.StoryEventDef>
 
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.social.ideology_schism</defName>
+    <defName>rimconemy_social_ideology_schism</defName>
     <eventVersion>1</eventVersion>
     <eventFamily>Social</eventFamily>
     <label>Ideologische Spaltung</label>
@@ -192,7 +192,7 @@
   </Rimconemy.InfectedAutomation.Story.StoryEventDef>
 
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.supply.trade_opportunity</defName>
+    <defName>rimconemy_supply_trade_opportunity</defName>
     <eventVersion>1</eventVersion>
     <eventFamily>Supply</eventFamily>
     <label>Handelsangebot</label>
@@ -220,7 +220,7 @@
   </Rimconemy.InfectedAutomation.Story.StoryEventDef>
 
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.raid.infected_horde</defName>
+    <defName>rimconemy_raid_infected_horde</defName>
     <eventVersion>1</eventVersion>
     <eventFamily>Raid</eventFamily>
     <label>Infizierten-Horde</label>
@@ -252,7 +252,7 @@
   </Rimconemy.InfectedAutomation.Story.StoryEventDef>
 
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.collapse.resource_collapse</defName>
+    <defName>rimconemy_collapse_resource_collapse</defName>
     <eventVersion>1</eventVersion>
     <eventFamily>Collapse</eventFamily>
     <label>Ressourcenkollaps</label>
@@ -280,7 +280,7 @@
   </Rimconemy.InfectedAutomation.Story.StoryEventDef>
 
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.collapse.desertion</defName>
+    <defName>rimconemy_collapse_desertion</defName>
     <eventVersion>1</eventVersion>
     <eventFamily>Collapse</eventFamily>
     <label>Desertion</label>
@@ -308,7 +308,7 @@
   </Rimconemy.InfectedAutomation.Story.StoryEventDef>
 
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.social.power_struggle</defName>
+    <defName>rimconemy_social_power_struggle</defName>
     <eventVersion>1</eventVersion>
     <eventFamily>Social</eventFamily>
     <label>Machtkampf</label>
@@ -336,7 +336,7 @@
   </Rimconemy.InfectedAutomation.Story.StoryEventDef>
 
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.supply.last_cache</defName>
+    <defName>rimconemy_supply_last_cache</defName>
     <eventVersion>1</eventVersion>
     <eventFamily>Supply</eventFamily>
     <label>Letztes Versteck</label>
@@ -661,7 +661,7 @@
   </Rimconemy.InfectedAutomation.Story.StoryEventDef>
 
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.revenge.lesser</defName>
+    <defName>rimconemy_revenge_lesser</defName>
     <eventVersion>1</eventVersion>
     <eventFamily>Revenge</eventFamily>
     <label>Rache-Schwarm</label>
@@ -688,7 +688,7 @@
   </Rimconemy.InfectedAutomation.Story.StoryEventDef>
 
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.revenge.greater</defName>
+    <defName>rimconemy_revenge_greater</defName>
     <eventVersion>1</eventVersion>
     <eventFamily>Revenge</eventFamily>
     <label>Rache-Welle</label>
@@ -719,7 +719,7 @@
   </Rimconemy.InfectedAutomation.Story.StoryEventDef>
 
   <Rimconemy.InfectedAutomation.Story.StoryEventDef>
-    <defName>rimconemy.raid.infected_horde_migration</defName>
+    <defName>rimconemy_raid_infected_horde_migration</defName>
     <eventVersion>1</eventVersion>
     <eventFamily>Raid</eventFamily>
     <label>Wandernde Horde</label>
