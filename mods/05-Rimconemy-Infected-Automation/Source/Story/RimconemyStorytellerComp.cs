@@ -554,5 +554,35 @@ namespace Rimconemy.InfectedAutomation.Story
                     ledger.AnimalInfectionCountToday);
             }
         }
+
+        // ── Difficulty Mapping ───────────────────────────────
+
+        /// <summary>
+        /// Maps RimWorld's vanilla DifficultyDef to a Rimconemy SettingProfile.
+        /// Owned by the Comp (Storyteller-centric logic).
+        ///
+        /// Mapping:
+        ///   Peaceful / Easy       → Refuge     (Band 1: Supply + Social)
+        ///   Medium / Rough        → Survival   (Band 2: Supply + Social + Raid)
+        ///   Hard / Extreme        → Collapse   (Band 3: all 4 families)
+        ///   Custom / unknown      → Survival   (safe default)
+        /// </summary>
+        public static SettingProfile ResolveProfileFromDifficulty()
+        {
+            var difficultyDef = Find.Storyteller?.difficultyDef;
+            if (difficultyDef == null)
+                return SettingProfile.Survival;
+
+            return difficultyDef.defName switch
+            {
+                "Peaceful" => SettingProfile.Refuge,
+                "Easy"     => SettingProfile.Refuge,
+                "Medium"   => SettingProfile.Survival,
+                "Rough"    => SettingProfile.Survival,
+                "Hard"     => SettingProfile.Collapse,
+                "Extreme"  => SettingProfile.Collapse,
+                _          => SettingProfile.Survival,
+            };
+        }
     }
 }

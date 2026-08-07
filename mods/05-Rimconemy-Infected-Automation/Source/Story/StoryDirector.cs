@@ -1,56 +1,28 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Rimconemy.Foundation.Colonials;
 using Rimconemy.Foundation.Maps;
-using Rimconemy.Foundation.Registry;
 using Rimconemy.InfectedAutomation.Population;
-using Rimconemy.ScavengerInfrastructure.Storage;
 using RimWorld;
 using Verse;
-
-using RandomInoculationService = Rimconemy.InfectedAutomation.Inoculation.RandomInoculationService;
-using AnimalInfectionChance   = Rimconemy.InfectedAutomation.Inoculation.AnimalInfectionChance;
 
 namespace Rimconemy.InfectedAutomation.Story
 {
     /// <summary>
-    /// Owner: Infected & Automation (Package 05)
+    /// Owner: Infected &amp; Automation (Package 05).
     ///
-    /// GameComponent that bridges the pure StorySelector data models
-    /// with RimWorld's runtime. On a configurable interval (default:
-    /// once per game day = 60,000 ticks), builds a SituationSnapshot
-    /// from live game state, selects an event via StorySelector, and
-    /// queues it for execution through the appropriate IncidentWorker.
+    /// GameComponent that owns the runtime state (StoryState, SettingProfile,
+    /// pending incident metadata, revenge slots) and delegates the evaluation
+    /// pipeline to <see cref="RimconemyStorytellerComp"/>.
     ///
-    /// This is the runtime execution layer for Phase 1 Story Writer.
-    ///
-    /// Vanilla Wealth Raids: NOT deactivated. The StoryDirector
-    /// operates alongside RimWorld's native storyteller. Both can
-    /// fire independently per the Vanilla Policy (H2 §6).
+    /// Design: DECISIONS §34 (korrigiert), STORYTELLER_ANALYSIS.md.
     /// </summary>
     public sealed class StoryDirector : GameComponent
     {
-        /// <summary>Interval between story evaluations in ticks (1 day = 60000).</summary>
-        /// slop-audit-fix F3: documented as 1:2 ratio with MinEventSpacingTicks.
+        // ── Constants ─────────────────────────────────────────
         public const long EvaluationIntervalTicks = 60000;
-
-        // slop-audit-fix F1: tunable wealth ceiling at which ThreatPressure
-        // saturates to 1.0. Default 700k wealth matches the original line so
-        // existing game-state semantics are preserved; future iteration can
-        // move this to a StoryDirectorSettings class without changing callers.
         public const float WealthFullPressureThreshold = 700000f;
-
-        // slop-audit-fix §6 (audit-round-3, 2026-08-04): colony-wipe check
-        // interval. We sample at 250 ticks (4.2s) instead of every-tick so
-        // 900k pawn-lookups/day drop to ~3,700/day (1/240 of the old load).
-        // 250 ticks matches ProgressionGameComponent.UpdateIntervalTicks so
-        // the Sole-Owner GameOver trigger and the wipe signal stay in sync.
         public const long GameOverWipeCheckInterval = 250L;
-
-        /// <summary>Minimum ticks between any two story events (0.5 day).</summary>
-        /// slop-audit-fix F3: documented as half the evaluation interval so
-        /// an event fired at tick T blocks another fire until at least T+30k.
         public const long MinEventSpacingTicks = 30000;
 
         // ── persistent state ──────────────────────────────────
@@ -78,22 +50,9 @@ namespace Rimconemy.InfectedAutomation.Story
         /// Used by ThreatDashboard to render a sparkline without re-scanning the map.
         /// Not persisted — rebuilt at runtime from GameComponentTick evaluations.
         /// </summary>
-        public readonly System.Collections.Generic.List<float> ThreatHistory
-            = new System.Collections.Generic.List<float>(30);
+        public readonly List<float> ThreatHistory = new List<float>(30);
 
         // ── Phase B — transient revenge slot (NOT SCRIBED) ──────────
-        // Phase B couples today's raid-plan to yesterday's kills by refreshing
-        // the slot at end-of-day-tick. The slot is intentionally transient so
-        // a save/load does not produce a stale revenge quota from an old
-        // game-day; the recompute path always derives the value fresh from
-        // ledger.RecentKillsToday × profile.RevengeRatio at the next day-
-        // tick. Without "transient" semantics we would either need a
-        // schema migration for the slot or risk running with a stale value
-        // after a load that crosses a day-boundary.
-        //
-        // LastRevengeRefreshTick guards against double-refresh in the same
-        // tick (the day-tick pipeline is allowed to call Recompute from a
-        // future rewire without producing fractional drops).
         public int LastPendingRevenge;
         public long LastRevengeRefreshTick;
 
@@ -112,18 +71,12 @@ namespace Rimconemy.InfectedAutomation.Story
         {
             base.FinalizeInit();
 
-            // Map vanilla difficulty to Rimconemy SettingProfile.
-            // The player chooses Cassandra/Phoebe/Randy + a difficulty level;
-            // Rimconemy maps the difficulty to a SettingProfile without
-            // requiring a custom StorytellerDef.
-            ActiveProfile = ResolveProfileFromDifficulty();
+            // Map vanilla difficulty to Rimconemy SettingProfile via the Comp
+            // (Storyteller-centric logic lives on the Comp).
+            ActiveProfile = RimconemyStorytellerComp.ResolveProfileFromDifficulty();
             Log.Message($"[Rimconemy.InfectedAutomation] StoryDirector: profile={ActiveProfile.ProfileId} (difficulty={Find.Storyteller?.difficultyDef?.defName ?? "unknown"})");
 
             // H8 / I-T3: Ideology Assigner (finalized).
-            //   1. Log the recommended IdeoPreset for the active profile.
-            //   2. Defensive TryAutoAssign (spike-open): logs intent but does
-            //      NOT override existing player ideology - SPIKE API-IDEOLOGY-01
-            //      must close before the auto-attach path goes live.
             Ideology.IdeologyAssigner.AssignForProfile(ActiveProfile);
             Ideology.IdeologyAssigner.TryAutoAssignToPlayerFaction(ActiveProfile);
 
@@ -148,9 +101,6 @@ namespace Rimconemy.InfectedAutomation.Story
             if (Scribe.mode == LoadSaveMode.LoadingVars)
                 ActiveProfile = SettingProfile.GetBuiltIn(profileId) ?? SettingProfile.Survival;
 
-            // Delegate StoryState persistence via Scribe_Deep.
-            // Direct ExposeData() call bypasses the Scribe context stack;
-            // Scribe_Deep.Look ensures PostLoadInit and XML nesting are correct.
             if (Scribe.mode == LoadSaveMode.LoadingVars && State == null)
                 State = new StoryState();
             Scribe_Deep.Look(ref State, "storyState");
@@ -172,484 +122,8 @@ namespace Rimconemy.InfectedAutomation.Story
             base.GameComponentTick();
 
             if (_comp == null) return;
-
-            // Bootstrap the Comp once
             _comp.EmitBootstrapIfNeeded();
-
-            // Delegate full evaluation pipeline to the Comp
             _comp.DailyEvaluate(this);
-        }
-
-        /// <summary>
-        /// §7: Drive the IncidentWorker. Resolves the Def, builds minimal
-        /// IncidentParms targeting the canonical player home map, and pushes
-        /// the incident onto Find.Storyteller.incidentQueue. RimWorld then
-        /// invokes InfectedRaidWorker on the next storyteller cycle.
-        ///
-        /// Audit-round-3 §3 fix + post-review hardener (2026-08-04):
-        /// Returns <c>true</c> iff we reached the TryFire call (the queue
-        /// MAY have been touched). <c>false</c> only on pre-flight failures
-        /// where we are *sure* no state was mutated (null Storyteller, def
-        /// not found, no map, FiringIncident construction threw). The caller
-        /// (GameComponentTick) commits the selection to <see cref="StoryState"/>
-        /// on <c>true</c> and skips the commit on <c>false</c>.
-        ///
-        /// Why "attempted fire → commit" instead of "TryFire returned true → commit":
-        /// <c>Find.Storyteller.TryFire</c> can mutate the incidentQueue
-        /// internally and then throw (e.g. comp rejects def post-hoc, or
-        /// FiringIncident.source is a stale Comp ref). If we returned <c>false</c>
-        /// on exception the caller would skip the CommitSelection — but the
-        /// queue may still process the partially-queued entry on its next
-        /// cycle, producing a Letter that the next evaluation can re-select
-        /// (because the idempotency key was never burned). The result: the
-        /// same Letter fires twice. By committing on attempted-fire instead,
-        /// the idempotency key blocks re-selection and the worst case is one
-        /// Letter instead of two.
-        /// </summary>
-        /// <returns>
-        /// True if TryFire was attempted (caller commits and idempotency
-        /// wins); false if pre-flight failed and the queue is untouched
-        /// (caller does NOT commit, retries next eval).
-        /// </returns>
-        private bool QueueSelectedIncident(SituationSnapshot snapshot)
-        {
-            if (Find.Storyteller == null || Find.Storyteller.incidentQueue == null)
-            {
-                Log.Warning("[Rimconemy.InfectedAutomation] StoryDirector: no Storyteller/incidentQueue available; skipping incident fire.");
-                return false;
-            }
-
-            var incidentDef = DefDatabase<IncidentDef>.GetNamedSilentFail("Rimconemy_InfectedRaidIncident");
-            if (incidentDef == null)
-            {
-                Log.Error("[Rimconemy.InfectedAutomation] StoryDirector: DefDatabase could not resolve 'Rimconemy_InfectedRaidIncident'; Def XML missing or misnamed.");
-                return false;
-            }
-
-            // Pick the player's home map. AnyPlayerHomeMap is the canonical
-            // RimWorld accessor; if absent (main menu / no map loaded) fall
-            // back to whichever map exists. Player needs at least one map for
-            // the worker to have a valid IncidentParms.target.
-            Map targetMap = ResolveCanonicalPlayerMap();
-            if (targetMap == null)
-            {
-                Log.Warning("[Rimconemy.InfectedAutomation] StoryDirector: no map available to anchor IncidentParms.target; skipping incident fire.");
-                return false;
-            }
-
-            // Minimal IncidentParms for a Letter-only worker. Phase 5+ raid
-            // spawn service will populate additional parms (faction, pawnKind,
-            // raidStrategy) when StoryDirector carries raid data.
-            var parms = new IncidentParms
-            {
-                target = targetMap,
-                points = 50f,
-            };
-
-            // RimWorld-1.6 surface: queue via FiringIncident → Storyteller.TryFire
-            // (queued: true). This is the canonical "force this on the queue
-            // without spontaneous baseChance roll" path. Vanilla Storyteller
-            // will pick up our queue entry on its next cycle; because we have
-            // already set PendingIncidentDefName above, our worker
-            // CanFireNowSub returns true and TryExecuteWorker issues the
-            // letter. This bypasses the <baseChance>0.0</baseChance> gate.
-            //
-            // Audit caveat (2026-08-04): FiringIncident.source is a
-            // StorytellerComp reference. Passing null has been observed to
-            // NPE inside TryFire's internal path on some comps. Pass the
-            // first registered comp; if none are registered yet, fall back
-            // to null (cold-start race) — same as the prior code but now
-            // safe in steady state.
-            StorytellerComp sourceComp = null;
-            if (Find.Storyteller.storytellerComps != null && Find.Storyteller.storytellerComps.Count > 0)
-                sourceComp = Find.Storyteller.storytellerComps[0];
-
-            // ─ construction: throw is pre-flight, queue NOT mutated. catch narrowly.
-            FiringIncident firingIncident;
-            try
-            {
-                firingIncident = new FiringIncident(incidentDef, sourceComp, parms);
-            }
-            catch (NullReferenceException ex)
-            {
-                Log.Error($"[Rimconemy.InfectedAutomation] StoryDirector: FiringIncident construction NullReferenceException: {ex.Message}");
-                return false;
-            }
-            catch (ArgumentException ex)
-            {
-                Log.Error($"[Rimconemy.InfectedAutomation] StoryDirector: FiringIncident construction ArgumentException: {ex.Message}");
-                return false;
-            }
-            catch (InvalidOperationException ex)
-            {
-                Log.Error($"[Rimconemy.InfectedAutomation] StoryDirector: FiringIncident construction InvalidOperationException: {ex.Message}");
-                return false;
-            }
-
-            // Defensive: C# constructors don't return null, but keep this
-            // guard against any future override of FiringIncident.
-            if (firingIncident == null)
-            {
-                Log.Warning("[Rimconemy.InfectedAutomation] StoryDirector: FiringIncident construction returned null; pre-flight failure, queue untouched.");
-                return false;
-            }
-
-            // ─ fire: from here on the queue MAY be touched; caller MUST commit.
-            // Exceptions are caught narrowly so we don't swallow OOM/SOE.
-            bool tryFireOk;
-            try
-            {
-                tryFireOk = Find.Storyteller.TryFire(firingIncident, queued: true);
-            }
-            catch (NullReferenceException ex)
-            {
-                Log.Error($"[Rimconemy.InfectedAutomation] StoryDirector: Storyteller.TryFire NullReferenceException: {ex.Message}");
-                tryFireOk = false;
-            }
-            catch (ArgumentException ex)
-            {
-                Log.Error($"[Rimconemy.InfectedAutomation] StoryDirector: Storyteller.TryFire ArgumentException: {ex.Message}");
-                tryFireOk = false;
-            }
-            catch (InvalidOperationException ex)
-            {
-                Log.Error($"[Rimconemy.InfectedAutomation] StoryDirector: Storyteller.TryFire InvalidOperationException: {ex.Message}");
-                tryFireOk = false;
-            }
-
-            Log.Message($"[Rimconemy.InfectedAutomation] StoryDirector: queued incident={incidentDef.defName} sourceComp={(sourceComp != null ? sourceComp.GetType().Name : "<none>")} targetMap.uniqueID={targetMap.uniqueID} (GameTick={snapshot.GameTick}, TryFireAccepted={tryFireOk}).");
-
-            // Return true so the caller commits; the TryFire bool is diagnostic.
-            return true;
-        }
-
-        /// <summary>
-        /// Single source of truth for "which map should IncidentParms target?".
-        /// Reads from <see cref="MapRegistry.GetPrimaryPlayerHomeMap"/>
-        /// (Foundation-owned, tick-cached). Returns null if no map is loaded
-        /// (main menu).
-        /// </summary>
-        private static Map ResolveCanonicalPlayerMap()
-        {
-            return MapRegistry.GetPrimaryPlayerHomeMap();
-        }
-
-        /// <summary>
-        /// Builds a SituationSnapshot from the live game world.
-        /// Reads RimWorld state (pawn counts, threat, etc.) and
-        /// produces the aggregated read-model that StorySelector needs.
-        ///
-        /// audit-fix 2026-08-05: the Early-Game Pressure Floor reads
-        /// ActiveProfile for profile-specific floors. BuildLiveSnapshot
-        /// was a static helper (no instance context), so the call tripped
-        /// CS0120. We now accept the active profile as a parameter so
-        /// call sites stay static-friendly but the floor logic gets the
-        /// right value. Defensive: a null profile suppresses the floor
-        /// (keeps the wealth-derived value, which is the safe default
-        /// before GameComponent-attached-finalise-init has fired).
-        /// </summary>
-        private static SituationSnapshot BuildLiveSnapshot(long tick, StoryState state = null, SettingProfile profile = null)
-        {
-            var snapshot = new SituationSnapshot
-            {
-                GameTick = tick,
-                // Production-stamp the snapshot so ThreatSnapshotBridge
-                // (and any future read-through cache) can validate its
-                // cached ThreatAggregator against the snapshot's own
-                // tick, not the game's potentially-advanced TicksGame.
-                // Same value as GameTick today; kept separate so a
-                // future "post-build enrichment" phase (e.g. storage
-                // hash refresh after the snapshot frame) can stamp a
-                // different value without breaking downstream caches
-                // that compare on this field.
-                SnapshotUpdatedTick = tick,
-                ActiveEventIds = new List<string>(),
-                ActiveEventFamilies = new List<string>(),
-                CompletedResearchIds = new List<string>(),
-                CriticalResourceIds = new List<string>(),
-            };
-
-            // Survivor count — Phase B / F-V1: delegated to ColonialReader so
-            // Mod 02 / 03 / 05 agree on what counts as "active colonist".
-            var activeColonists = ColonialReader.GetActiveColonists();
-            snapshot.SurvivorCount = activeColonists.Count;
-            snapshot.AverageSurvivorHealth = activeColonists.Count > 0
-                ? activeColonists.Average(p => p.health?.summaryHealth?.SummaryHealthPercent ?? 0.5f)
-                : 0f;
-
-            // Threat pressure (simplified: based on colony wealth + pawn count)
-            // Phase-2 / Welle 2 / Item #3 (2026-08-05): use MapRegistry to avoid
-            // null+IsPlayerHome re-filter. WealthTotal is a Tw-friendly getter
-            // already cached by RimWorld per Map.
-            float wealthFactor = 0f;
-            foreach (var map in MapRegistry.GetPlayerHomeMaps())
-            {
-                if (map?.wealthWatcher != null)
-                    wealthFactor += map.wealthWatcher.WealthTotal;
-            }
-            // Normalize: 100k wealth = ~0.3 pressure, 500k = ~0.7
-            // slop-audit-fix F1: 700000f is "max wealth = 1.0 pressure" tuning
-            // constant. Future: lift to StoryDirectorSettings.WealthMaxForUnityThreat.
-            snapshot.ThreatPressure = System.Math.Min(1f, wealthFactor / WealthFullPressureThreshold);
-
-            // Early-Game Pressure Floor: guarantees events can fire from day 1
-            // even at 0 wealth. Profile-specific floors prevent hard-lock on
-            // Survival (0.2) and Collapse (0.15) profiles.
-            // Refuge uses 0.05 since it bans Raid family but allows Supply/Social.
-            // audit-fix 2026-08-05: use the parameter (not the instance field)
-            // — static helper cannot reach instance state and the call sites
-            // already pass ActiveProfile in via the new third arg.
-            if (profile != null)
-            {
-                float floor = profile.ProfileId switch
-                {
-                    "Rimconemy_Refuge" => 0.05f,
-                    "Rimconemy_Survival" => 0.15f,
-                    "Rimconemy_Collapse" => 0.10f,
-                    _ => 0.10f
-                };
-                snapshot.ThreatPressure = System.Math.Max(snapshot.ThreatPressure, floor);
-            }
-
-            snapshot.ThreatTrend = 0f;
-
-            // Colony wealth (raw total for event-prerequisite gating)
-            snapshot.ColonyWealth = wealthFactor;
-
-            // Average mood — read from pawns' current mood level
-            snapshot.AverageColonistMood = activeColonists.Count > 0
-                ? activeColonists.Average(p =>
-                {
-                    var need = p.needs?.mood;
-                    return need != null ? need.CurLevel : 0.5f;
-                })
-                : 0.5f;
-
-            // Power grid status — check if any building has a powered CompPowerTrader.
-            snapshot.PowerGridActive = false;
-            foreach (var map in MapRegistry.GetPlayerHomeMaps())
-            {
-                if (map == null) continue;
-                var things = map.listerBuildings?.allBuildingsColonist;
-                if (things == null) continue;
-                for (int i = 0; i < things.Count; i++)
-                {
-                    var b = things[i];
-                    if (b == null) continue;
-                    var comp = b.TryGetComp<CompPowerTrader>();
-                    if (comp != null && comp.PowerOn)
-                    {
-                        snapshot.PowerGridActive = true;
-                        break;
-                    }
-                }
-                if (snapshot.PowerGridActive) break;
-            }
-
-            // Hostile factions — count factions hostile to the player
-            snapshot.HostileFactionCount = 0;
-            if (Find.FactionManager != null)
-            {
-                foreach (var faction in Find.FactionManager.AllFactionsListForReading)
-                {
-                    if (faction == null || faction.IsPlayer) continue;
-                    if (faction.HostileTo(Faction.OfPlayer))
-                        snapshot.HostileFactionCount++;
-                }
-            }
-
-            // Active research count — Phase 2 placeholder.
-            // The exact ResearchManager property API varies across RimWorld versions;
-            // we leave this at 0 for now and populate via a future capability bridge.
-            snapshot.ActiveResearchCount = 0;
-
-            // Any colonist injured (major health issue)
-            snapshot.AnyColonistInjured = activeColonists.Any(p =>
-                (p.health?.summaryHealth?.SummaryHealthPercent ?? 0.5f) < 0.6f);
-
-            // Days since last event (from StoryState)
-            snapshot.DaysSinceLastEvent = (state != null && state.LastEventTick > 0)
-                ? (tick - state.LastEventTick) / (float)Rimconemy.Foundation.TimeConstants.TicksPerDay
-                : float.MaxValue;
-
-            // Ideology (simplified: 1 active rule when ThoughtWorker exists)
-            snapshot.IdeologyTension = 0f;
-            snapshot.ActiveSettingRuleCount = 1; // ResourceFairness is active
-
-            // Storage (Phase B / F-V3: capability-gated Bridge)
-            // ───────────────────────────────────────────────────────────────────
-            // INTERFACE_CONTRACT §3 used to describe "live-" + tick as the MVP.
-            // F-V3 lands the bridge: when Mod 03 is loaded, we read the actual
-            // StorageSnapshot.ContentHash from Mod 03's StorageQuery. The
-            // "live-" + tick fallback is preserved for the standalone profile.
-            AssignStorageHashFromCapability(snapshot, tick);
-
-            // Progress
-            snapshot.DaysSinceStart = tick / Rimconemy.Foundation.TimeConstants.TicksPerDay;
-            snapshot.DaysSinceLastTurnPoint = float.MaxValue;
-
-            // Determinism anchors (Phase 1):
-            // - MapID: canonical map uniqueID for "{MapID}" placeholder in
-            //   DeterminismKeyTemplates. Stable across save/load.
-            // - DeterministicTargetPawnId: colonists ordered by ThingID
-            //   form a stable ring; we pick index = (dayIndex mod count)
-            //   so pawn-anchored events vary per in-game day but are
-            //   reproducible across save/load. Empty when no colonists.
-            Map canonicalMap = ResolveCanonicalPlayerMap();
-            snapshot.MapID = canonicalMap?.uniqueID ?? -1;
-
-            // Phase B / F-V1: source pawn-IDs from ColonialReader (already
-            // sorted by thingIDNumber, so deterministic ordering is preserved
-            // and the resulting DayIndex picks the same pawn across save/load).
-            var colonistIds = new List<string>(activeColonists.Count);
-            foreach (var p in activeColonists)
-            {
-                if (!string.IsNullOrEmpty(p.ThingID))
-                    colonistIds.Add(p.ThingID);
-            }
-
-            // Roster fingerprint: FNV-1a over the joined sorted ThingID list.
-            // Cheap (≤ max colonist count entries), stable across save/load
-            // (ThingIDs persist) and varies iff the colony composition
-            // changed. Baked into the {PawnId} placeholder resolution below
-            // so pawn-anchored determinism keys survive save→load even
-            // when colonists were lost or gained between sessions.
-            snapshot.PawnRosterFingerprint = colonistIds.Count > 0
-                ? EncodeRosterFingerprint(colonistIds)
-                : "";
-
-            if (colonistIds.Count > 0)
-            {
-                long dayIndex = (tick / 60000L) % colonistIds.Count;
-                snapshot.DeterministicTargetPawnId = colonistIds[(int)dayIndex];
-            }
-
-            return snapshot;
-        }
-
-        /// <summary>
-        /// FNV-1a hash over the colonist roster. Same hash routine as
-        /// DeterministicRng.GetStableHashCode but exposed as a quick
-        /// helper for snapshot filling.
-        /// </summary>
-        private static string EncodeRosterFingerprint(List<string> colonistIds)
-        {
-            string joined = string.Join("|", colonistIds);
-            return DeterministicRng.GetStableHashCode(joined).ToString("X8");
-        }
-
-        /// <summary>
-        /// Phase B / F-V3: capability-gated assignment of <see cref="SituationSnapshot.StorageHash"/>.
-        ///
-        /// When Mod 03 is registered and exposes <c>rimconemy.scavengerinfrastructure.resources</c>,
-        /// we read the real <see cref="StorageSnapshot.ContentHash"/> from StorageQuery.
-        /// Otherwise (standalone profile) we fall back to the same FNV-1a routine
-        /// as Mod 03 so the hash anchors are byte-for-byte comparable across the
-        /// stack (no literal string drift - this was a fix for Q-StorageHashDrift
-        /// flagged by the 2026-08-04 code review).
-        ///
-        /// We also fill <see cref="SituationSnapshot.AnyResourceCritical"/> with a simple
-        /// "any entry below 5 units" heuristic; this is consumed by StorySelector's
-        /// Supply-family gate in a future Phase 2.5 snapshot.
-        ///
-        /// The strategy intentionally avoids depending on the "Storage Critical" threat
-        /// (which is a Mod 05 concept) — we just expose a flag the StorySelector can use.
-        /// </summary>
-        private static void AssignStorageHashFromCapability(SituationSnapshot snapshot, long tick)
-        {
-            // slop-audit-fix C5/H4: critical thresholds live in
-            // Rimconemy.InfectedAutomation.ResourceThresholds; we read
-            // them inline where needed (no local copy required).
-
-            if (CapabilityAudit.HasCapabilityOrWarn(
-                    packageId: "rimconemy.scavengerinfrastructure",
-                    capabilityId: "rimconemy.scavengerinfrastructure.resources",
-                    minVersion: 1,
-                    readerContext: "StorageHash-Bridge"))
-            {
-                try
-                {
-                    var storage = StorageQuery.ReadStorage(StorageScope.PlayerHomeMaps, null, tick);
-                    // Even in the bridge-active path we use the SAME hash routine as
-                    // the standalone fallback. This way, both produce a 4-byte FNV-1a
-                    // digest and downstream keys are byte-comparable.
-                    snapshot.StorageHash = ComputeStandaloneStorageHash(storage?.ContentHash, tick);
-
-                    if (storage?.Entries != null)
-                    {
-                        // slop-audit-fix C5/H4: use canonical unit-count
-                        // thresholds via ResourceThresholds.IsBelowCritical so
-                        // DECISIONS.md #14's 50/30/40 are honored rather
-                        // than a flat 5 units (which was wrong for food at
-                        // typical storage volumes of 100+).
-                        bool anyCritical = storage.Entries.Any(e =>
-                            ResourceThresholds.IsBelowCritical(e.ResourceId, e.TotalAmount));
-                        snapshot.AnyResourceCritical = anyCritical;
-
-                        if (anyCritical)
-                        {
-                            snapshot.CriticalResourceIds = storage.Entries
-                                .Where(e => ResourceThresholds.IsBelowCritical(e.ResourceId, e.TotalAmount))
-                                .Select(e => e.ResourceId)
-                                .Take(32)   // defensive cap to avoid log bloat
-                                .ToList();
-                        }
-                    }
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning("[Rimconemy.InfectedAutomation] StorageQuery.ReadStorage failed (" + ex.GetType().Name + "): falling back to FNV-1a of tick.");
-                    // Continue to fallback below.
-                }
-            }
-
-            // Standalone fallback. FNV-1a over tick+seed so that save/load
-            // (the same tick re-reads to the same hash) and cross-package
-            // readers see a properly typed digest.
-            snapshot.StorageHash = ComputeStandaloneStorageHash(null, tick);
-            snapshot.AnyResourceCritical = false;
-            snapshot.CriticalResourceIds = new List<string>();
-        }
-
-        /// <summary>
-        /// Single source of truth for the storage-hash computation. Hashes
-        ///   a real storage ContentHash if available, else falls back to
-        ///   a tick-based seed using FNV-1a so the digest is the same kind
-        ///   of value Mod 03 publishes.
-        /// </summary>
-        private static string ComputeStandaloneStorageHash(string storageContentHash, long tick)
-        {
-            string payload = !string.IsNullOrEmpty(storageContentHash)
-                ? storageContentHash
-                : "rimconemy-live|" + tick.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            return DeterministicRng.GetStableHashCode(payload).ToString("X8");
-        }
-
-        /// <summary>
-        /// Phase B / F-V2: Surface a colony-wipe detection to the Game-Over state
-        /// for the Sole-Owner (Mod 02) to consume.
-        ///
-        /// Sigh: a wipe is something we can observe cheaply — count of living
-        /// player colonists dropped to 0 — and that doesn't fire if we were
-        /// the cause of the wipe (we are a threat-source, not a survivor).
-        /// Multiple consecutive ticks with 0 colonists will simply re-write
-        /// the reason (it's idempotent via ConsumeGameOverPending's "clear
-        /// after read" semantics).
-        /// </summary>
-        private void MaybeSignalGameOverForWipe(long currentTick)
-        {
-            if (State == null) return;
-
-            // Phase B / F-V1: use ColonialReader.NoColonists (single source of
-            // truth shared with Mod 02).
-            bool colonistsPresent = !ColonialReader.NoColonists;
-
-            // Edge-triggered: only write when transitioning from colonists>0 to 0.
-            // MarkGameOverPending now handles the edge logic internally.
-            State.MarkGameOverPending(
-                "Mod 05 (InfectedAutomation): no living player colonists observed at game tick " + currentTick + ".",
-                colonistsPresent);
         }
 
         // ── public API for IncidentWorkers ────────────────────
@@ -690,34 +164,6 @@ namespace Rimconemy.InfectedAutomation.Story
         }
 
         /// <summary>
-        /// Maps RimWorld's vanilla DifficultyDef to a Rimconemy SettingProfile.
-        /// No custom StorytellerDef required — the player's difficulty choice
-        /// determines which event families and escalation bands are active.
-        ///
-        /// Mapping:
-        ///   Peaceful / Easy       → Refuge     (Band 1: Supply + Social)
-        ///   Medium / Rough        → Survival   (Band 2: Supply + Social + Raid)
-        ///   Hard / Extreme        → Collapse   (Band 3: alle 4 Familien)
-        ///   Custom / unknown      → Survival   (safe default)
-        /// </summary>
-        private static SettingProfile ResolveProfileFromDifficulty()
-        {
-            var difficultyDef = Find.Storyteller?.difficultyDef;
-            if (difficultyDef == null)
-                return SettingProfile.Survival;
-
-            return difficultyDef.defName switch
-            {
-                "Peaceful" => SettingProfile.Refuge,
-                "Easy"     => SettingProfile.Refuge,
-                "Medium"   => SettingProfile.Survival,
-                "Rough"    => SettingProfile.Survival,
-                "Hard"     => SettingProfile.Collapse,
-                "Extreme"  => SettingProfile.Collapse,
-                _          => SettingProfile.Survival,
-            };
-        }
-        /// <summary>
         /// Dev-mode shortcut: immediately runs one evaluation cycle.
         /// Delegates to RimconemyStorytellerComp.
         /// </summary>
@@ -730,173 +176,26 @@ namespace Rimconemy.InfectedAutomation.Story
             Log.Message("[Rimconemy.InfectedAutomation] StoryDirector.EvaluateNow triggered from Dev mode.");
         }
 
-        /// <summary>
-        /// Shared evaluation logic used by both GameComponentTick and EvaluateNow.
-        /// Avoids double-snapshot / double-ThreatHistory entries.
-        /// </summary>
-        private void EvaluateWithSnapshot(SituationSnapshot snapshot, long currentTick)
-        {
-            LastSnapshot = snapshot;
-            ThreatHistory.Add(snapshot.ThreatPressure);
-            if (ThreatHistory.Count > 30) ThreatHistory.RemoveAt(0);
-
-            // ThreatTrend: compare current pressure against the rolling
-            // ThreatHistory average. Positive = rising, negative = falling.
-            // Clamped to [-1, +1] so downstream consumers can normalize.
-            if (ThreatHistory.Count >= 2)
-            {
-                float sum = 0f;
-                for (int i = 0; i < ThreatHistory.Count - 1; i++)
-                    sum += ThreatHistory[i];
-                float avg = sum / (ThreatHistory.Count - 1);
-                float raw = snapshot.ThreatPressure - avg;
-                snapshot.ThreatTrend = System.Math.Max(-1f, System.Math.Min(1f, raw * 2f));
-            }
-            else
-            {
-                snapshot.ThreatTrend = 0f;
-            }
-
-            if (snapshot.ThreatPressure < ActiveProfile.MinThreatLevel)
-            {
-                LastSelectionReason = $"Bedrohungspegel {snapshot.ThreatPressure:P0} < Profil-Minimum {ActiveProfile.MinThreatLevel:P0} — kein Event ausgelöst.";
-                return;
-            }
-
-            // Select an event
-            var result = StorySelector.SelectEvent(
-                ActiveProfile, snapshot, State, _catalog, currentTick);
-
-            if (result.HasEvent)
-            {
-                // Stage pending event metadata first so the worker (called by
-                // RimWorld's storyteller on the next cycle) can locate it via
-                // HasPendingIncident(defName) and consume it via
-                // ConsumePendingEvent() for label/text.
-                PendingIncidentDefName = "Rimconemy_InfectedRaidIncident";
-                PendingEventLabel = result.SelectedEvent.LetterLabel;
-                PendingEventText = result.SelectedEvent.LetterText;
-
-                State.PruneOldKeys(currentTick);
-
-                // §7 closure: force-fire the incident via RimWorld's
-                // Storyteller.incidentQueue. The IncidentDef
-                // (Defs/Incidents/InfectedRaid.xml) has <baseChance>0.0</baseChance>
-                // so the vanilla storyline StorytellerComp will never select it
-                // spontaneously; without this explicit Add, the Letter never
-                // appears. Adding to incidentQueue guarantees the next
-                // storyteller cycle invokes InfectedRaidWorker, whose
-                // CanFireNowSub returns true because we set PendingIncidentDefName
-                // above, and whose TryExecuteWorker issues the player letter.
-                //
-                // Audit-round-3 §3 (2026-08-04): we now commit the selection
-                // to StoryState (idempotency key, cooldown, LastEventId, etc.)
-                // ONLY after the queue call succeeded. Pre-fire-commit semantics.
-                // If the queue reports a failure (null Storyteller, no map,
-                // def missing, exception inside TryFire), we keep state untouched
-                // and clear the Pending* fields so the same event is re-selected
-                // on the next evaluation cycle — a Letter that didn't appear
-                // counts as not-having-happened.
-                bool queued = QueueSelectedIncident(snapshot);
-                if (queued)
-                {
-                    State.CommitSelection(
-                        eventId: result.SelectedEvent.EventId,
-                        idempotencyKey: result.IdempotencyKey,
-                        currentTick: currentTick,
-                        seed: result.SelectionSeed,
-                        cooldownTicks: result.CooldownTicks);
-
-                    // §8.3: persist selection reason for UI.
-                    LastSelectionReason = $"[Tick {currentTick}] {result.Reason}";
-                    Log.Message($"[Rimconemy.InfectedAutomation] StoryDirector: {result.Reason}");
-
-                    // P2/H3 §3 (Setting Rule Transparency): feed the
-                    // TransparencyTracker with the explained/unexplained
-                    // state of the fired event. The decision is "explained"
-                    // because we always carry a LastSelectionReason with
-                    // a deterministic reason string. Unexplained is reserved
-                    // for future cross-package modes where a StoryDirector
-                    // sibling fires a hidden event.
-                    var tt = Ideology.TransparencyTracker.Get();
-                    if (tt != null)
-                    {
-                        tt.RecordDecision(true, result.Reason);
-                    }
-                }
-                else
-                {
-                    // Fire failed: roll back Pending* so the next tick does not
-                    // see stale metadata. Reasons are logged inside QueueSelectedIncident
-                    // so we just summarize here at the orchestration level.
-                    PendingIncidentDefName = null;
-                    PendingEventLabel = null;
-                    PendingEventText = null;
-                    LastSelectionReason = $"[Tick {currentTick}] Queue-Fehler — Event '{result.SelectedEvent.Label}' nicht ausgelöst. Retry nächste Evaluation.";
-                    Log.Warning($"[Rimconemy.InfectedAutomation] StoryDirector: event '{result.SelectedEvent.Label}' selection dropped - queue failed; will retry next eval. ({result.Reason})");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Public wrapper around the private BuildLiveSnapshot so EvaluateNow
-        /// can call it without duplicating logic. Passes ActiveProfile so
-        /// the Early-Game Pressure Floor can apply the right per-profile
-        /// floor. Wraps Non-null assertion for callers that invoke
-        /// EvaluateNow before FinalizeInit has set the profile.
-        /// </summary>
-        private SituationSnapshot BuildLiveSnapshotPublic(long tick) => BuildLiveSnapshot(tick, State, ActiveProfile);
-
         // ── Phase B — Revenge-Coupling Public API ───────────────────────
 
         /// <summary>
         /// Read-only accessor for the current day's revenge-pending quota.
-        /// Used by <see cref="Incidents.InfectedRaidSpawnService.BuildPlanForTick"/>
-        /// to merge with the pressure-driven pawn count. Always returns
-        /// a non-negative number (the slot is clamped at 0 on every
-        /// decrement).
         /// </summary>
         public int GetPendingRevengeanceForToday() => LastPendingRevenge;
 
         /// <summary>
         /// Decrements the revenge-pending slot by the actual number of
-        /// pawns spawned in a raid-bridge run. Called from
-        /// <see cref="Incidents.InfectedRaidWorker.TryExecuteWorker"/> after
-        /// <c>SpawnHostileRavagers</c> returns <c>actuallySpawned</c>, with
-        /// the value clamped to <c>min(actuallySpawned, plan.RevengeQuotaComponent)</c>
-        /// so a partial-spawn-failure cannot silently consume more than
-        /// the quota.
-        ///
-        /// Idempotent in the sense that a second call with the same value
-        /// would decrement twice — callers MUST call exactly once per
-        /// worker run. Clamped at 0 so a stale quota cannot manifest as a
-        /// negative; <paramref name="actuallySpawned"/> <= 0 is a no-op.
-        ///
-        /// Does NOT trigger any Spawn side-effect; the slot is independent
-        /// of the live SpawnHostileRavagers path so a logging failure in
-        /// the worker cannot leak into the day-quota accounting.
+        /// pawns spawned in a raid-bridge run.
         /// </summary>
         public void DecrementPendingRevenge(int actuallySpawned)
         {
             if (actuallySpawned <= 0) return;
-            LastPendingRevenge = System.Math.Max(0, LastPendingRevenge - actuallySpawned);
+            LastPendingRevenge = Math.Max(0, LastPendingRevenge - actuallySpawned);
         }
 
         /// <summary>
-        /// Phase B — single-tree-source for the ProfileId translation
-        /// between SettingProfile.ProfileId ("Rimconemy_Survival") and the
-        /// legacy PopulationProfileMultipliers keys ("Survival", "Refuge",
-        /// "Collapse", no prefix). Phase A never bridged these two
-        /// namespaces, so a SettingProfile.ProfileId fed into
-        /// PopulationProfileMultipliers.GetRevengeRatio would silently
-        /// fall back to "Survival" (LogWarnFallback). This helper strips
-        /// the prefix so the lookup finds the row the spec author wrote.
-        ///
-        /// Defensive: returns "Survival" on null/empty rather than throwing
-        /// — same shape as PopulationProfileMultipliers' own fallback.
-        /// Whitespace-only inputs are trimmed before the lookup so a
-        /// stray "  " cannot leak into the multiplier table (minor
-        /// review-finding from Task 1).
+        /// Phase B — strips the "Rimconemy_" prefix from profile IDs for
+        /// PopulationProfileMultipliers key lookup.
         /// </summary>
         public static string StripRimconemyPrefix(string id)
         {
@@ -909,88 +208,20 @@ namespace Rimconemy.InfectedAutomation.Story
 
         /// <summary>
         /// Phase B — recompute the revenge quota at end of day-tick.
-        /// Called from <see cref="GameComponentTick"/> AFTER the
-        /// StorySelector eval block and AFTER
-        /// <see cref="PopulationLedger.ApplyDailyGrowthTick"/> +
-        /// <c>ResetDailyCounters</c> (per user-override of the
-        /// Phase-A-spec ordering).
-        ///
-        /// Reads ledger.RecentKillsToday, multiplies by the profile
-        /// RevengeRatio (SettingProfile.ProfileId "Rimconemy_<x>" prefix
-        /// stripped so it matches PopulationProfileMultipliers keys), clips
-        /// to the available free-budget (Cap − HumanoidLiveCount).
-        ///
-        /// Idempotent within a tick: a refresh invoked twice with the same
-        /// currentTick is a no-op (LastRevengeRefreshTick gate). The
-        /// day-tick pipeline is allowed to call this method from any future
-        /// rewire without producing fractional drops.
-        ///
-        /// Defensive: null ledger → no-op (no log); null profile → "
-        /// Survival" fallback via StripRimconemyPrefix.
+        /// Called from RimconemyStorytellerComp.DailyEvaluate.
         /// </summary>
         public void RecomputeRevengeAfterDayTick(
             PopulationLedger ledger, SettingProfile profile, long currentTick)
         {
             if (currentTick == LastRevengeRefreshTick) return;
-            // Review-2026-08-05-Fix: gate-set moved AFTER the null-ledger
-            // early-out so a stray null-ledger call (e.g. before the
-            // Reconciler is initialised) cannot silently burn the per-tick
-            // slot and turn a subsequent valid call into a no-op.
             if (ledger == null) return;
             LastRevengeRefreshTick = currentTick;
             string key = StripRimconemyPrefix(profile?.ProfileId);
             float ratio = PopulationProfileMultipliers.GetRevengeRatio(key);
-            // Free-budget clips at 0 first so over-capacity (Cap <
-            // HumanoidLiveCount) produces a clean integer math result
-            // rather than threading a negative through min/max.
             int freeBudgetRaw = ledger.Cap - ledger.HumanoidLiveCount;
-            int freeBudget = (int)System.Math.Min(int.MaxValue, System.Math.Max(0, freeBudgetRaw));
-            // Float-Präzision: pure-float multiply bewahrt Ratio (0.7f → 7.0, nicht 6.999...).
-            int raw = (int)System.Math.Floor((float)ledger.RecentKillsToday * ratio);
-            LastPendingRevenge = System.Math.Max(0, System.Math.Min(raw, freeBudget));
-        }
-
-        /// <summary>
-        /// Phase E — daily-chance + horde-cap gate on wild-animal infection.
-        /// Composes <see cref="AnimalInfectionChance.ShouldFireToday"/>,
-        /// <see cref="AnimalInfectionChance.ComputeInfectionCount"/>,
-        /// <see cref="RandomInoculationService.TryInfectWildAnimals"/> and
-        /// <see cref="PopulationLedger.RegisterAnimalInfection"/>. Caller
-        /// (GameComponentTick) is responsible for gating on a known player
-        /// home map so we do not re-check it here.
-        /// </summary>
-        private void TryFireProfileInfection(long currentTick)
-        {
-            var ledger = PopulationLedger.Get();
-            if (ledger == null || ActiveProfile == null) return;
-
-            int hordeCount = System.Math.Max(
-                0, ledger.HumanoidLiveCount + ledger.AnimalLiveCount / 2);
-            if (!Inoculation.AnimalInfectionChance.ShouldFireToday(
-                    currentTick, ledger.AnimalInfectionCountToday, hordeCount, ActiveProfile))
-                return;
-
-            int count = Inoculation.AnimalInfectionChance.ComputeInfectionCount(
-                currentTick, hordeCount, ActiveProfile);
-            if (count <= 0) return;
-
-            int actually = Inoculation.RandomInoculationService.TryInfectWildAnimals(count, currentTick);
-            if (actually > 0)
-            {
-                ledger.RegisterAnimalInfection(actually, currentTick);
-                // Falsification §G Anmerkung D-2 (2026-08-05): zentrale
-                // Erfolgs-Log-Zeile fuer den Live-Beleg. Vorher war der
-                // Erfolgs-Pfad still; nur Skip-Logs (gated auf godMode) im
-                // RandomInoculationService-Layer. Mit dieser Zeile kann der
-                // User im Player.log direkt pruefen, dass der Day-Tick
-                // tatsaechlich gefeuert hat — unabhaengig von godMode.
-                Log.Message("[Rimconemy.InfectedAutomation] StoryDirector.TryFireProfileInfection: "
-                    + actually + " wild animals infected at tick=" + currentTick
-                    + " profile=" + ActiveProfile.ProfileId
-                    + " hordeCount=" + hordeCount
-                    + " ledger.AnimalInfectionCountToday="
-                    + ledger.AnimalInfectionCountToday);
-            }
+            int freeBudget = (int)Math.Min(int.MaxValue, Math.Max(0, freeBudgetRaw));
+            int raw = (int)Math.Floor((float)ledger.RecentKillsToday * ratio);
+            LastPendingRevenge = Math.Max(0, Math.Min(raw, freeBudget));
         }
     }
 }
