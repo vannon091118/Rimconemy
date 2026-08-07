@@ -10,7 +10,7 @@
     <defName>RimconemyRimPad</defName>
     <label>RimPad</label>
     <description>Floating dashboard – survival status, infrastructure, economy, threat analysis, diagnostics.</description>
-    <tabWindowClass>Rimconemy.Foundation.UI.RimPadWindow</tabWindowClass>
+    <tabWindowClass>Rimconemy.Foundation.UI.RimPadTabOpener</tabWindowClass>
     <order>60</order>
     <defaultHotKey>Keypad8</defaultHotKey>
   </MainButtonDef>
