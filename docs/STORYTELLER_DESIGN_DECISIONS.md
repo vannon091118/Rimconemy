@@ -122,58 +122,62 @@ var difficulty = Find.Storyteller?.difficultyDef?.defName;
 
 ---
 
-## Frage 3: Save-Migration — was passiert mit alten Cassandra-Saves?
+## Frage 3: Save-Migration — was passiert mit alten Cassandra-Saves? (KORRIGIERT 2026-08-07)
 
-### Problem
+> ⚠️ **User-Korrektur:** Der ursprüngliche "sanfte Migration"-Ansatz wurde verworfen. Rimconemy ist ein Total-Overhaul mit Anpassung ALLER Systeme. Vanilla-Save-Kompatibilität würde uns zu sehr einschränken.
 
-Ein Spieler hat 50 Stunden mit Cassandra gespielt. Jetzt installiert er Rimconemy. Der Save enthält:
-- `game.storyteller.def = "Cassandra"`
-- `game.storyteller.difficultyDef = "Rough"`
-- `game.storyteller.incidentQueue` mit pending Vanilla-Incidents
+### Entscheidung: Clean Break — keine Migration, neues Spiel erforderlich
 
-Wenn Rimconemy jetzt den Storyteller auf "Rimconemy_Storyteller" umstellt, was passiert?
-
-### Entscheidung: Sanfte Migration mit Warnung — kein Crash
-
-**Ablauf beim Laden eines Fremd-Saves:**
+**Spieler-Flow:**
 
 ```
-1. Save wird geladen
-2. RimconemyStorytellerComp.FinalizeInit() prüft:
-   if (Find.Storyteller.def.defName != "Rimconemy_Storyteller")
-   {
-3.     // Sanfte Migration
-       Log.Warning("Save has storyteller '" + oldDef + "', migrating to Rimconemy.");
-       
-4.     // IncidentQueue leeren (pending Vanilla-Incidents sind obsolet)
-       Find.Storyteller.incidentQueue.Clear();
-       
-5.     // Rimconemy-Systeme frisch initialisieren
-       StoryState = new StoryState();
-       PopulationLedger.Reset();
-       
-6.     // Ingame-Letter an den Spieler
-       Find.LetterStack.ReceiveLetter(
-           "Rimconemy übernimmt",
-           "Dieser Spielstand wurde mit einem anderen Storyteller gestartet. " +
-           "Rimconemy übernimmt ab sofort die Ereignissteuerung.",
-           LetterDefOf.NeutralEvent);
-   }
+1. Spieler installiert Rimconemy
+2. Beim Start: Dialog "Rimconemy ist ein Total-Overhaul.
+   Alte Spielstände sind NICHT kompatibel.
+   Bitte erstelle ein Backup deiner Saves vor dem ersten Start.
+   [Backup-Ordner öffnen] [Ich verstehe, neues Spiel starten]"
+3. Load-Game-Screen: Alte Saves werden ausgegraut mit
+   Warnung "Inkompatibel — benötigt Rimconemy v2+ Save-Format"
+4. Nur "Neues Spiel" ist möglich
 ```
 
-**Save-Schema:** Keine Änderung nötig. Der Storyteller wird nicht im Save persistiert (RimWorld speichert ihn separat). Rimconemy-eigene Daten (`StoryState`, `PopulationLedger`) werden normal via Scribe geladen — sind sie nicht vorhanden (weil der Save ohne Rimconemy gestartet wurde), werden sie mit Defaults initialisiert.
+**Technische Umsetzung:**
 
-**Was der Spieler verliert:**
-- Pending Vanilla-Incidents in der Queue (selten, max. 1-2)
-- Vanilla-Raid-Cooldowns (Rimconemy hat eigene Cooldowns)
+```csharp
+// RimconemyStorytellerComp.FinalizeInit()
+if (Find.Storyteller.def.defName != "Rimconemy_Storyteller")
+{
+    // Kein Migrationsversuch — harter Abbruch mit klarer Meldung
+    Log.Error("[Rimconemy] Incompatible save detected. " +
+        "Rimconemy requires a new game. " +
+        "Please back up your old saves before starting.");
+    
+    // Zeige Dialog im Hauptmenü
+    Find.WindowStack.Add(new Dialog_RimconemyIncompatibleSave());
+    
+    // Verhindere dass das Spiel weiterläuft
+    Current.Game = null; // force return to main menu
+    return;
+}
+```
 
-**Was erhalten bleibt:**
-- Kolonie, Pawns, Gebäude, Items — alles unverändert
-- Forschungsfortschritt
-- Beziehungen zu Fraktionen
-- Spielzeit
+**Was das für uns bedeutet (positiv):**
 
-**Edge Case: Save zurück zu Vanilla:** Falls der Spieler Rimconemy deinstalliert und den Save ohne Mods lädt, wählt RimWorld automatisch den Default-Storyteller (Cassandra). Kein Datenverlust, nur andere Incident-Logik.
+| Freiheit | Warum |
+|----------|-------|
+| **Keine Schema-Migration v0→v2** | Alte StoryState/PopulationLedger-Daten existieren nicht — kein Migration-Code nötig |
+| **Keine Altlasten** | Vanilla-DifficultyDefs, IncidentQueue, Cooldowns — alles irrelevant |
+| **Def-Database sauber** | Keine DLC-Incident-Reste die "noch da sind weil der Save alt ist" |
+| **Save-Format kann radikal anders sein** | Neue Felder, andere Scribe-Struktur — kein `LookMode.Undefined`-Fallback |
+| **Kein "was wenn"-Support** | Keine Bugreports à la "mein Cassandra-Save crashed nach 3 Stunden" |
+
+**Backup-Disclaimer (im Launcher/Workshop):**
+
+> ⚠️ **Rimconemy ist ein Total-Overhaul.**  
+> Alte Spielstände (Vanilla oder mit anderen Storytellern) sind **nicht kompatibel**.  
+> **Bitte sichere deine Saves** vor der Installation:  
+> `C:\Users\[Name]\AppData\LocalLow\Ludeon Studios\RimWorld by Ludeon Studios\Saves`  
+> Rimconemy benötigt ein **neues Spiel**.
 
 ---
 
@@ -242,7 +246,7 @@ Aber das ist eine **Lüge gegenüber anderen Mods**:
 |-------|---------|-----------------|
 | DLC-Incidents | **Ersetzen** — alle Incidents kommen aus Rimconemy. Kein Durchreichen. | StoryEventCatalog deckt Vanilla-Incidents ab. DLC-Incidents existieren nicht mehr (Content-Policy). |
 | Difficulty-Auswahl | **Behalten** — Spieler wählt "Zuflucht / Überleben / Zusammenbruch" | Vanilla-DifficultyDefs bleiben als interne Keys. UI-Labels optional via Language-Patch. |
-| Save-Migration | **Sanft** — Warn-Letter + frische Rimconemy-Init, kein Crash | `FinalizeInit()` prüft Storyteller-Def, leert Queue, initialisiert Systeme. |
+| Save-Migration | **Clean Break** — keine Migration, neues Spiel erforderlich, Backup-Disclaimer | `FinalizeInit()` erkennt Fremd-Save → Error-Dialog → Return to Main Menu. Kein Migrations-Code. Maximale Freiheit für Save-Format v2. |
 | Mod-Kompatibilität | **Akzeptanz + Doku** — kein Harmony-Fake | COMPATIBILITY_MATRIX.md + Bootstrap-Warnung + Kommunikation. |
 
 ---
@@ -252,3 +256,4 @@ Aber das ist eine **Lüge gegenüber anderen Mods**:
 | Date | Change | Author |
 |------|--------|--------|
 | 2026-08-07 | Alle 4 offenen Fragen geklärt, implementierungsbereit | Buffy (Freebuff) |
+| 2026-08-07 | **Korrektur Q3:** User-Entscheidung — "sanfte Migration" verworfen, Clean Break mit Backup-Disclaimer. Total-Overhaul braucht keine Altlast-Kompatibilität. | Buffy (Freebuff) |

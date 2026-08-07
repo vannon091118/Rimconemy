@@ -393,7 +393,7 @@ public StoryEventSpec? GenerateFactionWarEvent(SituationSnapshot snap) {
 
 1. **DLC-Incidents:** Sollen Royalty-Quests, Ideology-Rituale und Anomaly-Entities weiterhin feuern? Wenn ja: als Sub-Comp durchreichen oder manuell via `TryFire` auslösen?
 2. **Difficulty-Auswahl:** Behält der Spieler die Vanilla-Difficulty-Auswahl (Peaceful→Extreme)? Oder wird die Difficulty über SettingProfile ausschließlich im Rimconemy-System gesteuert?
-3. **Save-Migration:** Was passiert mit Saves, die mit Cassandra gestartet wurden? Crash? Automatische Migration? Warnung?
+3. **Save-Migration:** ✅ GEKLÄRT — Clean Break. Keine Migration. Alte Saves werden abgewiesen (Error-Dialog + Return to Main Menu). Backup-Disclaimer im Launcher. Maximale Freiheit für Save-Format v2.
 4. **Andere Mods:** Was passiert mit Mods die `Find.Storyteller.def` auf Cassandra/Phoebe/Randy prüfen?
 
 ---
