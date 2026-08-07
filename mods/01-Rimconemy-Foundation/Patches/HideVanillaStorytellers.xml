@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  HideVanillaStorytellers.xml — Stand 2026-08-07
+  Owner: Foundation (01)
+
+  Setzt Cassandra, Phoebe und Randy auf listOrder=99999, sodass
+  der Rimconemy-Storyteller (listOrder=-100) als erster und
+  prominentester im Auswahlbildschirm erscheint.
+
+  Die Vanilla-Storyteller bleiben technisch ladbar (Save-Kompatibilität
+  für Debug-Zwecke), sind aber im Storyteller-Auswahlbildschirm
+  ganz unten und werden vom Spieler nicht als primäre Wahl
+  wahrgenommen.
+
+  Vollständiges Verstecken (<hidden>true</hidden>) benötigt einen
+  Harmony-Patch auf Page_SelectStoryteller — das ist Phase 5+ Scope.
+
+  Design: DECISIONS §34, STORYTELLER_DESIGN_DECISIONS.md Q4
+-->
+<Patch>
+  <Operation Class="PatchOperationFindMod">
+    <mods>
+      <li>rimconemy.foundation</li>
+    </mods>
+    <match Class="PatchOperationSequence">
+      <operations>
+
+        <!-- Cassandra -->
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/StorytellerDef[defName="Cassandra"]</xpath>
+          <value><listOrder>99999</listOrder></value>
+        </li>
+
+        <!-- Phoebe -->
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/StorytellerDef[defName="Phoebe"]</xpath>
+          <value><listOrder>99999</listOrder></value>
+        </li>
+
+        <!-- Randy -->
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/StorytellerDef[defName="Randy"]</xpath>
+          <value><listOrder>99999</listOrder></value>
+        </li>
+
+      </operations>
+    </match>
+  </Operation>
+</Patch>

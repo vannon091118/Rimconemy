@@ -1,41 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  INERT · Stand 2026-08-04 · Audit-Falsifizierung
-  Diese Datei wird von RimWorld geladen (kein Lade-Fehler), wirkt aber NICHT:
-   - <storytellerComps> ist leer → keine StorytellerComp-Komponenten.
-   - <portraitLarge>/<portraitTiny> verweisen auf die Texturen
-     Textures/UI/HeroArt/Storytellers/RimconemyLarge.png (1024×1024)
-     und RimconemyTiny.png (128×128), erzeugt 2026-08-04 aus dem
-     Gemini-Bild (Center-Crop auf die Figur, Logo unten rechts
-     ausgeschnitten). Das StorytellerSymbol wird damit korrekt gezeichnet,
-     aber der Storyteller feuert selbst nichts.
-   - Die Phase-1-Realität benutzt die Vanilla-Storyteller und mappt
-     StoryDirector über StoryDirector.ResolveProfileFromDifficulty()
-     auf SettingProfile (Refuge/Survival/Collapse).
-  Escaping-Pfad (Phase 5+): Comps ergänzen UND Portraits liefern.
-  Bis dahin: Datei existiert für Def-Load-Konsistenz, nicht für Wirkung.
-  Siehe INTERFACE_CONTRACT.md §3.
+  AKTIV · Stand 2026-08-07 · DECISIONS §34 korrigiert
+  Rimconemy_Storyteller ERSETZT Cassandra/Phoebe/Randy.
+  Nur dieser Storyteller ist auswählbar — Vanilla-Storyteller werden
+  via Patch (Foundation/Patches/HideVanillaStorytellers.xml) versteckt.
+
+  Der RimconemyStorytellerComp (StorytellerComp) läuft im Vanilla-
+  Storyteller-Loop und steuert alle Incidents.
+
+  Portrait-Texturen: Textures/UI/HeroArt/Storytellers/
+    RimconemyLarge.png (1024×1024)
+    RimconemyTiny.png (128×128)
+  Siehe STORYTELLER_ANALYSIS.md, STORYTELLER_DESIGN_DECISIONS.md
 -->
 <Defs>
-
-  <!-- ================================================================
-       Rimconemy Story Writer — eigener Storyteller (INERT)
-       ================================================================
-
-       Erscheint im Storyteller-Auswahl-Screen als eigenständige Option.
-       Der Spieler wählt "Rimconemy" + Schwierigkeitsgrad.
-       Die Schwierigkeit mapped auf SettingProfile (Refuge/Survival/Collapse).
-
-       Phase 1 (jetzt):    Vanilla-Storyteller-Komponenten laufen parallel.
-                           Rimconemy-Events feuern via StoryDirector zusaetzlich.
-       Phase 5+ (spaeter): Volle Kontrolle — StoryDirector wird alleiniger
-                           Event-Provider, Vanilla-Raids werden deaktiviert.
-       ================================================================ -->
 
   <StorytellerDef ParentName="BaseStoryteller">
     <defName>Rimconemy</defName>
     <label>Rimconemy</label>
-    <description>Der Rimconemy Story Writer. Ressourcenknappheit, Ideologie-Konflikte und
+    <description>Der Rimconemy Storyteller. Ressourcenknappheit, Ideologie-Konflikte und
 die infizierte Bedrohung bestimmen den Rhythmus der Kolonie.
 Die gewaehlte Schwierigkeit legt fest, ob ihr Zuflucht (Refuge),
 Ueberleben (Survival) oder Kollaps (Collapse) erlebt.</description>
@@ -43,7 +26,13 @@ Ueberleben (Survival) oder Kollaps (Collapse) erlebt.</description>
     <portraitLarge>UI/HeroArt/Storytellers/RimconemyLarge</portraitLarge>
     <portraitTiny>UI/HeroArt/Storytellers/RimconemyTiny</portraitTiny>
 
-    <listOrder>50</listOrder>
+    <!-- listOrder=-100: erscheint VOR allen Vanilla-Storytellern.
+         Vanilla-Defs werden via Patch auf listOrder=99999 gesetzt. -->
+    <listOrder>-100</listOrder>
+
+    <storytellerComps>
+      <li Class="Rimconemy.InfectedAutomation.Story.RimconemyStorytellerComp" />
+    </storytellerComps>
   </StorytellerDef>
 
 </Defs>
