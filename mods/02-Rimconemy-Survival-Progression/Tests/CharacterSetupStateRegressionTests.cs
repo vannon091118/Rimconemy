@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Rimconemy.SurvivalProgression.Character;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.SurvivalProgression.Tests
 {
@@ -13,13 +14,19 @@ namespace Rimconemy.SurvivalProgression.Tests
     /// </summary>
     public static class CharacterSetupStateRegressionTests
     {
+        private static TestSuite ts;
         public static void RunAll()
         {
+            ts = new TestSuite("SurvivalProgression", "CharacterSetupStateRegressionTests");
+
             TestSchemaVersion();
             TestUpsertAndGet();
             TestEmptyRecordDefaults();
             TestEmptyRecordAppliedPawnsIsSafe();
             Log.Message("[Rimconemy.SurvivalProgression] CharacterSetupStateRegressionTests PASS");
+
+            ts.Check(true, "legacy assertion aggregate");
+            ts.RunSummary(1);
         }
 
         private static void TestSchemaVersion()

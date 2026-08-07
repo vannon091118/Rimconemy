@@ -35,6 +35,7 @@ namespace Rimconemy.SurvivalProgression.Tests
     /// </summary>
     public static class CharacterSetupStateSchemaBumpTests
     {
+        private static TestSuite ts;
         public const int ExpectedPassCount = 6;
 
         /// <summary>Matches <see cref="CharacterSetupState.ClassId"/>;
@@ -43,6 +44,8 @@ namespace Rimconemy.SurvivalProgression.Tests
 
         public static int RunAll()
         {
+            ts = new TestSuite("SurvivalProgression", "SchemaBump tests");
+
             int passed = 0;
             int failed = 0;
             string firstFailure = null;
@@ -56,7 +59,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                 if (ok) { passed++; return; }
                 failed++;
                 if (firstFailure == null) firstFailure = name;
-                Log.Warning("[Rimconemy.SurvivalProgression] SchemaBump test FAILED: " + name);
+                Log.Error("[Rimconemy.SurvivalProgression] SchemaBump test FAILED: " + name);
             }
 
             void CheckAndClean(bool ok, string name)
@@ -82,6 +85,9 @@ namespace Rimconemy.SurvivalProgression.Tests
                 "[Rimconemy.SurvivalProgression] SchemaBump tests: " + passed + " passed, " +
                 failed + " failed (min=" + ExpectedPassCount + ")." +
                 (firstFailure == null ? "" : " First failure: " + firstFailure));
+
+            ts.Check(failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return failed;
         }
 
@@ -276,7 +282,7 @@ namespace Rimconemy.SurvivalProgression.Tests
             }
             catch (Exception ex)
             {
-                Log.Warning("[Rimconemy.SurvivalProgression] SchemaBump T6 stream failure: " +
+                Log.Error("[Rimconemy.SurvivalProgression] SchemaBump T6 stream failure: " +
                     ex.GetType().Name + ": " + ex.Message);
                 return false;
             }

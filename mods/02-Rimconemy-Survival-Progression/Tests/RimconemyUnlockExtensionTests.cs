@@ -1,6 +1,7 @@
 using Rimconemy.SurvivalProgression.Progression;
 using Rimconemy.SurvivalProgression.Progression.Unlocks;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.SurvivalProgression.Tests
 {
@@ -11,11 +12,14 @@ namespace Rimconemy.SurvivalProgression.Tests
     /// </summary>
     public static class RimconemyUnlockExtensionTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
         public static bool RunAll()
         {
+            ts = new TestSuite("SurvivalProgression", "UnlockExtension tests");
+
             _passed = 0;
             _failed = 0;
 
@@ -55,6 +59,9 @@ namespace Rimconemy.SurvivalProgression.Tests
                 return false;
             }
             Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 

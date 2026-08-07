@@ -15,13 +15,17 @@ using Rimconemy.InfectedAutomation.Horde;
 using Rimconemy.InfectedAutomation.Population;
 using Rimconemy.InfectedAutomation.Story;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.InfectedAutomation.Tests
 {
     public static class HordeRegressionTests
     {
+        private static TestSuite ts;
         public static int RunAll()
         {
+            ts = new TestSuite("InfectedAutomation", "Phase D test");
+
             int passed = 0;
             int failed = 0;
             string firstFailure = null;
@@ -31,7 +35,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 if (ok) { passed++; return; }
                 failed++;
                 firstFailure ??= name;
-                Log.Warning("[Rimconemy.InfectedAutomation] Phase D test FAILED: " + name);
+                Log.Error("[Rimconemy.InfectedAutomation] Phase D test FAILED: " + name);
             }
 
             // ── D1-D6: Calculator basics ──────────────────────
@@ -56,6 +60,9 @@ namespace Rimconemy.InfectedAutomation.Tests
                 "[Rimconemy.InfectedAutomation] Horde regression tests: "
                 + passed + " passed, " + failed + " failed" +
                 (firstFailure != null ? " (first failure: " + firstFailure + ")" : ""));
+
+            ts.Check(failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return passed;
         }
 

@@ -6,22 +6,26 @@ using Rimconemy.InfectedAutomation.Horde;
 using Rimconemy.InfectedAutomation.Population;
 using RimWorld;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.InfectedAutomation.Tests
 {
     public static class HordeMaterializationTests
     {
+        private static TestSuite ts;
         public const int ExpectedPassCount = 6;
 
         public static int RunAll()
         {
+            ts = new TestSuite("InfectedAutomation", "HordeManifest");
+
             int passed = 0, failed = 0; string firstFailure = null;
             void Check(bool ok, string name)
             {
                 if (ok) { passed++; return; }
                 failed++;
                 if (firstFailure == null) firstFailure = name;
-                Log.Warning("[Rimconemy.InfectedAutomation] HordeMaterialization test FAILED: " + name);
+                Log.Error("[Rimconemy.InfectedAutomation] HordeMaterialization test FAILED: " + name);
             }
 
             Check(T23_StampListPopulated(),           "T23.StampListPopulated");
@@ -34,6 +38,9 @@ namespace Rimconemy.InfectedAutomation.Tests
             Log.Message("[Rimconemy.InfectedAutomation] HordeMaterialization tests: "
                 + passed + " passed, " + failed + " failed"
                 + (firstFailure != null ? " (first: " + firstFailure + ")" : ""));
+
+            ts.Check(failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return passed;
         }
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Rimconemy.Foundation;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.Foundation.Tests
 {
@@ -37,6 +38,7 @@ namespace Rimconemy.Foundation.Tests
     /// </summary>
     public static class FoundationTimeConstantsRegressionTests
     {
+        private static TestSuite ts;
         private static readonly float TicksPerDayExpected = 60000f;
         private static readonly float TicksPerHourExpected = 2500f;
         private static readonly float TicksPerRealSecondExpected = 60f;
@@ -49,6 +51,8 @@ namespace Rimconemy.Foundation.Tests
 
         public static bool RunAll()
         {
+            ts = new TestSuite("Foundation", "TimeConstants regression tests");
+
             _passed = 0;
             _failed = 0;
             _failures.Clear();
@@ -80,6 +84,9 @@ namespace Rimconemy.Foundation.Tests
                 return false;
             }
             Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 

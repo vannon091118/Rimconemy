@@ -5,13 +5,17 @@
 
 using Rimconemy.InfectedAutomation.Population;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.InfectedAutomation.Tests
 {
     public static class AnimalInfectionLedgerFieldsTests
     {
+        private static TestSuite ts;
         public static int RunAll()
         {
+            ts = new TestSuite("InfectedAutomation", "AnimalInfectionLedgerFields test");
+
             int passed = 0, failed = 0;
             string firstFailure = null;
             void Check(bool ok, string name)
@@ -19,7 +23,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 if (ok) { passed++; return; }
                 failed++;
                 if (firstFailure == null) firstFailure = name;
-                Log.Warning("[Rimconemy.InfectedAutomation] AnimalInfectionLedgerFields test FAILED: " + name);
+                Log.Error("[Rimconemy.InfectedAutomation] AnimalInfectionLedgerFields test FAILED: " + name);
             }
 
             Check(T1_DefaultZeroes(),       "T9.LedgerDefaultZeroes");
@@ -31,6 +35,9 @@ namespace Rimconemy.InfectedAutomation.Tests
             Log.Message("[Rimconemy.InfectedAutomation] AnimalInfectionLedgerFields tests: "
                 + passed + " passed, " + failed + " failed"
                 + (firstFailure != null ? " (first: " + firstFailure + ")" : ""));
+
+            ts.Check(failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return passed;
         }
 

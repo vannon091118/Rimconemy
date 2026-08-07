@@ -5,22 +5,26 @@
 using Rimconemy.InfectedAutomation.Horde;
 using Rimconemy.InfectedAutomation.Population;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.InfectedAutomation.Tests
 {
     public static class HordeMigrationDriverTests
     {
+        private static TestSuite ts;
         public const int ExpectedPassCount = 10;
 
         public static int RunAll()
         {
+            ts = new TestSuite("InfectedAutomation", "HordeMigrationDriver test");
+
             int passed = 0, failed = 0; string firstFailure = null;
             void Check(bool ok, string name)
             {
                 if (ok) { passed++; return; }
                 failed++;
                 if (firstFailure == null) firstFailure = name;
-                Log.Warning("[Rimconemy.InfectedAutomation] HordeMigrationDriver test FAILED: " + name);
+                Log.Error("[Rimconemy.InfectedAutomation] HordeMigrationDriver test FAILED: " + name);
             }
 
             Check(T9_TileFsmIdleToMigrating(),       "T9.FsmIdleToMigrating");
@@ -37,6 +41,9 @@ namespace Rimconemy.InfectedAutomation.Tests
             Log.Message("[Rimconemy.InfectedAutomation] HordeMigrationDriver tests: "
                 + passed + " passed, " + failed + " failed"
                 + (firstFailure != null ? " (first: " + firstFailure + ")" : ""));
+
+            ts.Check(failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return passed;
         }
 

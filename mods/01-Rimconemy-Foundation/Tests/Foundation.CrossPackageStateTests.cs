@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Rimconemy.Foundation.CrossPackage;
 using Rimconemy.Foundation.Registry;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.Foundation.Tests
 {
@@ -20,12 +21,15 @@ namespace Rimconemy.Foundation.Tests
     /// </summary>
     public static class FoundationCrossPackageStateTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
         private static readonly List<string> _failures = new List<string>();
 
         public static bool RunAll()
         {
+            ts = new TestSuite("Foundation", "CrossPackageState tests");
+
             _passed = 0;
             _failed = 0;
             _failures.Clear();
@@ -49,6 +53,9 @@ namespace Rimconemy.Foundation.Tests
                 return false;
             }
             Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 

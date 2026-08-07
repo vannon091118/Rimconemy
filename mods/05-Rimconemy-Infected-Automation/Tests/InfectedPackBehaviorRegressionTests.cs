@@ -8,16 +8,20 @@
 using Rimconemy.InfectedAutomation.World;
 using RimWorld;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.InfectedAutomation.Tests
 {
     public static class InfectedPackBehaviorRegressionTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
         public static void RunAll()
         {
+            ts = new TestSuite("InfectedAutomation", "InfectedPackBehavior test");
+
             _passed = 0;
             _failed = 0;
             string firstFailure = null;
@@ -27,7 +31,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 if (ok) { _passed++; return; }
                 _failed++;
                 if (firstFailure == null) firstFailure = name;
-                Log.Warning("[Rimconemy.InfectedAutomation] InfectedPackBehavior test FAILED: " + name);
+                Log.Error("[Rimconemy.InfectedAutomation] InfectedPackBehavior test FAILED: " + name);
             }
 
             Check(TestWanderingStaysWhenNoColonist(),         "P1.WanderingStaysWhenNoColonist");
@@ -40,6 +44,9 @@ namespace Rimconemy.InfectedAutomation.Tests
                 "[Rimconemy.InfectedAutomation] InfectedPackBehavior regression tests (Phase C subset): "
                 + _passed + " passed, " + _failed + " failed."
                 + (firstFailure != null ? " First failure: " + firstFailure : ""));
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
         }
 
         private static bool TestWanderingStaysWhenNoColonist()

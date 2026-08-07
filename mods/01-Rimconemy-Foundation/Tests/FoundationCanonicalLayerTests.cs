@@ -5,6 +5,7 @@ using System.Reflection;
 using Rimconemy.Foundation.Canonical;
 using RimWorld;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.Foundation.Tests
 {
@@ -43,10 +44,13 @@ namespace Rimconemy.Foundation.Tests
     /// </summary>
     public static class FoundationCanonicalLayerTests
     {
+        private static TestSuite ts;
         public const int ExpectedPassCount = 22;
 
         public static int RunAll()
         {
+            ts = new TestSuite("Foundation", "Canonical layer tests");
+
             int passed = 0;
             int failed = 0;
             string firstFailure = null;
@@ -113,6 +117,9 @@ namespace Rimconemy.Foundation.Tests
                 "[Rimconemy.Foundation] Canonical layer tests: " + passed + " passed, " + failed +
                 " failed (min=" + ExpectedPassCount + ")." +
                 (firstFailure == null ? "" : " First failure: " + firstFailure));
+
+            ts.Check(failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return failed;
         }
 

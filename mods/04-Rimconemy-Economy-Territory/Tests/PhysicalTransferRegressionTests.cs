@@ -1,17 +1,21 @@
 using System.Collections.Generic;
 using Rimconemy.EconomyTerritory.Transfers;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.EconomyTerritory.Tests
 {
     /// <summary>Red-first gates for the physical Reserve/Execute/Cancel contract.</summary>
     public static class PhysicalTransferRegressionTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
         public static bool RunAll()
         {
+            ts = new TestSuite("EconomyTerritory", "Physical transfer regression tests");
+
             _passed = 0;
             _failed = 0;
 
@@ -29,6 +33,9 @@ namespace Rimconemy.EconomyTerritory.Tests
                 return false;
             }
             Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Rimconemy.SurvivalProgression.Needs;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.SurvivalProgression.Tests
 {
@@ -14,12 +15,15 @@ namespace Rimconemy.SurvivalProgression.Tests
     /// </summary>
     public static class NeedMappingServiceTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
         private static readonly List<string> _failures = new List<string>();
 
         public static bool RunAll()
         {
+            ts = new TestSuite("SurvivalProgression", "NeedMappingService tests");
+
             _passed = 0;
             _failed = 0;
             _failures.Clear();
@@ -53,6 +57,9 @@ namespace Rimconemy.SurvivalProgression.Tests
                 return false;
             }
             Verse.Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 

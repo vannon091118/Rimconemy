@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.ScavengerInfrastructure.Tests
 {
@@ -23,11 +24,14 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
     /// </summary>
     public static class StainlessSteelChainRegressionTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
         public static bool RunAll()
         {
+            ts = new TestSuite("ScavengerInfrastructure", "StainlessSteelChain regression tests");
+
             _passed = 0;
             _failed = 0;
 
@@ -50,6 +54,9 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             }
 
             Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 
@@ -74,7 +81,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 // Check products: 2 StainlessSteel
                 AssertTrue(recipe.products != null && recipe.products.Count > 0,
                     "S2.MakeStainlessSteel has products");
-                bool producesSS = recipe.products.Exists(p => 
+                bool producesSS = recipe.products.Exists(p =>
                     p.thingDef != null && p.thingDef.defName == "Rimconemy_StainlessSteel" && p.count == 2);
                 AssertTrue(producesSS, "S2.MakeStainlessSteel produces 2 Rimconemy_StainlessSteel");
             }
@@ -117,9 +124,9 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             {
                 AssertTrue(def.stuffProps.categories != null && def.stuffProps.categories.Any(c => c.defName == "Metallic"),
                     "S5.StainlessSteel has Metallic stuff category");
-                
+
                 // Find MaxHitPoints factor in statFactors list
-                bool hasMaxHPFactor = def.stuffProps.statFactors != null && def.stuffProps.statFactors.Any(s => 
+                bool hasMaxHPFactor = def.stuffProps.statFactors != null && def.stuffProps.statFactors.Any(s =>
                     s.stat != null && s.stat.defName == "MaxHitPoints" && s.value > 1.2f);
                 AssertTrue(hasMaxHPFactor, "S5.StainlessSteel has MaxHitPoints factor > 1.2");
             }

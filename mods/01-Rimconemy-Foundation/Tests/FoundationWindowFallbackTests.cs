@@ -2,6 +2,7 @@ using System;
 using Rimconemy.Foundation.UI;
 using UnityEngine;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 
 namespace Rimconemy.Foundation.Tests
@@ -33,10 +34,13 @@ namespace Rimconemy.Foundation.Tests
     /// </summary>
     public static class FoundationWindowFallbackTests
     {
+        private static TestSuite ts;
         public const int ExpectedPassCount = 5;
 
         public static void RunAll()
         {
+            ts = new TestSuite("Foundation", "Window-fallback tests");
+
             int passed = 0;
             try
             {
@@ -75,6 +79,9 @@ namespace Rimconemy.Foundation.Tests
                     "[Rimconemy.Foundation] FoundationWindowFallbackTests.RunAll crashed: "
                     + ex.GetType().Name + ": " + ex.Message);
             }
+
+            ts.Check(passed >= ExpectedPassCount, "legacy assertion aggregate");
+            ts.RunSummary(1);
         }
 
         // Widgets-Aufrufe crashen außerhalb eines aktiven OnGUI-Kontexts.

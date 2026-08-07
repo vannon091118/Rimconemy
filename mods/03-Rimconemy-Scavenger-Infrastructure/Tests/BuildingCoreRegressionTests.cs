@@ -4,6 +4,7 @@ using Rimconemy.ScavengerInfrastructure.Power;
 using Rimconemy.ScavengerInfrastructure.Resources;
 using Rimconemy.ScavengerInfrastructure.Storage;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.ScavengerInfrastructure.Tests
 {
@@ -14,11 +15,14 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
     /// </summary>
     public static class BuildingCoreRegressionTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
         public static bool RunAll()
         {
+            ts = new TestSuite("ScavengerInfrastructure", "BuildingCore regression tests");
+
             _passed = 0;
             _failed = 0;
 
@@ -38,6 +42,9 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             }
 
             Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 

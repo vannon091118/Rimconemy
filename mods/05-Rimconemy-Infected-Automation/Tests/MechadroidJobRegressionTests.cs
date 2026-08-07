@@ -1,17 +1,21 @@
 using System.Collections.Generic;
 using Rimconemy.InfectedAutomation.Mechadroids;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.InfectedAutomation.Tests
 {
     /// <summary>Red-first gates for the Milestone-B Mechadroid job contract.</summary>
     public static class MechadroidJobRegressionTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
         public static bool RunAll()
         {
+            ts = new TestSuite("InfectedAutomation", "Mechadroid job regression tests");
+
             _passed = 0;
             _failed = 0;
 
@@ -28,6 +32,9 @@ namespace Rimconemy.InfectedAutomation.Tests
                 return false;
             }
             Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 

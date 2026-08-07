@@ -1,6 +1,7 @@
 using Rimconemy.SurvivalProgression.Needs;
 using UnityEngine;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.SurvivalProgression.Tests
 {
@@ -23,10 +24,13 @@ namespace Rimconemy.SurvivalProgression.Tests
     /// </summary>
     public static class HungerAmplifierTests
     {
+        private static TestSuite ts;
         public const int ExpectedPassCount = 6;
 
         public static int RunAll()
         {
+            ts = new TestSuite("SurvivalProgression", "HungerAmplifier tests");
+
             int passed = 0;
             int failed = 0;
             string firstFailure = null;
@@ -36,7 +40,7 @@ namespace Rimconemy.SurvivalProgression.Tests
                 if (ok) { passed++; return; }
                 failed++;
                 if (firstFailure == null) firstFailure = name + (detail == null ? "" : " — " + detail);
-                Log.Warning("[Rimconemy.SurvivalProgression] HungerAmplifier test FAILED: " +
+                Log.Error("[Rimconemy.SurvivalProgression] HungerAmplifier test FAILED: " +
                     name + (detail == null ? "" : " — " + detail));
             }
 
@@ -51,6 +55,9 @@ namespace Rimconemy.SurvivalProgression.Tests
                 "[Rimconemy.SurvivalProgression] HungerAmplifier tests: " + passed + " passed, " +
                 failed + " failed (min=" + ExpectedPassCount + ")." +
                 (firstFailure == null ? "" : " First failure: " + firstFailure));
+
+            ts.Check(failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return failed;
         }
 

@@ -6,6 +6,7 @@ using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.Foundation.Tests
 {
@@ -34,6 +35,7 @@ namespace Rimconemy.Foundation.Tests
     /// </summary>
     public static class AntiSlopGuardTests
     {
+        private static TestSuite ts;
         private const int MaxViolationsBeforeBlock = 1;
 
         private static int _violationCount;
@@ -44,6 +46,8 @@ namespace Rimconemy.Foundation.Tests
 
         public static bool RunAll()
         {
+            ts = new TestSuite("Foundation", "AntiSlopGuard: no Rimconemy assemblies found to scan");
+
             _passed = 0;
             _failed = 0;
             _violationCount = 0;
@@ -55,7 +59,7 @@ namespace Rimconemy.Foundation.Tests
                 var assemblies = FindRimconemyAssemblies();
                 if (assemblies.Count == 0)
                 {
-                    Log.Warning("[Rimconemy.Foundation] AntiSlopGuard: no Rimconemy assemblies found to scan.");
+                    Log.Error("[Rimconemy.Foundation] AntiSlopGuard: no Rimconemy assemblies found to scan.");
                     return true;
                 }
 
@@ -95,6 +99,11 @@ namespace Rimconemy.Foundation.Tests
                     + ex.GetType().Name + ": " + ex.Message);
                 return false;
             }
+            finally
+            {
+                ts.Check(_failed == 0, "legacy assertion aggregate");
+                ts.RunSummary(1);
+            }
         }
 
         private static void ScanAssembly(string asmPath)
@@ -114,7 +123,7 @@ namespace Rimconemy.Foundation.Tests
             }
             catch (Exception ex)
             {
-                Log.Warning("[Rimconemy.Foundation] AntiSlopGuard: could not read " + asmName + ": " + ex.Message);
+                Log.Error("[Rimconemy.Foundation] AntiSlopGuard: could not read " + asmName + ": " + ex.Message);
                 return;
             }
 
@@ -283,7 +292,7 @@ namespace Rimconemy.Foundation.Tests
                         || afterBracket.Contains(" PASS");
                     if (!looksLikeLogPrefix) continue;
 
-                    Log.Warning("[Rimconemy.Foundation] AntiSlopGuard ENVELOPE-NOTE: "
+                    Log.Error("[Rimconemy.Foundation] AntiSlopGuard ENVELOPE-NOTE: "
                         + typeName + "::" + method.Name
                         + " uses bare prefix '" + s.Substring(0, Math.Min(s.Length, 50))
                         + "' — consider migrating to [Rimconemy.<Pkg>] format.");
@@ -371,7 +380,7 @@ namespace Rimconemy.Foundation.Tests
 
             if (_violationCount <= MaxViolationsBeforeBlock)
             {
-                Log.Warning("[Rimconemy.Foundation] AntiSlopGuard WARNING " + _violationCount
+                Log.Error("[Rimconemy.Foundation] AntiSlopGuard WARNING " + _violationCount
                     + "/" + MaxViolationsBeforeBlock + ": " + violation);
             }
             else

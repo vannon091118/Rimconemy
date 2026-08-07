@@ -10,16 +10,20 @@
 using System.Linq;
 using Rimconemy.InfectedAutomation.Population;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.InfectedAutomation.Tests
 {
     public static class PopulationProfileMultipliersRegressionTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
         public static void RunAll()
         {
+            ts = new TestSuite("InfectedAutomation", "PopulationProfileMultipliers test");
+
             _passed = 0;
             _failed = 0;
             string firstFailure = null;
@@ -29,7 +33,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 if (ok) { _passed++; return; }
                 _failed++;
                 if (firstFailure == null) firstFailure = name;
-                Log.Warning("[Rimconemy.InfectedAutomation] PopulationProfileMultipliers test FAILED: " + name);
+                Log.Error("[Rimconemy.InfectedAutomation] PopulationProfileMultipliers test FAILED: " + name);
             }
 
             Check(TestSupportedProfilesContainAllThree(),               "T1.SupportedProfilesContainAllThree");
@@ -46,6 +50,9 @@ namespace Rimconemy.InfectedAutomation.Tests
                 "[Rimconemy.InfectedAutomation] PopulationProfileMultipliers regression tests: "
                 + _passed + " passed, " + _failed + " failed."
                 + (firstFailure != null ? " First failure: " + firstFailure : ""));
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
         }
 
         private static bool TestSupportedProfilesContainAllThree()

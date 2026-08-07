@@ -1,5 +1,6 @@
 using Rimconemy.EconomyTerritory.Building;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.EconomyTerritory.Tests
 {
@@ -14,11 +15,14 @@ namespace Rimconemy.EconomyTerritory.Tests
     /// </summary>
     public static class BuildingInputRegressionTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
         public static bool RunAll()
         {
+            ts = new TestSuite("EconomyTerritory", "Building input regression tests");
+
             _passed = 0;
             _failed = 0;
 
@@ -63,6 +67,9 @@ namespace Rimconemy.EconomyTerritory.Tests
                 return false;
             }
             Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 

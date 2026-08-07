@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Reflection;
 using Rimconemy.InfectedAutomation.Story;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.InfectedAutomation.Tests
 {
     /// <summary>Regression tests for deterministic StoryState idempotency pruning.</summary>
     public static class StoryStateRegressionTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
@@ -18,6 +20,8 @@ namespace Rimconemy.InfectedAutomation.Tests
 
         public static bool RunAll()
         {
+            ts = new TestSuite("InfectedAutomation", "StoryState regression tests");
+
             _passed = 0;
             _failed = 0;
 
@@ -46,6 +50,9 @@ namespace Rimconemy.InfectedAutomation.Tests
                 return false;
             }
             Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 

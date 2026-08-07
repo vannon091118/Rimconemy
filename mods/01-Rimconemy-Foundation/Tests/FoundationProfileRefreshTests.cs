@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using Rimconemy.Foundation.Profile;
 using Rimconemy.Foundation.Registry;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.Foundation.Tests
 {
     /// <summary>Regression checks for late-bound feature package discovery.</summary>
     public static class FoundationProfileRefreshTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
@@ -22,6 +24,8 @@ namespace Rimconemy.Foundation.Tests
 
         public static bool RunAll()
         {
+            ts = new TestSuite("Foundation", "Profile refresh tests");
+
             _passed = 0;
             _failed = 0;
 
@@ -64,6 +68,9 @@ namespace Rimconemy.Foundation.Tests
                 return false;
             }
             Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 

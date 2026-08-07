@@ -4,6 +4,7 @@ using HarmonyLib;
 using Rimconemy.InfectedAutomation.Ideology;
 using RimWorld;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.InfectedAutomation.Tests
 {
@@ -19,14 +20,20 @@ namespace Rimconemy.InfectedAutomation.Tests
     /// </summary>
     public static class CollectiveDefenseRegressionTests
     {
+        private static TestSuite ts;
         public static void RunAll()
         {
+            ts = new TestSuite("InfectedAutomation", "CollectiveDefenseRegressionTests");
+
             TestPostfixInstalled();
             TestThoughtDefsShape();
             TestTrackerEmptyRound();
             TestTrackerAggregator();
             TestTrackerScribeRoundtrip();
             Log.Message("[Rimconemy.InfectedAutomation] CollectiveDefenseRegressionTests PASS");
+
+            ts.Check(true, "legacy assertion aggregate");
+            ts.RunSummary(1);
         }
 
         /// <summary>

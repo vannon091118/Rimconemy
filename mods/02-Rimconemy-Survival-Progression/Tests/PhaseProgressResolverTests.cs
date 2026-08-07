@@ -2,6 +2,7 @@ using System;
 using Rimconemy.SurvivalProgression.Phase;
 using RimWorld;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.SurvivalProgression.Tests
 {
@@ -14,10 +15,13 @@ namespace Rimconemy.SurvivalProgression.Tests
     /// </summary>
     public static class PhaseProgressResolverTests
     {
+        private static TestSuite ts;
         public const string TestGroup = "Rimconemy.SurvivalProgression";
 
         public static int RunAll()
         {
+            ts = new TestSuite("SurvivalProgression", "PhaseProgress regression tests");
+
             int failures = 0;
             int probes = 0;
 
@@ -91,6 +95,9 @@ namespace Rimconemy.SurvivalProgression.Tests
                 "[Rimconemy.SurvivalProgression] PhaseProgress regression tests: {0} passed, {1} failed",
                 passed, failures));
 
+
+            ts.Check(failures == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return failures;
         }
     }

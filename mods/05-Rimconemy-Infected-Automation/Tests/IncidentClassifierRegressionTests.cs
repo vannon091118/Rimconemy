@@ -1,6 +1,7 @@
 using Rimconemy.InfectedAutomation.Incidents;
 using RimWorld;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.InfectedAutomation.Tests
 {
@@ -13,13 +14,19 @@ namespace Rimconemy.InfectedAutomation.Tests
     /// </summary>
     public static class IncidentClassifierRegressionTests
     {
+        private static TestSuite ts;
         public static void RunAll()
         {
+            ts = new TestSuite("InfectedAutomation", "IncidentClassifierRegressionTests");
+
             TestSourceDetection();
             TestCategoryExtraction();
             TestValidatorDefault();
             TestBucketsNonNull();
             Log.Message("[Rimconemy.InfectedAutomation] IncidentClassifierRegressionTests PASS");
+
+            ts.Check(true, "legacy assertion aggregate");
+            ts.RunSummary(1);
         }
 
         private static void TestSourceDetection()

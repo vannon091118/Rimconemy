@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Rimconemy.InfectedAutomation.Scenarios;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.InfectedAutomation.Tests
 {
@@ -14,11 +15,14 @@ namespace Rimconemy.InfectedAutomation.Tests
     /// </summary>
     public static class StartEnemiesRegressionTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
         public static bool RunAll()
         {
+            ts = new TestSuite("InfectedAutomation", "StartEnemies regression tests");
+
             _passed = 0;
             _failed = 0;
 
@@ -78,6 +82,9 @@ namespace Rimconemy.InfectedAutomation.Tests
                 return false;
             }
             Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 

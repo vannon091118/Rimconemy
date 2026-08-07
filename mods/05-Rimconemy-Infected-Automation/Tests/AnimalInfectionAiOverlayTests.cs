@@ -8,20 +8,24 @@
 
 using Rimconemy.InfectedAutomation.Inoculation;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.InfectedAutomation.Tests
 {
     public static class AnimalInfectionAiOverlayTests
     {
+        private static TestSuite ts;
         public static int RunAll()
         {
+            ts = new TestSuite("InfectedAutomation", "AnimalInfectionAiOverlay test");
+
             int passed = 0, failed = 0; string firstFailure = null;
             void Check(bool ok, string name)
             {
                 if (ok) { passed++; return; }
                 failed++;
                 if (firstFailure == null) firstFailure = name;
-                Log.Warning("[Rimconemy.InfectedAutomation] AnimalInfectionAiOverlay test FAILED: " + name);
+                Log.Error("[Rimconemy.InfectedAutomation] AnimalInfectionAiOverlay test FAILED: " + name);
             }
 
             Check(T16_NullPawnReturnsFalse(),      "T16.OverlayNullPawn");
@@ -32,6 +36,9 @@ namespace Rimconemy.InfectedAutomation.Tests
             Log.Message("[Rimconemy.InfectedAutomation] AnimalInfectionAiOverlay tests: "
                 + passed + " passed, " + failed + " failed"
                 + (firstFailure != null ? " (first: " + firstFailure + ")" : ""));
+
+            ts.Check(failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return passed;
         }
 

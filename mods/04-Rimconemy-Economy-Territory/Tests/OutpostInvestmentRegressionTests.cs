@@ -1,17 +1,21 @@
 using System.Collections.Generic;
 using Rimconemy.EconomyTerritory.Outposts;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.EconomyTerritory.Tests
 {
     /// <summary>Red-first gates for Outpost investment and state persistence contracts.</summary>
     public static class OutpostInvestmentRegressionTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
         public static bool RunAll()
         {
+            ts = new TestSuite("EconomyTerritory", "Outpost investment regression tests");
+
             _passed = 0;
             _failed = 0;
 
@@ -30,6 +34,9 @@ namespace Rimconemy.EconomyTerritory.Tests
                 return false;
             }
             Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 

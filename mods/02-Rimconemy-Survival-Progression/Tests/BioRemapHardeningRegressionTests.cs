@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Rimconemy.SurvivalProgression.Character;
 using RimWorld;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.SurvivalProgression.Tests
 {
@@ -18,13 +19,19 @@ namespace Rimconemy.SurvivalProgression.Tests
     /// </summary>
     public static class BioRemapHardeningRegressionTests
     {
+        private static TestSuite ts;
         public static void RunAll()
         {
+            ts = new TestSuite("SurvivalProgression", "BioRemapHardeningRegressionTests");
+
             TestForceAge18Idempotent();
             TestForceAge18LastWriteWins();
             TestForceResetAllSkillsWipesBackstory();
             TestBudgetCapHoldsWithInflatedStart();
             Log.Message("[Rimconemy.SurvivalProgression] BioRemapHardeningRegressionTests PASS");
+
+            ts.Check(true, "legacy assertion aggregate");
+            ts.RunSummary(1);
         }
 
         private static void TestForceAge18Idempotent()

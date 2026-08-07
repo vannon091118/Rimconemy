@@ -2,6 +2,7 @@ using System;
 using Rimconemy.ScavengerInfrastructure.Building;
 using RimWorld;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.ScavengerInfrastructure.Tests
 {
@@ -21,6 +22,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
     /// </summary>
     public static class ArrowTurretBlockTests
     {
+        private static TestSuite ts;
         public const int ExpectedPassCount = 7;
 
         /// <summary>
@@ -44,6 +46,8 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
 
         public static int RunAll()
         {
+            ts = new TestSuite("ScavengerInfrastructure", "ArrowTurretBlock tests");
+
             int passed = 0;
             int failed = 0;
             string firstFailure = null;
@@ -77,6 +81,9 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 "[Rimconemy.ScavengerInfrastructure] ArrowTurretBlock tests: " +
                 passed + " passed, " + failed + " failed (min=" + ExpectedPassCount + ")." +
                 (firstFailure == null ? "" : " First failure: " + firstFailure));
+
+            ts.Check(failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return failed;
         }
 

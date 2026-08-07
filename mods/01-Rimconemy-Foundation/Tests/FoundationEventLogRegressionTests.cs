@@ -4,17 +4,21 @@ using System.Reflection;
 using Rimconemy.Foundation.Models;
 using Rimconemy.Foundation.Save;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.Foundation.Tests
 {
     /// <summary>Regression tests for the escape-aware Foundation event envelope.</summary>
     public static class FoundationEventLogRegressionTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
         public static bool RunAll()
         {
+            ts = new TestSuite("Foundation", "EventLog regression tests");
+
             _passed = 0;
             _failed = 0;
 
@@ -29,6 +33,9 @@ namespace Rimconemy.Foundation.Tests
                 return false;
             }
             Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 

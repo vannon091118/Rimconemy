@@ -1,17 +1,21 @@
 using System.Collections.Generic;
 using Rimconemy.EconomyTerritory.Wallet;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.EconomyTerritory.Tests
 {
     /// <summary>Regression tests for the durable CreditsLedger idempotency index.</summary>
     public static class CreditsLedgerRegressionTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
         public static bool RunAll()
         {
+            ts = new TestSuite("EconomyTerritory", "CreditsLedger regression tests");
+
             _passed = 0;
             _failed = 0;
 
@@ -28,6 +32,9 @@ namespace Rimconemy.EconomyTerritory.Tests
                 return false;
             }
             Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 

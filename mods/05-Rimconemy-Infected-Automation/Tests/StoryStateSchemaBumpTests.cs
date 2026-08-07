@@ -18,6 +18,7 @@ namespace Rimconemy.InfectedAutomation.Tests
     /// </summary>
     public static class StoryStateSchemaBumpTests
     {
+        private static TestSuite ts;
         public const int ExpectedPassCount = 6;
 
         /// <summary>Matches <see cref="StoryState.ClassId"/>;
@@ -26,6 +27,8 @@ namespace Rimconemy.InfectedAutomation.Tests
 
         public static int RunAll()
         {
+            ts = new TestSuite("InfectedAutomation", "StoryStateSchemaBump test");
+
             int passed = 0;
             int failed = 0;
             string firstFailure = null;
@@ -39,7 +42,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 if (ok) { passed++; return; }
                 failed++;
                 if (firstFailure == null) firstFailure = name;
-                Log.Warning("[Rimconemy.InfectedAutomation] StoryStateSchemaBump test FAILED: " + name);
+                Log.Error("[Rimconemy.InfectedAutomation] StoryStateSchemaBump test FAILED: " + name);
             }
 
             void CheckAndClean(bool ok, string name)
@@ -65,6 +68,9 @@ namespace Rimconemy.InfectedAutomation.Tests
                 "[Rimconemy.InfectedAutomation] StoryStateSchemaBump tests: " + passed +
                 " passed, " + failed + " failed (min=" + ExpectedPassCount + ")." +
                 (firstFailure == null ? "" : " First failure: " + firstFailure));
+
+            ts.Check(failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return failed;
         }
 

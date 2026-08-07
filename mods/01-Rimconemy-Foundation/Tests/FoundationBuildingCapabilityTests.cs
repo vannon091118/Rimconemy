@@ -2,17 +2,21 @@ using System.Collections.Generic;
 using Rimconemy.Foundation.Models;
 using Rimconemy.Foundation.Registry;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.Foundation.Tests
 {
     /// <summary>Regression gate for the canonical Building capability contract.</summary>
     public static class FoundationBuildingCapabilityTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
         public static bool RunAll()
         {
+            ts = new TestSuite("Foundation", "Building capability tests");
+
             _passed = 0;
             _failed = 0;
 
@@ -27,6 +31,9 @@ namespace Rimconemy.Foundation.Tests
                 return false;
             }
             Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 

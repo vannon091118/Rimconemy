@@ -5,6 +5,7 @@ using Rimconemy.ScavengerInfrastructure.Building;
 using Rimconemy.ScavengerInfrastructure.Storage;
 using RimWorld;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.ScavengerInfrastructure.Tests
 {
@@ -30,10 +31,13 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
     /// </summary>
     public static class BauschuttRemapApplyTests
     {
+        private static TestSuite ts;
         public const int ExpectedPassCount = 8;
 
         public static int RunAll()
         {
+            ts = new TestSuite("ScavengerInfrastructure", "BauschuttRemapApply tests");
+
             int passed = 0;
             int failed = 0;
             string firstFailure = null;
@@ -68,6 +72,9 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
                 "[Rimconemy.ScavengerInfrastructure] BauschuttRemapApply tests: " +
                 passed + " passed, " + failed + " failed (min=" + ExpectedPassCount + ")." +
                 (firstFailure == null ? "" : " First failure: " + firstFailure));
+
+            ts.Check(failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return failed;
         }
 
@@ -344,7 +351,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             }
             catch (Exception ex)
             {
-                Log.Warning("[Rimconemy.ScavengerInfrastructure] T8 exception: "
+                Log.Error("[Rimconemy.ScavengerInfrastructure] T8 exception: "
                     + ex.GetType().Name + ": " + ex.Message);
                 StorageWriteMutationService.ResetTestSeams();
                 return false;

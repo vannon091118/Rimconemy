@@ -5,20 +5,24 @@ using Rimconemy.InfectedAutomation.Inoculation;
 using Rimconemy.InfectedAutomation.Population;
 using Rimconemy.InfectedAutomation.Story;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.InfectedAutomation.Tests
 {
     public static class AnimalInfectionDriverTests
     {
+        private static TestSuite ts;
         public static int RunAll()
         {
+            ts = new TestSuite("InfectedAutomation", "AnimalInfectionDriver test");
+
             int passed = 0, failed = 0; string firstFailure = null;
             void Check(bool ok, string name)
             {
                 if (ok) { passed++; return; }
                 failed++;
                 if (firstFailure == null) firstFailure = name;
-                Log.Warning("[Rimconemy.InfectedAutomation] AnimalInfectionDriver test FAILED: " + name);
+                Log.Error("[Rimconemy.InfectedAutomation] AnimalInfectionDriver test FAILED: " + name);
             }
 
             Check(T9_TickIntervalConstant(), "T9.DriverTickIntervalConstant");
@@ -30,6 +34,9 @@ namespace Rimconemy.InfectedAutomation.Tests
             Log.Message("[Rimconemy.InfectedAutomation] AnimalInfectionDriver tests: "
                 + passed + " passed, " + failed + " failed"
                 + (firstFailure != null ? " (first: " + firstFailure + ")" : ""));
+
+            ts.Check(failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return passed;
         }
 

@@ -2,17 +2,21 @@ using System;
 using MarketModel = Rimconemy.EconomyTerritory.Market.Market;
 using Rimconemy.EconomyTerritory.Market;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.EconomyTerritory.Tests
 {
     /// <summary>Regression checks for the per-map Market save contract.</summary>
     public static class MarketPersistenceTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
         public static bool RunAll()
         {
+            ts = new TestSuite("EconomyTerritory", "Market persistence tests");
+
             _passed = 0;
             _failed = 0;
 
@@ -35,6 +39,9 @@ namespace Rimconemy.EconomyTerritory.Tests
                 return false;
             }
             Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 

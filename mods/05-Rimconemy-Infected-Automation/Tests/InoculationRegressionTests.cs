@@ -12,16 +12,20 @@ using Rimconemy.InfectedAutomation.Inoculation;
 using Rimconemy.InfectedAutomation.Story;
 using RimWorld;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.InfectedAutomation.Tests
 {
     public static class InoculationRegressionTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
         public static void RunAll()
         {
+            ts = new TestSuite("InfectedAutomation", "Inoculation test");
+
             _passed = 0;
             _failed = 0;
             string firstFailure = null;
@@ -31,7 +35,7 @@ namespace Rimconemy.InfectedAutomation.Tests
                 if (ok) { _passed++; return; }
                 _failed++;
                 if (firstFailure == null) firstFailure = name;
-                Log.Warning("[Rimconemy.InfectedAutomation] Inoculation test FAILED: " + name);
+                Log.Error("[Rimconemy.InfectedAutomation] Inoculation test FAILED: " + name);
             }
 
             // I1-I5: Selector pure-logic.
@@ -54,6 +58,9 @@ namespace Rimconemy.InfectedAutomation.Tests
                 "[Rimconemy.InfectedAutomation] Inoculation regression tests (Phase C subset): "
                 + _passed + " passed, " + _failed + " failed."
                 + (firstFailure != null ? " First failure: " + firstFailure : ""));
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
         }
 
         // ── I1: Same Seed → Same Candidate ────────────────

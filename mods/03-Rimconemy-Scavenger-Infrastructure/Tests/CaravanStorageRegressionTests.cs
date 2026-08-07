@@ -1,5 +1,6 @@
 using Rimconemy.ScavengerInfrastructure.Storage;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.ScavengerInfrastructure.Tests
 {
@@ -15,13 +16,19 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
     /// </summary>
     public static class CaravanStorageRegressionTests
     {
+        private static TestSuite ts;
         public static void RunAll()
         {
+            ts = new TestSuite("ScavengerInfrastructure", "CaravanStorageRegressionTests PASS");
+
             TestSentinelEncoding();
             TestSentinelDecoding();
             TestSentinelRoundtrip();
             TestEmptySnapshotPath();
             Log.Message("[Rimconemy.ScavengerInfrastructure] CaravanStorageRegressionTests PASS");
+
+            ts.Check(true, "legacy assertion aggregate");
+            ts.RunSummary(1);
         }
 
         private static void TestSentinelEncoding()

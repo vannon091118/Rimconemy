@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Rimconemy.InfectedAutomation.Story;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.InfectedAutomation.Tests
 {
@@ -17,6 +18,7 @@ namespace Rimconemy.InfectedAutomation.Tests
     /// </summary>
     public static class StorySelectorTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
         private static readonly List<string> _failures = new List<string>();
@@ -24,6 +26,8 @@ namespace Rimconemy.InfectedAutomation.Tests
         /// <summary>Run all tests. Returns true if all passed.</summary>
         public static bool RunAll()
         {
+            ts = new TestSuite("InfectedAutomation", "StorySelector tests");
+
             _passed = 0;
             _failed = 0;
             _failures.Clear();
@@ -59,6 +63,9 @@ namespace Rimconemy.InfectedAutomation.Tests
             }
 
             Verse.Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 

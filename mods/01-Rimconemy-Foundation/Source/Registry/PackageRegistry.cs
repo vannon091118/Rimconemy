@@ -166,7 +166,7 @@ namespace Rimconemy.Foundation.Registry
             // the Full Overhaul profile truthful when all packages are loaded.
             Register(new PackageDescriptor(
                 packageId: "rimconemy.foundation",
-                packageVersion: "0.1.40",
+                packageVersion: "0.1.41",
                 saveSchemaVersion: 1,
                 capabilities: new List<Capability>
                 {
@@ -213,7 +213,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.SurvivalProgression",
                 packageId: "rimconemy.survivalprogression",
-                packageVersion: "0.1.49",
+                packageVersion: "0.1.50",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.survivalprogression.needs", 1),
@@ -223,7 +223,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.ScavengerInfrastructure",
                 packageId: "rimconemy.scavengerinfrastructure",
-                packageVersion: "0.0.28",
+                packageVersion: "0.0.29",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.scavengerinfrastructure.resources", 1),
@@ -234,7 +234,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.EconomyTerritory",
                 packageId: "rimconemy.economyterritory",
-                packageVersion: "0.0.29",
+                packageVersion: "0.0.30",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.economyterritory.wallet", 1),
@@ -246,7 +246,7 @@ namespace Rimconemy.Foundation.Registry
             TryRegisterLoadedAssembly(
                 assemblyName: "Rimconemy.InfectedAutomation",
                 packageId: "rimconemy.infectedautomation",
-                packageVersion: "0.0.73",
+                packageVersion: "0.0.74",
                 capabilities: new[]
                 {
                     new Capability("rimconemy.infectedautomation.threat", 1),

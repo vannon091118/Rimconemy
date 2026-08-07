@@ -9,6 +9,7 @@ using Verse;
 // for the design rationale.
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.Foundation.Tests
 {
@@ -43,6 +44,7 @@ namespace Rimconemy.Foundation.Tests
     /// </summary>
     public static class FoundationHonestBannerAudit
     {
+        private static TestSuite ts;
         public const int ExpectedPassCount = 3;
 
         // Bewusst hartkodiert: dieser Test feuert nur, wenn jemand die Liste
@@ -75,6 +77,8 @@ namespace Rimconemy.Foundation.Tests
 
         public static bool RunAll()
         {
+            ts = new TestSuite("Foundation", "Honest-Banner-Audit tests");
+
             _passed = 0;
             _failed = 0;
             _failures.Clear();
@@ -104,6 +108,11 @@ namespace Rimconemy.Foundation.Tests
                 Log.Error("[Rimconemy.Foundation] FoundationHonestBannerAudit.RunAll crashed: "
                     + ex.GetType().Name + ": " + ex.Message);
                 return false;
+            }
+            finally
+            {
+                ts.Check(_failed == 0, "legacy assertion aggregate");
+                ts.RunSummary(1);
             }
         }
 

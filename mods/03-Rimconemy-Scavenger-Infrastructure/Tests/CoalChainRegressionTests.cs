@@ -3,6 +3,7 @@ using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.ScavengerInfrastructure.Tests
 {
@@ -23,11 +24,14 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
     /// </summary>
     public static class CoalChainRegressionTests
     {
+        private static TestSuite ts;
         private static int _passed;
         private static int _failed;
 
         public static bool RunAll()
         {
+            ts = new TestSuite("ScavengerInfrastructure", "CoalChain regression tests");
+
             _passed = 0;
             _failed = 0;
 
@@ -51,6 +55,9 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             }
 
             Log.Message(summary);
+
+            ts.Check(_failed == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return true;
         }
 
@@ -96,7 +103,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             {
                 AssertTrue(recipe.products != null && recipe.products.Count > 0,
                     "C4.MakeCoal has products");
-                bool producesCoal = recipe.products.Exists(p => 
+                bool producesCoal = recipe.products.Exists(p =>
                     p.thingDef != null && p.thingDef.defName == "Rimconemy_Coal" && p.count == 4);
                 AssertTrue(producesCoal, "C4.MakeCoal produces 4 Rimconemy_Coal");
             }
@@ -111,7 +118,7 @@ namespace Rimconemy.ScavengerInfrastructure.Tests
             {
                 AssertTrue(recipe.products != null && recipe.products.Count > 0,
                     "C5.SalvageMachineParts has products");
-                bool producesParts = recipe.products.Exists(p => 
+                bool producesParts = recipe.products.Exists(p =>
                     p.thingDef != null && p.thingDef.defName == "Rimconemy_MachineParts" && p.count == 1);
                 AssertTrue(producesParts, "C5.SalvageMachineParts produces 1 Rimconemy_MachineParts");
             }

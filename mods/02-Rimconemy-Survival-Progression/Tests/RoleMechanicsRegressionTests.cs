@@ -5,13 +5,17 @@ using Rimconemy.SurvivalProgression.Character.Farming;
 using Rimconemy.SurvivalProgression.Character.Roles;
 using RimWorld;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.SurvivalProgression.Tests
 {
     public static class RoleMechanicsRegressionTests
     {
+        private static TestSuite ts;
         public static int RunAll()
         {
+            ts = new TestSuite("SurvivalProgression", "Role mechanics regression tests");
+
             int failures = 0;
             Check(ref failures, Math.Abs(BuilderDurability.HitPointFactor(1) - 1f) < 0.001f, "Builder HP skill 1 = 1.00");
             Check(ref failures, Math.Abs(BuilderDurability.HitPointFactor(20) - 1.5f) < 0.001f, "Builder HP skill 20 = 1.50");
@@ -34,6 +38,9 @@ namespace Rimconemy.SurvivalProgression.Tests
             Check(ref failures, HasComp<ThingDef>("MealSimple", typeof(CompProperties_CookSkill)), "Cook comp inherited by MealSimple");
             Check(ref failures, HasComp<ThingDef>("MealFine", typeof(CompProperties_CookSkill)), "Cook comp inherited by MealFine");
             Log.Message("[Rimconemy.SurvivalProgression] Role mechanics regression tests: " + (15 - failures) + " passed, " + failures + " failed");
+
+            ts.Check(failures == 0, "legacy assertion aggregate");
+            ts.RunSummary(1);
             return failures;
         }
 

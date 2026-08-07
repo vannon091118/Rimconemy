@@ -1,6 +1,7 @@
 using Rimconemy.InfectedAutomation.Ideology;
 using RimWorld;
 using Verse;
+using Rimconemy.Foundation.Tests;
 
 namespace Rimconemy.InfectedAutomation.Tests
 {
@@ -14,13 +15,19 @@ namespace Rimconemy.InfectedAutomation.Tests
     /// </summary>
     public static class TransparencyRegressionTests
     {
+        private static TestSuite ts;
         public static void RunAll()
         {
+            ts = new TestSuite("InfectedAutomation", "TransparencyRegressionTests");
+
             TestThoughtDefsShape();
             TestTrackerCounters();
             TestTrackerScribe();
             TestUnexplainedCumulativeStages();
             Log.Message("[Rimconemy.InfectedAutomation] TransparencyRegressionTests PASS");
+
+            ts.Check(true, "legacy assertion aggregate");
+            ts.RunSummary(1);
         }
 
         private static void TestThoughtDefsShape()
