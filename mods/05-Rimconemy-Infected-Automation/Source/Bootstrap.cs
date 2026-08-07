@@ -13,7 +13,10 @@
 // Rimconemy.ScavengerInfrastructure (03). Survival (02) is reached via the
 // Foundation servicebus. Economy (04) is reached via the late-bound
 // reflection bridge in Foundation.CrossPackageState (audit-bundle B / F-01).
+using System.Linq;
 using Rimconemy.InfectedAutomation.Scenarios;
+using RimWorld;
+using UnityEngine;
 using Verse;
 
 namespace Rimconemy.InfectedAutomation
@@ -66,7 +69,7 @@ namespace Rimconemy.InfectedAutomation
             Scenarios.TutorialTriggerBridge.Initialize();
             Log.Message("[Rimconemy.InfectedAutomation] TutorialTriggerBridge ready.");
 
-            // RimPad Tabs (UX-Audit 2026-08-07): Guide, Threat, Diagnostics
+            // RimPad Tabs (UX-Audit 2026-08-07): Guide, Threat, Diagnostics, Survival, Infrastructure, Economy
             try
             {
                 Rimconemy.Foundation.UI.RimPadWindow.GuideTabDrawer =
@@ -75,7 +78,13 @@ namespace Rimconemy.InfectedAutomation
                     rect => UI.ThreatDashboard.DrawRimPadContent(rect);
                 Rimconemy.Foundation.UI.RimPadWindow.DiagnosticsTabDrawer =
                     rect => Foundation.UI.RimconemyUi.DrawDiagnosticsContent(rect);
-                Log.Message("[Rimconemy.InfectedAutomation] RimPad tabs registered: Guide, Threat, Diagnostics.");
+                Rimconemy.Foundation.UI.RimPadWindow.SurvivalTabDrawer =
+                    rect => DrawSurvivalRimPadContent(rect);
+                Rimconemy.Foundation.UI.RimPadWindow.InfrastructureTabDrawer =
+                    rect => DrawInfrastructureRimPadContent(rect);
+                Rimconemy.Foundation.UI.RimPadWindow.EconomyTabDrawer =
+                    rect => DrawEconomyRimPadContent(rect);
+                Log.Message("[Rimconemy.InfectedAutomation] RimPad tabs registered: Guide, Threat, Diagnostics, Survival, Infrastructure, Economy.");
             }
             catch (System.Exception ex)
             {
@@ -207,6 +216,178 @@ namespace Rimconemy.InfectedAutomation
             {
                 Log.Warning("[Rimconemy.InfectedAutomation] IncidentClassifier.Bootstrap-summary failed: " + ex.GetType().Name + ": " + ex.Message);
             }
+        }
+
+        // ── RimPad Content Drawers ──────────────────────────
+
+        private static void DrawSurvivalRimPadContent(Rect rect)
+        {
+            var colonists = Foundation.Colonials.ColonialReader.GetActiveColonists();
+            float y = rect.y + 10f;
+            float w = rect.width - 20f;
+
+            Text.Font = GameFont.Medium;
+            Widgets.Label(new Rect(rect.x + 10f, y, w, 30f), "Überleben");
+            y += 35f;
+
+            Text.Font = GameFont.Small;
+            Widgets.Label(new Rect(rect.x + 10f, y, w, 22f),
+                $"Kolonisten: {colonists.Count}");
+            y += 24f;
+
+            if (colonists.Count > 0)
+            {
+                float avgHealth = colonists.Average(p =>
+                    p.health?.summaryHealth?.SummaryHealthPercent ?? 0.5f);
+                float avgMood = colonists.Average(p =>
+                    p.needs?.mood?.CurLevel ?? 0.5f);
+
+                Widgets.Label(new Rect(rect.x + 10f, y, w, 22f),
+                    $"Ø Gesundheit: {avgHealth:P0}");
+                y += 24f;
+                Widgets.Label(new Rect(rect.x + 10f, y, w, 22f),
+                    $"Ø Stimmung: {avgMood:P0}");
+                y += 24f;
+
+                // List colonist names + health
+                y += 8f;
+                Widgets.Label(new Rect(rect.x + 10f, y, w, 20f), "Kolonisten:");
+                y += 20f;
+                foreach (var p in colonists.Take(12))
+                {
+                    float hp = p.health?.summaryHealth?.SummaryHealthPercent ?? 0.5f;
+                    string moodIcon = hp > 0.8f ? "●" : hp > 0.5f ? "◐" : "○";
+                    Widgets.Label(new Rect(rect.x + 20f, y, w - 10f, 18f),
+                        $"{moodIcon} {p.LabelShort}  ({hp:P0})");
+                    y += 18f;
+                    if (y > rect.yMax - 20f) break;
+                }
+            }
+            else
+            {
+                Widgets.Label(new Rect(rect.x + 10f, y, w, 22f),
+                    "Keine Kolonisten — neues Spiel starten.");
+            }
+
+            Text.Font = GameFont.Small;
+        }
+
+        private static void DrawInfrastructureRimPadContent(Rect rect)
+        {
+            float y = rect.y + 10f;
+            float w = rect.width - 20f;
+
+            Text.Font = GameFont.Medium;
+            Widgets.Label(new Rect(rect.x + 10f, y, w, 30f), "Infrastruktur");
+            y += 35f;
+
+            Text.Font = GameFont.Small;
+
+            // Power status via MapRegistry
+            bool powerActive = false;
+            int buildingCount = 0;
+            var maps = Foundation.Maps.MapRegistry.GetPlayerHomeMaps();
+            foreach (var map in maps)
+            {
+                if (map == null) continue;
+                var buildings = map.listerBuildings?.allBuildingsColonist;
+                if (buildings == null) continue;
+                buildingCount += buildings.Count;
+                for (int i = 0; i < buildings.Count && !powerActive; i++)
+                {
+                    var comp = buildings[i]?.TryGetComp<CompPowerTrader>();
+                    if (comp != null && comp.PowerOn) powerActive = true;
+                }
+            }
+
+            Widgets.Label(new Rect(rect.x + 10f, y, w, 22f),
+                $"Gebäude: {buildingCount}");
+            y += 24f;
+            Widgets.Label(new Rect(rect.x + 10f, y, w, 22f),
+                $"Stromnetz: {(powerActive ? "Aktiv ✓" : "Inaktiv")}");
+            y += 28f;
+
+            // Storage snapshot via StorageQuery bridge (Pkg 03)
+            try
+            {
+                var storage = ScavengerInfrastructure.Storage.StorageQuery.ReadStorage(
+                    ScavengerInfrastructure.Storage.StorageScope.PlayerHomeMaps,
+                    null, Find.TickManager?.TicksGame ?? 0L);
+                if (storage?.Entries != null && storage.Entries.Count > 0)
+                {
+                    Widgets.Label(new Rect(rect.x + 10f, y, w, 20f), "Lagerbestand:");
+                    y += 20f;
+                    foreach (var entry in storage.Entries.Take(10))
+                    {
+                        Widgets.Label(new Rect(rect.x + 20f, y, w - 10f, 18f),
+                            $"{entry.ResourceId}: {entry.TotalAmount:F0}");
+                        y += 18f;
+                        if (y > rect.yMax - 20f) break;
+                    }
+                }
+                else
+                {
+                    Widgets.Label(new Rect(rect.x + 10f, y, w, 22f),
+                        "Keine Ressourcen gelagert.");
+                }
+            }
+            catch (System.Exception)
+            {
+                Widgets.Label(new Rect(rect.x + 10f, y, w, 22f),
+                    "StorageQuery nicht verfügbar (Mod 03 fehlt?).");
+            }
+
+            Text.Font = GameFont.Small;
+        }
+
+        private static void DrawEconomyRimPadContent(Rect rect)
+        {
+            float y = rect.y + 10f;
+            float w = rect.width - 20f;
+
+            Text.Font = GameFont.Medium;
+            Widgets.Label(new Rect(rect.x + 10f, y, w, 30f), "Wirtschaft");
+            y += 35f;
+
+            Text.Font = GameFont.Small;
+
+            // Wallet balance via CrossPackageState reflection bridge
+            if (Foundation.CrossPackage.CrossPackageState.TryReadWalletBalance(out long balance))
+            {
+                Widgets.Label(new Rect(rect.x + 10f, y, w, 22f),
+                    $"Credits: {balance:N0} ₵");
+                y += 28f;
+            }
+            else
+            {
+                Widgets.Label(new Rect(rect.x + 10f, y, w, 22f),
+                    "Credits: nicht verfügbar (Mod 04 fehlt?)");
+                y += 28f;
+            }
+
+            // Day counter
+            long tick = Find.TickManager?.TicksGame ?? 0L;
+            int day = (int)(tick / 60000L);
+            Widgets.Label(new Rect(rect.x + 10f, y, w, 22f),
+                $"Tag: {day}");
+            y += 24f;
+
+            // Threat pressure (shared with Threat tab context)
+            var director = Story.StoryDirector.Get();
+            if (director?.LastSnapshot != null)
+            {
+                var snap = director.LastSnapshot;
+                Widgets.Label(new Rect(rect.x + 10f, y, w, 22f),
+                    $"Bedrohung: {snap.ThreatPressure:P0}");
+                y += 24f;
+                Widgets.Label(new Rect(rect.x + 10f, y, w, 22f),
+                    $"Kolonie-Reichtum: {snap.ColonyWealth:N0}");
+                y += 24f;
+                Widgets.Label(new Rect(rect.x + 10f, y, w, 22f),
+                    $"Profil: {director.ActiveProfile?.ProfileId ?? "?"}");
+            }
+
+            Text.Font = GameFont.Small;
         }
     }
 }
