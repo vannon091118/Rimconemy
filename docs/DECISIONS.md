@@ -796,28 +796,83 @@ Outpost konsumiert/produziert physisch + Investment-Caller (§31)
 
 Diese Kette ersetzt die in §17/§D-Phase-First zuvor angedachte „Bauschutt-als-Wand"-Linie und ist die kanonische Phase-First-Reihenfolge.
 
-## 34. Phase-5 Storyteller-/Incident-Probe (D-Spike-Result 2026-08-05)
+## 34. Eigener StorytellerDef — Rimconemy ersetzt Vanilla-Storyteller (KORRIGIERT 2026-08-07)
 
-**Status:** ✅ Spike-Ergebnis entschieden, kein direkter StorytellerDef benötigt.
+**Status:** ✅ User-korrigiert — vorherige Agent-Annahme zurückgenommen.
 
-**Entscheidung:** Rimconemy betreibt **keinen** eigenen `StorytellerDef`. Der `Setting-Director`-Pattern aus §3 bleibt die kanonische Spieler-Schicht; Vanilla-Storyteller (`Cassandra`, `Phoebe`, `Rand`) bleibt autoritativ für Wealth-Raids, Quests und DLC-Incidents.
+> ⚠️ **Korrektur 2026-08-07:** Die ursprüngliche Fassung dieses Paragraphen ("kein eigener StorytellerDef") war eine **Agent-Fehlannahme**, nicht die User-Entscheidung. Der User hat klargestellt: Am Ende soll **NUR der Rimconemy-Storyteller** im Auswahlbildschirm erscheinen. Cassandra, Phoebe und Randy werden **ersetzt**, nicht ergänzt.
+
+**Entscheidung:** Rimconemy registriert einen **eigenen `StorytellerDef`** (`Rimconemy_Storyteller`), der als einziger Storyteller auswählbar ist. Die Vanilla-Storyteller (`Cassandra`, `Phoebe`, `Rand`) werden via XML-Patch auf `<hidden>true</hidden>` gesetzt und sind nicht mehr sichtbar.
 
 **Begründung:**
-- Klassifikations-Probe (`StorytellerInventory.cs`, `mods/01/Catalog/`) enumeriert `DefDatabase<StorytellerDef>` und meldet Counts per `PackageId`. Es registriert keinen eigenen Def — Phase-Spike-Ergebnis.
-- Klassifikations-Probe (`IncidentClassifier.cs`, `mods/05/Source/Incidents/`) klassifiziert jeden `IncidentDef` als Rimconemy/Vanilla/DLC. Single-Infected-Provider-Invariante (`Rimconemy_InfectedRaidIncident` genau 1× geladen) wird bei Bootstrap geprüft.
-- Story-Auswahl (Director) + Incident-Fire (Letter-Weg → RimWorld-Storyteller) ist schon deterministic + idempotent (§H2 §5, §SAVE_CONTRACT §3).
+- Vollständige Kontrolle über Incident-Timing, -Auswahl und -Pacing.
+- Kein Wettlauf mit Vanilla-Storyteller um die IncidentQueue (aktuell feuern beide parallel).
+- Der Spieler sieht nur EINEN Storyteller — die UX ist eindeutig.
+- Rimconemy-eigene Schwierigkeits-Skalierung (SettingProfile) ersetzt Vanilla-Difficulty.
+- DLC-Incidents können selektiv durchgereicht oder unterdrückt werden.
+
+**Architektur:**
+```
+Rimconemy_Storyteller (StorytellerDef)
+  ├── listOrder: -100 (erscheint vor allen anderen)
+  ├── RimconemyStorytellerComp (StorytellerComp)
+  │     ├── IncidentCycleTick() → tägliche Evaluation
+  │     ├── Szenario-gebundene Startbedingungen
+  │     └── ThreatPressure-basierte Incident-Auswahl
+  └── Vanilla-StorytellerComps (optional durchgereicht)
+        └── Nur wenn DLC-Incidents gewünscht sind
+```
+
+**XML-Patch-Strategie (Vanilla-Storyteller ausblenden):**
+```xml
+<!-- Patches/HideVanillaStorytellers.xml -->
+<Patch>
+  <Operation Class="PatchOperationFindMod">
+    <mods><li>Rimconemy.Foundation</li></mods>
+    <match Class="PatchOperationSequence">
+      <operations>
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/StorytellerDef[defName="Cassandra"]</xpath>
+          <value><hidden>true</hidden></value>
+        </li>
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/StorytellerDef[defName="Phoebe"]</xpath>
+          <value><hidden>true</hidden></value>
+        </li>
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/StorytellerDef[defName="Randy"]</xpath>
+          <value><hidden>true</hidden></value>
+        </li>
+      </operations>
+    </match>
+  </Operation>
+</Patch>
+```
+
+**Migration vom aktuellen GameComponent-Ansatz:**
+- `StoryDirector.GameComponentTick` (60k-Intervall) → `RimconemyStorytellerComp.IncidentCycleTick()` (per-Tick)
+- `BuildLiveSnapshot()` → bleibt als statische Methode, wird aus dem Comp aufgerufen
+- `QueueSelectedIncident()` → entfällt; der Comp feuert Incidents direkt via `TryFire(fi, queued:false)`
+- `StorySelector` → bleibt als Pure-Logic-Klasse (keine RimWorld-Abhängigkeit)
+
+**DLC-Forwarding:**
+- Der RimconemyStorytellerComp kann optional einen Vanilla-`StorytellerComp` (z.B. `StorytellerComp_RandomMain`) als Sub-Comp instanziieren, um DLC-Incidents (Quests, Anomaly-Entities) durchzureichen.
+- Alternativ: Alle Incidents exklusiv durch Rimconemy feuern. DLC-Incidents werden über `IncidentClassifier` erkannt und können via `TryFire` manuell ausgelöst werden.
 
 **Folge:**
-- Keine PatchOperationWrite in `StorytellerDef.parts` oder `StorytellerComp` — Vanilla-Verhalten bleibt maßgeblich.
-- Mod-05-Bootstrap emittiert eine Summary-Line: `IncidentClassifier: total=N, Rimconemy=X, Vanilla=Y, DLC/Quest=Z, InfectedProvider-1-of-1=OK`.
-- Mod-01-Bootstrap emittiert eine StorytellerInventory-Summary-Line: `StorytellerInventory: total=N, Rimconemy=X, Vanilla=Y, DLC/Quest=Z (Phase-5 Probe; no custom StorytellerDef registered — DECISIONS §21)`.
-- Falsifizierung: `earlygame__Survivor.md` und `infected__AutoResolve.md` tragen die Phase-5-Sub-Gates in den Live-Test-Pfaden.
+- `StorytellerInventory.cs` wird von "Probe" zu "Registrierungs-Validator" umgewidmet: Prüft dass genau 1 Rimconemy-StorytellerDef geladen ist und 0 Vanilla sichtbar sind.
+- `StoryDirector` wird zu `RimconemyStorytellerComp` umgebaut (GameComponent → StorytellerComp).
+- `SettingProfile`-Mapping zieht von `Find.Storyteller.difficultyDef` auf eigene Difficulty-Property im StorytellerDef um.
+- Falsifizierung: Neues Gate `storyteller__SingleSelectable` prüft dass im Storyteller-Auswahlbildschirm nur Rimconemy erscheint.
 
-**Eigentum:** Mod 01 (Foundation) ist Owner der Probe-Klassen und der Summary-Emission. Mod 05 (Infected & Automation) bleibt Owner der Incident-Klassifikation und Single-Provider-Invariante.
+**Eigentum:** Mod 05 (Infected & Automation) ist Owner des StorytellerDef und des StorytellerComp. Mod 01 (Foundation) validiert die Single-Storyteller-Invariante beim Bootstrap.
 
-**Bezug zu §21 & §15-§19:** §15 (DLC-Content-Policy) liefert die Suppress/PassThrough-Tabelle, die §34 als Vanilla-Default voraussetzt. §21 (Harmony-Strategie) bleibt unberührt — die Probe liest ausschließlich DefDatabase.
+**Offene Fragen:**
+- Sollen DLC-Incidents (Quests, Anomaly-Entities) durchgereicht oder komplett durch Rimconemy-Events ersetzt werden?
+- Soll der Spieler weiterhin eine Difficulty wählen können (die dann auf SettingProfile mappt) oder entfällt die Difficulty-Auswahl?
+- Wie werden vorhandene Saves migriert, die mit Cassandra/Phoebe/Randy gestartet wurden?
 
-**Nicht behauptet:** §34 belegt keinen Live-Save/Load mit Storyteller-Reproduzierbarkeit. Live-Gates bleiben in `earlygame__Survivor.md`.
+**Nicht behauptet:** Der StorytellerDef, der StorytellerComp und die Vanilla-Hide-Patches sind noch nicht implementiert. Dies ist die Design-Entscheidung, nicht der Code-Beleg.
 
 ---
 

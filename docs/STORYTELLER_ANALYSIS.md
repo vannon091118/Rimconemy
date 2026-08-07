@@ -1,9 +1,9 @@
 # STORYTELLER_ANALYSIS — RimWorld Vanilla Storyteller & Rimconemy Injection
 
 > **Date:** 2026-08-07  
-> **Status:** Architecture analysis — how RimWorld storytellers work, what we can hook, what we can't  
-> **Related:** `docs/DECISIONS.md §34`, `docs/H2-story-contract.md`, `docs/REFACTORING_PLAN.md`  
-> **Decision:** We do NOT use a custom StorytellerDef (DECISIONS §34). We inject via `FiringIncident` + `TryFire(queued:true)`.
+> **Status:** Architecture analysis — KORRIGIERT 2026-08-07: User-Entscheidung = eigener StorytellerDef, Vanilla wird ERSETZT  
+> **Related:** `docs/DECISIONS.md §34` (korrigiert), `docs/H2-story-contract.md`, `docs/REFACTORING_PLAN.md`  
+> **Decision:** Rimconemy registriert EINEN StorytellerDef. Cassandra/Phoebe/Randy werden via XML-Patch versteckt.
 
 ---
 
@@ -54,25 +54,26 @@ Storyteller.StorytellerTick()
 | `IncidentWorker (base class)` | Our `InfectedRaidWorker` extends this; `CanFireNowSub` + `TryExecuteWorker` | `InfectedRaidWorker.cs` |
 | `DefDatabase<IncidentDef>.GetNamedSilentFail()` | Resolve our custom IncidentDef at runtime | `StoryDirector.cs:310` |
 
-### 1.4 What We CANNOT Do (Without Replacing Vanilla Storyteller)
-
-| Goal | Feasibility | Reason |
-|------|------------|--------|
-| **Replace vanilla storyteller entirely** | ❌ | Would require a custom `StorytellerDef` + rimworld XML patching. This would REMOVE Cassandra/Phoebe/Randy and all their incident logic. DECISIONS §34 explicitly rejected this. |
-| **Intercept/mute vanilla incidents** | ❌ | The `TryFire` call chain is not virtual — we'd need a Harmony Patch on Storyteller.TryFire, which is fragile and conflicts with other mods. |
-| **Modify storytellerComps at runtime** | ⚠️ Risky | `storytellerComps` is a public list, but mutating it would affect all mods. Other mods may add/remove comps. |
-| **Read incidentQueue contents** | ⚠️ Partial | `IncidentQueue` is public, but `IncidentQueueEntry` fields are mostly private. We can check `Count` but not individual entries. |
-
-### 1.5 What We CAN Do
+### 1.4 What We CAN Do — Pivot to Full Replacement
 
 | Goal | How | Status |
 |------|-----|--------|
-| **Inject custom incidents** | `FiringIncident` + `TryFire(queued:true)` → pushes onto incidentQueue | ✅ Already implemented |
-| **Run alongside vanilla storyteller** | Our `GameComponentTick` (60,000 tick interval) evaluates independently; vanilla storyteller continues its own cycle | ✅ Already implemented |
-| **Read vanilla difficulty** | `Find.Storyteller.difficultyDef` → map to Rimconemy SettingProfile | ✅ `ResolveProfileFromDifficulty()` |
-| **Read game state** | Colony wealth, pawns, mood, power, factions, storage — all through Foundation contracts | ✅ `BuildLiveSnapshot()` |
-| **Track external mod state** | StorageQuery (Pkg 03), PopulationLedger (Pkg 05), ColonialReader (Foundation) | ✅ Capability-gated |
-| **Add StorytellerComp** | We COULD register a custom `StorytellerComp` that runs every tick alongside vanilla comps | ⚠️ Not explored — see §3 |
+| **Replace vanilla storytellers entirely** | ✅ Custom `StorytellerDef` + XML-Patch auf `<hidden>true</hidden>` für Cassandra/Phoebe/Randy | Design entschieden (DECISIONS §34 korrigiert) |
+| **Full control over incident pacing** | Eigener `RimconemyStorytellerComp` feuert ALLE Incidents | Geplant |
+| **DLC-Incidents durchreichen** | Optional: Vanilla-StorytellerComp als Sub-Comp instanziieren | Design-Entscheidung offen |
+| **Inject custom incidents** | `TryFire(queued:false)` direkt aus dem Comp | ✅ API bekannt |
+| **Read game state** | Colony wealth, pawns, mood, power, factions, storage — durch Foundation-Contracts | ✅ `BuildLiveSnapshot()` |
+
+### 1.5 What We LOSE by Replacing Vanilla
+
+| Loss | Mitigation |
+|------|-----------|
+| **Vanilla wealth-based raid scaling** | Eigene ThreatPressure-basierte Skalierung (bereits in `BuildLiveSnapshot`) |
+| **Cassandra's adaptive difficulty** | SettingProfile-basierte Eskalation (H2: Profile mit MinThreatLevel, ThreatRiseRate) |
+| **Phoebe's rest windows** | RestWindowMin/Max in SettingProfile (bereits definiert) |
+| **Randy's randomness** | DeterministicRng + StorySelector (bereits implementiert) |
+| **DLC quest incidents (Royalty, Ideology)** | Entweder via Sub-Comp durchreichen oder durch Rimconemy-Events ersetzen |
+| **Anomaly entity incidents** | Shambler-Basis wird via §19 geerbt; Entity-Spawns ggf. via Sub-Comp |
 
 ---
 
@@ -141,88 +142,101 @@ Storyteller.StorytellerTick()
 
 ---
 
-## 3. Alternative Approaches
+## 3. Implementation: Custom StorytellerDef (Full Replacement)
 
-### 3.1 Option A: Custom StorytellerComp (Recommended Alternative to StorytellerDef)
+### 3.1 StorytellerDef XML
 
-**What it is:** RimWorld allows mods to register custom `StorytellerComp` classes that run inside the vanilla storyteller loop. This is the **standard modding pattern** for adding custom incident logic WITHOUT replacing Cassandra/Phoebe/Randy.
-
-**How it works:**
 ```xml
-<!-- In a StorytellerDef patch -->
-<StorytellerDef>
-  <comps>
-    <li Class="Rimconemy.InfectedAutomation.Story.RimconemyStorytellerComp" />
-  </comps>
-</StorytellerDef>
+<!-- Defs/Storyteller/Rimconemy_Storyteller.xml -->
+<Defs>
+  <StorytellerDef>
+    <defName>Rimconemy_Storyteller</defName>
+    <label>Rimconemy</label>
+    <description>Der Rimconemy-Storyteller. Survival-Härte, dynamische Events, Infizierten-Druck.</description>
+    <portraitLarge>UI/HeroArt/Storytellers/RimconemyLarge</portraitLarge>
+    <portraitSmall>UI/HeroArt/Storytellers/RimconemySmall</portraitSmall>
+    <listOrder>-100</listOrder>
+    <comps>
+      <li Class="Rimconemy.InfectedAutomation.Story.RimconemyStorytellerComp" />
+    </comps>
+  </StorytellerDef>
+</Defs>
 ```
+
+### 3.2 RimconemyStorytellerComp
 
 ```csharp
 public class RimconemyStorytellerComp : StorytellerComp
 {
+    private StoryState State;
+    private SettingProfile ActiveProfile;
+    private StoryEventCatalog Catalog;
+    private long LastEvaluationTick;
+
+    public RimconemyStorytellerComp()
+    {
+        State = new StoryState();
+        Catalog = new StoryEventCatalog();
+    }
+
+    // Called every tick by the vanilla storyteller loop
     protected override void IncidentCycleTick()
     {
-        // Called every tick by the vanilla storyteller
-        // We can check our own conditions and fire incidents
+        long currentTick = Find.TickManager?.TicksGame ?? 0L;
+
+        // Daily evaluation (60,000 ticks)
+        if (currentTick < LastEvaluationTick + 60000)
+            return;
+        LastEvaluationTick = currentTick;
+
+        var snapshot = BuildLiveSnapshot(currentTick, State, ActiveProfile);
+        EvaluateAndFire(snapshot, currentTick);
     }
+
+    // ... (rest of logic ported from StoryDirector)
 }
 ```
 
-**Advantages over current approach:**
-- Runs in the same tick cycle as vanilla storyteller (no 60k-tick latency)
-- Can read `IncidentParms` populated by vanilla (threat points, faction)
-- Can participate in cooldown tracking alongside vanilla incidents
-- Standard RimWorld modding pattern — other mods expect it
-- No need for `GameComponentTick` polling
+### 3.3 Hide Vanilla Storytellers (XML Patch)
 
-**Disadvantages:**
-- Still runs alongside vanilla storyteller (does not replace it)
-- Must respect vanilla's cooldown system
-- Harder to independently control evaluation interval
-- Requires patching all vanilla StorytellerDefs (or a base-def XML patch)
+```xml
+<!-- Patches/HideVanillaStorytellers.xml -->
+<Patch>
+  <Operation Class="PatchOperationFindMod">
+    <mods><li>Rimconemy.Foundation</li></mods>
+    <match Class="PatchOperationSequence">
+      <operations>
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/StorytellerDef[defName="Cassandra"]</xpath>
+          <value><hidden>true</hidden></value>
+        </li>
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/StorytellerDef[defName="Phoebe"]</xpath>
+          <value><hidden>true</hidden></value>
+        </li>
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/StorytellerDef[defName="Randy"]</xpath>
+          <value><hidden>true</hidden></value>
+        </li>
+      </operations>
+    </match>
+  </Operation>
+</Patch>
+```
 
-### 3.2 Option B: Harmony Patch on Storyteller.TryFire (NOT Recommended)
+### 3.4 Pro/Contra: Full Replacement
 
-**What it is:** Use Harmony to prefix/postfix `Storyteller.TryFire()` to intercept, modify, or suppress vanilla incidents.
-
-**Advantages:**
-- Can see EVERY incident before it fires
-- Can modify `IncidentParms.points` or block incidents
-- Can inject additional logic into the vanilla fire path
-
-**Disadvantages (why DECISIONS §34 rejected this):**
-- Harmony patches on Storyteller are fragile — break on game updates
-- Conflicts with every other storyteller-modifying mod
-- One bad Harmony patch crashes the entire storyteller loop
-- Debugging is extremely difficult (no stack traces in IL-patched code)
-- Violates the "alongside vanilla" policy
-
-### 3.3 Option C: Full Custom StorytellerDef (Rejected)
-
-**What DECISIONS §34 says:** Rimconemy betreibt **keinen** eigenen `StorytellerDef`. Vanilla-Storyteller bleibt autoritativ.
-
-**Why rejected:**
-- Removes player choice (no more Cassandra/Phoebe/Randy)
-- DLC storyteller comps (Anomaly, Royalty) would need re-implementation
-- Massive maintenance burden for every RimWorld update
-- Mod compatibility nightmare
-- Our value-add is dynamic events on top of vanilla, not replacing it
-
-### 3.4 Option D: Hybrid — StorytellerComp + current GameComponent (Synthesis)
-
-**Recommendation:** Keep our current `GameComponentTick` approach but ADD a `StorytellerComp` for specific real-time hooks.
-
-| Responsibility | Current | Proposed |
-|---------------|---------|----------|
-| Daily event evaluation | GameComponentTick (daily) | GameComponentTick (daily) — keep |
-| Real-time threat pressure reading | N/A | StorytellerComp (per-tick) — add |
-| Vanilla incident awareness | N/A | StorytellerComp can read `IncidentQueue` count |
-| Cooldown participation | Our own `StoryState` | Can use vanilla's per-category cooldowns |
-| Incident injection | `TryFire(queued:true)` | Same + can also use `TryFire(queued:false)` for immediate |
+| Pro | Contra |
+|-----|--------|
+| Volle Kontrolle über Pacing | DLC-Incidents müssen manuell behandelt werden |
+| Kein Wettlauf mit Vanilla | Vanilla-Quests gehen verloren (oder müssen re-implementiert werden) |
+| Klare UX (ein Storyteller) | Höherer Implementierungsaufwand |
+| Per-Tick-Evaluation (keine 60k-Latenz) | Save-Migration für bestehende Spiele nötig |
+| SettingProfile direkt im Storyteller | Mod-Konflikte mit anderen Storyteller-Mods möglich |
 
 ---
 
-## 4. StoryDirector → RimconemyStoryteller: Rewiring Plan
+## 4. StoryDirector → RimconemyStorytellerComp: Migration Plan
 
 ### 4.1 What Changes
 
@@ -233,31 +247,37 @@ CURRENT:
     ├── QueueSelectedIncident → FiringIncident + TryFire(queued=true)
     └── Concern overload: wipe-check, eval, growth, revenge, inoculation
 
-PROPOSED:
-  RimconemyStoryteller (renamed, split):
-    ├── RimconemyStorytellerComp : StorytellerComp     ← NEW: runs in vanilla loop
-    │   ├── IncidentCycleTick → real-time hooks
-    │   ├── Can read vanilla incidentQueue state
-    │   └── Can fire via TryFire(queued=false) for immediate response
-    │
-    ├── StoryScheduler : GameComponent                  ← KEPT: daily evaluation
-    │   ├── GameComponentTick (60k)
-    │   ├── BuildLiveSnapshot
-    │   └── EvaluateWithSnapshot → StorySelector
-    │
-    └── IncidentDispatcher                              ← SPLIT from StoryDirector
-        └── QueueSelectedIncident → TryFire
+TARGET:
+  RimconemyStorytellerComp : StorytellerComp
+    ├── IncidentCycleTick → evaluates every tick (with internal 60k gate)
+    ├── FireSelectedIncident → TryFire(queued=false)
+    ├── Inherits from StorytellerComp (vanilla loop integration)
+    └── Split concerns: StoryScheduler + IncidentDispatcher + GrowthManager
 ```
 
-### 4.2 What We Gain from StorytellerComp
+### 4.2 Migration Steps
 
-| Feature | Without StorytellerComp | With StorytellerComp |
-|---------|------------------------|---------------------|
-| React to vanilla incidents in real time | ❌ Can't see them | ✅ `IncidentQueue` visible |
-| Participate in vanilla cooldown tracking | ❌ Our own separate tracking | ✅ Shared cooldown system |
-| Read threat points calibrated by difficulty | ❌ Must calculate ourselves | ✅ `StorytellerUtility.DefaultThreatPointsNow` |
-| Fire incidents immediately (not queued) | ❌ Only `TryFire(queued=true)` | ✅ `TryFire(queued=false)` for instant |
-| 0-tick latency on game-state change | ❌ Up to 60k ticks | ✅ Per-tick evaluation |
+1. **Create** `Rimconemy_Storyteller.xml` (StorytellerDef in Mod 05/Defs/)
+2. **Create** `RimconemyStorytellerComp.cs` extending `StorytellerComp`
+3. **Port** `StoryDirector` logic into the Comp:
+   - `GameComponentTick` → `IncidentCycleTick`
+   - `BuildLiveSnapshot` → static utility (no change)
+   - `QueueSelectedIncident` → `TryFire(queued=false)` (direct, not queued)
+4. **Create** `HideVanillaStorytellers.xml` Patch
+5. **Remove** `StoryDirector : GameComponent` registration
+6. **Verify** only Rimconemy storyteller appears in selection screen
+7. **Test** full incident cycle: Snapshot → Select → Fire → Letter
+
+### 4.3 What We Gain from Custom StorytellerDef
+
+| Feature | Side-by-Side (alt) | Full Replacement (neu) |
+|---------|-------------------|----------------------|
+| Incident-Kontrolle | Nur unsere Events; Vanilla feuert parallel | ALLE Incidents gehen durch UNS |
+| Pacing | 60k-Tick-Polling | Per-Tick-Steuerung |
+| Cooldowns | Eigenes System neben Vanilla | Ein einziges, konsistentes System |
+| UX | Spieler sieht 4 Storyteller (3 Vanilla + unsichtbarer Director) | Spieler sieht NUR Rimconemy |
+| DLC-Incidents | Vanilla feuert sie | Wir entscheiden: durchreichen oder ersetzen |
+| Mod-Kompatibilität | Vanilla-Storyteller-Mods funktionieren | Mods die Vanilla-Storyteller patchen greifen ins Leere |
 
 ### 4.3 Rewiring Steps
 
@@ -358,31 +378,23 @@ public StoryEventSpec? GenerateFactionWarEvent(SituationSnapshot snap) {
 
 ---
 
-## 6. Summary: What Changes, What Stays
+## 6. Summary: Pivot to Full Replacement
 
-| Component | Current | Proposed | Reason |
-|-----------|---------|----------|--------|
-| StoryDirector | 1,086 LOC GameComponent mixing 7 concerns | Split into StoryScheduler + RimconemyStorytellerComp + IncidentDispatcher | Concern isolation, real-time hooks |
-| Storyteller model | No StorytellerDef, no StorytellerComp | ADD StorytellerComp for real-time awareness | Can read vanilla incident state, 0-tick latency |
-| Incident injection | `TryFire(queued:true)` only | Add `TryFire(queued:false)` option via Comp | Immediate reaction to game events |
-| Dynamic mod-aware events | Not implemented | EventTemplate + DynamicResolver | Reads DefDatabase at selection time |
-| Vanilla storyteller | Runs unchanged alongside us | Runs unchanged alongside us (NO change) | DECISIONS §34 — vanilla stays authoritative |
-| External tracking | Foundation contracts (good) | Extend with StorytellerUtility.DefaultThreatPointsNow | Better-calibrated raid strength |
+| Component | Current | Target | Reason |
+|-----------|---------|--------|--------|
+| Storyteller-Modell | GameComponent läuft neben Vanilla | Eigener StorytellerDef ERSETZT Vanilla | User-Entscheidung: nur EIN Storyteller |
+| StoryDirector | 1,086 LOC GameComponent | RimconemyStorytellerComp : StorytellerComp | Native RimWorld-Integration |
+| Incident-Feuer | `TryFire(queued=true)` in Vanilla-Queue | `TryFire(queued=false)` direkt aus Comp | Kein Umweg über Queue |
+| Vanilla-Storyteller | Sichtbar + aktiv | `<hidden>true</hidden>` via XML-Patch | Unsichtbar, inaktiv |
+| DLC-Incidents | Vanilla feuert sie automatisch | Entscheidung offen: Sub-Comp oder manuell | Design-Frage |
+| Schwierigkeit | Map von `difficultyDef` | Eigene Difficulty im StorytellerDef | Unabhängig von Vanilla |
 
-### What We Will Never Do
+### Offene Design-Fragen (vor Implementierung zu klären)
 
-- ❌ Replace vanilla StorytellerDef
-- ❌ Harmony-patch `Storyteller.TryFire`
-- ❌ Suppress/remove vanilla incidents
-- ❌ Hook into other mods' private state via Reflection
-
-### What We Will Do
-
-- ✅ Add `RimconemyStorytellerComp` for per-tick awareness
-- ✅ Split `StoryDirector` into 3 focused classes
-- ✅ Dynamic event generation from `DefDatabase` scans
-- ✅ Template-based letters that resolve mod-specific names at fire time
-- ✅ Keep `GameComponentTick` for daily heavy evaluation
+1. **DLC-Incidents:** Sollen Royalty-Quests, Ideology-Rituale und Anomaly-Entities weiterhin feuern? Wenn ja: als Sub-Comp durchreichen oder manuell via `TryFire` auslösen?
+2. **Difficulty-Auswahl:** Behält der Spieler die Vanilla-Difficulty-Auswahl (Peaceful→Extreme)? Oder wird die Difficulty über SettingProfile ausschließlich im Rimconemy-System gesteuert?
+3. **Save-Migration:** Was passiert mit Saves, die mit Cassandra gestartet wurden? Crash? Automatische Migration? Warnung?
+4. **Andere Mods:** Was passiert mit Mods die `Find.Storyteller.def` auf Cassandra/Phoebe/Randy prüfen?
 
 ---
 
@@ -390,4 +402,5 @@ public StoryEventSpec? GenerateFactionWarEvent(SituationSnapshot snap) {
 
 | Date | Change | Author |
 |------|--------|--------|
-| 2026-08-07 | Initial analysis: vanilla storyteller architecture, injection points, alternatives, StorytellerComp recommendation | Buffy (Freebuff) |
+| 2026-08-07 | Initial analysis: vanilla storyteller architecture, injection points, alternatives | Buffy (Freebuff) |
+| 2026-08-07 | **KORREKTUR:** User-Pivot von "alongside vanilla" zu "full replacement". DECISIONS §34 überschrieben. StorytellerDef + StorytellerComp als Zielarchitektur. Vanilla-Storyteller via XML-Patch verstecken. | Buffy (Freebuff) |
