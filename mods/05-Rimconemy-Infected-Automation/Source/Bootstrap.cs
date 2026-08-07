@@ -179,6 +179,34 @@ namespace Rimconemy.InfectedAutomation
             Tests.AnimalInfectionAiOverlayTests.RunAll();
             Log.Message("[Rimconemy.InfectedAutomation] Phase E: AnimalInfection pipeline wired (Profile-Chance, Ledger, Service, Driver-Seam, Overlay-Predikat).");
             Log.Message("[Rimconemy.InfectedAutomation] Phase B: Daily-Growth+Reset+Revenge coupling wired.");
+
+            // Live world status: aktive Infizierte auf der Karte zählen
+            try
+            {
+                var ledger = Population.PopulationLedger.Get();
+                if (ledger != null)
+                {
+                    int aktiv = ledger.HumanoidLiveCount;
+                    int tiere = ledger.AnimalLiveCount;
+                    int gesamt = aktiv + tiere;
+                    int cap = ledger.Cap;
+                    int killsHeute = ledger.RecentKillsToday;
+                    int killsGesamt = ledger.CumulativeKills;
+
+                    Log.Message(
+                        $"[Rimconemy.InfectedAutomation] ═══ Infizierte im Gebiet: " +
+                        $"{aktiv} aktiv, {tiere} infizierte Tiere " +
+                        $"(gesamt {gesamt}, Max {cap}) ═══");
+                    Log.Message(
+                        $"[Rimconemy.InfectedAutomation]    Tages-Kills: {killsHeute} " +
+                        $"| Gesamt-Kills: {killsGesamt} " +
+                        $"| Tag: {ledger.DayIndexSinceStart}");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Log.Warning("[Rimconemy.InfectedAutomation] Live-Status-Fehler: " + ex.Message);
+            }
             Log.Message("[Rimconemy.InfectedAutomation] Building threat adapter available; Mechadroid job contracts are gated for Milestone B; no incident or raid is spawned.");
             Log.Message("[Rimconemy.InfectedAutomation] ═══ bootstrap COMPLETE — all test suites finished ═══");
 
