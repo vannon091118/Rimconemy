@@ -64,7 +64,36 @@ Storyteller.StorytellerTick()
 | **Inject custom incidents** | `TryFire(queued:false)` direkt aus dem Comp | ✅ API bekannt |
 | **Read game state** | Colony wealth, pawns, mood, power, factions, storage — durch Foundation-Contracts | ✅ `BuildLiveSnapshot()` |
 
-### 1.5 What We LOSE by Replacing Vanilla
+### 1.5 StorytellerComp API (Decompile 2026-08-07 via Mono.Cecil)
+
+Der `StorytellerComp` (abstract base, `RimWorld.StorytellerComp`) hat **KEINEN Per-Tick-Hook**.
+
+**Virtual methods (überschreibbar):**
+
+| Methode | Signatur | Zweck |
+|---------|----------|-------|
+| `Initialize()` | `public virtual void` | Einmalig beim Start |
+| `MakeIntervalIncidents()` | `public virtual IEnumerable<FiringIncident> (IIncidentTarget target)` | **Haupt-Einstiegspunkt** — wird von `Storyteller.StorytellerTick()` periodisch aufgerufen |
+| `GenerateParms()` | `public virtual IncidentParms (IncidentCategoryDef, IIncidentTarget)` | Parameter für Incidents generieren |
+| `Notify_PawnEvent()` | `public virtual void (Pawn, AdaptationEvent, bool?)` | Benachrichtigung bei Pawn-Events |
+| `Notify_DissolutionEvent()` | `public virtual void (Thing)` | Benachrichtigung bei Auflösungs-Events |
+| `DebugTablesIncidentChances()` | `public virtual void` | Debug-UI |
+
+**Der Tick-Zyklus:**
+```
+Storyteller.StorytellerTick()          ← non-virtual, gehört RimWorld
+  └── Storyteller.MakeIncidentsForInterval()
+        └── comp.MakeIntervalIncidents(target)   ← DAS ist der Hook
+              └── gibt IEnumerable<FiringIncident> zurück
+```
+
+**Konsequenz für RimconemyStorytellerComp:**
+- Wir brauchen **keinen** Override. Unser `StoryDirector.GameComponentTick` (60k-Intervall) ist der richtige Ansatz.
+- Die `StorytellerComp` existiert primär zur **Def-Registrierung** im `StorytellerDef`.
+- Falls wir später am Vanilla-Storyteller-Zyklus teilnehmen wollen: `MakeIntervalIncidents()` overriden.
+- Alle konkreten Vanilla-Comps (`StorytellerComp_RandomMain`, `StorytellerComp_ClassicIntro`, etc.) overriden ausschließlich `MakeIntervalIncidents()`.
+
+### 1.6 What We LOSE by Replacing Vanilla
 
 | Loss | Mitigation |
 |------|-----------|
@@ -404,3 +433,4 @@ public StoryEventSpec? GenerateFactionWarEvent(SituationSnapshot snap) {
 |------|--------|--------|
 | 2026-08-07 | Initial analysis: vanilla storyteller architecture, injection points, alternatives | Buffy (Freebuff) |
 | 2026-08-07 | **KORREKTUR:** User-Pivot von "alongside vanilla" zu "full replacement". DECISIONS §34 überschrieben. StorytellerDef + StorytellerComp als Zielarchitektur. Vanilla-Storyteller via XML-Patch verstecken. | Buffy (Freebuff) |
+| 2026-08-07 | **Decompile:** StorytellerComp via Mono.Cecil dekompiliert. Hat KEINEN Per-Tick-Hook. `Storyteller.StorytellerTick()` (non-virtual) treibt den Zyklus und ruft `MakeIntervalIncidents()` auf Comps. Unser GameComponentTick-Ansatz ist korrekt — Comp existiert zur Def-Registrierung, nicht für Tick-Logik. | Buffy (Freebuff) |
