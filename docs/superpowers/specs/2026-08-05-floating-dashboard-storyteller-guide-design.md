@@ -11,12 +11,12 @@
 
 **Was wir bauen:**
 - **RimPad** – verschiebbares, Tablet/Pip-Boy-stylisches Floating-Dashboard als **Haupt-Spieler-UI** (nicht Debug). Vereint alle 5 Pakete in Sektionen.
-- **Storyteller-Guide** – simulierter Guide (kein eigener StorytellerDef), der via Letter-Pipeline Tutorial-Schritte als Popup-Dialoge mit Portrait anzeigt, Funktionen kontextbezogen freischaltet und erklärt.
+- **Storyteller-Guide** – Eigener StorytellerDef (Rimconemy_Storyteller) mit Portrait. Tutorial-Schritte via Letter-Pipeline als Popup-Dialoge, kontextbezogene Freischaltung.
 - **Intro-Sequenz** – Black Screen → Flow-Text → Kamera-Cuts → 3-Sek-Zombie-Horde-Flash → RimPad-Notification startet Guide.
 - **Start-Szenario** – Endzeit-Story (ISS-Rückkehr, Zombie-Horde-Flash), Gewitter-Kulisse (Optik only), Infizierte Garantie ≥1.
 
 **Was NICHT im Scope:**
-- Neuer StorytellerDef / StorytellerComp (Vanilla bleibt autoritativ, DECISIONS §34).
+- Kein zusätzlicher StorytellerDef nötig (Rimconemy_Storyteller ist bereits der einzige, DECISIONS §34 korrigiert).
 - Debug-Tabs ersetzen (bleiben für Entwicklung erhalten).
 - Komplexe Quest-/Story-Engine – nur Tutorial-Schritte (Guide).
 

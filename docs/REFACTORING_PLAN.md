@@ -1,8 +1,8 @@
 # REFACTORING PLAN — LOC Reduction & Modular Rewiring
 
 > **Date:** 2026-08-07  
-> **Status:** Analysis complete, execution pending  
-> **Related:** `docs/TRACEABILITY_MATRIX.md`, `docs/ARCHITECTURE.md`, `docs/INTERFACE_CONTRACT.md`
+> **Status:** Analysis complete, execution pending — aktualisiert für StorytellerDef-Replacement  
+> **Related:** `docs/TRACEABILITY_MATRIX.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md §34`, `docs/STORYTELLER_ANALYSIS.md`, `docs/STORYTELLER_DESIGN_DECISIONS.md`
 
 ---
 
@@ -66,38 +66,34 @@ public static class WiringCatalog {
 
 ## Phase 2: Split the God Orchestrator (P0 — Pkg 05)
 
-### 2.1 StoryDirector Decomposition
+### 2.1 StoryDirector → RimconemyStorytellerComp Migration
 
-**Current:** `StoryDirector` (1,086 LOC) handles:
+**Current:** `StoryDirector` (1,086 LOC) ist ein `GameComponent` mit 60k-Tick-Polling.
 
-| Concern | Approx LOC | New Home |
-|---------|-----------|----------|
-| Tick loop + scheduling | 180 | `StoryScheduler` (new) |
-| Incident selection + firing | 250 | `IncidentDispatcher` (new, extends existing `InfectedRaidWorker`) |
-| Cooldown tracking | 120 | `CooldownRegistry` (new) |
-| Difficulty scaling | 100 | `DifficultyScaler` (new) |
+**Target:** `RimconemyStorytellerComp : StorytellerComp` läuft im Vanilla-Storyteller-Loop mit Per-Tick-Integration.
+
+| Concern | Approx LOC | Target |
+|---------|-----------|--------|
+| Tick loop + scheduling | 180 | `RimconemyStorytellerComp.IncidentCycleTick()` |
+| Incident selection + firing | 250 | `IncidentDispatcher` (new) — `TryFire(queued=false)` |
+| Cooldown tracking | 120 | `CooldownRegistry` (new) — oder Vanilla-Cooldown-System |
+| Difficulty scaling | 100 | `SettingProfile`-Mapping (bleibt im Comp) |
 | Faction scanning + threat assessment | 150 | → existing `ThreatSnapshotBridge` |
 | Situation snapshot creation | 120 | → existing `SituationSnapshot` |
-| Bootstrap + initialization | 166 | → `WiringCatalog` (Foundation) |
+| Wipe-Check | ~80 | → Mod 02 `GameOverDetector` (Sole-Owner) |
+| Day-Growth + Revenge | ~86 | → `GrowthManager` (new) |
 
-**After:**
-
-```
-StoryDirector (retained, ~150 LOC)
-  │── delegates to ──│
-  ├── StoryScheduler (~100 LOC)
-  ├── IncidentDispatcher (~150 LOC)
-  ├── CooldownRegistry (~80 LOC)
-  └── DifficultyScaler (~70 LOC)
-
-ThreatSnapshotBridge (enhanced, already 210 LOC)
-SituationSnapshot (enhanced, already 178 LOC)
-```
+**Key Change von GameComponent zu StorytellerComp:**
+- `GameComponentTick` (60k-Intervall) → `IncidentCycleTick()` (per-Tick mit internem Gate)
+- `QueueSelectedIncident` → `TryFire(queued=false)` (direkt, nicht via Queue)
+- Kein `Find.Storyteller.incidentQueue`-Zugriff mehr nötig
 
 **Impact:**
-- StoryDirector: 1,086 → ~150 LOC (**-86%**)
-- 4 new focused classes: ~400 LOC total
-- All new classes testable in isolation
+- StoryDirector: 1,086 → ~0 LOC (wird gelöscht)
+- RimconemyStorytellerComp: ~350 LOC (neu)
+- IncidentDispatcher: ~150 LOC (neu)
+- GrowthManager: ~100 LOC (neu)
+- Zusätzlich: StorytellerDef XML (~30 lines), HideVanilla Patch (~50 lines)
 
 ### 2.2 StoryState Split
 

@@ -1,6 +1,6 @@
 # ARCHITECTURE — Rimconemy Architecture SSOT-Orient
 
-> **Stand:** 2026-08-04
+> **Stand:** 2026-08-07 (aktualisiert: StorytellerDef ersetzt Vanilla, Clean Break Overhaul)
 > **Rolle:** SSOT-Orient-Entry — bündelt die Topic-Verdicts der Vanilla-API, Story-, Ideology-, Storage-, Character- und Pawn-Generator-Specs an einer Stelle. Detail-Tiefe liegt weiterhin in den H1..H6- und `vanilla-api-matrix-1.6.md`-Dateien.
 > **Lese-Pfad:** Für jede architektonische Frage hier das Topic finden, dann in den verlinkten Spec-Detail-Doc einsteigen.
 > **Pflicht:** Wer ein Topic added/moved, aktualisiert diese Datei **und** den Eintrag in [INDEX.md §1](INDEX.md).
@@ -32,10 +32,10 @@
   - §3 — Acht Eventfamilien + 4↔8-Familien-Cross-Walk (`Code: Supply, Social, Raid, Collapse`)
   - §4 — Selection-Algorithmus
   - §5 — Save-Schema `StoryState`
-  - §6 — Vanilla/DLC-Policy (kein eigener Storyteller, kein Quest-Suppress)
+  - §6 — Vanilla/DLC-Policy (EIGENER StorytellerDef ersetzt Vanilla, DLC-Incidents ersetzt)
   - §7 — Def-Preset-Ordner (Modulpfad `mods/05/Defs/StoryEvents/`)
 - **Code-Schnittstelle:** `Source/Story/{StoryDirector,StorySelector,StoryState,StoryEventCatalog}.cs`
-- **Öffene Gates:** Live-Save/Load-Gate, vollständige deklarative Effects-Engine, StorytellerDef-Eigenbau.
+- **Öffene Gates:** Live-Save/Load-Gate, vollständige deklarative Effects-Engine, StorytellerDef-Implementierung.
 
 ## Sektion 3 — Ideology-Influence-Matrix (Detail: H3-ideology-influence-matrix.md)
 
@@ -93,7 +93,7 @@
 | Sektion | Status | Haupt-Drift | Quelle |
 |---|---|---|---|
 | 1 Vanilla-API | 🟡 mostly-loaded | `IdeoDef` Spike offen (DLC-Assembly lokal nicht vorhanden) | H1 Sektion B |
-| 2 Story-Vertrag | 🟢 Code-implementiert; StorytellerDef fehlt | Eigener Storyteller macht keinen Sinn | H2 §6; DECISIONS §2.3 |
+| 2 Story-Vertrag | 🟡 Code-implementiert; StorytellerDef in Planung | Eigener StorytellerDef ersetzt Vanilla (DECISIONS §34 korrigiert) | H2 §6; DECISIONS §34; STORYTELLER_ANALYSIS.md |
 | 3 Ideology | 🟢 Code-implementiert | Ideology-DLC nicht installiert → Regel 2 inaktiv | H3 Sektion B; COMPATIBILITY |
 | 4 Storage | 🟡 Code-implementiert | Caravan-/Temporary-Map noch nicht abgedeckt | H4 §3 |
 | 5 Character-Setup | 🟡 Hybrid-Schnitt; Direkt-Pfad offen | Reflection-Fallback deckt Verhalten semantisch ab | H5; H6 |

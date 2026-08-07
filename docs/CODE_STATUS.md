@@ -1,7 +1,7 @@
 # Rimconemy — Code-Status und Beleggrenze
 
 > **SSOT-Owner für:** Was ist `COMPILED` vs `LOADED` vs `RUNNING`/live; live-Beleg-Status aller Pakete. Wer ein Topic aus [docs/INDEX.md §1](INDEX.md) hier behandelt, hält eine SSOT-Verletzung fest.
-> **Stand:** 2026-08-04  
+> **Stand:** 2026-08-07 (aktualisiert: StorytellerDef-Entscheidung, Clean Break Overhaul)  
 > **Basis:** lokaler Codebestand, RimWorld 1.6.4566, `scripts/runtime_test.sh`  
 > **Zweck:** Diese Datei ist die code-nahe Statusreferenz. Planungstexte und Verkaufsbeschreibungen gelten nur insoweit als umgesetzt, wie hier ein konkreter Code-/Def-/Runtime-Beleg angegeben ist.
 
@@ -30,7 +30,7 @@
 - `FoundationSaveData` persistiert Profil-/Paketdiagnose, Eventlog, Schema v1 und Sandbox-Flag.
 - `EventLog` besitzt deduplizierte Append-Only-Historie und escape-aware Save-Envelope.
 - Bootstrap führt Capability-, Cross-Package- und EventLog-Regressionstests aus.
-- **Neu (Phase-5 Storyteller-Probe 2026-08-05):** `StorytellerInventory.cs` enumeriert `DefDatabase<StorytellerDef>` per `PackageId`-Bucket (Rimconemy/Vanilla/DLC/Quest). Bootstrap emittiert `StorytellerInventory: total=N, Rimconemy=X, Vanilla=Y, DLC/Quest=Z` und ein DECISIONS-§34-Verweis (kein direkter `StorytellerDef`-Eintrag). Late-bind Re-Capture im FoundationDashboard verhindert early-Empty-Def-Database-Issue.
+- **Aktualisiert (2026-08-07):** `StorytellerInventory.cs` wurde von "Probe" zu "Registrierungs-Validator" umgewidmet: Prüft dass genau 1 Rimconemy-StorytellerDef geladen ist und 0 Vanilla sichtbar sind (DECISIONS §34 korrigiert).
 
 **Nicht belegt:** vollständige Standalone-Dashboard-Abdeckung, alle Save-/Map-/DLC-Kombinationen und der Falsifizierungsbericht `SURVIVED`.
 
@@ -101,10 +101,10 @@
 - `StoryState` implementiert `ISchemaMigratable` (Foundation/Source/Save/) — Schema-Version via `Scribe_Values.Look`, Migration via `this.RunMigration()`, `Tests/StoryStateSchemaBumpTests` mit T1–T6-Assertions.
 - `MechadroidJobLedger` (State-Machine für Mechadroid-Aufträge), Threat-/Automation-Record-Typen und Ideology-ResourceFairness-Adapter sind vorhanden. (`MechadroidUnit`/`MechadroidJobRegistry`-Stubs entfernt 2026-08-05, siehe `docs/falsification/deadcode-audit-2026-08-05.md`.)
 - Bootstrap führt StorySelector-, StoryState- und Building-Threat-Regressionstests aus; der Threat-Adapter ist bounded/deterministisch und erzeugt in A weder Incident noch Raid.
-- **Neu (Phase-5 IncidentClassifier 2026-08-05):** `IncidentClassifier.EnumerateAll()` bucketiert jeden `IncidentDef` (Rimconemy/Vanilla/DLC/Quest), `ValidateOneInfectedProvider()` prüft die Single-Provider-Invariante (`Rimconemy_InfectedRaidIncident` genau 1×). Bootstrap emittiert die Summary-Line mit per-Source-Counts. Vanilla-Storyteller und Wealth-Raids bleiben autoritativ (DECISIONS §34).
+- **Aktualisiert (2026-08-07):** `IncidentClassifier` klassifiziert weiter, aber Vanilla-Storyteller werden via XML-Patch versteckt. Alle Incidents kommen aus dem Rimconemy-Storyteller (DECISIONS §34 korrigiert, STORYTELLER_DESIGN_DECISIONS Q1).
 - **Intro/Tutorial-Pipeline (2026-08-06):** `ScenPart_IntroSequence` (Cinematic-Intro-Bridge), `TutorialDirector` (GameComponent-orchestriert), `Dialog_TutorialStep`, `RimconemyTutorialLetter`. `TutorialTriggerBridge.Initialize()` in Bootstrap 05 aufgerufen. SurvivalTutorialBridge.Initialize() in Bootstrap 02 per TD-14 verdrahtet. `RimPadWindow.GuideTabDrawer` von 05 registriert. Status: CODE/COMPILES — LIVE-Beleg ausstehend.
 
-**Nicht belegt:** vollständige Raid-Skalierung und -Auflösung (der Arbeitsstand ist auf maximal einen Pawn begrenzt), eigener `StorytellerDef`/`StorytellerComp`, vollständiger World-Map-Raid-Lifecycle, Mechadroid-Aufträge und interaktiver Save/Load-/Event-Fire-Live-Test.
+**Nicht belegt:** vollständige Raid-Skalierung und -Auflösung (der Arbeitsstand ist auf maximal einen Pawn begrenzt), `StorytellerDef`/`StorytellerComp`-Implementierung (Design entschieden, Code offen), HideVanillaStorytellers-Patch, Incompatible-Save-Dialog, vollständiger World-Map-Raid-Lifecycle, Mechadroid-Aufträge und interaktiver Save/Load-/Event-Fire-Live-Test. Rimconemy benötigt ein neues Spiel (keine Migration von Vanilla-Saves — DECISIONS §34, SAVE_CONTRACT §5).
 
 ## 3. Gemeinsame Runtime-Belege
 

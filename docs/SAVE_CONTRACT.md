@@ -1,7 +1,7 @@
 # SAVE_CONTRACT.md — Rimconemy Save & Migration Specification
 
 > **SSOT-Owner für:** `ISchemaMigratable`-Vertrag, Schema-Bump-Pattern, Save/Load-Lifecycle, Foundation-Save-Bridge, IExposable-Adapter, Schema-Version. Wer ein Topic aus [docs/INDEX.md §1](INDEX.md) hier behandelt, hält eine SSOT-Verletzung fest.
-> **Stand:** 2026-08-04  
+> **Stand:** 2026-08-07 (aktualisiert: Clean Break für Overhaul, v2 Save-Format, keine Vanilla-Migration)  
 > **Owner:** Foundation (01) & Story/Threat (05) & Economy (04) & Progression (02) & Scavenger (03)  
 > **Zielplattform:** RimWorld 1.6.4566 (Unity/Mono Scribe XML)  
 > **Status:** Kanonischer Save-Vertrag (G1-Gate / Block A1)
@@ -79,7 +79,38 @@ ersetzen die früheren Open-Coded-if/else-Cascades.
 
 ---
 
-## 5. Stop-Gates für Save/Load
+## 5. Overhaul Clean Break — Keine Migration von Vanilla-Saves (2026-08-07)
+
+> ⚠️ **User-Entscheidung (DECISIONS §34, STORYTELLER_DESIGN_DECISIONS Q3):** Rimconemy ist ein Total-Overhaul. Alte Spielstände (Vanilla oder mit anderen Storytellern) werden **nicht migriert**. Der Spieler MUSS ein neues Spiel starten.
+
+### 5.1 Ablehnung alter Saves
+
+```csharp
+// RimconemyStorytellerComp.FinalizeInit()
+if (Find.Storyteller.def.defName != "Rimconemy_Storyteller")
+{
+    Log.Error("[Rimconemy] Incompatible save — Rimconemy requires a new game.");
+    Find.WindowStack.Add(new Dialog_RimconemyIncompatibleSave());
+    Current.Game = null;  // return to main menu
+    return;
+}
+```
+
+### 5.2 ISchemaMigratable bleibt — aber nur für Rimconemy-interne Migration
+
+Das `ISchemaMigratable`-Interface, `MigrationRegistry` und `MigrationStepWalker` bleiben aktiv — aber NUR für Migration zwischen Rimconemy-eigenen Save-Formaten (v2→v3, v3→v4 etc.). Migration von Vanilla-Saves (v0) zu Rimconemy (v2) wird nicht unterstützt.
+
+### 5.3 Save-Format v2 — maximale Freiheit
+
+Da keine Abwärtskompatibilität zu Vanilla-Saves nötig ist, kann das Save-Format v2:
+- Neue Pflichtfelder ohne `LookMode.Undefined`-Fallbacks definieren
+- Vanilla-Altlasten (DifficultyDef, IncidentQueue, StorytellerDef) ignorieren
+- Radikal andere Scribe-Strukturen verwenden
+- Ohne Migrations-Code auskommen (nur `LoadRejectedWithReason` für Fremd-Saves)
+
+---
+
+## 6. Stop-Gates für Save/Load
 
 Ein Mod-Release oder PR wird blockiert, wenn:
 1. `ExposeData()` im PostLoadInit-Schritt Objekt-Referenzen ohne Null-Check anspricht.

@@ -1,7 +1,7 @@
 # COMPATIBILITY_MATRIX.md — Rimconemy Load Order & Compatibility Matrix
 
 > **SSOT-Owner für:** L0–L7 Lade-Reihenfolge, DLC-Kompatibilitätstabelle (Royalty/Ideology/Biotech/Anomaly/Odyssey), Third-Party-Mod-Klassifikation (Combat Extended, VSE, ...), DLC-Fallbacks. Wer ein Topic aus [docs/INDEX.md §1](INDEX.md) hier behandelt, hält eine SSOT-Verletzung fest.
-> **Stand:** 2026-08-04  
+> **Stand:** 2026-08-07 (aktualisiert: Storyteller-Mod-Inkompatibilität, Clean Break)  
 > **Owner:** Foundation (01) & Full Suite  
 > **Zielplattform:** RimWorld 1.6.4566  
 > **Status:** Kanonische Kompatibilitätsmatrix (G1-Gate / Block A1)
@@ -59,7 +59,35 @@ Rimconemy-Pakete sind **standalone-fähig**. Das Fehlen eines DLCs darf zu keine
 
 ---
 
-## 4. Invarianten für Kompatibilitäts-Tests
+## 4. Storyteller-Mod-Inkompatibilität (2026-08-07)
+
+> ⚠️ **Rimconemy ersetzt den Vanilla-Storyteller.** Cassandra, Phoebe und Randy werden via XML-Patch auf `<hidden>true</hidden>` gesetzt. Nur der Rimconemy-Storyteller ist auswählbar.
+
+### Betroffene Mod-Typen
+
+| Mod-Typ | Risiko | Empfehlung |
+|---------|--------|------------|
+| **Storyteller-Mods** (Custom StorytellerDef) | 🔴 Inkompatibel | Nicht zusammen mit Rimconemy verwenden |
+| **Incident-Mods** | 🟡 Gering | Nutzen `IncidentWorker`, nicht `Storyteller.def` — meist kompatibel |
+| **Difficulty-Mods** | 🟡 Mittel | Patchen `DifficultyDef` — Werte werden von Rimconemy ignoriert |
+| **Quest-Mods** | 🟢 Kompatibel | Nutzen `QuestManager`, nicht `Storyteller` |
+| **UI-Mods** | 🟢 Kompatibel | Lesen nur `StorytellerUI` |
+
+### Bekannte Inkompatible Mods
+
+| Mod | Grund |
+|-----|-------|
+| Rimsenal Storyteller Pack | Eigener StorytellerDef — kollidiert mit Rimconemy |
+| Vanilla Factions Expanded — Storytellers | Mehrere Custom-Storyteller — alle werden von Rimconemy versteckt |
+| Hotseat | Wechselt Storyteller zur Laufzeit — inkompatibel mit Single-Storyteller-Modell |
+
+### Load-Order-Guide
+
+Rimconemy MUSS **nach** allen anderen Storyteller-Mods geladen werden. Der `<hidden>true</hidden>`-Patch überschreibt keine fremden StorytellerDefs — er versteckt nur die Vanilla-Defs.
+
+---
+
+## 5. Invarianten für Kompatibilitäts-Tests
 
 1. Jedes Rimconemy-Paket muss ohne die presence von Paketen 02–05 kompilieren und laden können (`ActiveStandalone` Modus).
 2. Das Entfernen eines optionalen DLCs mitten in einer laufenden Kolonie konvertiert betroffene In-Game-Referenzen in `FrozenWithWarning`-Zustände ohne Crash.
