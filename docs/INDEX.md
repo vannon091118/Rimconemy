@@ -1,6 +1,6 @@
 # INDEX — SSOT-Topics-Map
 
-> **Stand:** 2026-08-07
+> **Stand:** 2026-08-07 (added §8 Architecture Analysis)
 > **Rolle:** Diese Map zeigt, welche Datei welches Topic final besitzt. Wer ein Topic moved/edits, aktualisiert die Map (und idealerweise gleichzeitig [ARCHITECTURE.md](ARCHITECTURE.md)).
 
 ## §1 Phasen-First Architecture (2026-08-05)
@@ -63,7 +63,14 @@
 | 2026-08-07 (truth-chain) | [docs/SESSION_2026-08-07-truth-chain.md](SESSION_2026-08-07-truth-chain.md) | TestSuite-Harness, Runtime Truth Chain, SSOT-Architektur |
 | 2026-08-06 | [docs/SESSION_2026-08-06.md](SESSION_2026-08-06.md) | 8→0 Failures, Dead Code, Tutorial-Fixes |
 
-## §8 Phasen-First Tasks (2026-08-05)
+## §8 Architecture Analysis (2026-08-07)
+
+| Topic | SSOT | Owner | Notes |
+|---|---|---|---|
+| Traceability Matrix | [docs/TRACEABILITY_MATRIX.md](TRACEABILITY_MATRIX.md) | Mod 01 | Full file audit (191 files, 34,768 LOC), creation timestamps, concern overlap map, dependency graph |
+| Refactoring Plan | [docs/REFACTORING_PLAN.md](REFACTORING_PLAN.md) | Mod 01 | 6-phase plan: contract hardening, god-class split, data-as-code→Defs, dead code removal, LOC targets -57% |
+
+## §9 Phasen-First Tasks (2026-08-05)
 
 19 Tasks ausgeführt (Stand 2026-08-05):
 
