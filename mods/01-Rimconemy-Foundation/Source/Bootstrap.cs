@@ -1,7 +1,10 @@
 using System;
+using System.Reflection;
+using HarmonyLib;
 using Rimconemy.Foundation.Catalog;
 using Rimconemy.Foundation.DLC;
 using Rimconemy.Foundation.Events;
+using Rimconemy.Foundation.Patches;
 using Rimconemy.Foundation.Profile;
 using Rimconemy.Foundation.Registry;
 using Verse;
@@ -30,10 +33,25 @@ namespace Rimconemy.Foundation
     [StaticConstructorOnStartup]
     public static class Bootstrap
     {
+        private const string HarmonyInstanceId = "rimconemy.foundation";
+
         static Bootstrap()
         {
             Log.Message("[Rimconemy.Foundation] ========================================");
             Log.Message("[Rimconemy.Foundation] Foundation bootstrap starting...");
+
+            // HideVanillaStorytellersPatch: Harmony Postfix on Page_SelectStoryteller.PreOpen
+            // that removes Cassandra/Phoebe/Randy from the selection screen.
+            try
+            {
+                var harmony = new Harmony(HarmonyInstanceId);
+                harmony.PatchAll(Assembly.GetExecutingAssembly());
+                Log.Message("[Rimconemy.Foundation] Harmony patches applied (instance=rimconemy.foundation).");
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[Rimconemy.Foundation] Harmony PatchAll failed: {ex.GetType().Name}: {ex.Message}. Non-critical; the XML listOrder patch still applies.");
+            }
 
             // Static constructors handle class-level init.
             // Explicit access ensures they run in the right order.
