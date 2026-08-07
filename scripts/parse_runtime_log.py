@@ -39,7 +39,7 @@ RX_RIMCONEMY = re.compile(r"^\[Rimconemy\.([^\]]+)\] (.+)$")
 RX_TEST_SUMMARY = re.compile(
     r"(?P<suite>[A-Za-z0-9_\- )(]+?) tests?(?: \([^)]+\))?: (?P<passed>\d+)(?:/(?P<total2>\d+))? passed, (?P<failed>\d+) failed"
 )
-RX_TEST_FAILED = re.compile(r"test FAILED:?\s*(.+)", re.IGNORECASE)
+RX_TEST_FAILED = re.compile(r"(?:test FAILED:?|TEST-FAIL)\s*(.+)", re.IGNORECASE)
 RX_BOOTSTRAP = re.compile(r"bootstrap (START|COMPLETE)")
 RX_PROFILE = re.compile(r"Profile detected: (\w+)")
 RX_PACKAGE = re.compile(r"Package registered: (rimconemy\.\w+) v([\d.]+)")
@@ -160,6 +160,17 @@ def parse_player_log(path: str) -> dict:
     # Leftover failures → last suite
     if pending_failures and last_suite:
         last_suite["failures"].extend(pending_failures)
+
+    # ── Dedup: keep only the highest-count entry per (package, suite) ──
+    # After ts.Check() migration, each suite emits both a legacy 0/0 summary
+    # and a real TestSuite summary. Keep the real one (higher total).
+    deduped = {}
+    for s in result["test_suites"]:
+        key = (s["package"], s["suite"])
+        total = s["passed"] + s["failed"]
+        if key not in deduped or total > (deduped[key]["passed"] + deduped[key]["failed"]):
+            deduped[key] = s
+    result["test_suites"] = list(deduped.values())
 
     return result
 
