@@ -41,6 +41,19 @@ DEFAULT_LOG = os.path.expanduser(
 COLORS = sys.stdout.isatty()  # auto-detect terminal
 
 # ── Color helpers ──────────────────────────────────────────────
+ANSI_RE = re.compile(r'\033\[[0-9;]*m')
+
+def _visible_len(text):
+    """String length without ANSI escape sequences."""
+    return len(ANSI_RE.sub('', text))
+
+def _pad(text, width):
+    """Pad text to visible width, accounting for ANSI codes."""
+    vis = _visible_len(text)
+    if vis >= width:
+        return text
+    return text + ' ' * (width - vis)
+
 def _c(code, text):
     if COLORS:
         return f"\033[{code}m{text}\033[0m"
@@ -162,9 +175,12 @@ class LiveMonitor:
             return
 
         # Test failures (buffer until suite summary)
+        # Guard: if no suite summary arrives for >50 pending failures, discard oldest
         tfm = RX_TEST_FAIL.search(msg)
         if tfm:
             self.pending_failures.append(tfm.group(1).strip())
+            if len(self.pending_failures) > 50:
+                self.pending_failures = self.pending_failures[-50:]
             if self.level >= 1:
                 print(f"  {red('✗ TEST-FAIL')} {dim(pkg)} {tfm.group(1).strip()[:120]}")
             return
@@ -243,8 +259,8 @@ class LiveMonitor:
         total_failed = sum(s["failed"] for s in self.suites.values())
         failed_suites = [s for s in self.suites.values() if s["failed"] > 0]
 
-        # Clear and redraw header
-        sys.stdout.write("\033[2J\033[H")  # clear screen, cursor home
+        # Clear and redraw header (preserves scrollback)
+        sys.stdout.write("\033[H\033[J")  # cursor home, clear to end
 
         print(bold("╔══════════════════════════════════════════════════════════════╗"))
         print(bold("║") + bold("  Rimconemy Live Monitor").center(62) + bold("║"))
@@ -256,40 +272,40 @@ class LiveMonitor:
         profile_str = ", ".join(list(dict.fromkeys(self.profiles))[:2]) if self.profiles else "—"
 
         status = f"  Boot: {boot_icon} | {pkg_count} packages | {profile_str}"
-        print(bold("║") + status.ljust(62) + bold("║"))
+        print(bold("║") + _pad(status, 62) + bold("║"))
 
         # Test summary
         if total_failed > 0:
             test_line = f"  Tests: {green(str(total_passed))} passed, {red(str(total_failed))} FAILED, {len(self.suites)} suites"
         else:
             test_line = f"  Tests: {green(f'{total_passed} passed')}, {len(self.suites)} suites"
-        print(bold("║") + test_line.ljust(62) + bold("║"))
+        print(bold("║") + _pad(test_line, 62) + bold("║"))
 
         error_count = len(self.errors)
         warn_count = len(self.warnings)
         anom_count = len(self.anomalies)
         extra = f"  Errors: {error_count} | Warnings: {warn_count} | Anomalies: {anom_count}"
-        print(bold("║") + extra.ljust(62) + bold("║"))
+        print(bold("║") + _pad(extra, 62) + bold("║"))
 
         # Failed suites details
         if failed_suites:
             print(bold("╠══════════════════════════════════════════════════════════════╣"))
-            print(bold("║") + red("  FAILED SUITES:").ljust(62) + bold("║"))
+            print(bold("║") + _pad(red("  FAILED SUITES:"), 62) + bold("║"))
             for s in failed_suites[:8]:
                 line = f"    {s['package']}/{s['suite']}: {s['failed']} failures"
-                print(bold("║") + red(line).ljust(62) + bold("║"))
+                print(bold("║") + _pad(red(line), 62) + bold("║"))
 
         # Recent anomalies
         if self.anomalies:
             print(bold("╠══════════════════════════════════════════════════════════════╣"))
-            print(bold("║") + yellow("  ANOMALIES:").ljust(62) + bold("║"))
+            print(bold("║") + _pad(yellow("  ANOMALIES:"), 62) + bold("║"))
             for a in self.anomalies[-5:]:
                 line = f"    {a['type']}: {a['line'][:50]}"
-                print(bold("║") + yellow(line).ljust(62) + bold("║"))
+                print(bold("║") + _pad(yellow(line), 62) + bold("║"))
 
         print(bold("╠══════════════════════════════════════════════════════════════╣"))
         elapsed_str = f"  Running: {int(elapsed)}s | {self.lines_seen} lines seen | Log: {Path(self.log_path).name}"
-        print(bold("║") + dim(elapsed_str).ljust(62) + bold("║"))
+        print(bold("║") + _pad(dim(elapsed_str), 62) + bold("║"))
         print(bold("╚══════════════════════════════════════════════════════════════╝"))
         print()
 
@@ -329,7 +345,6 @@ class LiveMonitor:
             except FileNotFoundError:
                 self.position = 0
 
-        last_size = 0
         try:
             while True:
                 try:

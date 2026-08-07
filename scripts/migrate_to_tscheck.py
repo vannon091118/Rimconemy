@@ -143,15 +143,41 @@ def _replace_calls_paren(text):
 
 
 def _find_matching_brace(lines, start_idx):
+    """Find matching '}' for '{' respecting string/char literals."""
     depth = 0
+    in_string = False
+    in_char = False
     for i in range(start_idx, len(lines)):
-        for ch in lines[i]:
-            if ch == '{':
+        j = 0
+        while j < len(lines[i]):
+            ch = lines[i][j]
+            if in_string:
+                if ch == '\\':
+                    j += 2
+                    continue
+                if ch == '"':
+                    in_string = False
+                j += 1
+                continue
+            if in_char:
+                if ch == '\\':
+                    j += 2
+                    continue
+                if ch == "'":
+                    in_char = False
+                j += 1
+                continue
+            if ch == '"':
+                in_string = True
+            elif ch == "'":
+                in_char = True
+            elif ch == '{':
                 depth += 1
             elif ch == '}':
                 depth -= 1
                 if depth == 0:
                     return i
+            j += 1
     return start_idx
 
 
