@@ -1,6 +1,6 @@
 # INDEX — SSOT-Topics-Map
 
-> **Stand:** 2026-08-07 (added §8 Architecture Analysis)
+> **Stand:** 2026-08-07 (added §8 Architecture Analysis + §8a Storyteller Analysis)
 > **Rolle:** Diese Map zeigt, welche Datei welches Topic final besitzt. Wer ein Topic moved/edits, aktualisiert die Map (und idealerweise gleichzeitig [ARCHITECTURE.md](ARCHITECTURE.md)).
 
 ## §1 Phasen-First Architecture (2026-08-05)
@@ -69,6 +69,7 @@
 |---|---|---|---|
 | Traceability Matrix | [docs/TRACEABILITY_MATRIX.md](TRACEABILITY_MATRIX.md) | Mod 01 | Full file audit (191 files, 34,768 LOC), creation timestamps, concern overlap map, dependency graph |
 | Refactoring Plan | [docs/REFACTORING_PLAN.md](REFACTORING_PLAN.md) | Mod 01 | 6-phase plan: contract hardening, god-class split, data-as-code→Defs, dead code removal, LOC targets -57% |
+| Storyteller Analysis | [docs/STORYTELLER_ANALYSIS.md](STORYTELLER_ANALYSIS.md) | Mod 05 | Vanilla Storyteller architecture, FiringIncident/TryFire injection, StorytellerComp vs StorytellerDef, dynamic mod-aware events, rewiring recommendations |
 
 ## §9 Phasen-First Tasks (2026-08-05)
 
